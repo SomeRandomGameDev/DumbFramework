@@ -35,11 +35,6 @@ public:
   virtual ~Application();
 
   /**
-   * Set the current scene.
-   */
-  void set(Scene *);
-
-  /**
    * Start the application.
    * Only one application can be started/run simultaneously.
    * @param hint Window hint.
