@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="A Dumb Framework : A very dumb framework/glue to GLFW/GLEW/SOIL for quick and dirty prototyping." />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>A Dumb Framework</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/SomeRandomGameDev/DumbFramework">View on GitHub</a>
+
+          <h1 id="project_title">A Dumb Framework</h1>
+          <h2 id="project_tagline">A very dumb framework/glue to GLFW/GLEW/SOIL for quick and dirty prototyping.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/SomeRandomGameDev/DumbFramework/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/SomeRandomGameDev/DumbFramework/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>Purpose</h3>
+
+<p>There's many good libraries for speeding up your productivity. But sometimes, speeding up is not enough. You're always running out of time. One can always get libraries like GLFW, GLEW, SOIL. But you need to do basic stuff over and over again. Here comes the dumb framework. It implements the glue, a slightly higher level of abstraction that combines underneath libraries without cutting you from them.</p>
+
+<p>We're talking about ultra-lightweight productions here. It's not about getting a middleware, pushing your assets and publishing a fat prototype. It's about coding a couple of routines, launch your favorite compilers and obtaining a shiny tiny executable.</p>
+
+<h3>So, how can I use your stuff ?</h3>
+
+<p>Assuming you're comfortable with C++, here is the thing: There's a class, named Application. It represents the core of your prod. Its purpose is to display one scene at a time (perhaps your app is about a single scene, why not ?). A scene is just a object that can collect information from input devices (keyboard, mouse ...) and output a result (on screen, with sound).
+One only need to create a scene class by deriving the Scene interface.</p>
+
+<pre><code>class MyScene : public Scene {
+  // ... See the Scene class code, it pretty straightforward.
+};
+</code></pre>
+
+<p>Then, you just have to use it like that.</p>
+
+<pre><code>int main(void) {
+  MyScene myScene;
+  Application myApplication;      
+  WindowHint hint;
+  // ... Fill hint with starting preferences (window size, fullscreen ?).
+  myApplication.start(hint, &amp;myScene);
+
+  return 0;
+}
+</code></pre>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">A Dumb Framework maintained by <a href="https://github.com/SomeRandomGameDev">SomeRandomGameDev</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
