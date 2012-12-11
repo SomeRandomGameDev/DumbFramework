@@ -1,37 +1,37 @@
 <!DOCTYPE html>
 <html>
-
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="A Dumb Framework : A very dumb framework/glue to GLFW/GLEW/SOIL for quick and dirty prototyping." />
-
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>A Dumb Framework</title>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>A Dumb Framework by SomeRandomGameDev</title>
   </head>
 
   <body>
+    <div id="container">
+      <div class="inner">
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/SomeRandomGameDev/DumbFramework">View on GitHub</a>
-
-          <h1 id="project_title">A Dumb Framework</h1>
-          <h2 id="project_tagline">A very dumb framework/glue to GLFW/GLEW/SOIL for quick and dirty prototyping.</h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/SomeRandomGameDev/DumbFramework/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/SomeRandomGameDev/DumbFramework/tarball/master">Download this project as a tar.gz file</a>
-            </section>
+        <header>
+          <h1>A Dumb Framework</h1>
+          <h2>A very dumb framework/glue to GLFW/GLEW/SOIL for quick and dirty prototyping.</h2>
         </header>
-    </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h3>Purpose</h3>
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/SomeRandomGameDev/DumbFramework/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/SomeRandomGameDev/DumbFramework/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/SomeRandomGameDev/DumbFramework" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h3>Purpose</h3>
 
 <p>There's many good libraries for speeding up your productivity. But sometimes, speeding up is not enough. You're always running out of time. One can always get libraries like GLFW, GLEW, SOIL. But you need to do basic stuff over and over again. Here comes the dumb framework. It implements the glue, a slightly higher level of abstraction that combines underneath libraries without cutting you from them.</p>
 
@@ -42,35 +42,34 @@
 <p>Assuming you're comfortable with C++, here is the thing: There's a class, named Application, that represents the core of your prod. Its purpose is to display one scene at a time (perhaps your app is about a single scene, why not ?). A scene is just an object that can collect information from input devices (keyboard, mouse ...) and output a result (on screen, with sound).
 One only needs to create a scene class by deriving the Scene interface.</p>
 
-<pre><code>class MyScene : public Scene {
-  // ... See the Scene class code, it pretty straightforward.
-};
-</code></pre>
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">MyScene</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Scene</span> <span class="p">{</span>
+   <span class="c1">// ... See the Scene class code, it pretty straightforward.</span>
+<span class="p">};</span>
+</pre></div>
 
 <p>Then, you just have to use it like that.</p>
 
-<pre><code>int main(void) {
-  MyScene myScene;
-  Application myApplication;      
-  WindowHint hint;
-  // ... Fill hint with starting preferences (window size, fullscreen ?).
-  myApplication.start(hint, &amp;myScene);
+<div class="highlight"><pre><span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">MyScene</span> <span class="n">myScene</span><span class="p">;</span>
+  <span class="n">Application</span> <span class="n">myApplication</span><span class="p">;</span>      
+  <span class="n">WindowHint</span> <span class="n">hint</span><span class="p">;</span>
+  <span class="c1">// ... Fill hint with starting preferences (window size, fullscreen ?).</span>
+  <span class="n">myApplication</span><span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="n">hint</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">myScene</span><span class="p">);</span>
 
-  return 0;
-}
-</code></pre>
-      </section>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+<p>Complete examples are available in the git repository, under the 'demo' directory.</p>
+        </section>
+
+        <footer>
+          A Dumb Framework is maintained by <a href="https://github.com/SomeRandomGameDev">SomeRandomGameDev</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
     </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">A Dumb Framework maintained by <a href="https://github.com/SomeRandomGameDev">SomeRandomGameDev</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-    
-
   </body>
 </html>
