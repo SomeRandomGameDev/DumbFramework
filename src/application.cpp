@@ -1,6 +1,8 @@
 #include <application.hpp>
 #include <GL/glfw.h>
 
+Application* Application::_application = 0;
+
 Application::Application() {
   _scene = 0;
   _initialized = false;
