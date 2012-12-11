@@ -36,6 +36,13 @@ public:
   virtual void handleMouseWheelAction(int pos) = 0;
 
   /**
+   * Handle window size change.
+   * @param width New window width.
+   * @param height New window height.
+   */
+  virtual void handleWindowSize(int width, int height) = 0;
+
+  /**
    * Output the scene.
    * @return The new scene to display. If null, the application ends.
    */
@@ -52,7 +59,6 @@ public:
    */
   virtual void resume() = 0;
 
-  // TODO Handle window event.
 private:
 
 };

@@ -9,6 +9,7 @@ public:
   void handleMouseButtonAction(int button, int action);
   void handleMousePositionAction(int x, int y);
   void handleMouseWheelAction(int pos);
+  void handleWindowSize(int width, int height);
   Scene* output();
   void pause();
   void resume();
@@ -33,6 +34,10 @@ void MyScene::handleMousePositionAction(int x, int y) {
 
 void MyScene::handleMouseWheelAction(int pos) {
   std::cout << "Mouse Wheel : " << pos << std::endl;
+}
+
+void MyScene::handleWindowSize(int width, int height) {
+  std::cout << "Window Resized to " << width << " x " << height << std::endl;
 }
 
 void MyScene::resume() {

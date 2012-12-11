@@ -50,7 +50,7 @@ public:
   void stop();
 
 private:
-  
+
   /**
    * Clear current scene.
    */
@@ -67,19 +67,48 @@ private:
    */
   bool _initialized;
 
+  /**
+   * Running flag.
+   */
+  bool _running;
+
 private:
 
+  /**
+   * Unique instance of the application.
+   */
   static Application *_application;
 
+  /**
+   * Wrapper to key event callback.
+   */
   static void handleKey(int, int);
 
+  /**
+   * Wrapper to mouse button event callback.
+   */
   static void handleMouseButton(int, int);
 
+  /**
+   * Wrapper to mouse position event callback.
+   */
   static void handleMousePosition(int, int);
 
+  /**
+   * Wrapper to mouse wheel event callback.
+   */
   static void handleMouseWheel(int);
 
-  // TODO Window Event
+  /**
+   * Wrapper to window closing event callback.
+   */
+  static int handleWindowClose();
+
+  /**
+   * Wrapper to window resizing event callback.
+   */
+  static void handleWindowSize(int, int);
+
 };
 
 #endif
