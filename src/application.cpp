@@ -42,18 +42,15 @@ bool Application::start(WindowHint hint, Scene *scene) {
   _application = this;
   if(result) {
     _initialized = true;
-    result = glfwOpenWindow(hint.width, hint.height, hint.red,
-                            hint.green, hint.blue, hint.alpha,
-                            hint.depth, hint.stencil, hint.mode);
-    glfwSetKeyCallback(Application::handleKey);
-    glfwSetMouseButtonCallback(Application::handleMouseButton);
-    glfwSetMousePosCallback(Application::handleMousePosition);
-    glfwSetMouseWheelCallback(Application::handleMouseWheel);
-    glfwSetWindowSizeCallback(Application::handleWindowSize);
-    glfwSetWindowCloseCallback(Application::handleWindowClose);
-    _running = true;
-
+    result = hint.openWindow();
     if(result) {
+      glfwSetKeyCallback(Application::handleKey);
+      glfwSetMouseButtonCallback(Application::handleMouseButton);
+      glfwSetMousePosCallback(Application::handleMousePosition);
+      glfwSetMouseWheelCallback(Application::handleMouseWheel);
+      glfwSetWindowSizeCallback(Application::handleWindowSize);
+      glfwSetWindowCloseCallback(Application::handleWindowClose);
+      _running = true;
       Scene *next = 0;
       _scene->resume();
       while(_running) {

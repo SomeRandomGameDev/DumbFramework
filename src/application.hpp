@@ -2,22 +2,7 @@
 #define _DUMB_FW_APPLICATION_
 
 #include <scene.hpp>
-
-/**
- * Initialisation structure.
- */
-typedef struct {
-  // TODO
-  int width;
-  int height;
-  int red;
-  int blue;
-  int green;
-  int alpha;
-  int depth;
-  int stencil;
-  int mode;
-} WindowHint;
+#include <windowhint.hpp>
 
 /**
  * Application base.

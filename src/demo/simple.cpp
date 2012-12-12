@@ -1,5 +1,6 @@
 #include <application.hpp>
 #include <iostream>
+#include <string.h>
 #include <GL/glfw.h>
 
 class MyScene : public Scene {
@@ -58,15 +59,10 @@ Scene *MyScene::output() {
  * Simple example.
  */
 int main(void) {
-  WindowHint hint;
+  std::string title("A simple example");
+  WindowHint hint(800, 600, title);
   Application application;
   MyScene myScene;
-
-  hint.width = 640;
-  hint.height = 480;
-  hint.red = hint.blue = hint.green = 0;
-  hint.alpha = hint.depth = hint.stencil = 0;
-  hint.mode = GLFW_WINDOW;
 
   application.start(hint, &myScene);
 
