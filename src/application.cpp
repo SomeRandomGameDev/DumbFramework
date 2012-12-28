@@ -1,4 +1,5 @@
 #include <application.hpp>
+#include <GL/glew.h>
 #include <GL/glfw.h>
 
 Application* Application::_application = 0;
@@ -44,6 +45,12 @@ bool Application::start(WindowHint hint, Scene *scene) {
     _initialized = true;
     result = hint.openWindow();
     if(result) {
+      GLenum glewError = glewInit();
+      if(GLEW_OK != glewError) {
+        glfwTerminate();
+        // TODO : Error Message.
+        return false;
+      }
       glfwSetKeyCallback(Application::handleKey);
       glfwSetMouseButtonCallback(Application::handleMouseButton);
       glfwSetMousePosCallback(Application::handleMousePosition);

@@ -193,12 +193,12 @@ void Atlas::endElement(const XML_Char *tag) {
 }
 
 /*
-<atlas file="/path/to/imagefile.dat">
+<atlas file="/path/to/imagefile.dat" size="...">
   <!-- List of definitions -->
 
   <definition id="4" size="2">
     <!-- List of animations -->
-    <animation id="0" size="1" length="5">
+    <animation id="0" size="1">
       <!-- List of frames -->
       <frame time="0"
              offsetX="0" offsetY="0"
@@ -239,99 +239,4 @@ void Atlas::endElement(const XML_Char *tag) {
               nextX="33" nextY="40"
               width="32" height="32"/>
 </atlas>
-
-
-  void startElement(void *data, char *tag, char **attr) {
-    if(strcasecmp(tag, "atlas") == 0) {
-      char *filename = 0;
-      for(int i = 0; attr[i] != 0; i += 2) {
-        if(strcasecmp(attr[i], "path") == 0) {
-          filename = attr[i+1];
-        }
-      }
-      if(0 != filename) {
-        _textureId = SOIL_load_OGL_texture( filename, SOIL_LOAD_AUTO,
-                                            SOIL_CREATE_NEW_ID,
-                                            SOIL_FLAG_COMPRESS_TO_DXT );
-        if(0 != textureId) {
-          glBindTexture(0, _textureId);
-          _atlasW = glGetTexLevelParameteri(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH);
-          _atlasH = glGetTexLevelParameteri(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT);
-        }
-      }
-      // TODO STATE
-    }
-
-    if(strcasecmp(tag, "definition") == 0) {
-      unsigned int nbAnimation = 0;
-      unsigned int id = 0;
-      for(int i = 0; attr[i] != 0; i+= 2) {
-        if(strcasecmp(attr[i], "id")) {
-          id = atoi(attr[i + 1]);
-        }
-      }
-      _animationVector.clear();
-      _currentDefinitionId = id;
-      // TODO STATE
-    }
-
-    if(strcasecmp(tag, "animation") == 0) {
-      // Create Animation template.
-      _frameVector.clear();
-      _currentAnimationId++;
-    }
-    if(strcasecmp(tag, "frame") == 0) {
-      double time = 0;
-      int offsetx, offsety, width, height,
-          topu, topv, bottomu, bottomv;
-      for(int i = 0; attr[i] != 0; i += 2) {
-        if(strcasecmp(attr[i], "time") == 0) {
-          time = atof(attr[i+1]);
-        } else if(strcasecmp(attr[i], "offsetx") == 0) {
-          offsetx = atoi(attr[i+1]);
-        } else if(strcasecmp(attr[i], "offsety") == 0) {
-          offsety = atoi(attr[i+1]);
-        } else if(strcasecmp(attr[i], "width") == 0) {
-          width = atoi(attr[i+1]);
-        } else if(strcasecmp(attr[i], "height") == 0) {
-          heigth = atoi(attr[i+1]);
-        } else if(strcasecmp(attr[i], "topu") == 0) {
-          topu = atoi(attr[i+1]);
-        } else if(strcasecmp(attr[i], "topv") == 0) {
-          topv = atoi(attr[i+1]);
-        } else if(strcasecmp(attr[i], "bottomu") == 0) {
-          bottomu = atoi(attr[i+1]);
-        } else if(strcasecmp(attr[i], "bottomv") == 0) {
-          bottomv = atoi(attr[i+1]);
-        }
-      }
-      Frame *frame = new Frame(
-                      time, glm::ivec2(offsetx, offsety),
-                      glm::ivec2(width, height),
-                      glm::dvec2(topu/(double)atlasW, topv/(double)atlasH),
-                      glm::dvec2(bottomu/(double)atlasW, bottomv/(double)atlasH));
-      _frameVector.push_back(frame);
-      // TODO STATE
-    }
-  }
-
-  void endElement(void *data, char *tag) {
-    if(strcasecmp(tag, "atlas") == 0) {
-      // TODO STATE
-    }
-
-    if(strcasecmp(tag, "definition") == 0) {
-      // TODO STATE
-    }
-
-    if(strcasecmp(tag, "animation") == 0) {
-      // TODO STATE
-    }
-
-    if(strcasecmp(tag, "frame") == 0) {
-      // TODO STATE
-    }
-
-  }
-
- */
+*/
