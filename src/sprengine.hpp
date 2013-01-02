@@ -18,15 +18,19 @@ typedef struct {
   /**
    * Previous item (free or used).
    */
-  unsigned int _previous;
+  int _previous;
   /**
    * Next item (free or used).
    */
-  unsigned int _next;
+  int _next;
   /**
    * Targeted sprite slot.
    */
   Identifier _target;
+  /**
+   * Helper flag for quick status retrieval.
+   */
+  bool _free;
 } LookupItem;
 
 /**
@@ -67,31 +71,39 @@ typedef struct {
   /**
    * Position.
    */
-  GLfloat posX;
-  GLfloat posY;
+  GLfloat _posX;
+  GLfloat _posY;
+
+  /**
+   * Offset.
+   */
+  GLfloat _offsetX;
+  GLfloat _offsetY;
 
   /**
    * Size.
    */
-  GLfloat sizeX;
-  GLfloat sizeY;
+  GLfloat _sizeX;
+  GLfloat _sizeY;
 
   /**
    * Top texel coordinate.
    */
-  GLfloat topU;
-  GLfloat topV;
+  GLfloat _topU;
+  GLfloat _topV;
 
   /**
    * Bottom texel coordinate.
    */
-  GLfloat bottomU;
-  GLfloat bottomV;
+  GLfloat _bottomU;
+  GLfloat _bottomV;
 } Cell;
 
 /**
  * The Sprite Engine.
  * \o_ VBO and Geometry Shader Extravaganza _o/
+ * The engine is NOT thread safe. Multi-thread safety must
+ * be ensured outside the engine as it depends on user strategy.
  */
 class Engine {
 public:
@@ -110,12 +122,13 @@ public:
    /**
     * Create a new sprite instance.
     * @param definitionId Sprite definition identifier.
+    * @patam pos Initial position.
     * @param firstAnim Animation to launch.
     * @param cycle if <code>true</code>, cycle the first animation.
     * @return An identifier to sprite instance or a negative value in case of
     * invalid parameters.
     */
-   Identifier create(unsigned int definitionId, unsigned int firstAnim = 0, bool cycle=true);
+   Identifier create(unsigned int definitionId, glm::vec2 pos, unsigned int firstAnim = 0, bool cycle=true);
 
    /**
     * Destroy/Remove a sprite instance for the engine.
@@ -126,12 +139,19 @@ public:
    /**
     * Set the sprite current animation.
     * @param Id Sprite identifier.
+    * @param pos Position.
     * @param animId Animation identifier.
     * @param cycle Does the animation need to cycle ?
     * @param progress Time progression in current animation.
     * @return <code>false</code> in case of invalid parameters.
     */
-   bool set(Identifier id, unsigned int animId, bool cycle=true, double progress=0);
+   bool set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle=true, double progress=0);
+
+   /**
+    * Move a sprite to the specified position.
+    * @param pos Position in pixel.
+    */
+   void move(Identifier id, glm::vec2 pos);
 
    /**
     * Set engine drawing viewport.
@@ -149,6 +169,12 @@ public:
     * Render the sprites.
     */
    void render();
+
+private:
+  /**
+   * Debug : Display lookup table.
+   */
+  void displayTable();
 
 private:
 
@@ -210,7 +236,7 @@ private:
   /**
    * Timestamp of last drawing call (in seconds).
    */
-  double _last;
+  double _time;
 
   /**
    * Elapsed time since first call.
@@ -251,6 +277,11 @@ private:
    * Pointer to first free slot.
    */
   int _free;
+
+  /**
+   * Pointer to lastly allocated slot.
+   */
+  int _last;
 };
 
 }

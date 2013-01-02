@@ -1,6 +1,7 @@
 #include <application.hpp>
 #include <scene.hpp>
 #include <sprengine.hpp>
+#include <iostream>
 
 class TestEngine : public Scene {
 public:
@@ -25,6 +26,22 @@ void TestEngine::handleKeyAction(int, int) { _quit = true; }
 
 void TestEngine::resume() {
   Sprite::Atlas atlas("test.xml");
+
+  Sprite::Engine engine(&atlas, 8);
+
+  Sprite::Identifier id = engine.create(0, glm::vec2(0, 0), 0);
+  Sprite::Identifier other = engine.create(0, glm::vec2(0,0),0);
+  Sprite::Identifier lastOne = engine.create(0, glm::vec2(0,0), 0);
+
+  engine.destroy(other);
+
+  engine.destroy(id);
+
+  other = engine.create(0, glm::vec2(0,0), 0);
+
+  engine.destroy(lastOne);
+
+  lastOne = engine.create(0, glm::vec2(0,0), 0);
 }
 
 void TestEngine::pause() {

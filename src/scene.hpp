@@ -46,7 +46,7 @@ public:
    * Output the scene.
    * @return The new scene to display. If null, the application ends.
    */
-  virtual Scene* output() {}
+  virtual Scene* output() { return 0; }
 
   /**
    * Pause the scene. Occurs if the scene must be
