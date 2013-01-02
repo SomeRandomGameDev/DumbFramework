@@ -1,4 +1,8 @@
 #include <GL/glew.h>
+#include <GL/glfw.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <sprengine.hpp>
 
 #include <iostream>
@@ -67,6 +71,9 @@ const char *s_geometryShader =
 #define TOP_TEX_INDEX  3
 #define DOWN_TEX_INDEX 4
 
+// vec2 (pos) + vec2(offset) + vec2 (dim) + vec2 (top-tex) + vec2 (bottom-tex)
+#define VBO_STRIDE (sizeof(GLfloat) * 10)
+
 GLuint makeShader(GLenum type, const char *content) {
   GLuint shader;
   GLint length;
@@ -125,12 +132,10 @@ Engine::Engine(Atlas *atlas, unsigned int capacity) :
   _table[capacity-1]._next = -1;
 
   // VAO+VBO init.
-  // vec2 (pos) + vec2(offset) + vec2 (dim) + vec2 (top-tex) + vec2 (bottom-tex)
-  int stride = sizeof(GLfloat) * (2 + 2 + 2 + 2 + 2);
 
   glGenBuffers(1, &_vbo);
   glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-  glBufferData(GL_ARRAY_BUFFER, stride * capacity, 0, GL_STREAM_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, VBO_STRIDE * capacity, 0, GL_STREAM_DRAW);
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -145,27 +150,27 @@ Engine::Engine(Atlas *atlas, unsigned int capacity) :
   glVertexAttribPointer(VERTEX_INDEX,
                         2, GL_FLOAT,
                         GL_FALSE,
-                        stride,
+                        VBO_STRIDE,
                         (GLvoid *) 0);
   glVertexAttribPointer(OFFSET_INDEX,
                         2, GL_FLOAT,
                         GL_FALSE,
-                        stride,
+                        VBO_STRIDE,
                         (GLvoid *) (sizeof(float) * 2));
   glVertexAttribPointer(SIZE_INDEX,
                         2, GL_FLOAT,
                         GL_FALSE,
-                        stride,
+                        VBO_STRIDE,
                         (GLvoid *) (sizeof(float) * 4));
   glVertexAttribPointer(TOP_TEX_INDEX,
                         2, GL_FLOAT,
                         GL_FALSE,
-                        stride,
+                        VBO_STRIDE,
                         (GLvoid *) (sizeof(float) * 6));
   glVertexAttribPointer(DOWN_TEX_INDEX,
                         2, GL_FLOAT,
                         GL_FALSE,
-                        stride,
+                        VBO_STRIDE,
                         (GLvoid *) (sizeof(float) * 8));
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
@@ -263,44 +268,7 @@ Identifier Engine::create(unsigned int definitionId, glm::vec2 pos, unsigned int
   // Add an entry into the instance table.
   Identifier inside = _count;
   Instance *instance = _instance + inside;
-  Cell *cell = _cell + inside;
-  Animation *animation = 0;
-
   instance->_definition = _atlas->get(definitionId);
-  if(0 != instance->_definition) {
-    instance->_animation = firstAnim;
-    instance->_frame = 0;
-    instance->_elapsed = 0;
-    instance->_cycle = cycle;
-    animation = instance->_definition->get(firstAnim);
-    if(0 != animation) {
-      instance->_still = animation->capacity()<2;
-    } else {
-      return -1;
-    }
-  } else {
-    return -1;
-  }
-  ++_count;
-  // From here, we're safe.
-  // 'animation' is not null anymore.
-  // Get the first frame.
-  Frame *frame = animation->get(0);
-  glm::ivec2 offset = frame->getOffset();
-  glm::ivec2 size = frame->getSize();
-  glm::dvec2 top = frame->getTop();
-  glm::dvec2 bottom = frame->getBottom();
-
-  cell->_posX = pos.x;
-  cell->_posY = pos.y;
-  cell->_offsetX = offset.x;
-  cell->_offsetY = offset.y;
-  cell->_sizeX = size.x;
-  cell->_sizeY = size.y;
-  cell->_topU = top.x;
-  cell->_topV = top.y;
-  cell->_bottomU = bottom.x;
-  cell->_bottomV = bottom.y;
 
   // Add an entry in the lookup table.
   // Get the first free slot.
@@ -316,7 +284,7 @@ Identifier Engine::create(unsigned int definitionId, glm::vec2 pos, unsigned int
   }
   _used = result;
 
-  displayTable();
+  (void) set(result, pos, firstAnim, cycle);
 
   return result;
 }
@@ -350,25 +318,65 @@ void Engine::destroy(Identifier id) {
   if(id == _used) {
     _used = next;
   }
-
-  displayTable();
 }
 
 bool Engine::set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle, double progress) {
-  // TODO This is a stub.
-  return false;
+  bool result = false;
+  // TODO Include progress computation.
+  if((id < (int) _count) && (_table[id]._free != true)) {
+    Identifier inside = _table[id]._target;
+    Instance *instance = _instance + inside;
+    Cell *cell = _cell + inside;
+    Animation *animation = 0;
+
+    if(0 != instance->_definition) {
+      instance->_animation = animId;
+      instance->_frame = 0;
+      instance->_elapsed = 0;
+      instance->_cycle = cycle;
+      animation = instance->_definition->get(animId);
+      if(0 != animation) {
+        instance->_still = animation->capacity()<2;
+      } else {
+        return -1;
+      }
+    } else {
+      return -1;
+    }
+    ++_count;
+    // From here, we're safe.
+    // 'animation' is not null anymore.
+    // Get the first frame.
+    Frame *frame = animation->get(0);
+    glm::ivec2 offset = frame->getOffset();
+    glm::ivec2 size = frame->getSize();
+    glm::dvec2 top = frame->getTop();
+    glm::dvec2 bottom = frame->getBottom();
+
+    cell->_posX = pos.x;
+    cell->_posY = pos.y;
+    cell->_offsetX = offset.x;
+    cell->_offsetY = offset.y;
+    cell->_sizeX = size.x;
+    cell->_sizeY = size.y;
+    cell->_topU = top.x;
+    cell->_topV = top.y;
+    cell->_bottomU = bottom.x;
+    cell->_bottomV = bottom.y;
+
+    result = true;
+  }
+  return result;
 }
 
 void Engine::viewport(int x, int y, unsigned int width, unsigned int height) {
   // TODO This is a stub.
+  // TODO Update _matrix.
 }
 
 void Engine::render() {
   // Update animations.
-
-  // Retrieve buffer and memcpy.
-
-  // Send VAO.
+  // TODO
 /*
   double currentTime = glfwGetTime();
   double elapsed = currentTime - _lastTime;
@@ -379,34 +387,25 @@ void Engine::render() {
     _pastAnimation = 0;
     _sprite = (_sprite + 1) % NB_SPRITES;
   }
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+*/
 
-  glBindTexture(0, _textureId);
+
+  // Retrieve buffer and memcpy.
+  glBindTexture(0, _texture);
   glUseProgram(_program);
-  glUniformMatrix4fv(_projMatrixId, 1, GL_FALSE, glm::value_ptr(_projMatrix));
-  glUniform1i(_textureUniform, 0);
+  glUniformMatrix4fv(_uniformMatrix, 1, GL_FALSE, glm::value_ptr(_matrix));
+  glUniform1i(_uniformTexture, 0);
   glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+  GLfloat *ptr = (GLfloat *) glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+  memcpy(ptr, _cell, VBO_STRIDE * _count);
+  glUnmapBuffer(GL_ARRAY_BUFFER); 
 
-  float *ptr = (float *) glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
-  float *tmp = ptr;
-  for(int i = 0; i < NB_POINTS; ++i, tmp += 8) {
-    tmp[0] = 100 + (50 * i);
-    tmp[1] = 100 + (50 * sin(_progress * (i + 1)));
-    tmp[2] = s_spriteCoords[(_sprite * 4)+ 3].x;
-    tmp[3] = s_spriteCoords[(_sprite * 4)+ 3].y;
-    tmp[4] = s_spriteCoords[_sprite * 4].x;
-    tmp[5] = s_spriteCoords[_sprite * 4].y;
-    tmp[6] = s_spriteCoords[(_sprite * 4) + 1].x;
-    tmp[7] = s_spriteCoords[(_sprite * 4) + 1].y;
-  }
-  glUnmapBuffer(GL_ARRAY_BUFFER);
-
+  // Send VAO.
   glBindVertexArray(_vao);
-  glDrawArrays(GL_POINTS, 0, NB_POINTS);
+  glDrawArrays(GL_POINTS, 0, _count);
   glBindVertexArray(0);
 
   glUseProgram(0);
-*/
 }
 
 }
