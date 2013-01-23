@@ -1,5 +1,5 @@
 # Awful makefile to clean/port
-CFLAGS=-Wall -Isrc
+CFLAGS=-Wall -Isrc -g
 LIBS=-lglfw -lGLEW -lSOIL -lexpat -lm
 
 application.o: src/application.cpp src/application.hpp
@@ -13,6 +13,9 @@ sprite.o: src/sprite.hpp src/sprite.cpp
 
 sprengine.o: src/sprengine.hpp src/sprengine.cpp src/sprite.hpp
 	g++ ${CFLAGS} -c src/sprengine.cpp -o sprengine.o
+
+shader.o: src/shader.hpp src/shader.cpp
+	g++ ${CFLAGS} -c src/shader.cpp -o shader.o
 
 gears: application.o windowhint.o src/scene.hpp src/demo/gears.hpp src/demo/gears.cpp
 	g++ ${CFLAGS} application.o windowhint.o src/demo/gears.cpp -o gears ${LIBS}

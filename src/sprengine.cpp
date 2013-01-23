@@ -266,7 +266,7 @@ Identifier Engine::create(unsigned int definitionId, glm::vec2 pos, unsigned int
   }
 
   // Add an entry into the instance table.
-  Identifier inside = _count;
+  Identifier inside = _count++;
   Instance *instance = _instance + inside;
   instance->_definition = _atlas->get(definitionId);
 
@@ -343,7 +343,6 @@ bool Engine::set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle, 
     } else {
       return -1;
     }
-    ++_count;
     // From here, we're safe.
     // 'animation' is not null anymore.
     // Get the first frame.
@@ -370,25 +369,73 @@ bool Engine::set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle, 
 }
 
 void Engine::viewport(int x, int y, unsigned int width, unsigned int height) {
-  // TODO This is a stub.
-  // TODO Update _matrix.
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(0, width, height, 0, 0, 1);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  _matrix = glm::ortho(0.0f, (float) width, (float) height, 0.0f, 0.0f, 1.0f);
 }
 
 void Engine::render() {
   // Update animations.
-  // TODO
-/*
-  double currentTime = glfwGetTime();
-  double elapsed = currentTime - _lastTime;
-  _lastTime = currentTime;
-  _progress += elapsed;
-  _pastAnimation += elapsed;
-  if(_pastAnimation > 0.1) {
-    _pastAnimation = 0;
-    _sprite = (_sprite + 1) % NB_SPRITES;
-  }
-*/
+  double current = glfwGetTime();
+  double span = current - _time;
 
+  _time = current;
+  _elapsed += span;
+
+  // No need to browse the lookup table. We've got all we need right here !
+  for(unsigned int i = 0; i < _count; ++i) {
+    //_instance
+    //_cell
+    double elapsed = _instance[i]._elapsed + span;
+    if(true != _instance[i]._still) {
+      // Look for next frame.
+      Animation *animation = _instance[i]._definition->get(_instance[i]._animation);
+      int capacity = animation->capacity();
+      int frameNum = _instance[i]._frame;
+      bool search = true;
+      while(search) {
+        Frame *frame = animation->get(frameNum);
+        double fTime = frame->getTime();
+        if(elapsed > fTime) {
+          if(frameNum == (capacity - 1)) {
+            if(_instance[i]._cycle) {
+              elapsed -= fTime;
+              frameNum = 0;
+            } else {
+              elapsed = 0;
+              search = false;
+              _instance[i]._still = true;
+            }
+          } else {
+            ++frameNum;
+          }
+        } else {
+          search = false;
+        }
+      }
+      _instance[i]._frame = frameNum;
+      _instance[i]._elapsed = elapsed;
+      Frame *frame = animation->get(frameNum);
+      Cell *cell = _cell + i;
+      glm::ivec2 offset = frame->getOffset();
+      glm::ivec2 size = frame->getSize();
+      glm::dvec2 top = frame->getTop();
+      glm::dvec2 bottom = frame->getBottom();
+
+      cell->_offsetX = offset.x;
+      cell->_offsetY = offset.y;
+      cell->_sizeX = size.x;
+      cell->_sizeY = size.y;
+      cell->_topU = top.x;
+      cell->_topV = top.y;
+      cell->_bottomU = bottom.x;
+      cell->_bottomV = bottom.y;  
+    }
+  }
 
   // Retrieve buffer and memcpy.
   glBindTexture(0, _texture);

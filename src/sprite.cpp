@@ -144,7 +144,7 @@ void Atlas::startElement(const XML_Char *tag, const XML_Char **attr) {
           topu, topv, bottomu, bottomv = 0;
         for(int i = 0; attr[i] != 0; i += 2) {
           if(strcasecmp(attr[i], "time") == 0) {
-            time = atof(attr[i+1]);
+            time = atof(attr[i+1])/1000.0;
           } else if(strcasecmp(attr[i], "offsetx") == 0) {
             offsetx = atoi(attr[i+1]);
           } else if(strcasecmp(attr[i], "offsety") == 0) {

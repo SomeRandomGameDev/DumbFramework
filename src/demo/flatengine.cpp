@@ -9,42 +9,62 @@ public:
   Scene *output();
 
   void handleKeyAction(int, int);
-
+  void handleWindowSize(int, int);
 
   void resume();
   void pause();
 
 private:
+  Sprite::Atlas *_atlas;
+  Sprite::Engine *_engine;
+
+  Sprite::Identifier _identifier;
+
   bool _quit;
+
+  double _start;
+  double _elapsed;
 };
 
-TestEngine::TestEngine() { _quit = false; }
+TestEngine::TestEngine() : _atlas(0), _engine(0) { _quit = false; }
 
-Scene *TestEngine::output() { return _quit?0:this; }
+Scene *TestEngine::output() {
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  double current = glfwGetTime();
+  _elapsed += current - _start;
+  _start = current;
+
+  _engine->move(_identifier, glm::vec2(100, 100 + 50*sin(_elapsed)));
+  _engine->render();
+  return _quit?0:this;
+}
 
 void TestEngine::handleKeyAction(int, int) { _quit = true; }
 
+void TestEngine::handleWindowSize(int width, int height) {
+  if(0 == _atlas) {
+    _atlas = new Sprite::Atlas("test.xml");
+    _engine = new Sprite::Engine(_atlas, 8);
+  }
+  _engine->viewport(0, 0, width, height);
+}
+
 void TestEngine::resume() {
-  Sprite::Atlas atlas("test.xml");
-
-  Sprite::Engine engine(&atlas, 8);
-
-  Sprite::Identifier id = engine.create(0, glm::vec2(0, 0), 0);
-  Sprite::Identifier other = engine.create(0, glm::vec2(0,0),0);
-  Sprite::Identifier lastOne = engine.create(0, glm::vec2(0,0), 0);
-
-  engine.destroy(other);
-
-  engine.destroy(id);
-
-  other = engine.create(0, glm::vec2(0,0), 0);
-
-  engine.destroy(lastOne);
-
-  lastOne = engine.create(0, glm::vec2(0,0), 0);
+  _identifier = _engine->create(0, glm::vec2(100, 100), 0);
+  _start = glfwGetTime();
+  _elapsed = 0;
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_TEXTURE_2D);
 }
 
 void TestEngine::pause() {
+  _engine->destroy(_identifier);
+  delete _engine;
+  delete _atlas;
+
+  _engine = 0;
+  _atlas = 0;
 }
 
 int main(void) {
@@ -55,5 +75,6 @@ int main(void) {
 
   application.start(hint, &testScene);
 
+  std::cout << "End ..." << std::endl;
   return 0;
 }
