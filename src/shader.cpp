@@ -119,7 +119,9 @@ bool Shader::getSource(char* out, size_t outSize, size_t& length) const
     {
         return false;
     }
-    glGetShaderSource(_id, outSize, out, &length);
+    GLsizei sourceLength;
+    glGetShaderSource(_id, outSize, &sourceLength, out);
+    length = static_cast<size_t>(sourceLength);
     return true;
 }
 

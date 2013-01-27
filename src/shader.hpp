@@ -1,8 +1,8 @@
 #ifndef _DUMB_FW_SHADER_
 #define _DUMB_FW_SHADER_
 
+#include <GL/glew.h>
 #include <GL/glfw.h>
-
 /** @todo configuration header. */
 /** @todo some kind of logging. */
 

@@ -11,6 +11,9 @@ public:
   void handleKeyAction(int, int);
   void handleWindowSize(int, int);
 
+  void handleMouseButtonAction(int, int);
+  void handleMousePositionAction(int, int);
+
   void resume();
   void pause();
 
@@ -20,13 +23,28 @@ private:
 
   Sprite::Identifier _identifier;
 
+  bool _init;
   bool _quit;
 
   double _start;
   double _elapsed;
+
+  bool _pressed;
+
+  int _initX;
+  int _initY;
+
+  int _lastX;
+  int _lastY;
+
+  int _centerX;
+  int _centerY;
+
+  int _width;
+  int _height;
 };
 
-TestEngine::TestEngine() : _atlas(0), _engine(0) { _quit = false; }
+TestEngine::TestEngine() : _atlas(0), _engine(0), _centerX(0), _centerY(0) { _pressed = _init = _quit = false; }
 
 Scene *TestEngine::output() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -40,14 +58,35 @@ Scene *TestEngine::output() {
   return _quit?0:this;
 }
 
+void TestEngine::handleMousePositionAction(int x, int y) {
+    if(_pressed) {
+      _centerX = _lastX + _initX - x;
+      _centerY = _lastY + _initY - y;
+      if(_init) _engine->viewport(_centerX, _centerY, _width, _height);
+    } else {
+      _initX = x;
+      _initY = y;
+      _lastX = _centerX;
+      _lastY = _centerY;
+    }
+}
+
+void TestEngine::handleMouseButtonAction(int button, int action) {
+  _pressed = (GLFW_PRESS == action) && (GLFW_MOUSE_BUTTON_LEFT == button);
+}
+
 void TestEngine::handleKeyAction(int, int) { _quit = true; }
 
 void TestEngine::handleWindowSize(int width, int height) {
+  _width = width;
+  _height = height;
   if(0 == _atlas) {
     _atlas = new Sprite::Atlas("test.xml");
     _engine = new Sprite::Engine(_atlas, 8);
+    _init = true;
   }
-  _engine->viewport(0, 0, width, height);
+  _engine->viewport(_centerX, _centerY, _width, _height);
+  glViewport(0, 0, _width, _height);
 }
 
 void TestEngine::resume() {

@@ -320,7 +320,7 @@ void Engine::destroy(Identifier id) {
   }
 }
 
-bool Engine::set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle, double progress) {
+bool Engine::set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle, double /* progress */) {
   bool result = false;
   // TODO Include progress computation.
   if((id < (int) _count) && (_table[id]._free != true)) {
@@ -374,8 +374,10 @@ void Engine::viewport(int x, int y, unsigned int width, unsigned int height) {
   glOrtho(0, width, height, 0, 0, 1);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
+  float dw = width / 2.0f;
+  float dh = height / 2.0f;
 
-  _matrix = glm::ortho(0.0f, (float) width, (float) height, 0.0f, 0.0f, 1.0f);
+  _matrix = glm::ortho(-dw + x, dw + x, dh + y, -dh + y, 0.0f, 1.0f);
 }
 
 void Engine::render() {

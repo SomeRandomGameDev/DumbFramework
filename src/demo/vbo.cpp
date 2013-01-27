@@ -10,14 +10,14 @@
 
 // Shaders
 
-const char *s_fragmentShader =
+const char *s_vboFragmentShader =
 "#version 150\n"
 "uniform sampler2D texture;"
 "in vec2 fs_tex;"
 "void main() {"
 "gl_FragColor = texture2D(texture, fs_tex); }";
 
-const char *s_vertexShader =
+const char *s_vboVertexShader =
 "#version 150\n"
 "in vec2 vs_position;"
 "in vec2 vs_dimension;"
@@ -33,7 +33,7 @@ const char *s_vertexShader =
 "gs_bottomtex = vs_bottomtex;"
 "}";
 
-const char *s_geometryShader =
+const char *s_vboGeometryShader =
 "#version 150\n"
 "layout (points) in;"
 "layout (triangle_strip, max_vertices = 4) out;"
@@ -135,7 +135,7 @@ private:
   int _sprite;
 };
 
-GLuint makeShader(GLenum type, const char *content) {
+GLuint createShader(GLenum type, const char *content) {
   GLuint shader;
   GLint length;
   GLint value;
@@ -162,7 +162,7 @@ TestScene::TestScene() {
   _init = false;
 }
 
-void TestScene::handleKeyAction(int key, int action) {
+void TestScene::handleKeyAction(int key, int) {
   _quit |= (key == GLFW_KEY_ESC);
 }
 
@@ -230,9 +230,9 @@ void TestScene::resume() {
   _sprite = 0;
 
   // Create program.
-  _vertexShader = makeShader(GL_VERTEX_SHADER, s_vertexShader);
-  _fragmentShader = makeShader(GL_FRAGMENT_SHADER, s_fragmentShader);
-  _geometryShader = makeShader(GL_GEOMETRY_SHADER, s_geometryShader);
+  _vertexShader = createShader(GL_VERTEX_SHADER, s_vboVertexShader);
+  _fragmentShader = createShader(GL_FRAGMENT_SHADER, s_vboFragmentShader);
+  _geometryShader = createShader(GL_GEOMETRY_SHADER, s_vboGeometryShader);
   _program = glCreateProgram();
   glAttachShader(_program, _vertexShader);
   glAttachShader(_program, _fragmentShader);

@@ -140,8 +140,8 @@ void Atlas::startElement(const XML_Char *tag, const XML_Char **attr) {
     if((STATE_PARSE_FRAME == _state) && (strcasecmp(tag, "frame") == 0)) {
       if(_lastFrameId < _lastAnimation->capacity()) {
         double time = 0;
-        int offsetx, offsety, width, height,
-          topu, topv, bottomu, bottomv = 0;
+        int offsetx = 0, offsety = 0, width = 0, height = 0;
+        int topu = 0, topv = 0, bottomu = 0, bottomv = 0;
         for(int i = 0; attr[i] != 0; i += 2) {
           if(strcasecmp(attr[i], "time") == 0) {
             time = atof(attr[i+1])/1000.0;

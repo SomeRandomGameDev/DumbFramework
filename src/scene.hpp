@@ -12,7 +12,7 @@ public:
    * @param key Key identifier.
    * @param action GLFW_PRESS or GLFW_RELEASE.
    */
-  virtual void handleKeyAction(int key, int action) {}
+  virtual void handleKeyAction(int /* key */, int /* action */) {}
 
   /**
    * Handle mouse button action.
@@ -20,27 +20,27 @@ public:
    * the maximum number of available button or LEFT/RIGHT/MIDDLE.
    * @param action GLFW_PRESS or GLFW_RELEASE.
    */
-  virtual void handleMouseButtonAction(int button, int action) {}
+  virtual void handleMouseButtonAction(int /* button */, int /* action */) {}
 
   /**
    * Handle mouse cursor movement.
    * @param x Coordinate of the mouse cursor on the X Axis in the window.
    * @param y Coordinate of the mouse cursor on the Y Axis in the window.
    */
-  virtual void handleMousePositionAction(int x, int y) {}
+  virtual void handleMousePositionAction(int /* x */, int /* y */) {}
 
   /**
    * Handle mouse wheel movement.
    * @param pos Absolute position of the wheel.
    */
-  virtual void handleMouseWheelAction(int pos) {}
+  virtual void handleMouseWheelAction(int /* pos */) {}
 
   /**
    * Handle window size change.
    * @param width New window width.
    * @param height New window height.
    */
-  virtual void handleWindowSize(int width, int height) {}
+  virtual void handleWindowSize(int /* width */, int /* height */) {}
 
   /**
    * Output the scene.
