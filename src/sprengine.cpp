@@ -368,15 +368,22 @@ bool Engine::set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle, 
   return result;
 }
 
-void Engine::viewport(int x, int y, unsigned int width, unsigned int height) {
+void Engine::viewport(float x, float y,
+                      unsigned int width, unsigned int height,
+                      float scale) {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(0, width, height, 0, 0, 1);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  float dw = width / 2.0f;
-  float dh = height / 2.0f;
+  float dw = (width / 2.0f) * scale;
+  float dh = (height / 2.0f) * scale;;
 
+  _scale = scale;
+  _width = width;
+  _height = height;
+  _centerX = x;
+  _centerY = y;
   _matrix = glm::ortho(-dw + x, dw + x, dh + y, -dh + y, 0.0f, 1.0f);
 }
 

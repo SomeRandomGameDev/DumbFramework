@@ -159,8 +159,11 @@ public:
     * @param y Center origin coordinate on Y axis in pixel.
     * @param width Width in pixel.
     * @param height Height in pixel.
+    * @param scale Scale.
     */
-   void viewport(int x, int y, unsigned int width, unsigned int height);
+   void viewport(float x, float y,
+                 unsigned int width, unsigned int height,
+                 float scale = 1.0f);
 
    // TODO Zoom and zoom with sprite size preservation.
    // TODO Viewport rotation.
@@ -282,6 +285,31 @@ private:
    * Pointer to lastly allocated slot.
    */
   int _last;
+
+  /**
+   * Center (X-coordinate).
+   */
+  float _centerX;
+
+  /**
+   * Center (y-coordinate).
+   */
+  float _centerY;
+
+  /**
+   * Scale.
+   */
+  float _scale;
+
+  /**
+   * Viewport width.
+   */
+  float _width;
+
+  /**
+   * Viewport height.
+   */
+  float _height;
 };
 
 }

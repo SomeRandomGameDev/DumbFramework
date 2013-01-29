@@ -1,31 +1,93 @@
-# Awful makefile to clean/port
-CFLAGS=-Wall -Isrc -g
-LIBS=-lglfw -lGLEW -lSOIL -lexpat -lm
+# Build in release mode by default.
+# Use "make DEBUG=1" to build in debug mode.
+CC := g++
+ECHO := echo
+RM := rm
+CD := cd
+TAR := tar
 
-application.o: src/application.cpp src/application.hpp
-	g++ ${CFLAGS} -c src/application.cpp -o application.o
+BUILD_DIR := build/GNU
 
-windowhint.o: src/windowhint.cpp src/windowhint.hpp
-	g++ ${CFLAGS} -c src/windowhint.cpp -o windowhint.o
+OUTDIR := $(BUILD_DIR)
+CFLAGS := -W -Wall -Isrc
+DEBUG ?= 1
+ifeq ($(DEBUG), 1)
+OUTDIR := $(OUTDIR)/Debug
+CFLAGS += -g -DDEBUG
+else
+OUTDIR := $(OUTDIR)/Release
+CFLAGS += -s
+endif
+OBJDIR := $(OUTDIR)/obj
 
-sprite.o: src/sprite.hpp src/sprite.cpp
-	g++ ${CFLAGS} -c src/sprite.cpp -o sprite.o
+LIBS := -lglfw -lGLEW -lSOIL -lexpat -lm
 
-sprengine.o: src/sprengine.hpp src/sprengine.cpp src/sprite.hpp
-	g++ ${CFLAGS} -c src/sprengine.cpp -o sprengine.o
+SRC := $(wildcard src/*.cpp)
+OBJFILES := $(SRC:.cpp=.o)
+OBJS := $(addprefix $(OBJDIR)/, $(OBJFILES))
 
-shader.o: src/shader.hpp src/shader.cpp
-	g++ ${CFLAGS} -c src/shader.cpp -o shader.o
+DEPEND = .depend
 
-gears: application.o windowhint.o src/scene.hpp src/demo/gears.hpp src/demo/gears.cpp
-	g++ ${CFLAGS} application.o windowhint.o src/demo/gears.cpp -o gears ${LIBS}
+all: flatengine gears simple vbo
 
-vbo: application.o windowhint.o src/scene.hpp src/demo/vbo.cpp
-	g++ ${CFLAGS} application.o windowhint.o src/demo/vbo.cpp -o vbo ${LIBS}
+simple: src/demo/simple.cpp $(OBJS)
+	@$(ECHO) " LD $@"
+	@$(CC) -o $@ $^ $(LIBS) $(CFLAGS)
 
-flatengine: application.o windowhint.o sprite.o sprengine.o src/demo/flatengine.cpp
-	g++ ${CFLAGS} application.o windowhint.o sprite.o sprengine.o src/demo/flatengine.cpp -o flatengine ${LIBS}
+vbo: src/demo/vbo.cpp $(OBJS)
+	@$(ECHO) " LD $@"
+	@$(CC) -o $@ $^ $(LIBS) $(CFLAGS)
+	
+flatengine: src/demo/flatengine.cpp $(OBJS)
+	@$(ECHO) " LD $@"
+	@$(CC) -o $@ $^ $(LIBS) $(CFLAGS)
 
-clean:
-	rm -f *.o gears vbo flatengine
+gears: src/demo/gears.cpp $(OBJS)
+	@$(ECHO) " LD $@"
+	@$(CC) -o $@ $^ $(LIBS) $(CFLAGS)
+
+dep: $(DEPEND)
+
+$(DEPEND):
+	@$(ECHO) " MKDEP"
+	@$(CC) -MM -MG $(CFLAGS) $(SRC) > $(DEPEND)
+
+$(EXE): $(OBJS)
+	@$(ECHO) " LD $@"
+	@$(CC) -o $(EXE) $^ $(LIBS)
+
+$(OBJDIR)/%.o: %.cpp
+	@$(ECHO) " CC $@"
+	@mkdir -p ${dir $@ }
+	@$(CC) $(CFLAGS) -c -o $@ $<
+
+$(OBJS): | $(OBJDIR) $(OUTDIR)
+
+$(OUTDIR):
+	@mkdir -p $(OUTDIR)
+
+$(OBJDIR):
+	@mkdir -p $(OBJDIR)
+
+install:
+
+clean: FORCE
+	@$(ECHO) " CLEAN object files"
+	@$(RM) -rf $(OBJDIR)
+
+realclean: clean
+	@$(ECHO) " CLEAN $(EXE)"
+	@$(RM) -f $(EXE)
+	@$(ECHO) " CLEAN noise files"
+	@$(RM) -f `find . -name "*~" -o -name "\#*"`
+
+c: clean
+
+rc: realclean
+
+FORCE :
+ifeq (.depend,$(wildcard .depend))
+include .depend
+endif
+
 

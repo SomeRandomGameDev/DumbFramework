@@ -14,6 +14,8 @@ public:
   void handleMouseButtonAction(int, int);
   void handleMousePositionAction(int, int);
 
+  void handleMouseWheelAction(int);
+
   void resume();
   void pause();
 
@@ -31,20 +33,27 @@ private:
 
   bool _pressed;
 
-  int _initX;
-  int _initY;
+  float _initX;
+  float _initY;
 
-  int _lastX;
-  int _lastY;
+  float _lastX;
+  float _lastY;
 
-  int _centerX;
-  int _centerY;
+  float _centerX;
+  float _centerY;
 
   int _width;
   int _height;
+
+  float _scale;
+
+  int _lastWheelPosition;
 };
 
-TestEngine::TestEngine() : _atlas(0), _engine(0), _centerX(0), _centerY(0) { _pressed = _init = _quit = false; }
+#define SCALE_FACTOR 0.2f
+
+TestEngine::TestEngine() : _atlas(0), _engine(0), _centerX(0), _centerY(0),
+                           _scale(1.0), _lastWheelPosition(0) { _pressed = _init = _quit = false; }
 
 Scene *TestEngine::output() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -53,22 +62,35 @@ Scene *TestEngine::output() {
   _elapsed += current - _start;
   _start = current;
 
-  _engine->move(_identifier, glm::vec2(100, 100 + 50*sin(_elapsed)));
+  //_engine->move(_identifier, glm::vec2(100, 100 + 50*sin(_elapsed)));
   _engine->render();
   return _quit?0:this;
 }
 
+void TestEngine::handleMouseWheelAction(int wheel) {
+  int diff = wheel - _lastWheelPosition;
+  _lastWheelPosition = wheel;
+  float factor = 1;
+  if(diff < 0) {
+    factor -= SCALE_FACTOR;
+  } else {
+    factor += SCALE_FACTOR;
+  }
+  _scale *= factor;
+  if(_init) _engine->viewport(_centerX, _centerY, _width, _height, _scale);
+}
+
 void TestEngine::handleMousePositionAction(int x, int y) {
-    if(_pressed) {
-      _centerX = _lastX + _initX - x;
-      _centerY = _lastY + _initY - y;
-      if(_init) _engine->viewport(_centerX, _centerY, _width, _height);
-    } else {
-      _initX = x;
-      _initY = y;
-      _lastX = _centerX;
-      _lastY = _centerY;
-    }
+  if(_pressed) {
+    _centerX = _lastX + (_initX - x) * _scale;
+    _centerY = _lastY + (_initY - y) * _scale;
+    if(_init) _engine->viewport(_centerX, _centerY, _width, _height, _scale);
+  } else {
+    _initX = x;
+    _initY = y;
+    _lastX = _centerX;
+    _lastY = _centerY;
+  }
 }
 
 void TestEngine::handleMouseButtonAction(int button, int action) {
