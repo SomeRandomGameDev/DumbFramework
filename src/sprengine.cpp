@@ -23,16 +23,19 @@ const char *s_vertexShader =
 "in vec2 vs_dimension;"
 "in vec2 vs_toptex;"
 "in vec2 vs_bottomtex;"
+"in float vs_angle;"
 "noperspective centroid out vec2 gs_dimension;"
 "out vec2 gs_toptex;"
 "out vec2 gs_bottomtex;"
 "out vec2 gs_offset;"
+"out float gs_angle;"
 "void main() {"
 "gl_Position = vec4(vs_position.x, vs_position.y, 0.0, 1.0);"
 "gs_dimension = vs_dimension;"
 "gs_toptex = vs_toptex;"
 "gs_bottomtex = vs_bottomtex;"
 "gs_offset = vs_offset;"
+"gs_angle = vs_angle;"
 "}";
 
 const char *s_geometryShader =
@@ -43,21 +46,28 @@ const char *s_geometryShader =
 "in vec2 gs_toptex[1];"
 "in vec2 gs_bottomtex[1];"
 "in vec2 gs_offset[1];"
+"in float gs_angle[1];"
 "uniform mat4 pMatrix;"
 "out vec2 fs_tex;"
 "void main() {"
 "vec2 dim = gs_dimension[0] / 2.0;"
+"float ca = cos(gs_angle[0]);"
+"float sa = sin(gs_angle[0]);"
+"vec2 tpos = vec2(-dim.x * ca + dim.y * sa, -dim.y * ca - dim.x * sa);"
 "vec4 pos = gl_in[0].gl_Position + vec4(gs_offset[0].x, gs_offset[0].y, 0, 0);"
-"gl_Position = pMatrix * vec4(pos.x - dim.x, pos.y - dim.y, 0.0, 1.0);"
+"gl_Position = pMatrix * vec4(pos.x + tpos.x, pos.y + tpos.y, 0.0, 1.0);"
 "fs_tex = gs_toptex[0];"
 "EmitVertex();"
-"gl_Position = pMatrix * vec4(pos.x + dim.x, pos.y - dim.y, 0.0, 1.0);"
+"tpos = vec2(dim.x * ca + dim.y * sa, -dim.y * ca + dim.x * sa);"
+"gl_Position = pMatrix * vec4(pos.x + tpos.x, pos.y + tpos.y, 0.0, 1.0);"
 "fs_tex = vec2(gs_bottomtex[0].x, gs_toptex[0].y);"
 "EmitVertex();"
-"gl_Position = pMatrix * vec4(pos.x - dim.x, pos.y + dim.y, 0.0, 1.0);"
+"tpos = vec2(-dim.x * ca - dim.y * sa, dim.y * ca - dim.x * sa);"
+"gl_Position = pMatrix * vec4(pos.x + tpos.x, pos.y + tpos.y, 0.0, 1.0);"
 "fs_tex = vec2(gs_toptex[0].x, gs_bottomtex[0].y);"
 "EmitVertex();"
-"gl_Position = pMatrix * vec4(pos.x + dim.x, pos.y + dim.y, 0.0, 1.0);"
+"tpos = vec2(dim.x * ca - dim.y * sa, dim.y * ca + dim.x * sa);"
+"gl_Position = pMatrix * vec4(pos.x + tpos.x, pos.y + tpos.y, 0.0, 1.0);"
 "fs_tex = gs_bottomtex[0];"
 "EmitVertex();"
 "EndPrimitive();"
@@ -70,9 +80,10 @@ const char *s_geometryShader =
 #define SIZE_INDEX     2
 #define TOP_TEX_INDEX  3
 #define DOWN_TEX_INDEX 4
+#define ROTATE_INDEX   5
 
-// vec2 (pos) + vec2(offset) + vec2 (dim) + vec2 (top-tex) + vec2 (bottom-tex)
-#define VBO_STRIDE (sizeof(GLfloat) * 10)
+// vec2 (pos) + vec2(offset) + vec2 (dim) + vec2 (top-tex) + vec2 (bottom-tex) + rotate
+#define VBO_STRIDE (sizeof(GLfloat) * 11)
 
 GLuint makeShader(GLenum type, const char *content) {
   GLuint shader;
@@ -151,6 +162,7 @@ Engine::Engine(Atlas *atlas, unsigned int capacity) :
   glEnableVertexAttribArray(SIZE_INDEX);
   glEnableVertexAttribArray(TOP_TEX_INDEX);
   glEnableVertexAttribArray(DOWN_TEX_INDEX);
+  glEnableVertexAttribArray(ROTATE_INDEX);
   glBindBuffer(GL_ARRAY_BUFFER, _vbo);
   glVertexAttribPointer(VERTEX_INDEX,
                         2, GL_FLOAT,
@@ -177,6 +189,11 @@ Engine::Engine(Atlas *atlas, unsigned int capacity) :
                         GL_FALSE,
                         VBO_STRIDE,
                         (GLvoid *) (sizeof(float) * 8));
+  glVertexAttribPointer(ROTATE_INDEX,
+                        1, GL_FLOAT,
+                        GL_FALSE,
+                        VBO_STRIDE,
+                        (GLvoid *) (sizeof(float) * 10));
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
 
@@ -196,6 +213,7 @@ Engine::Engine(Atlas *atlas, unsigned int capacity) :
   glBindAttribLocation(_program, SIZE_INDEX, "vs_dimension");
   glBindAttribLocation(_program, TOP_TEX_INDEX, "vs_toptex");
   glBindAttribLocation(_program, DOWN_TEX_INDEX, "vs_bottomtex");
+  glBindAttribLocation(_program, ROTATE_INDEX, "vs_angle");
 
   glLinkProgram(_program);
   GLint status;
@@ -264,7 +282,14 @@ void Engine::move(Identifier id, glm::vec2 pos) {
   }
 }
 
-Identifier Engine::create(unsigned int definitionId, glm::vec2 pos, unsigned int firstAnim, bool cycle) {
+void Engine::rotate(Identifier id, float angle) {
+  if(!_table[id]._free) {
+    Cell * cell = _cell + _table[id]._target;
+    cell->_angle = angle;
+  }
+}
+
+Identifier Engine::create(unsigned int definitionId, glm::vec2 pos, unsigned int firstAnim, bool cycle, float angle) {
   // Size check.
   if(_count == _capacity) {
     return -1;
@@ -289,7 +314,7 @@ Identifier Engine::create(unsigned int definitionId, glm::vec2 pos, unsigned int
   }
   _used = result;
 
-  (void) set(result, pos, firstAnim, cycle);
+  (void) set(result, pos, firstAnim, cycle, 0.0, angle);
 
   return result;
 }
@@ -325,7 +350,7 @@ void Engine::destroy(Identifier id) {
   }
 }
 
-bool Engine::set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle, double /* progress */) {
+bool Engine::set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle, double /* progress */, float angle) {
   bool result = false;
   // TODO Include progress computation.
   if((id < (int) _count) && (_table[id]._free != true)) {
@@ -352,31 +377,31 @@ bool Engine::set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle, 
     // 'animation' is not null anymore.
     // Get the first frame.
     Frame *frame = animation->get(0);
-    assignFrameToCell(frame, cell, pos.x, pos.y);
+    assignFrameToCell(frame, cell, pos.x, pos.y, angle);
     
     result = true;
   }
   return result;
 }
 
-void Engine::assignFrameToCell(Frame *frame, Cell *cell, double x, double y) {
-    glm::ivec2 offset = frame->getOffset();
-    glm::ivec2 size = frame->getSize();
-    glm::dvec2 top = frame->getTop();
-    glm::dvec2 bottom = frame->getBottom();
+void Engine::assignFrameToCell(Frame *frame, Cell *cell, double x, double y, float angle) {
+  glm::ivec2 offset = frame->getOffset();
+  glm::ivec2 size = frame->getSize();
+  glm::dvec2 top = frame->getTop();
+  glm::dvec2 bottom = frame->getBottom();
 
-    cell->_posX = x;
-    cell->_posY = y;
-    cell->_offsetX = offset.x;
-    cell->_offsetY = offset.y;
-    cell->_sizeX = size.x;
-    cell->_sizeY = size.y;
-    cell->_topU = top.x;
-    cell->_topV = top.y;
-    cell->_bottomU = bottom.x;
-    cell->_bottomV = bottom.y;
+  cell->_posX = x;
+  cell->_posY = y;
+  cell->_offsetX = offset.x;
+  cell->_offsetY = offset.y;
+  cell->_sizeX = size.x;
+  cell->_sizeY = size.y;
+  cell->_topU = top.x;
+  cell->_topV = top.y;
+  cell->_bottomU = bottom.x;
+  cell->_bottomV = bottom.y;
+  cell->_angle = angle;
 }
-
 
 void Engine::viewport(float x, float y,
                       unsigned int width, unsigned int height,
@@ -459,7 +484,7 @@ void Engine::animate() {
       _instance[i]._elapsed = elapsed;
       Frame *frame = animation->get(frameNum);
       Cell *cell = _cell + i;
-      assignFrameToCell(frame, cell, cell->_posX, cell->_posY);
+      assignFrameToCell(frame, cell, cell->_posX, cell->_posY, cell->_angle);
     }
   }
 }

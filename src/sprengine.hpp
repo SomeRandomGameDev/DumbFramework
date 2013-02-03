@@ -97,6 +97,11 @@ typedef struct {
    */
   GLfloat _bottomU;
   GLfloat _bottomV;
+
+  /**
+   * Rotation angle.
+   */
+  GLfloat _angle;
 } Cell;
 
 /**
@@ -125,10 +130,11 @@ public:
     * @patam pos Initial position.
     * @param firstAnim Animation to launch.
     * @param cycle if <code>true</code>, cycle the first animation.
+    * @param angle Initial sprite rotation angle.
     * @return An identifier to sprite instance or a negative value in case of
     * invalid parameters.
     */
-   Identifier create(unsigned int definitionId, glm::vec2 pos, unsigned int firstAnim = 0, bool cycle=true);
+   Identifier create(unsigned int definitionId, glm::vec2 pos, unsigned int firstAnim = 0, bool cycle=true, float angle=0.0f);
 
    /**
     * Destroy/Remove a sprite instance for the engine.
@@ -143,15 +149,22 @@ public:
     * @param animId Animation identifier.
     * @param cycle Does the animation need to cycle ?
     * @param progress Time progression in current animation.
+    * @param angle Sprite rotation angle.
     * @return <code>false</code> in case of invalid parameters.
     */
-   bool set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle=true, double progress=0);
+   bool set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle=true, double progress=0, float angle=0.0f);
 
    /**
     * Move a sprite to the specified position.
     * @param pos Position in pixel.
     */
    void move(Identifier id, glm::vec2 pos);
+
+   /**
+    * Rotate a sprite to the specified angle.
+    * @param angle Angle.
+    */
+   void rotate(Identifier id, float angle);
 
    /**
     * Set engine drawing viewport.
@@ -203,10 +216,12 @@ private:
    * Copy frame content to a cell.
    * @param frame Source frame.
    * @param cell Destination cell.
-   * @param X Display position of the frame (on x axis).
-   * @param Y Display position of the frame (on y axis)
+   * @param x Display position of the frame (on x axis).
+   * @param y Display position of the frame (on y axis)
+   * @param angle Sprite angle.
    */
-  inline void assignFrameToCell(Frame *frame, Cell *cell, double x, double y);
+  inline void assignFrameToCell(Frame *frame, Cell *cell,
+                 double x, double y, float angle);
 
   /**
    * Animate sprites.
