@@ -165,8 +165,28 @@ public:
                  unsigned int width, unsigned int height,
                  float scale = 1.0f);
 
-   // TODO Zoom and zoom with sprite size preservation.
-   // TODO Viewport rotation.
+   /**
+    * Translate the viewport given a logical displacement.
+    * @param relX Displacement in world coordinate (X coordinate).
+    * @param relY Displacement in world coordinate (Y coordinate).
+    */
+   void translate(float relX, float relY);
+
+   /**
+    * Translate the viewport given a pixel displacement.
+    * @param relX Number of pixel in the X axis.
+    * @param relY Number of pixel in the Y axis.
+    */
+   void translate(int relX, int relY);
+
+   /**
+    * Adjust the viewport to the specified zooming scale at the
+    * targetd position.
+    * @param x Zoom center of interest (in pixels).
+    * @param y Zoom center of interest (in pixels).
+    * @param scale Scaling factor.
+    */
+   void zoom(int x, int y, float scale);
 
    /**
     * Render the sprites.
@@ -178,6 +198,20 @@ private:
    * Debug : Display lookup table.
    */
   void displayTable();
+
+  /**
+   * Copy frame content to a cell.
+   * @param frame Source frame.
+   * @param cell Destination cell.
+   * @param X Display position of the frame (on x axis).
+   * @param Y Display position of the frame (on y axis)
+   */
+  inline void assignFrameToCell(Frame *frame, Cell *cell, double x, double y);
+
+  /**
+   * Animate sprites.
+   */
+  void animate();
 
 private:
 

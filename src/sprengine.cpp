@@ -118,7 +118,12 @@ Engine::Engine(Atlas *atlas, unsigned int capacity) :
     _count(0),
     _used(-1),
     _free(0),
-    _last(-1) {
+    _last(-1),
+    _centerX(0.0f),
+    _centerY(0.0f),
+    _scale(1.0f),
+    _width(1.0f),
+    _height(1.0f) {
 
   _instance = new Instance[capacity];
   _cell = new Cell[capacity];
@@ -347,13 +352,21 @@ bool Engine::set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle, 
     // 'animation' is not null anymore.
     // Get the first frame.
     Frame *frame = animation->get(0);
+    assignFrameToCell(frame, cell, pos.x, pos.y);
+    
+    result = true;
+  }
+  return result;
+}
+
+void Engine::assignFrameToCell(Frame *frame, Cell *cell, double x, double y) {
     glm::ivec2 offset = frame->getOffset();
     glm::ivec2 size = frame->getSize();
     glm::dvec2 top = frame->getTop();
     glm::dvec2 bottom = frame->getBottom();
 
-    cell->_posX = pos.x;
-    cell->_posY = pos.y;
+    cell->_posX = x;
+    cell->_posY = y;
     cell->_offsetX = offset.x;
     cell->_offsetY = offset.y;
     cell->_sizeX = size.x;
@@ -362,11 +375,8 @@ bool Engine::set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle, 
     cell->_topV = top.y;
     cell->_bottomU = bottom.x;
     cell->_bottomV = bottom.y;
-
-    result = true;
-  }
-  return result;
 }
+
 
 void Engine::viewport(float x, float y,
                       unsigned int width, unsigned int height,
@@ -387,7 +397,26 @@ void Engine::viewport(float x, float y,
   _matrix = glm::ortho(-dw + x, dw + x, dh + y, -dh + y, 0.0f, 1.0f);
 }
 
-void Engine::render() {
+void Engine::translate(float relX, float relY) {
+  _centerX += relX;
+  _centerY += relY;
+  viewport(_centerX, _centerY, _width, _height);
+}
+
+void Engine::translate(int relX, int relY) {
+  translate(relX * _scale, relY * _scale);
+}
+
+void Engine::zoom(int x, int y, float scale) {
+
+  float decalX = (x - (_width/2)) * (_scale - scale);
+  float decalY = (y - (_height/2)) * (_scale - scale);
+
+  viewport(_centerX + decalX, _centerY + decalY,
+           _width, _height, scale);
+}
+
+void Engine::animate() {
   // Update animations.
   double current = glfwGetTime();
   double span = current - _time;
@@ -430,21 +459,14 @@ void Engine::render() {
       _instance[i]._elapsed = elapsed;
       Frame *frame = animation->get(frameNum);
       Cell *cell = _cell + i;
-      glm::ivec2 offset = frame->getOffset();
-      glm::ivec2 size = frame->getSize();
-      glm::dvec2 top = frame->getTop();
-      glm::dvec2 bottom = frame->getBottom();
-
-      cell->_offsetX = offset.x;
-      cell->_offsetY = offset.y;
-      cell->_sizeX = size.x;
-      cell->_sizeY = size.y;
-      cell->_topU = top.x;
-      cell->_topV = top.y;
-      cell->_bottomU = bottom.x;
-      cell->_bottomV = bottom.y;  
+      assignFrameToCell(frame, cell, cell->_posX, cell->_posY);
     }
   }
+}
+
+void Engine::render() {
+  // Animate the sprites
+  animate();
 
   // Retrieve buffer and memcpy.
   glBindTexture(0, _texture);

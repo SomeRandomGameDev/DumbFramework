@@ -73,11 +73,11 @@ void TestEngine::handleMouseWheelAction(int wheel) {
   float factor = 1;
   if(diff < 0) {
     factor -= SCALE_FACTOR;
-  } else {
+  } else if(diff > 0) {
     factor += SCALE_FACTOR;
   }
   _scale *= factor;
-  if(_init) _engine->viewport(_centerX, _centerY, _width, _height, _scale);
+  if(_init) _engine->zoom(_initX, _initY, _scale);
 }
 
 void TestEngine::handleMousePositionAction(int x, int y) {
