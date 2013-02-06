@@ -102,6 +102,11 @@ typedef struct {
    * Rotation angle.
    */
   GLfloat _angle;
+
+  /**
+   * Sprite scale.
+   */
+  GLfloat _scale;
 } Cell;
 
 /**
@@ -131,10 +136,11 @@ public:
     * @param firstAnim Animation to launch.
     * @param cycle if <code>true</code>, cycle the first animation.
     * @param angle Initial sprite rotation angle.
+    * @param scale Initial sprite scale factor.
     * @return An identifier to sprite instance or a negative value in case of
     * invalid parameters.
     */
-   Identifier create(unsigned int definitionId, glm::vec2 pos, unsigned int firstAnim = 0, bool cycle=true, float angle=0.0f);
+   Identifier create(unsigned int definitionId, glm::vec2 pos, unsigned int firstAnim = 0, bool cycle=true, float angle=0.0f, float scale=1.0f);
 
    /**
     * Destroy/Remove a sprite instance for the engine.
@@ -152,7 +158,7 @@ public:
     * @param angle Sprite rotation angle.
     * @return <code>false</code> in case of invalid parameters.
     */
-   bool set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle=true, double progress=0, float angle=0.0f);
+   bool set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle=true, double progress=0, float angle=0.0f, float scale=1.0f);
 
    /**
     * Move a sprite to the specified position.
@@ -162,9 +168,17 @@ public:
 
    /**
     * Rotate a sprite to the specified angle.
+    * @param id Sprite instance identifier.
     * @param angle Angle.
     */
    void rotate(Identifier id, float angle);
+
+   /**
+    * Apply a scale factor to the specified sprite instance.
+    * @param id Sprite instance identifier.
+    * @param scale Scaling ratio.
+    */
+   void scale(Identifier id, float scale);
 
    /**
     * Set engine drawing viewport.
@@ -219,9 +233,10 @@ private:
    * @param x Display position of the frame (on x axis).
    * @param y Display position of the frame (on y axis)
    * @param angle Sprite angle.
+   * @param scale Sprite scaling factor.
    */
   inline void assignFrameToCell(Frame *frame, Cell *cell,
-                 double x, double y, float angle);
+                 double x, double y, float angle, float scale);
 
   /**
    * Animate sprites.

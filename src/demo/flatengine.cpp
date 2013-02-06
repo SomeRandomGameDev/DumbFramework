@@ -1,3 +1,5 @@
+// You'll never see an uglyiest test executable !
+
 #include <application.hpp>
 #include <scene.hpp>
 #include <sprengine.hpp>
@@ -25,6 +27,8 @@ private:
 
   Sprite::Identifier _identifier;
 
+  Sprite::Identifier _evilTwin;
+
   bool _init;
   bool _quit;
 
@@ -46,17 +50,21 @@ private:
   int _height;
 
   float _scale;
+  float _evilScale;
 
   int _lastWheelPosition;
 
   bool _rightPressed;
+  bool _middlePressed;
   float _rotate;
 };
 
 #define SCALE_FACTOR 0.2f
 
 TestEngine::TestEngine() : _atlas(0), _engine(0), _centerX(0), _centerY(0),
-                           _scale(1.0), _lastWheelPosition(0), _rightPressed(false), _rotate(0) { _pressed = _init = _quit = false; }
+                           _scale(1.0), _evilScale(1.0),
+                           _lastWheelPosition(0), _rightPressed(false),
+                           _rotate(0) { _pressed = _init = _quit = false; }
 
 Scene *TestEngine::output() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -83,9 +91,17 @@ void TestEngine::handleMouseWheelAction(int wheel) {
     } else if(diff > 0) {
       factor += SCALE_FACTOR;
     }
-    _scale *= factor;
+    if(_pressed) {
+      _evilScale *= factor;
+    } else {
+      _scale *= factor;
+    }
     if(_init) {
-      _engine->zoom(_initX, _initY, _scale);
+      if(_pressed) {
+        _engine->scale(_evilTwin, _evilScale);
+      } else {
+        _engine->zoom(_initX, _initY, _scale);
+      }
     }
   }
 }
@@ -106,6 +122,7 @@ void TestEngine::handleMousePositionAction(int x, int y) {
 void TestEngine::handleMouseButtonAction(int button, int action) {
   _pressed = (GLFW_PRESS == action) && (GLFW_MOUSE_BUTTON_LEFT == button);
   _rightPressed = (GLFW_PRESS == action) && (GLFW_MOUSE_BUTTON_RIGHT == button);
+  _middlePressed = (GLFW_PRESS == action) && (GLFW_MOUSE_BUTTON_MIDDLE == button);
 }
 
 void TestEngine::handleKeyAction(int, int) { _quit = true; }
@@ -124,6 +141,7 @@ void TestEngine::handleWindowSize(int width, int height) {
 
 void TestEngine::resume() {
   _identifier = _engine->create(0, glm::vec2(100, 100), 0);
+  _evilTwin = _engine->create(0, glm::vec2(-100, 0), 0);
   _start = glfwGetTime();
   _elapsed = 0;
   glEnable(GL_DEPTH_TEST);
@@ -132,6 +150,7 @@ void TestEngine::resume() {
 
 void TestEngine::pause() {
   _engine->destroy(_identifier);
+  _engine->destroy(_evilTwin);
   delete _engine;
   delete _atlas;
 
