@@ -125,7 +125,20 @@ void TestEngine::handleMouseButtonAction(int button, int action) {
   _middlePressed = (GLFW_PRESS == action) && (GLFW_MOUSE_BUTTON_MIDDLE == button);
 }
 
-void TestEngine::handleKeyAction(int, int) { _quit = true; }
+void TestEngine::handleKeyAction(int key, int action) {
+  _quit = (GLFW_PRESS == action) && (GLFW_KEY_ESC == key);
+
+  if((GLFW_PRESS == action) && (GLFW_KEY_SPACE == key)) {
+    _engine->copy(_evilTwin, _identifier);
+  }
+
+  if((GLFW_PRESS == action) && (GLFW_KEY_RCTRL == key)) {
+    Sprite::Identifier fantom = _engine->clone(_evilTwin);
+    if(fantom >= 0) {
+      _engine->move(fantom, glm::vec2(0, 0));
+    }
+  }
+}
 
 void TestEngine::handleWindowSize(int width, int height) {
   _width = width;

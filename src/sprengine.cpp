@@ -310,6 +310,26 @@ void Engine::scale(Identifier id, float scale) {
   }
 }
 
+void Engine::copy(Identifier dest, Identifier src) {
+  if(!(_table[dest]._free || _table[src]._free)) {
+    unsigned int dx = _table[dest]._target;
+    unsigned int sx = _table[src]._target;
+    _cell[dx] = _cell[sx];
+    _instance[dx] = _instance[sx];
+  }
+}
+
+Identifier Engine::clone(Identifier src) {
+  Identifier result = -1;
+  if(!_table[src]._free) {
+    result = create(0, glm::vec2(0, 0), 0, false, 0.0f, 1.0f);
+    if(result >= 0) {
+      copy(result, src);
+    }
+  }
+  return result;
+}
+
 Identifier Engine::create(unsigned int definitionId, glm::vec2 pos, unsigned int firstAnim, bool cycle, float angle, float scale) {
   // Size check.
   if(_count == _capacity) {

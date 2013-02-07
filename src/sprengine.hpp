@@ -149,6 +149,20 @@ public:
    void destroy(Identifier id);
 
    /**
+    * Copy a sprite state into another.
+    * @param destination Destination sprite slot.
+    * @param source Source sprite slot.
+    */
+   void copy(Identifier destination, Identifier source);
+
+   /**
+    * Create a copy/clone of an existing sprite instance.
+    * @param source Source sprite instance.
+    * @return An identifier is the operation is legit.
+    */
+   Identifier clone(Identifier source);
+
+   /**
     * Set the sprite current animation.
     * @param Id Sprite identifier.
     * @param pos Position.
