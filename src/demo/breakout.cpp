@@ -2,66 +2,117 @@
 // (at all).
 
 #include <glm/glm.hpp>
-
-namespace Demo {
+#include <vector>
+#include <iostream>
 
 // Wanna see some speedcoding ?
-// This WONT compile.
+// Last version was so bad that we won't talk about it, AT ALL.
+// No, just no.
+//
+// No.
 
-class Collidable {
-public:
-  /**
-   * Given a rigid body, does it collide and what modifications occurs ?
-   * @param initial Initial state expressed as (posX, posY, vX, vY).
-   * @return New state as (posX, posY, vX, vY).
-   */
-  virtual glm::vec4 alter(glm::vec4 initial) = 0;
+typedef struct {
+  glm::vec2 _position;
+  glm::vec2 _speed;
+  double _progression;
+} Ball;
 
-private:
-  /**
-   * Where is it ?
-   */
-  glm::vec4 _placeholder;
-};
+#define PAD_NORMAL  0
+#define PAD_GLUE    1
+#define PAD_BLASTER 2
 
 class Game {
 public:
+
   /**
-   * Main model game loop.
-   * @return true as long as the game needs to run.
+   * Initiliaze the game with one normal pad and one ball.
    */
-  bool loop();
+  void init();
+
+  /**
+   * Main game loop.
+   */
+  void loop();
 private:
+
   /**
-   * Down to zero and the game is over.
+   * A breakout game is about ... BALLS !
    */
-  unsigned int _lives;
+  std::vector<Ball> _balls;
+
+  /**
+   * Pad position.
+   */
+  int _position;
+
+  /**
+   * Pad size.
+   */
+  int _size;
+
+  /**
+   * Pad state.
+   */
+  int _state;
 };
 
 
-bool Game::loop() {
-  // This method is called at each 'simulation' step.
+void Game::init() {
+  _state = PAD_NORMAL;
 
-  for(int i = 0; i < _activeBalls; ++i) {
-    for(int j = 0; j < _activeCollidables; ++j) {
-      _balls[i] = _collidable[j]->alter(_balls[i]); // Yek
-    }
+  Ball ball;
+  ball._position = glm::vec2(0,0);
+  ball._speed = glm::vec2(0, -1);
+  ball._progression = 1.0;
+  _balls.push_back(ball);
+}
+
+void Game::loop() {
+  for( std::vector<Ball>::iterator i = _balls.begin();
+       _balls.end() != i; ++i) {
+    std::cout << "(" << i->_position.x << ", " << i->_position.y << ")" << std::endl;
+
+    /*
+     * While the progression is not over :
+     *   Test if the ball goes out.
+     *   Test if the ball hits the walls.
+     *   Test if the ball hits the pad.
+     *   Test if the ball traverse a brick tile
+     *     Test if a brick is present
+     *       Adjust speed, change brick state (remove it if necessary)
+     *       Generate a bonus.
+     */ 
   }
+  
+  /*
+   * For each bonus,
+   *   Test if it reaches the pad level.
+   *     Test if the pad touches it.
+   */
 
-  // Remove misplaced balls.
-  for(int i = _activeBalls - 1; i >= 0; --i) {
-    if(isInvalidPosition(_balls[i])) {
-      removeBall(i);
-    }
-  }
+  /*
+   * For each pad bullet,
+   *   Test if it traverses a brick tile
+   *     Test if a brick is present
+   *       Change brick state.
+   *       Generate a bonus.
+   */
+}
 
-  // Remove obsolete collidables.
-  for(int i = _activeCollidables; i >= 0; --i) {
-    if(_collidable[i]->isInvalid()) {
-      removeCollidable(i);
-    }
-  }
+/*
+ * 
+ *
+ *
+ */
 
-  // ## TODO Bonuses
+int main(void) {
 
+  Game *game = new Game();
+
+  game->init();
+  game->loop();
+
+  delete game;
+
+  return 0;
 }
