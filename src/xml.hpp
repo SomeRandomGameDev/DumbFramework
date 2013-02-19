@@ -4,7 +4,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#ifdef _GNUC_
 #include <unistd.h>
+#endif _GNUC_
 #include <stdlib.h>
 
 #include <expat.h>

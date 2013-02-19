@@ -11,6 +11,12 @@
     <GLEWLibrary>$(GLEWDirectory)lib\</GLEWLibrary>
     <GLMDirectory>$(ProjectDir)..\contrib\glm\</GLMDirectory>
     <GLMInclude>$(GLMDirectory)</GLMInclude>
+    <ExpatDirectory>$(ProjectDir)..\contrib\Expat\</ExpatDirectory>
+    <ExpatInclude>$(ExpatDirectory)Source\lib</ExpatInclude>
+    <ExpatLibrary>$(ExpatDirectory)Bin</ExpatLibrary>
+    <SOILDirectory>$(ProjectDir)..\contrib\SOIL\</SOILDirectory>
+    <SOILInclude>$(ProjectDir)..\contrib</SOILInclude>
+    <SOILLibrary>$(SOILDirectory)lib</SOILLibrary>
   </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup />

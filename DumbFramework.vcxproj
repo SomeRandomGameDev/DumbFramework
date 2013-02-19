@@ -41,16 +41,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(BaseDir)\build\msvc\$(Configuration)\</OutDir>
     <IntDir>$(BaseDir)\build\msvc\tmp\$(Configuration)\</IntDir>
-    <IncludePath>$(GLMInclude);$(GLFWInclude);$(GLEWInclude);$(ProjectDir);$(ProjectDir)src;$(IncludePath)</IncludePath>
-    <LibraryPath>$(GLFWLibrary);$(GLEWLibrary);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SOILInclude);$(ExpatInclude);$(GLMInclude);$(GLFWInclude);$(GLEWInclude);$(ProjectDir);$(ProjectDir)src;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SOILLibrary)\$(Configuration);$(ExpatLibrary);$(GLFWLibrary);$(GLEWLibrary);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(BaseDir)\build\msvc\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IntDir>$(BaseDir)\build\msvc\tmp\$(Configuration)\</IntDir>
-    <IncludePath>$(GLMInclude);$(GLFWInclude);$(GLEWInclude);$(ProjectDir);$(ProjectDir)src;$(IncludePath)</IncludePath>
-    <LibraryPath>$(GLFWLibrary);$(GLEWLibrary);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SOILInclude);$(ExpatInclude);$(GLMInclude);$(GLFWInclude);$(GLEWInclude);$(ProjectDir);$(ProjectDir)src;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SOILLibrary)\$(Configuration);$(ExpatLibrary);$(GLFWLibrary);$(GLEWLibrary);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -60,14 +60,15 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;GLFW.lib;GLFWDLL.lib;glew32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SOIL.lib;libexpat.lib;opengl32.lib;glu32.lib;GLFW.lib;GLFWDLL.lib;glew32.lib</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy $(GLFWLibrary)*.dll $(TargetDir) /Y 
+      <Command>xcopy $(ExpatLibrary)*.dll $(TargetDir) /Y 
+xcopy $(GLFWLibrary)*.dll $(TargetDir) /Y 
 xcopy $(GLEWDirectory)bin\*.dll $(TargetDir) /Y   </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>xcopy $(ProjectDir)data $(TargetDir)data /Y /S /I</Command>
+      <Command>xcopy $(ProjectDir)resources $(TargetDir)resources /Y /S /I</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -82,14 +83,15 @@ xcopy $(GLEWDirectory)bin\*.dll $(TargetDir) /Y   </Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;GLFW.lib;GLFWDLL.lib;glew32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SOIL.lib;libexpat.lib;opengl32.lib;glu32.lib;GLFW.lib;GLFWDLL.lib;glew32.lib</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy $(GLFWLibrary)*.dll $(TargetDir) /Y 
+      <Command>xcopy $(ExpatLibrary)*.dll $(TargetDir) /Y
+xcopy $(GLFWLibrary)*.dll $(TargetDir) /Y 
 xcopy $(GLEWDirectory)bin\*.dll $(TargetDir) /Y   </Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>xcopy $(ProjectDir)data $(TargetDir)data /Y /S /I</Command>
+      <Command>xcopy $(ProjectDir)resources $(TargetDir)resources /Y /S /I</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
