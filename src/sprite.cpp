@@ -1,3 +1,4 @@
+#include <config.hpp>
 #include <sprite.hpp>
 #include <GL/glfw.h>
 #include <SOIL/SOIL.h>
