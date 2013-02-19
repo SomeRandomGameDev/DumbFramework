@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <BaseDir>$(ProjectDir)</BaseDir>
+    <GLFWDirectory>$(ProjectDir)..\contrib\glfw\</GLFWDirectory>
+    <GLFWInclude>$(GLFWDirectory)include</GLFWInclude>
+    <GLFWLibrary>$(GLFWDirectory)lib-msvc100\</GLFWLibrary>
+    <GLEWDirectory>$(ProjectDir)..\contrib\glew\32\</GLEWDirectory>
+    <GLEWInclude>$(GLEWDirectory)include</GLEWInclude>
+    <GLEWLibrary>$(GLEWDirectory)lib\</GLEWLibrary>
+    <GLMDirectory>$(ProjectDir)..\contrib\glm\</GLMDirectory>
+    <GLMInclude>$(GLMDirectory)</GLMInclude>
+  </PropertyGroup>
+  <ItemDefinitionGroup />
+  <ItemGroup />
+</Project>
