@@ -120,23 +120,6 @@ void Program::destroy()
 
 	end();
 
-	// Get number of shaders attached to program                  
-	GLint shaderCount;
-
-	glGetProgramiv(_id, GL_ATTACHED_SHADERS, &shaderCount );
-	if(shaderCount > 0)
-	{     
-		GLuint *shaders = new GLuint[shaderCount];
-		glGetAttachedShaders(_id, (GLsizei)shaderCount, NULL, shaders);
-		// Detach shaders
-		for(int i=0; i<shaderCount; ++i)
-		{
-			glDetachShader(_id, shaders[i]);
-		}
-
-		delete [] shaders;
-	}
-
 	// Delete program
 	glDeleteProgram (_id);
 	_id = 0;
@@ -186,6 +169,33 @@ void Program::bindAttribLocation(GLuint index, const GLchar* name)
 void Program::bindFragDataLocation(GLuint index, const GLchar* name)
 {
 	glBindFragDataLocation(_id, index, name);
+}
+
+/**
+ * Bind program input (attribute) and output (fragment output) parameters.
+ * This can be viewed as a batch version of bindAttribLocation and bindFragDataLocation.
+ * @param [in] input Attribute location array.
+ * @param [in] inputCount Number of elements in attribute location array.
+ * @param [in] output Fragment output location array.
+ * @param [in] outputCount Number of elements in fragment output location array.
+ * @todo add transform feedback output?
+ */
+void Program::bindParameters(ParamaterInfo const * input, size_t inputCount, ParamaterInfo const * output, size_t outputCount)
+{
+	if(NULL != input)
+	{
+		for(size_t i=0; i<inputCount; i++)
+		{
+			glBindAttribLocation(_id, input[i].id, input[i].name;
+		}
+	}
+	if(NULL != output)
+	{
+		for(size_t i=0; i<outputCount; i++)
+		{
+			glBindFragDataLocation(_id, output[i].id, output[i].name;
+		}
+	}
 }
 
 /**
