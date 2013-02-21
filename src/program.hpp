@@ -9,6 +9,16 @@
 class Program
 {
 	public:
+		/**
+		 * Program parameter info.
+		 * This simple structure is used to specify attribute or fragement output location.
+		 */
+		struct ParameterInfo
+		{
+			GLint id;		/**< Parameter id. */
+			GLchar const* name;	/**< Parameter name. */
+		}
+	public:
 		/** 
 		 * Constructor. 
 		 */
@@ -50,6 +60,16 @@ class Program
 		 */
 		void bindFragDataLocation(GLuint index, const GLchar* name);
 
+		/**
+		 * Bind program input (attribute) and output (fragment output) parameters.
+		 * This can be viewed as a batch version of bindAttribLocation and bindFragDataLocation.
+		 * @param [in] input Attribute location array.
+		 * @param [in] inputCount Number of elements in attribute location array.
+		 * @param [in] output Fragment output location array.
+		 * @param [in] outputCount Number of elements in fragment output location array.
+		 */
+		void bindParameters(ParamaterInfo const * input, size_t inputCount, ParamaterInfo const * output, size_t outputCount);
+		
 		/**
 		 * Specify varying outputs for transform feedback
 		 * @param [in] varyingNames Varying name array.
