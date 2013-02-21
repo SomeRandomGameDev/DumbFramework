@@ -1,15 +1,10 @@
 #ifndef _DUMB_FW_XML_
 #define _DUMB_FW_XML_
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#ifdef _GNUC_
-#include <unistd.h>
-#endif _GNUC_
 #include <stdlib.h>
 
 #include <expat.h>
+#include <file.hpp>
 
 #define PARSER_HANDLER_BUFFER_SIZE 65536
 
@@ -28,10 +23,13 @@ public:
 
   static void parse(T *target, const char *filename) {
     char buffer[PARSER_HANDLER_BUFFER_SIZE];
-    int handle = open(filename, O_RDONLY);
-    ssize_t rdLen;
-
-    if(handle < 0) {
+    
+    File input;
+    bool ret;
+    size_t rdLen;
+    
+    ret = input.open(filename, File::READ_ONLY);
+    if(!ret) {
       // TODO ERROR
       return;
     }
@@ -40,7 +38,7 @@ public:
     XML_SetUserData(parser, target);
     XML_SetElementHandler(parser, startElementHandler, endElementHandler);
 
-    while((rdLen = read(handle, buffer, PARSER_HANDLER_BUFFER_SIZE)) > 0) {
+    while((rdLen = input.read(buffer, PARSER_HANDLER_BUFFER_SIZE)) > 0) {
       if(!XML_Parse(parser,
                     buffer,
                     rdLen,
@@ -51,7 +49,7 @@ public:
     }
   
     XML_ParserFree(parser);
-    close(handle);
+    input.close();
   }
 
 private:
