@@ -2,6 +2,32 @@
 #include <iostream>
 #include <log.hpp>
 
+SourceInfos::SourceInfos()
+	: filename(__FILE__)
+	, line(__LINE__)
+	, function(__FUNCTION__)
+{}
+
+SourceInfos::SourceInfos(char const * name, size_t num, char const * fnctl)
+	: filename(name)
+	, line(num)
+	, function(fnctl)
+{}
+
+SourceInfos::SourceInfos(SourceInfos const & infos)
+	: filename(infos.filename)
+	, line(infos.line)
+	, function(infos.function)
+{}
+
+SourceInfos& SourceInfos::operator= (SourceInfos const & infos)
+{
+	filename = infos.filename;
+	line     = infos.line;
+	function = infos.function;
+	return *this;
+}
+
 /**
  * Evaluate filter.
  * @param [in] module Module id.

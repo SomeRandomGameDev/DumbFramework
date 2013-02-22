@@ -6,11 +6,33 @@
 #include <stdarg.h>
 #include <file.hpp>
 
+// todo :
+//		namespace
+//		criteria struct
+//		BaseLoger& Log::Instance();
+//		#define Log_Trace  (module, format, ...) (module, TRACE, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
+//		#define Log_Warning(module, format, ...) (module, WARNING, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
+//		#define Log_Error  (module, format, ...) (module, ERROR, __FILE__, __LINE__, __FUNCTION__, format, ##__VA_ARGS__)
+//		synchronisation
+
+enum SEVERITY
+{
+	TRACE = 0,
+	WARNING,
+	ERROR
+};
+
 /**
  * Log source.
  */
 struct SourceInfos
 {
+	SourceInfos();
+	SourceInfos(char const * name, size_t num, char const * fnctl);
+	SourceInfos(SourceInfos const & infos);
+
+	SourceInfos& operator= (SourceInfos const & infos);
+
 	char const* filename; /**< Filename. */
 	size_t      line;     /**< Line number. */
 	char const* function; /**< Function name. */
@@ -146,6 +168,5 @@ void Logger<FilterPolicy, FormatPolicy, OutputPolicy>::log(size_t module, size_t
 		_output.write(_buffer);
 	}
 }
-
 
 #endif /* _DUMB_FW_LOG_ */
