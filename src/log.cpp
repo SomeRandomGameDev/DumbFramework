@@ -31,7 +31,7 @@ namespace Log
 
 	void* LogProcessor::taskRoutine(void *param)
 	{
-		bool ret;
+		bool ret = true;
 		LogProcessor& processor = LogProcessor::instance();
 		std::string msg;
 
@@ -41,7 +41,7 @@ namespace Log
 			return NULL;
 		}
 
-		while(!processor.mustStop())
+		while(!processor.mustStop() || ret)
 		{
 			ret = processor.dequeueMessage(msg);
 			if(ret)

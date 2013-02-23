@@ -74,6 +74,9 @@ void Game::loop() {
        _balls.end() != i; ++i) {
     std::cout << "(" << i->_position.x << ", " << i->_position.y << ")" << std::endl;
 
+	Log_Trace(1, ">> balls (%f,%f)", i->_position.x, i->_position.y);
+
+
     /*
      * While the progression is not over :
      *   Test if the ball goes out.
@@ -116,11 +119,11 @@ int main(void) {
   Log::ConsoleOutputPolicy consoleOutput;
   logManager.start(&logBuilder, &consoleOutput);
 
-  Log_Trace(1, "Pouet");
+  Log_Trace(1, "Start");
 
   game->init();
   game->loop();
-
+  
   logManager.stop();
 
   delete game;
