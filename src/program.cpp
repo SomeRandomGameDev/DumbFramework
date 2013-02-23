@@ -180,20 +180,20 @@ void Program::bindFragDataLocation(GLuint index, const GLchar* name)
  * @param [in] outputCount Number of elements in fragment output location array.
  * @todo add transform feedback output?
  */
-void Program::bindParameters(ParamaterInfo const * input, size_t inputCount, ParamaterInfo const * output, size_t outputCount)
+void Program::bindParameters(ParameterInfo const * input, size_t inputCount, ParameterInfo const * output, size_t outputCount)
 {
 	if(NULL != input)
 	{
 		for(size_t i=0; i<inputCount; i++)
 		{
-			glBindAttribLocation(_id, input[i].id, input[i].name;
+			glBindAttribLocation(_id, input[i].id, input[i].name);
 		}
 	}
 	if(NULL != output)
 	{
 		for(size_t i=0; i<outputCount; i++)
 		{
-			glBindFragDataLocation(_id, output[i].id, output[i].name;
+			glBindFragDataLocation(_id, output[i].id, output[i].name);
 		}
 	}
 }

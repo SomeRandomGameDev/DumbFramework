@@ -17,7 +17,8 @@ class Program
 		{
 			GLint id;		/**< Parameter id. */
 			GLchar const* name;	/**< Parameter name. */
-		}
+		};
+
 	public:
 		/** 
 		 * Constructor. 
@@ -68,7 +69,7 @@ class Program
 		 * @param [in] output Fragment output location array.
 		 * @param [in] outputCount Number of elements in fragment output location array.
 		 */
-		void bindParameters(ParamaterInfo const * input, size_t inputCount, ParamaterInfo const * output, size_t outputCount);
+		void bindParameters(ParameterInfo const * input, size_t inputCount, ParameterInfo const * output, size_t outputCount);
 		
 		/**
 		 * Specify varying outputs for transform feedback

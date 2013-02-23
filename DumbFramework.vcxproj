@@ -41,16 +41,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(BaseDir)\build\msvc\$(Configuration)\</OutDir>
     <IntDir>$(BaseDir)\build\msvc\tmp\$(Configuration)\</IntDir>
-    <IncludePath>$(SOILInclude);$(ExpatInclude);$(GLMInclude);$(GLFWInclude);$(GLEWInclude);$(ProjectDir);$(ProjectDir)src;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SOILLibrary)\$(Configuration);$(ExpatLibrary);$(GLFWLibrary);$(GLEWLibrary);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(PTHREADInclude);$(SOILInclude);$(ExpatInclude);$(GLMInclude);$(GLFWInclude);$(GLEWInclude);$(ProjectDir);$(ProjectDir)src;$(IncludePath)</IncludePath>
+    <LibraryPath>$(PTHREADLibrary);$(SOILLibrary)\$(Configuration);$(ExpatLibrary);$(GLFWLibrary);$(GLEWLibrary);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(BaseDir)\build\msvc\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IntDir>$(BaseDir)\build\msvc\tmp\$(Configuration)\</IntDir>
-    <IncludePath>$(SOILInclude);$(ExpatInclude);$(GLMInclude);$(GLFWInclude);$(GLEWInclude);$(ProjectDir);$(ProjectDir)src;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SOILLibrary)\$(Configuration);$(ExpatLibrary);$(GLFWLibrary);$(GLEWLibrary);$(LibraryPath)</LibraryPath>
+    <IncludePath>$(PTHREADInclude);$(SOILInclude);$(ExpatInclude);$(GLMInclude);$(GLFWInclude);$(GLEWInclude);$(ProjectDir);$(ProjectDir)src;$(IncludePath)</IncludePath>
+    <LibraryPath>$(PTHREADLibrary);$(SOILLibrary)\$(Configuration);$(ExpatLibrary);$(GLFWLibrary);$(GLEWLibrary);$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -60,10 +60,11 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SOIL.lib;libexpat.lib;opengl32.lib;glu32.lib;GLFW.lib;GLFWDLL.lib;glew32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SOIL.lib;libexpat.lib;opengl32.lib;glu32.lib;GLFW.lib;GLFWDLL.lib;glew32.lib;pthreadVCE2.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy $(ExpatLibrary)*.dll $(TargetDir) /Y 
+      <Command>xcopy $(PTHREADBinary)*.dll $(TargetDir) /Y 
+xcopy $(ExpatLibrary)*.dll $(TargetDir) /Y 
 xcopy $(GLFWLibrary)*.dll $(TargetDir) /Y 
 xcopy $(GLEWDirectory)bin\*.dll $(TargetDir) /Y   </Command>
     </PreBuildEvent>
@@ -83,10 +84,11 @@ xcopy $(GLEWDirectory)bin\*.dll $(TargetDir) /Y   </Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SOIL.lib;libexpat.lib;opengl32.lib;glu32.lib;GLFW.lib;GLFWDLL.lib;glew32.lib</AdditionalDependencies>
+      <AdditionalDependencies>pthreadVCE2.lib;SOIL.lib;libexpat.lib;opengl32.lib;glu32.lib;GLFW.lib;GLFWDLL.lib;glew32.lib</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>xcopy $(ExpatLibrary)*.dll $(TargetDir) /Y
+      <Command>xcopy $(PTHREADBinary)*.dll $(TargetDir) /Y 
+xcopy $(ExpatLibrary)*.dll $(TargetDir) /Y
 xcopy $(GLFWLibrary)*.dll $(TargetDir) /Y 
 xcopy $(GLEWDirectory)bin\*.dll $(TargetDir) /Y   </Command>
     </PreBuildEvent>
@@ -106,16 +108,14 @@ xcopy $(GLEWDirectory)bin\*.dll $(TargetDir) /Y   </Command>
     <ClCompile Include="src\windowhint.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\application.hpp" />
-    <ClCompile Include="src\file.hpp" />
-    <ClCompile Include="src\shader.hpp" />
-    <ClCompile Include="src\scene.hpp" />
-    <ClCompile Include="src\sprengine.hpp" />
-    <ClCompile Include="src\sprite.hpp" />
-    <ClCompile Include="src\windowhint.hpp" />
-    <ClCompile Include="src\xml.hpp" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="src\application.hpp" />
+    <ClInclude Include="src\file.hpp" />
+    <ClInclude Include="src\shader.hpp" />
+    <ClInclude Include="src\scene.hpp" />
+    <ClInclude Include="src\sprengine.hpp" />
+    <ClInclude Include="src\sprite.hpp" />
+    <ClInclude Include="src\windowhint.hpp" />
+    <ClInclude Include="src\xml.hpp" />
     <ClInclude Include="src\config.hpp" />
     <ClInclude Include="src\log.hpp" />
     <ClInclude Include="src\program.hpp" />

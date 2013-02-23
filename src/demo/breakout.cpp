@@ -5,6 +5,8 @@
 #include <vector>
 #include <iostream>
 
+#include <log.hpp>
+
 // Wanna see some speedcoding ?
 // Last version was so bad that we won't talk about it, AT ALL.
 // No, just no.
@@ -109,8 +111,17 @@ int main(void) {
 
   Game *game = new Game();
 
+  Log::LogBuilder<Log::AllPassFilter, Log::SimpleMessageFormat> logBuilder; 
+  Log::LogProcessor& logManager = Log::LogProcessor::instance();
+  Log::ConsoleOutputPolicy consoleOutput;
+  logManager.start(&logBuilder, &consoleOutput);
+
+  Log_Trace(1, "Pouet");
+
   game->init();
   game->loop();
+
+  logManager.stop();
 
   delete game;
 

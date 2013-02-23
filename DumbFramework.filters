@@ -10,13 +10,13 @@
     <ClCompile Include="src\windowhint.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\application.hpp" />
-    <ClCompile Include="src\file.hpp" />
-    <ClCompile Include="src\shader.hpp" />
-    <ClCompile Include="src\scene.hpp" />
-    <ClCompile Include="src\sprengine.hpp" />
-    <ClCompile Include="src\sprite.hpp" />
-    <ClCompile Include="src\windowhint.hpp" />
-    <ClCompile Include="src\xml.hpp" />
+    <ClInclude Include="src\application.hpp" />
+    <ClInclude Include="src\file.hpp" />
+    <ClInclude Include="src\shader.hpp" />
+    <ClInclude Include="src\scene.hpp" />
+    <ClInclude Include="src\sprengine.hpp" />
+    <ClInclude Include="src\sprite.hpp" />
+    <ClInclude Include="src\windowhint.hpp" />
+    <ClInclude Include="src\xml.hpp" />
   </ItemGroup>
 </Project>
