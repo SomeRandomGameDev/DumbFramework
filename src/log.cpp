@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <string>
 #include <iostream>
 #include <log.hpp>
