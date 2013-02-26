@@ -11,8 +11,7 @@
 
 namespace Log
 {
-	// todo :
-	//		criteria struct
+	/// @todo: comments, criteria struct, output policy as template parameter for LogProcessor::start ?
 
 	enum SEVERITY
 	{
@@ -40,6 +39,8 @@ namespace Log
 
 	struct OutputPolicyBase
 	{
+		OutputPolicyBase() {}
+		virtual ~OutputPolicyBase() {}
 		virtual bool write(std::string & msg) = 0;
 	};
 
@@ -49,6 +50,10 @@ namespace Log
 	class BaseLogBuilder
 	{
 		public:
+			/** Constructor. */
+			BaseLogBuilder();
+			/** Destructor. */
+			virtual ~BaseLogBuilder();
 			/**
 			 * Build log message.
 			 * @param [out] out      Output string.
@@ -190,9 +195,13 @@ namespace Log
 
 	struct ConsoleOutputPolicy : public OutputPolicyBase
 	{
-		virtual bool write(std::string & msg);
+		bool write(std::string & msg);
 	};
 
+	struct FileOutputPolicy : public OutputPolicyBase
+	{
+		bool write(std::string & msg);
+	};
 
 } // Log
 

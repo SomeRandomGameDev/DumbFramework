@@ -5,6 +5,13 @@
 
 namespace Log
 {
+	/** Constructor. */
+	BaseLogBuilder::BaseLogBuilder()
+	{}
+	/** Destructor. */
+	BaseLogBuilder::~BaseLogBuilder()
+	{}
+
 	LogProcessor::LogProcessor()
 		: _lock(PTHREAD_MUTEX_INITIALIZER)
 		, _alive(PTHREAD_MUTEX_INITIALIZER)
@@ -55,14 +62,11 @@ namespace Log
 
 	bool LogProcessor::start(BaseLogBuilder* builder, OutputPolicyBase* outputPolicy)
 	{
-		int ret;
-		
 		_builder = builder;
 		pthread_mutex_init(&_lock, NULL);
 		pthread_mutex_init(&_alive, NULL);
 		pthread_mutex_lock(&_alive);
-		ret = pthread_create(&_task, NULL, taskRoutine, outputPolicy);
-		
+		int ret = pthread_create(&_task, NULL, taskRoutine, outputPolicy);
 		return (ret == 0);
 	}
 
@@ -168,6 +172,22 @@ namespace Log
 	bool ConsoleOutputPolicy::write(std::string & msg)
 	{
 		std::cout << msg << std::endl;
+		return true;
+	}
+
+	/// @todo create unique filename
+	bool FileOutputPolicy::write(std::string & msg)
+	{
+		File out;
+		
+		bool ret = out.open("log.txt", File::APPEND);
+		if(true != ret) return ret;
+
+		size_t wlen = msg.size();
+		size_t rlen = out.write((void*)msg.c_str(), wlen);
+		if(rlen != wlen) return false;
+
+		out.close();
 		return true;
 	}
 

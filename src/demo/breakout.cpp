@@ -117,7 +117,8 @@ int main(void) {
   Log::LogBuilder<Log::AllPassFilter, Log::SimpleMessageFormat> logBuilder; 
   Log::LogProcessor& logManager = Log::LogProcessor::instance();
   Log::ConsoleOutputPolicy consoleOutput;
-  logManager.start(&logBuilder, &consoleOutput);
+  Log::FileOutputPolicy fileOutput;
+  logManager.start(&logBuilder, &fileOutput);
 
   Log_Trace(1, "Start");
 
@@ -127,6 +128,5 @@ int main(void) {
   logManager.stop();
 
   delete game;
-
   return 0;
 }
