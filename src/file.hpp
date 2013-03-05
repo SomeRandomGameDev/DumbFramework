@@ -84,6 +84,9 @@ class File
 		/** Close file. */
 		void close();
 
+		/** Check if the file is opened. */
+		bool isOpened() const;
+
 		/** @return filename. */
 		const char* name() const;
 		/** @return file size in bytes. */

@@ -11,7 +11,7 @@ namespace Log
 	/** Destructor. */
 	BaseLogBuilder::~BaseLogBuilder()
 	{}
-
+	/** Constructor. */
 	LogProcessor::LogProcessor()
 		: _lock(PTHREAD_MUTEX_INITIALIZER)
 		, _alive(PTHREAD_MUTEX_INITIALIZER)
@@ -19,6 +19,7 @@ namespace Log
 		, _msgQueue()
 		, _builder(NULL)
 	{}
+	/** Constructor. */
 	LogProcessor::LogProcessor(LogProcessor const &)
 		: _lock(PTHREAD_MUTEX_INITIALIZER)
 		, _alive(PTHREAD_MUTEX_INITIALIZER)
@@ -26,17 +27,19 @@ namespace Log
 		, _msgQueue()
 		, _builder(NULL)
 	{}
+	/** Destructor. */
 	LogProcessor::~LogProcessor()
 	{}
+	/** Copy operator. */
 	LogProcessor& LogProcessor::operator= (LogProcessor const &)
 	{ return *this; }
-
+	/** Get log processor instance. */
 	LogProcessor& LogProcessor::instance()
 	{
 		static LogProcessor processor;
 		return processor;
 	}
-
+	/** Logger thread callback */
 	void* LogProcessor::taskRoutine(void *param)
 	{
 		bool ret = true;
@@ -59,7 +62,9 @@ namespace Log
 		}
 		return NULL;
 	}
-
+	/**
+	 * Start logging task.
+	 */
 	bool LogProcessor::start(BaseLogBuilder* builder, OutputPolicyBase* outputPolicy)
 	{
 		_builder = builder;
@@ -69,7 +74,9 @@ namespace Log
 		int ret = pthread_create(&_task, NULL, taskRoutine, outputPolicy);
 		return (ret == 0);
 	}
-
+	/**
+	 * Stop logging task.
+	 */
 	bool LogProcessor::stop()
 	{
 		int   ret;
@@ -175,12 +182,20 @@ namespace Log
 		return true;
 	}
 
-	/// @todo create unique filename
+	/// Write to log file.
 	bool FileOutputPolicy::write(std::string & msg)
 	{
-		File out;
-		
-		bool ret = out.open("log.txt", File::APPEND);
+		static File out;
+		File::OpenMode mode;
+		if(!out.isOpened())
+		{
+			mode = File::WRITE_ONLY;
+		}
+		else
+		{
+			mode = File::APPEND;
+		}
+		bool ret = out.open("log.txt", mode);
 		if(true != ret) return ret;
 
 		size_t wlen = msg.size();

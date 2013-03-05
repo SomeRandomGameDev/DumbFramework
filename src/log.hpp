@@ -11,8 +11,7 @@
 
 namespace Log
 {
-	/// @todo: comments, criteria struct, output policy as template parameter for LogProcessor::start ?
-
+	/** Log severity. */
 	enum SEVERITY
 	{
 		TRACE = 0,
@@ -37,6 +36,9 @@ namespace Log
 		// more?
 	};
 
+	/**
+	 * Log output policy.
+	 */
 	struct OutputPolicyBase
 	{
 		OutputPolicyBase() {}
@@ -94,6 +96,7 @@ namespace Log
 			FormatPolicy _format; /**< Used to build log string. */
 	};
 
+	/// Log message builder/manager.
 	class LogProcessor
 	{
 		public:

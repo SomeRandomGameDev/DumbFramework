@@ -129,6 +129,12 @@ void File::close()
 	}
 }
 
+/** Check if the file is opened. */
+bool File::isOpened() const
+{
+	return (_handle != NULL);
+}
+
 /** @return filename. */
 const char* File::name() const
 {
