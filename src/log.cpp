@@ -185,18 +185,12 @@ namespace Log
 	/// Write to log file.
 	bool FileOutputPolicy::write(std::string & msg)
 	{
-		static File out;
-		File::OpenMode mode;
-		if(!out.isOpened())
-		{
-			mode = File::WRITE_ONLY;
-		}
-		else
-		{
-			mode = File::APPEND;
-		}
+		static File::OpenMode mode = File::WRITE_ONLY;
+		File out;
+
 		bool ret = out.open("log.txt", mode);
 		if(true != ret) return ret;
+		mode = File::APPEND;
 
 		size_t wlen = msg.size();
 		size_t rlen = out.write((void*)msg.c_str(), wlen);
