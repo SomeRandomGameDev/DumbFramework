@@ -39,8 +39,7 @@ bool Program::attach(const Shader& shader)
 {
 	if(_id == 0)
 	{
-		/// \todo : error messages
-		// fprintf(stderr, "Can't attach shader to an uninitialized program!\n");
+		Log_Error(ModuleID::RENDER, "Can't attach shader to an uninitialized program!");
 		return false;
 	}
 
@@ -48,8 +47,7 @@ bool Program::attach(const Shader& shader)
 	GLenum err = glGetError();
 	if(err != GL_NO_ERROR)
 	{
-		/// \todo : error messages
-		// fprintf(stderr, "Can't attach shader (%x) to program (%x) : %s", shader.Id(), _id, gluErrorString(err));
+		Log_Error(ModuleID::RENDER, "Can't attach shader (%x) to program (%x) : %s", shader.getId(), _id, gluErrorString(err));
 		return false;
 	}
 	
@@ -72,7 +70,7 @@ bool Program::link()
 	glGetProgramiv(_id, GL_LINK_STATUS, &result);
 	if (result == GL_FALSE)
 	{
-		// todo InfoLog();
+		infoLog();
 		return false;
 	}
 	
@@ -125,8 +123,10 @@ void Program::destroy()
 	_id = 0;
 }
 
-/* todo
-void Program::InfoLog() const
+/**
+ * Output link status. 
+ */
+void Program::infoLog() const
 {
 	GLsizei maxLogLength, logLength;
 	GLchar *log;
@@ -138,16 +138,15 @@ void Program::InfoLog() const
 	log = new GLchar[maxLogLength];
 	if(log == NULL)
 	{
-		Log_Error("Not enough memory");
+		Log_Error(ModuleID::RENDER, "Not enough memory");
 		return;
 	}
 
 	glGetProgramInfoLog(_id, maxLogLength, &logLength, log);
-	Log_Error("%s", log);
+	Log_Error(ModuleID::RENDER, "%s", log);
 
 	delete [] log;
 }
-*/
 
 /**
  * Bind attribute location.

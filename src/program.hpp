@@ -2,6 +2,7 @@
 #define _DUMB_FW_PROGRAM_
 
 #include <shader.hpp>
+#include <log.hpp>
 
 /**
  * GLSL program wrapper.
@@ -15,7 +16,7 @@ class Program
 		 */
 		struct ParameterInfo
 		{
-			GLint id;		/**< Parameter id. */
+			GLint id;           /**< Parameter id. */
 			GLchar const* name;	/**< Parameter name. */
 		};
 
@@ -116,8 +117,12 @@ class Program
 		 * @return Attribute index.
 		 */
 		inline GLint getAttribLocation(const GLchar* name);
-			
-		/** @todo void InfoLog() const; */
+		
+		/**
+		 * Output link status. 
+		 */
+		void infoLog() const;
+
 	private:
 		GLuint _id; /**< Program id */
 };
@@ -134,8 +139,7 @@ GLint Program::getUniformLocation(const GLchar* name)
 	GLenum err = glGetError();
 	if(err != GL_NO_ERROR)
 	{
-		// \todo : error messages
-		// fprintf(stderr, "Can't get id for uniform var %s : %s", name, gluErrorString(err));
+		Log_Error(ModuleID::RENDER, "Can't get id for uniform var %s : %s", name, gluErrorString(err));
 	}
 	return uid;
 }

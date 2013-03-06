@@ -3,8 +3,9 @@
 
 #include <GL/glew.h>
 #include <GL/glfw.h>
-/** @todo configuration header. */
-/** @todo some kind of logging. */
+
+#include <config.hpp>
+#include <log.hpp>
 
 /**
  * GLSL Shader wrapper.

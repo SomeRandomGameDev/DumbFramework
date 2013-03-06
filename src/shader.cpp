@@ -144,7 +144,8 @@ void Shader::infoLog() const
     }
 
     glGetShaderInfoLog(_id, maxLogLength, &loglength, log);
-    /** @todo process log. */
+    Log_Error(ModuleID::RENDER, "%s", log);
+
     delete [] log;
 }
 
