@@ -81,6 +81,11 @@ class BufferObject
 		/**
 		 * Map buffer area.
 		 * @param [in] mode   Mapping mode (read or write).
+		 */
+		GLvoid* map(MappingMode mode);
+		/**
+		 * Map buffer area.
+		 * @param [in] mode   Mapping mode (read or write).
 		 * @param [in] offset Offset of the area to be mapped.
 		 * @param [in] size   Size of the area to be mapped.
 		 */
@@ -88,7 +93,7 @@ class BufferObject
 		/**
 		 * Unmap buffer.
 		 */
-		void unmap();
+		static void unmap();
 
 		GLuint id    () const { return _id;     }
 		GLint  target() const { return _target; }
@@ -124,5 +129,13 @@ class BufferObject
 		 */
 		GLenum  _usage;
 };
+
+/**
+	* Utility function to transate offset into pointer.
+	*/
+inline const GLvoid* BufferObject::offset(GLint off)
+{
+	return (char*)NULL + off;
+}
 
 #endif /* _DUMB_FW_BUFFER_OBJECT_ */

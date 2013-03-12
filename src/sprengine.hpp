@@ -2,6 +2,7 @@
 #define _DUMB_FW_SPRENGINE_
 
 #include <sprite.hpp>
+#include <bufferobject.hpp>
 
 namespace Sprite {
 
@@ -272,7 +273,7 @@ private:
   /**
    * Vertex Buffer Object identifier.
    */
-  GLuint _vbo;
+  BufferObject _buffer;
 
   /**
    * Vertex Shader identifier.

@@ -121,7 +121,7 @@ namespace Sprite {
 Engine::Engine(Atlas *atlas, unsigned int capacity) :
     _atlas(atlas),
     _vao(0),
-    _vbo(0),
+    _buffer(),
     _vertexShader(0),
     _fragmentShader(0),
     _geometryShader(0),
@@ -155,12 +155,7 @@ Engine::Engine(Atlas *atlas, unsigned int capacity) :
   _table[capacity-1]._next = -1;
 
   // VAO+VBO init.
-
-  glGenBuffers(1, &_vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-  glBufferData(GL_ARRAY_BUFFER, VBO_STRIDE * capacity, 0, GL_STREAM_DRAW);
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  _buffer.create(GL_ARRAY_BUFFER, VBO_STRIDE*capacity, GL_STREAM_DRAW);
 
   glGenVertexArrays(1, &_vao);
   glBindVertexArray(_vao);
@@ -171,7 +166,7 @@ Engine::Engine(Atlas *atlas, unsigned int capacity) :
   glEnableVertexAttribArray(DOWN_TEX_INDEX);
   glEnableVertexAttribArray(ROTATE_INDEX);
   glEnableVertexAttribArray(SCALE_INDEX);
-  glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+  _buffer.bind();
   glVertexAttribPointer(VERTEX_INDEX,
                         2, GL_FLOAT,
                         GL_FALSE,
@@ -207,7 +202,7 @@ Engine::Engine(Atlas *atlas, unsigned int capacity) :
                         GL_FALSE,
                         VBO_STRIDE,
                         (GLvoid *) (sizeof(float) * 11));
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+   _buffer.unbind();
   glBindVertexArray(0);
 
   _time = glfwGetTime();
@@ -263,7 +258,7 @@ Engine::~Engine() {
   // VBO/VAO deletion.
   if(_vao != 0) {
     glDeleteVertexArrays(1, &_vao);
-    glDeleteBuffers(1, &_vbo);
+    _buffer.destroy();
   }
 }
 
@@ -409,10 +404,10 @@ bool Engine::set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle, 
       if(0 != animation) {
         instance->_still = animation->capacity()<2;
       } else {
-        return -1;
+        return false;
       }
     } else {
-      return -1;
+      return false;
     }
     // From here, we're safe.
     // 'animation' is not null anymore.
@@ -540,10 +535,9 @@ void Engine::render() {
   glUseProgram(_program);
   glUniformMatrix4fv(_uniformMatrix, 1, GL_FALSE, glm::value_ptr(_matrix));
   glUniform1i(_uniformTexture, 0);
-  glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-  GLfloat *ptr = (GLfloat *) glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
+  GLfloat *ptr = (GLfloat *) _buffer.map(BufferObject::BUFFER_WRITE);
   memcpy(ptr, _cell, VBO_STRIDE * _count);
-  glUnmapBuffer(GL_ARRAY_BUFFER); 
+  BufferObject::unmap();
 
   // Send VAO.
   glBindVertexArray(_vao);

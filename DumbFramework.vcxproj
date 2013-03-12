@@ -97,6 +97,7 @@ xcopy $(GLEWDirectory)bin\*.dll $(TargetDir) /Y   </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\bufferobject.cpp" />
     <ClCompile Include="src\demo\breakout.cpp" />
     <ClCompile Include="src\application.cpp" />
     <ClCompile Include="src\file.cpp" />
