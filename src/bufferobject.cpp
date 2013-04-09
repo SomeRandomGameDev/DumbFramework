@@ -14,8 +14,9 @@ BufferObject::BufferObject()
  * Destructor.
  */
 BufferObject::~BufferObject()
-{}
-
+{
+	destroy();
+}
 /**
  * Create buffer object.
  * @param [in] target Target buffer type.

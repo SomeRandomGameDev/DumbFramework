@@ -112,6 +112,7 @@ xcopy $(GLEWDirectory)bin\*.dll $(TargetDir) /Y   </Command>
     <ClInclude Include="src\application.hpp" />
     <ClInclude Include="src\bufferobject.hpp" />
     <ClInclude Include="src\file.hpp" />
+    <ClInclude Include="src\mesh.hpp" />
     <ClInclude Include="src\renderobject.hpp" />
     <ClInclude Include="src\shader.hpp" />
     <ClInclude Include="src\scene.hpp" />
