@@ -12,7 +12,7 @@ class Mesh
 		Mesh();
 		~Mesh();
 
-		bool Create(std::shared_ptr<BufferObject*> vertices, std::shared_ptr<BufferObject*> indices/* [todo] default=null? */);
+		bool Create(std::shared_ptr<BufferObject> vertices, std::shared_ptr<BufferObject> indices/* [todo] default=null? */);
 		void Destroy();
 
 		bool SetAttribute(GLuint index, GLenum type, GLint size, GLsizei stride, GLsizei offset);
@@ -21,9 +21,7 @@ class Mesh
 		bool Compile();
 
 		void Draw(GLsizei count); 
-		// [todo] if(indices) drawArraysInstanced
-		//        else drawElementsInstanced
-		//
+
 	protected:
 		struct Attribute
 		{
@@ -44,11 +42,11 @@ class Mesh
 		};
 
 		// [todo] bool _status; ?
-		std::shared_ptr<BufferObject*> _vertex; ///< Vertex data.
-		std::shared_ptr<BufferObject*> _index; ///< Index data.
+		std::shared_ptr<BufferObject> _vertex; ///< Vertex data.
+		std::shared_ptr<BufferObject> _index; ///< Index data.
 		std::vector<Attribute> _attributes; ///< Vertex data attributes.
 		Primitive _primitive;
-		GLint _vao;	///< Vertex array object.
+		GLuint _vao;	///< Vertex array object.
 };
 
 #endif /* _DUMB_FW_MESH_ */
