@@ -101,6 +101,7 @@ xcopy $(GLEWDirectory)bin\*.dll $(TargetDir) /Y   </Command>
     <ClCompile Include="src\demo\breakout.cpp" />
     <ClCompile Include="src\application.cpp" />
     <ClCompile Include="src\file.cpp" />
+    <ClCompile Include="src\geometry.cpp" />
     <ClCompile Include="src\log.cpp" />
     <ClCompile Include="src\mesh.cpp" />
     <ClCompile Include="src\program.cpp" />
@@ -113,6 +114,7 @@ xcopy $(GLEWDirectory)bin\*.dll $(TargetDir) /Y   </Command>
     <ClInclude Include="src\application.hpp" />
     <ClInclude Include="src\bufferobject.hpp" />
     <ClInclude Include="src\file.hpp" />
+    <ClInclude Include="src\geometry.hpp" />
     <ClInclude Include="src\mesh.hpp" />
     <ClInclude Include="src\shader.hpp" />
     <ClInclude Include="src\scene.hpp" />
