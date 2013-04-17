@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <functional>
 #include "geometry.hpp"
 
 #define GEOMETRY_VALIDATE_STATE(expected) \
@@ -102,6 +103,8 @@ Geometry::Geometry()
 	, _attributes()
 	, _primitive()
 	, _vao(0)
+	, _drawInstanced(NULL)
+	, _drawSingle(NULL)
 {}
 
 Geometry::~Geometry()
@@ -172,7 +175,6 @@ bool Geometry::Compile()
 {
 	GEOMETRY_VALIDATE_STATE(Geometry::INITIALIZED);
 
-	// [todo] check state
 	// Sanity check
 	// [todo] make a isValid like method
 	if(!_vao)
@@ -204,17 +206,50 @@ bool Geometry::Compile()
 		if(nullptr != _primitive.buffer)
 		{
 			_primitive.buffer->bind();
+			_drawInstanced = &Geometry::DrawElementsInstanced;
+			_drawSingle = &Geometry::DrawElements;
+		}
+		else
+		{
+			_drawInstanced = &Geometry::DrawArraysInstanced;
+			_drawSingle = &Geometry::DrawArrays;
 		}
 	glBindVertexArray(0);
-	
-	// [todo] choose the right draw call.
 
 	_state = Geometry::COMPILED;
 	return true;
 }
 
+void Geometry::DrawElements()
+{
+	glDrawElements(_primitive.primitive, _primitive.count, _primitive.type, (GLvoid*)_primitive.offset);
+}
+
+void Geometry::DrawArrays()
+{
+	glDrawArrays(_primitive.primitive, 0, _primitive.count);
+}
+
+void Geometry::DrawElementsInstanced(GLsizei count)
+{
+	glDrawElementsInstanced(_primitive.primitive, _primitive.count, _primitive.type, (GLvoid*)_primitive.offset, count);
+}
+
+void Geometry::DrawArraysInstanced(GLsizei count)
+{
+	glDrawArraysInstanced(_primitive.primitive, 0, _primitive.count, count);
+}
+
+void Geometry::Draw()
+{
+	glBindVertexArray(_vao);
+		(this->*(_drawSingle))();
+	glBindVertexArray(0);
+}
+
 void Geometry::Draw(GLsizei count)
 {
-	// [todo] if(indices) drawArraysInstanced
-	//        else drawElementsInstanced
+	glBindVertexArray(_vao);
+		(this->*(_drawInstanced))(count);
+	glBindVertexArray(0);
 }

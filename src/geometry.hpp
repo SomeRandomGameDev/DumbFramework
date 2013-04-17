@@ -17,10 +17,20 @@ class Geometry
 
 		bool SetAttribute(std::shared_ptr<BufferObject> data, GLuint index, GLenum type, GLint size, GLsizei stride, GLsizei offset, GLuint divisor=0);
 		bool SetPrimitive(std::shared_ptr<BufferObject> data, GLenum primitive, GLenum type, GLint size, GLint count, GLsizei offset);
-		
+		// [todo] SetPrimitive without bufferObject
+
 		bool Compile();
 
+		void Draw();
 		void Draw(GLsizei count); 
+
+	protected:
+		void DrawElements();
+		void DrawArrays();
+		void DrawElementsInstanced(GLsizei count);
+		void DrawArraysInstanced(GLsizei count);
+		typedef void (Geometry::*DrawSingleMethod)();
+		typedef void (Geometry::*DrawInstancedMethod)(GLsizei count);
 
 	protected:
 		enum State
@@ -67,6 +77,8 @@ class Geometry
 		std::vector<Attribute> _attributes; ///< Vertex data attributes.
 		Primitive _primitive;
 		GLuint _vao;	///< Vertex array object.
+		DrawSingleMethod _drawSingle;
+		DrawInstancedMethod _drawInstanced;
 };
 
 #endif /* _DUMB_FW_GEOMETRY_ */
