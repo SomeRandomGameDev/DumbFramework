@@ -4,6 +4,8 @@
 #include <shader.hpp>
 #include <log.hpp>
 
+namespace Render {
+
 /**
  * GLSL program wrapper.
  */
@@ -154,4 +156,5 @@ GLint Program::getAttribLocation(const GLchar* name)
 	return glGetAttribLocation(_id, name);
 }
 
+}
 #endif /* _DUMB_FW_PROGRAM_ */

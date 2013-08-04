@@ -172,7 +172,7 @@ GLvoid* BufferObject::map(MappingMode mode)
 	GLvoid* ptr;
 
 	glBindBuffer(_target, _id);
-	ptr = glMapBuffer(_target, ((mode == BUFFER_READ) ? GL_MAP_READ_BIT : (GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT)) | GL_MAP_UNSYNCHRONIZED_BIT);
+	ptr = glMapBuffer(_target, ((mode == BUFFER_READ) ? GL_READ_ONLY : GL_WRITE_ONLY) | GL_MAP_UNSYNCHRONIZED_BIT);
 		
 	if(ptr == NULL)
 	{

@@ -1,13 +1,19 @@
-#version 150 core
+#version 330 core
 
 precision highp float;
 precision highp int;
 
-// [todo] block
-
-out vec4 fragData;
-
-void main()
+layout (std140) uniform Material
 {
-	fragData = vec4(1.0);
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
+    vec4 emissive;
+} material;
+
+layout (location = 0) out vec4 fragData;
+
+void main() 
+{
+	fragData = material.ambient;
 }

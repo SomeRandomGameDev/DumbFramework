@@ -5,6 +5,8 @@
 #include <config.hpp>
 #include <log.hpp>
 
+namespace Render {
+
 /**
  * GLSL Shader wrapper.
  */
@@ -67,5 +69,7 @@ class Shader
         /** Type */
         Shader::Type _type;
 };
+
+}
 
 #endif /* _DUMB_FW_SHADER_ */
