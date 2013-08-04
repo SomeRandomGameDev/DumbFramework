@@ -2,8 +2,6 @@
 #define _DUMB_FW_SHADER_
 
 #include <GL/glew.h>
-#include <GL/glfw.h>
-
 #include <config.hpp>
 #include <log.hpp>
 

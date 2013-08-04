@@ -57,6 +57,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_USE_MATH_DEFINES;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -98,30 +99,22 @@ xcopy $(GLEWDirectory)bin\*.dll $(TargetDir) /Y   </Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\bufferobject.cpp" />
-    <ClCompile Include="src\demo\breakout.cpp" />
-    <ClCompile Include="src\application.cpp" />
+    <ClCompile Include="src\demo\mattest.cpp" />
     <ClCompile Include="src\file.cpp" />
     <ClCompile Include="src\geometry.cpp" />
     <ClCompile Include="src\log.cpp" />
-    <ClCompile Include="src\mesh.cpp" />
+    <ClCompile Include="src\material.cpp" />
     <ClCompile Include="src\program.cpp" />
     <ClCompile Include="src\shader.cpp" />
-    <ClCompile Include="src\sprengine.cpp" />
-    <ClCompile Include="src\sprite.cpp" />
     <ClCompile Include="src\windowhint.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\application.hpp" />
     <ClInclude Include="src\bufferobject.hpp" />
     <ClInclude Include="src\file.hpp" />
     <ClInclude Include="src\geometry.hpp" />
-    <ClInclude Include="src\mesh.hpp" />
+    <ClInclude Include="src\material.hpp" />
     <ClInclude Include="src\shader.hpp" />
-    <ClInclude Include="src\scene.hpp" />
-    <ClInclude Include="src\sprengine.hpp" />
-    <ClInclude Include="src\sprite.hpp" />
     <ClInclude Include="src\windowhint.hpp" />
-    <ClInclude Include="src\xml.hpp" />
     <ClInclude Include="src\config.hpp" />
     <ClInclude Include="src\log.hpp" />
     <ClInclude Include="src\program.hpp" />

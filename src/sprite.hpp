@@ -1,9 +1,13 @@
 #ifndef _DUMB_FW_SPRITE_
 #define _DUMB_FW_SPRITE_
 
-#include <GL/glfw.h>
+#include <program.hpp>
+
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+
 #include <xml.hpp>
+
 
 namespace Sprite {
 
@@ -263,6 +267,31 @@ private:
 // Each progression step seek to update sprite instance with correct frame.
 //
 
+class Entity
+{
+	public:
+		Entity();
+		Entity(const Entity& entity);
+		~Entity();
+
+		Entity& operator=(const Entity& entity);
+
+		const glm::vec3& GetPosition() const;
+		void SetPosition(const glm::vec3& position);
+
+		const glm::quat& GetOrientation() const;
+		void SetOrientation(const glm::quat& orientation);
+		
+		// void set/get program
+
+	private:
+		glm::vec3 m_position;
+		glm::quat m_orientation;
+		Program   m_program;
+		// Materials
+		// Mesh
+		// Bones
+};
 
 }
 
