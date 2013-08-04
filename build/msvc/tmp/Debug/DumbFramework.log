@@ -1,0 +1,58 @@
+﻿La génération a démarré 04/08/2013 23:16:30.
+     1>Projet "D:\Dev\DumbFramework\DumbFramework.vcxproj" sur le nœud 2 (build cible(s)).
+     1>InitializeBuildStatus:
+         Création de "D:\Dev\DumbFramework\\build\msvc\tmp\Debug\DumbFramework.unsuccessfulbuild", car "AlwaysCreate" a été spécifié.
+       PreBuildEvent:
+         xcopy D:\Dev\DumbFramework\..\contrib\pthread\dll\x86\*.dll D:\Dev\DumbFramework\build\msvc\Debug\ /Y 
+         xcopy D:\Dev\DumbFramework\..\contrib\Expat\Bin\*.dll D:\Dev\DumbFramework\build\msvc\Debug\ /Y 
+         xcopy D:\Dev\DumbFramework\..\contrib\glfw\lib-msvc100\*.dll D:\Dev\DumbFramework\build\msvc\Debug\ /Y 
+         xcopy D:\Dev\DumbFramework\..\contrib\glew\32\bin\*.dll D:\Dev\DumbFramework\build\msvc\Debug\ /Y   
+         :VCEnd
+         D:\Dev\DumbFramework\..\contrib\pthread\dll\x86\pthreadGC2.dll
+         D:\Dev\DumbFramework\..\contrib\pthread\dll\x86\pthreadGCE2.dll
+         D:\Dev\DumbFramework\..\contrib\pthread\dll\x86\pthreadVC2.dll
+         D:\Dev\DumbFramework\..\contrib\pthread\dll\x86\pthreadVCE2.dll
+         D:\Dev\DumbFramework\..\contrib\pthread\dll\x86\pthreadVSE2.dll
+         5 fichier(s) copié(s)
+         D:\Dev\DumbFramework\..\contrib\Expat\Bin\libexpat.dll
+         D:\Dev\DumbFramework\..\contrib\Expat\Bin\libexpatw.dll
+         2 fichier(s) copié(s)
+         D:\Dev\DumbFramework\..\contrib\glfw\lib-msvc100\GLFW.dll
+         1 fichier(s) copié(s)
+         D:\Dev\DumbFramework\..\contrib\glew\32\bin\glew32.dll
+         D:\Dev\DumbFramework\..\contrib\glew\32\bin\glew32mx.dll
+         2 fichier(s) copié(s)
+       ClCompile:
+         d:\Softs\Microsoft Visual C++\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D _CRT_SECURE_NO_WARNINGS /D _USE_MATH_DEFINES /D _UNICODE /D UNICODE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"D:\Dev\DumbFramework\\build\msvc\tmp\Debug\\" /Fd"D:\Dev\DumbFramework\\build\msvc\tmp\Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt src\demo\mattest.cpp
+         mattest.cpp
+       Link:
+         d:\Softs\Microsoft Visual C++\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Dev\DumbFramework\\build\msvc\Debug\DumbFramework.exe" /NOLOGO SOIL.lib libexpat.lib opengl32.lib glu32.lib GLFW.lib GLFWDLL.lib glew32.lib pthreadVCE2.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /MANIFEST /ManifestFile:"D:\Dev\DumbFramework\\build\msvc\tmp\Debug\DumbFramework.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\Dev\DumbFramework\build\msvc\Debug\DumbFramework.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\Dev\DumbFramework\\build\msvc\Debug\DumbFramework.lib" /MACHINE:X86 D:\Dev\DumbFramework\\build\msvc\tmp\Debug\bufferobject.obj
+         D:\Dev\DumbFramework\\build\msvc\tmp\Debug\mattest.obj
+         D:\Dev\DumbFramework\\build\msvc\tmp\Debug\file.obj
+         D:\Dev\DumbFramework\\build\msvc\tmp\Debug\geometry.obj
+         D:\Dev\DumbFramework\\build\msvc\tmp\Debug\log.obj
+         D:\Dev\DumbFramework\\build\msvc\tmp\Debug\material.obj
+         D:\Dev\DumbFramework\\build\msvc\tmp\Debug\program.obj
+         D:\Dev\DumbFramework\\build\msvc\tmp\Debug\shader.obj
+         D:\Dev\DumbFramework\\build\msvc\tmp\Debug\windowhint.obj
+         LINK : D:\Dev\DumbFramework\\build\msvc\Debug\DumbFramework.exe introuvable ou non généré par la dernière édition de liens incrémentielle ; édition de liens complète en cours
+     1>LINK : warning LNK4098: conflit entre la bibliothèque par défaut 'MSVCRT' et les autres bibliothèques ; utilisez /NODEFAULTLIB:library
+         DumbFramework.vcxproj -> D:\Dev\DumbFramework\\build\msvc\Debug\DumbFramework.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"D:\Dev\DumbFramework\\build\msvc\Debug\DumbFramework.exe;#1" /manifest D:\Dev\DumbFramework\\build\msvc\tmp\Debug\DumbFramework.exe.intermediate.manifest
+       PostBuildEvent:
+         xcopy D:\Dev\DumbFramework\resources D:\Dev\DumbFramework\build\msvc\Debug\resources /Y /S /I
+         :VCEnd
+         D:\Dev\DumbFramework\resources\breakout.png
+         D:\Dev\DumbFramework\resources\breakout.svg
+         D:\Dev\DumbFramework\resources\materialTest.fs
+         D:\Dev\DumbFramework\resources\std.vs
+         4 fichier(s) copié(s)
+       FinalizeBuildStatus:
+         Suppression du fichier "D:\Dev\DumbFramework\\build\msvc\tmp\Debug\DumbFramework.unsuccessfulbuild".
+         Mise à jour de l'horodatage "D:\Dev\DumbFramework\\build\msvc\tmp\Debug\DumbFramework.lastbuildstate".
+     1>Génération du projet "D:\Dev\DumbFramework\DumbFramework.vcxproj" terminée (build cible(s)).
+
+La génération a réussi.
+
+Temps écoulé 00:00:01.54
