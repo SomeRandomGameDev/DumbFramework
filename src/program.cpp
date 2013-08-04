@@ -2,6 +2,8 @@
 
 #include <stdarg.h>
 
+namespace Render {
+
 /**
  * Constructor.
  */
@@ -206,4 +208,6 @@ void Program::bindParameters(ParameterInfo const * input, size_t inputCount, Par
 void Program::transformFeedbackVaryings(const char** varyingNames, int varyingNameCount, bool interleaved)
 {
 	glTransformFeedbackVaryings(_id, varyingNameCount, varyingNames, (interleaved ? GL_INTERLEAVED_ATTRIBS : GL_SEPARATE_ATTRIBS));
+}
+
 }

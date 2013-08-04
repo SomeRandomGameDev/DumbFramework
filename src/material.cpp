@@ -97,24 +97,27 @@ bool Material::TextureId(unsigned int unit, GLuint id)
 bool Material::Create(GLuint shaderId)
 {
 	// Setup uniform buffer
-	const GLchar* colorsUniformNames[] = 
+	const GLchar* colorsUniformNames[4] = 
 	{
-		"Material.ambient",
-		"Material.diffuse",
-		"Material.specular",
-		"Material.emissive",
+		"material.ambient",
+		"material.diffuse",
+		"material.specular",
+		"material.emissive",
 	};
 
 	GLuint colorsUniformIndices[4];
 
+	_shader = shaderId;
+
 	glGenBuffers (1, &_colorsUBO);
 	glBindBuffer (GL_UNIFORM_BUFFER, _colorsUBO);
 	{
-		glGetUniformIndices (_shader, 4, colorsUniformNames, colorsUniformIndices);
-		glGetActiveUniformsiv (_shader, 4, colorsUniformIndices, GL_UNIFORM_OFFSET, _colorsOffset);
-			
+		// [todo] check errors
 		_colorsBlockIndex = glGetUniformBlockIndex (_shader, "Material");
 		glGetActiveUniformBlockiv(_shader, _colorsBlockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &_colorsBlockSize);
+
+		glGetUniformIndices (_shader, 4, colorsUniformNames, colorsUniformIndices);	
+		glGetActiveUniformsiv (_shader, 4, colorsUniformIndices, GL_UNIFORM_OFFSET, _colorsOffset);
 			
 		glBufferData(GL_UNIFORM_BUFFER, _colorsBlockSize, NULL, GL_DYNAMIC_DRAW);
 		glUniformBlockBinding (_shader, _colorsBlockIndex, 0); // [todo] static const GLuint _colorsBindingId = 0
@@ -168,7 +171,7 @@ void Material::Bind()
 	{
 		GLubyte* ptr;
 		GLfloat *color;
-		ptr = (GLubyte*)glMapBuffer(GL_UNIFORM_BUFFER, (GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT) | GL_MAP_UNSYNCHRONIZED_BIT);
+		ptr = (GLubyte*)glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
 			
 		for(size_t i=0; i<4; i++)
 		{

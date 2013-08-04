@@ -1,5 +1,7 @@
 #include "shader.hpp"
 
+namespace Render {
+
 /** Constructor. */
 Shader::Shader()
     : _id(0)
@@ -71,7 +73,7 @@ bool Shader::create(Shader::Type type, char const * in)
 
     GLint result;
     glGetShaderiv(_id, GL_COMPILE_STATUS, &result);
-    if(GL_FALSE == _id)
+    if(GL_FALSE == result)
     {
         infoLog();
         return false;
@@ -149,3 +151,4 @@ void Shader::infoLog() const
     delete [] log;
 }
 
+}
