@@ -6,6 +6,8 @@
 #include "bufferobject.hpp"
 #include "program.hpp"
 
+namespace Render {
+
 class Geometry
 {
 	public:
@@ -80,5 +82,7 @@ class Geometry
 		DrawSingleMethod _drawSingle;
 		DrawInstancedMethod _drawInstanced;
 };
+
+}
 
 #endif /* _DUMB_FW_GEOMETRY_ */

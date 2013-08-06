@@ -1,6 +1,8 @@
 #include "log.hpp"
 #include "bufferobject.hpp"
 
+namespace Render {
+
 /**
  * Constructor.
  */
@@ -213,4 +215,6 @@ GLvoid* BufferObject::mapRange(MappingMode mode, GLintptr offset, GLsizei size)
 void BufferObject::unmap()
 {
 	glUnmapBuffer(GL_TEXTURE_BUFFER);
+}
+
 }

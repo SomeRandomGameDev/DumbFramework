@@ -38,7 +38,7 @@ bool Program::create()
  * @param [in] shader Shader to attach.
  */
 bool Program::attach(const Shader& shader)
-{
+{ 
 	if(_id == 0)
 	{
 		Log_Error(ModuleID::RENDER, "Can't attach shader to an uninitialized program!");
@@ -75,8 +75,6 @@ bool Program::link()
 		infoLog();
 		return false;
 	}
-	
-	return true;
 }
 
 /**

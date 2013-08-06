@@ -12,6 +12,8 @@ do \
 	} \
 } while(0);
 
+namespace Render {
+
 Geometry::Attribute::Attribute()
 	: buffer(nullptr)
 	, index(0)
@@ -252,4 +254,6 @@ void Geometry::Draw(GLsizei count)
 	glBindVertexArray(_vao);
 		(this->*(_drawInstanced))(count);
 	glBindVertexArray(0);
+}
+
 }

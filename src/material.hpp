@@ -2,7 +2,7 @@
 #define _DUMB_FW_MATERIAL_
 
 #include <GL/glew.h>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp> 
@@ -17,28 +17,31 @@ namespace Render
 			Material();
 			~Material();
 
-			bool Create(GLuint shaderId);
-			void Destroy();
+			bool create(GLuint shaderId);
+			void destroy();
 
-			void Bind();
-			void Unbind();
+			void bind();
+			void unbind();
 
-			const glm::vec4& Ambient() const;
-			void Ambient(const glm::vec4& color);
+			const glm::vec4& ambient() const;
+			void ambient(const glm::vec4& color);
 
-			const glm::vec4& Diffuse() const;
-			void Diffuse(const glm::vec4& color);
+			const glm::vec4& diffuse() const;
+			void diffuse(const glm::vec4& color);
 
-			const glm::vec4& Specular() const;
-			void Specular(const glm::vec4& color);
+			const glm::vec4& specular() const;
+			void specular(const glm::vec4& color);
 
-			const glm::vec4& Emissive() const;
-			void Emissive(const glm::vec4& color);
+			const glm::vec4& emissive() const;
+			void emissive(const glm::vec4& color);
 
-			GLuint ShaderId() const;
+			GLuint shaderId() const;
 
-			GLuint TextureId(unsigned int unit) const;
-			bool TextureId(unsigned int unit, GLuint id);
+			GLuint textureId(unsigned int unit) const;
+			bool textureId(unsigned int unit, GLuint id);
+
+			GLuint bufferId() const { return _colorsUBO; } // [todo] remove
+			GLuint blockIndex() const { return _colorsBlockIndex; } // [todo] remove
 
 		public:
 			enum

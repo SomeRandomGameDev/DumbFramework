@@ -1,10 +1,11 @@
-#version 330 core  
+#version 400 core  
 
 precision highp float;
 precision highp int;
 
+layout(location = 0) in vec4 iPosition;
+
 uniform mat4 g_ModelviewProjection;
-in vec4 iPosition;
 
 void main()
 {

@@ -2,10 +2,12 @@
 #define _DUMB_FW_BUFFER_OBJECT_
 
 #include <GL/glew.h>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 #include <config.hpp>
 #include <log.hpp>
+
+namespace Render {
 
 /**
  * Buffer object.
@@ -136,6 +138,8 @@ class BufferObject
 inline const GLvoid* BufferObject::offset(GLint off)
 {
 	return (char*)NULL + off;
+}
+
 }
 
 #endif /* _DUMB_FW_BUFFER_OBJECT_ */
