@@ -1,11 +1,8 @@
-#version 420 core
+#version 330
 
-precision highp float;
-precision highp int;
+layout(location=0) out vec4 fragColor;
 
-layout (location = 0) out vec4 fragColor;
-
-void main() 
+void main()
 {
-	fragColor = vec4(1.0);
+    fragColor = vec4(0.0, 1.0, 0.0, 1.0);
 }

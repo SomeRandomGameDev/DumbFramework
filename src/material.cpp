@@ -118,11 +118,14 @@ bool Material::create(GLuint shaderId)
 
 	glGenBuffers (1, &_colorsUBO);
 	glBindBuffer (GL_UNIFORM_BUFFER, _colorsUBO);
-	glBufferData(GL_UNIFORM_BUFFER, _colorsBlockSize, NULL, GL_DYNAMIC_DRAW);	
+	glBufferData (GL_UNIFORM_BUFFER, _colorsBlockSize, NULL, GL_DYNAMIC_DRAW);	
 	glBindBuffer (GL_UNIFORM_BUFFER, 0);
 	
+	GLuint bindingPoint = 0;
+	glBindBufferBase( GL_UNIFORM_BUFFER, bindingPoint, _colorsUBO);
+	glUniformBlockBinding(_shader, _colorsBlockIndex, bindingPoint);
+
 	// Associate samplers with texture units.
-/*
 	char textureUniformName[16];
 	GLint uid;
 	glUseProgram(_shader);
@@ -132,8 +135,6 @@ bool Material::create(GLuint shaderId)
 		uid = glGetUniformLocation(_shader, textureUniformName);
 		glUniform1i(uid, i);
 	}
-*/
-	glUseProgram(0);
 
 	return true;
 }
@@ -164,36 +165,32 @@ void Material::destroy()
 void Material::bind()
 {
 	// Bind and update colors.
-//	if(_updateNeeded)
+	if(_updateNeeded)
 	{
 		glBindBuffer(GL_UNIFORM_BUFFER, _colorsUBO);
 
 		GLubyte* ptr;
 		GLfloat *color;
-		ptr = (GLubyte*)glMapBufferRange(GL_UNIFORM_BUFFER, 0, 4*sizeof(glm::vec4), GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+		ptr = (GLubyte*)glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
 		if(ptr)
 		{
 			color = reinterpret_cast<GLfloat*>(ptr);
 			for(size_t i=0; i<4; i++)
 			{
 				color = reinterpret_cast<GLfloat*>(ptr+_colorsOffset[i]);
-				*(glm::vec4*)color = _colors[i];
+				memcpy(color, glm::value_ptr(_colors[i]), sizeof(float[4]));
 			}
 
 			glUnmapBuffer(GL_UNIFORM_BUFFER);
 		}
-
-		glBindBuffer (GL_UNIFORM_BUFFER, 0);
 	}
 
-/*
 	// Bind textures.
 	for(size_t i=0; i<MATERIAL_MAX_TEXTURE_UNITS; i++)
 	{
 		glActiveTexture(GL_TEXTURE0+i);
 		glBindTexture(GL_TEXTURE_2D, _texture[i]); // [todo]
 	}
-*/
 }
 
 void Material::unbind()

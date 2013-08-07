@@ -1,9 +1,9 @@
-#version 420 core
+#version 330 core
 
 precision highp float;
 precision highp int;
 
-layout (location = 0) out vec4 fragColor;
+layout(location=0) out vec4 fragColor;
 
 layout (std140) uniform Material
 {
@@ -15,5 +15,5 @@ layout (std140) uniform Material
 
 void main() 
 {
-	fragColor = material.ambient.gggg;
+  fragColor = material.ambient;
 }

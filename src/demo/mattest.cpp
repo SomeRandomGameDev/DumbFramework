@@ -32,9 +32,6 @@ int main()
 	GLenum err = glewInit();
 
 	err = glGetError();
-
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
 	
 	Render::Shader vertShader, fragShader;
 
@@ -49,6 +46,8 @@ int main()
 	
 	vertShader.create(Render::Shader::VERTEX_SHADER, data.c_str());
 
+	data.clear();
+
 	input.open("resources/materialTest.fs", File::READ_ONLY);
 //	input.open("resources/std.fs", File::READ_ONLY);
 	data.resize(input.size()+1);
@@ -59,16 +58,19 @@ int main()
 
 	Render::Program prog;
 	prog.create();
-	prog.attach(fragShader);
 	prog.attach(vertShader);
+	prog.attach(fragShader);
 	prog.link();
+	
+	vertShader.destroy();
+	fragShader.destroy();
 
 	GLfloat vertexData[] = 
 	{
-		-0.5f,-0.5f, 1.0f,
-		-0.5f, 0.5f, 1.0f,
-		 0.5f,-0.5f, 1.0f,
-		 0.5f, 0.5f, 1.0f,
+		 0.25f, 0.25f,-1.0f,
+		 0.25f, 0.75f,-1.0f,
+		 0.75f, 0.25f,-1.0f,
+		 0.75f, 0.75f,-1.0f,
     };
 	Render::BufferObject quad;
 	quad.create(GL_ARRAY_BUFFER, 3*4*sizeof(GLfloat) ,GL_STATIC_DRAW ,vertexData);
@@ -76,35 +78,36 @@ int main()
 	GLuint vao = 0;
 	glGenVertexArrays (1, &vao);
 	glBindVertexArray (vao);
-	glEnableVertexAttribArray (0);
 	quad.bind();
-	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte*)NULL);
+	glEnableVertexAttribArray (0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (GLubyte*)0);
 	glBindVertexArray (0);
-	quad.unbind();
-
+	
 	Render::Material mat;
 	mat.create(prog.getId());
-	mat.ambient(glm::vec4(0.0, 1.0, 0.0, 1.0));
-
+	mat.ambient(glm::vec4(0.0, 0.0, 1.0, 1.0));
+	
 	GLint modelviewProjectionId = glGetUniformLocation(prog.getId(), "g_ModelviewProjection");
-	glm::mat4 proj = glm::ortho<float>(0.0, WINDOW_WIDTH, 0.0, WINDOW_HEIGHT, 0.1, 10.0);
+	glm::mat4 proj = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, 0.1f, 10.0f);
+	
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	glClearColor(1.0, 0.0, 0.0, 0.0);
+
 	do
 	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDrawBuffer(GL_BACK);
 		glClear(GL_COLOR_BUFFER_BIT);
-	
-		mat.bind();
 
 		prog.begin();
 			glUniformMatrix4fv(modelviewProjectionId, 1, GL_FALSE, glm::value_ptr(proj));
-		
-			glUniformBlockBinding(prog.getId(), mat.blockIndex(), 0);
-			glBindBufferBase(GL_UNIFORM_BUFFER, 0, mat.bufferId());
-		
-			glBindVertexArray (vao);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			mat.bind();
+				glBindVertexArray (vao);
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			mat.unbind();
 		prog.end();
 		
 		glfwSwapBuffers(window);
@@ -114,8 +117,6 @@ int main()
 	mat.destroy();
 	 
 	prog.destroy();
-	vertShader.destroy();
-	fragShader.destroy();
 
 	quad.destroy();
 
