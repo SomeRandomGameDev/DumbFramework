@@ -28,6 +28,12 @@ struct BoundingSphere
 	 *  @param [in] r  Bounding sphere radius.
 	 */
 	BoundingSphere(const glm::vec3 c, float r);
+	/** Constructor
+	 *  @param [in] buffer Pointer to the point array.
+	 *  @param [in] count  Number of points 
+	 *  @param [in] stride Offset between two consecutive points. (default=0)
+	 */
+	BoundingSphere(const float* buffer, size_t count, size_t stride=0);
 	/** Copy constructor.
 	 *  @param [in] sphere Source bounding sphere.
 	 */
@@ -40,9 +46,17 @@ struct BoundingSphere
 	
 	/** Check if the current bounding sphere contains the specified bounding sphere. */
 	ContainmentType::Value Contains(const BoundingSphere& sphere);
+	/** Check if the current bounding sphere contains the specified list of points.
+	  * @param [in] buffer Pointer to the point array.
+	  * @param [in] count  Number of points 
+	  * @param [in] stride Offset between two consecutive points. (default=0)
+	  */
+	ContainmentType::Value Contains(const float* buffer, size_t count, size_t stride=0);
+	/** Check if the current bounding sphere contains the specified point.
+	  * @param [in] point Point to be tested.
+	  */
+	ContainmentType::Value Contains(const glm::vec3& point);
 
-	// [todo] build from point set
-	// [todo] point set and single point containment
 	// [todo] MORE!
 
     /** Center  */

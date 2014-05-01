@@ -16,6 +16,28 @@ BoundingSphere::BoundingSphere(const glm::vec3 c, float r)
 	: center(c)
 	, radius(r)
 {}
+/** Constructor
+ *  @param [in] buffer Pointer to the point array.
+ *  @param [in] count  Number of points 
+ *  @param [in] stride Offset between two consecutive points. (default=0)
+ */
+BoundingSphere::BoundingSphere(const float* buffer, size_t count, size_t stride)
+{
+	off_t offset, inc;
+	glm::vec3 pmin, pmax;
+	
+	pmin = pmax = glm::vec3(buffer[0], buffer[1], buffer[2]);
+	inc = stride + 3;
+	offset = inc;
+	for(size_t i=1; i<count; i++, offset+=inc)
+	{
+		glm::vec3 dummy(buffer[offset], buffer[offset+1], buffer[offset+2]);
+		pmin = glm::min(pmin, dummy);
+		pmax = glm::max(pmax, dummy);
+	}
+	center = (pmin+pmax) / 2.0f;
+	radius = glm::distance(pmin, pmax) / 2.0f;
+}
 /** Copy constructor.
  *  @param [in] sphere Source bounding sphere.
  */
@@ -36,8 +58,38 @@ BoundingSphere& BoundingSphere::operator= (const BoundingSphere& sphere)
 ContainmentType::Value BoundingSphere::Contains(const BoundingSphere& sphere)
 {
 	float distance = glm::distance(center, sphere.center);
-	if(distance < (radius-sphere.radius)) return ContainmentType::Contains;
-	if(distance > (radius+sphere.radius)) return ContainmentType::Disjoints;
+	if(distance < (radius-sphere.radius)) { return ContainmentType::Contains;  }
+	if(distance > (radius+sphere.radius)) { return ContainmentType::Disjoints; }
+	return ContainmentType::Intersects;
+}
+/** Check if the current bounding sphere contains the specified list of points.
+ * @param [in] buffer Pointer to the point array.
+ * @param [in] count  Number of points
+ * @param [in] stride Offset between two consecutive points. (default=0) 
+ */
+ContainmentType::Value BoundingSphere::Contains(const float* buffer, size_t count, size_t stride)
+{
+	off_t offset = 0, inc = stride + 3;
+	size_t inside = 0;
+	for(size_t i=0; i<count; i++, offset+=inc)
+	{
+		glm::vec3 point(buffer[offset], buffer[offset+1], buffer[offset+2]);
+		float distance = glm::distance(center, point);
+		inside += (radius < distance) ? 0 : 1;
+	}
+
+	if(inside == 0) { return ContainmentType::Disjoints;  }
+	if(inside < count) { return ContainmentType::Intersects; }
+	return ContainmentType::Contains;
+}
+/** Check if the current bounding sphere contains the specified point.
+ * @param [in] point Point to be tested.
+ */
+ContainmentType::Value BoundingSphere::Contains(const glm::vec3& point)
+{
+	float distance = glm::distance(center, point);
+	if(distance < radius) { return ContainmentType::Contains;  }
+	if(distance > radius) { return ContainmentType::Disjoints; }
 	return ContainmentType::Intersects;
 }
 
