@@ -90,6 +90,11 @@ public:
 private:
 
   /**
+   * Window hendle.
+   */
+  GLFWwindow* _window;
+
+  /**
    * Desired width in pixels.
    */
   int _width;

@@ -1,7 +1,8 @@
 #include <windowhint.hpp>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 WindowHint::WindowHint() {
+  _window = NULL;
   _width = 640;
   _height = 480;
   _red = _blue = _green = _alpha = 0;
@@ -22,11 +23,10 @@ WindowHint::WindowHint(int w, int h, std::string &title) {
 }
 
 bool WindowHint::openWindow() {
-  bool result = glfwOpenWindow(_width, _height, _red,
-                               _green, _blue, _alpha,
-                               _depth, _stencil, _mode);
-  if(result) {
-    glfwSetWindowTitle(_title.c_str());
+  _window = glfwCreateWindow(_width, _height, _title.c_str(), NULL, NULL); // [todo] monitor + share
+  if(_window == NULL)
+  {
+	  return false;
   }
-  return result;
+  return true;
 }
