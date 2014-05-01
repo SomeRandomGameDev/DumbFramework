@@ -38,6 +38,18 @@ BoundingSphere::BoundingSphere(const float* buffer, size_t count, size_t stride)
 	center = (pmin+pmax) / 2.0f;
 	radius = glm::distance(pmin, pmax) / 2.0f;
 }
+/** Constructor.
+ *  Merge two bounding spheres.
+ */
+BoundingSphere::BoundingSphere(const BoundingSphere& s0, const BoundingSphere& s1)
+{
+	BoundingSphere merged;
+	float distance = glm::distance(s0.center, s1.center);
+	float dr = s1.radius - s0.radius;
+
+	radius = (distance + s0.radius + s1.radius) / 2.0f;
+	center = (((distance - dr) * s0.center) + ((distance + dr) * s1.center)) / (2.0f * distance);
+}
 /** Copy constructor.
  *  @param [in] sphere Source bounding sphere.
  */
@@ -55,7 +67,7 @@ BoundingSphere& BoundingSphere::operator= (const BoundingSphere& sphere)
 	return *this;
 }	
 /** Check if the current bounding sphere contains the specified bounding sphere. */
-ContainmentType::Value BoundingSphere::Contains(const BoundingSphere& sphere)
+ContainmentType::Value BoundingSphere::contains(const BoundingSphere& sphere)
 {
 	float distance = glm::distance(center, sphere.center);
 	if(distance < (radius-sphere.radius)) { return ContainmentType::Contains;  }
@@ -67,7 +79,7 @@ ContainmentType::Value BoundingSphere::Contains(const BoundingSphere& sphere)
  * @param [in] count  Number of points
  * @param [in] stride Offset between two consecutive points. (default=0) 
  */
-ContainmentType::Value BoundingSphere::Contains(const float* buffer, size_t count, size_t stride)
+ContainmentType::Value BoundingSphere::contains(const float* buffer, size_t count, size_t stride)
 {
 	off_t offset = 0, inc = stride + 3;
 	size_t inside = 0;
@@ -85,7 +97,7 @@ ContainmentType::Value BoundingSphere::Contains(const float* buffer, size_t coun
 /** Check if the current bounding sphere contains the specified point.
  * @param [in] point Point to be tested.
  */
-ContainmentType::Value BoundingSphere::Contains(const glm::vec3& point)
+ContainmentType::Value BoundingSphere::contains(const glm::vec3& point)
 {
 	float distance = glm::distance(center, point);
 	if(distance < radius) { return ContainmentType::Contains;  }
