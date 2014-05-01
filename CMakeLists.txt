@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 2.6)
 
 project(DumbFramework)
 
+option(BUILD_TESTS "Build unit tests." OFF)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 if(MSVC)
@@ -31,6 +33,11 @@ set(DumbFrameworkSources
     src/log.cpp)
 
 add_library(DumbFramework STATIC ${DumbFrameworkSources})
+
+if(BUILD_TESTS)
+    #add_subdirectory(externals/unittest-cpp)
+    #add_executable(RunTests src/test/run.cpp ${DumbFrameworkSources})
+endif()
 
 # target_link_libraries(todo ${OPENGL_LIBRARIES} )
 # target_link_libraries(todo ${GLFW_LIBRARIES} )
