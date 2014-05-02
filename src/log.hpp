@@ -41,7 +41,6 @@ namespace Log
 	 */
 	struct OutputPolicyBase
 	{
-		OutputPolicyBase() {}
 		virtual ~OutputPolicyBase() {}
 		virtual bool write(std::string & msg) = 0;
 	};

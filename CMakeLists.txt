@@ -25,18 +25,27 @@ include_directories( ${PTHREADS_INCLUDE_DIR}
                      ${GLFW_INCLUDE_DIR}
                      ${GLEW_INCLUDE_DIRS}
                      ${GLM_INCLUDE_DIRS}
-                     ${CMAKE_CURRENT_SOURCE_DIR} src/)
+                     ${CMAKE_CURRENT_SOURCE_DIR} 
+                     src/)
 
-set(DumbFrameworkSources
+set(DUMB_FRAMEWORK_SOURCES
     src/boundingsphere.cpp
     src/file.cpp
     src/log.cpp)
 
-add_library(DumbFramework STATIC ${DumbFrameworkSources})
+add_library(DumbFramework STATIC ${DUMB_FRAMEWORK_SOURCES})
 
 if(BUILD_TESTS)
-    #add_subdirectory(externals/unittest-cpp)
-    #add_executable(RunTests src/test/run.cpp ${DumbFrameworkSources})
+    find_package(UnitTest++)
+
+    include_directories( ${UNITTEST++_INCLUDE_DIR} )
+
+    set(DUMB_FRAMEWORK_TEST_SOURCES
+        src/test/boundingsphere.cpp
+        src/test/runtests.cpp)
+    
+    add_executable(RunTests ${DUMB_FRAMEWORK_TEST_SOURCES} ${DUMB_FRAMEWORK_SOURCES})
+    target_link_libraries(RunTests ${PTHREADS_LIBRARY} ${UNITTEST++_LIBRARY})
 endif()
 
 # target_link_libraries(todo ${OPENGL_LIBRARIES} )
