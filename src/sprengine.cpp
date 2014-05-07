@@ -1,5 +1,5 @@
 #include <GL/glew.h>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -535,9 +535,9 @@ void Engine::render() {
   glUseProgram(_program);
   glUniformMatrix4fv(_uniformMatrix, 1, GL_FALSE, glm::value_ptr(_matrix));
   glUniform1i(_uniformTexture, 0);
-  GLfloat *ptr = (GLfloat *) _buffer.map(BufferObject::BUFFER_WRITE);
+  GLfloat *ptr = (GLfloat *) _buffer.map(Render::BufferObject::BUFFER_WRITE);
   memcpy(ptr, _cell, VBO_STRIDE * _count);
-  BufferObject::unmap();
+  Render::BufferObject::unmap();
 
   // Send VAO.
   glBindVertexArray(_vao);

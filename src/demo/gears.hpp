@@ -2,7 +2,7 @@
 #define _DUMB_FW_DEMO_GEARS_
 
 #include <scene.hpp>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 class GearScene : public Scene {
 public:
@@ -10,9 +10,9 @@ public:
 
   void handleMouseButtonAction(int button, int action);
 
-  void handleMousePositionAction(int x, int y);
+  void handleMousePositionAction(double x, double y);
 
-  void handleMouseWheelAction(int pos);
+  void handleMouseWheelAction(double x, double y);
 
   void handleWindowSize(int width, int height);
 

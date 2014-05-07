@@ -180,7 +180,7 @@ GLvoid* BufferObject::map(MappingMode mode)
 	{
 		GLenum err = glGetError();
 		Log_Error(ModuleID::RENDER, "An error occured while mapping buffer object %d: %s", _id, gluErrorString(err));
-		return false;
+		return 0;
 	}
 
 	return ptr;
@@ -203,7 +203,7 @@ GLvoid* BufferObject::mapRange(MappingMode mode, GLintptr offset, GLsizei size)
 	{
 		GLenum err = glGetError();
 		Log_Error(ModuleID::RENDER, "An error occured while mapping buffer object %d: %s", _id, gluErrorString(err));
-		return false;
+		return 0;
 	}
 
 	return ptr;

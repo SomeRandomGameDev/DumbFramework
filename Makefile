@@ -1,6 +1,6 @@
 # Build in release mode by default.
 # Use "make DEBUG=1" to build in debug mode.
-CC := g++
+CC := clang++
 ECHO := echo
 RM := rm
 CD := cd
@@ -9,7 +9,7 @@ TAR := tar
 BUILD_DIR := build/GNU
 
 OUTDIR := $(BUILD_DIR)
-CFLAGS := -W -Wall -Isrc
+CFLAGS := -W -Wall -Isrc -std=c++11
 DEBUG ?= 1
 ifeq ($(DEBUG), 1)
 OUTDIR := $(OUTDIR)/Debug
@@ -20,7 +20,7 @@ CFLAGS += -s
 endif
 OBJDIR := $(OUTDIR)/obj
 
-LIBS := -lglfw -lGLEW -lSOIL -lexpat -lm
+LIBS := -lGL -lGLU -lglfw -lGLEW -lSOIL -lexpat -lm
 
 SRC := $(wildcard src/*.cpp)
 OBJFILES := $(SRC:.cpp=.o)
