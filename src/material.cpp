@@ -131,7 +131,7 @@ bool Material::create(GLuint shaderId)
 	glUseProgram(_shader);
 	for(size_t i=0; i<MATERIAL_MAX_TEXTURE_UNITS; i++)
 	{
-		sprintf(textureUniformName, "Channel%0d", i);
+		sprintf(textureUniformName, "Channel%0zu", i);
 		uid = glGetUniformLocation(_shader, textureUniformName);
 		glUniform1i(uid, i);
 	}

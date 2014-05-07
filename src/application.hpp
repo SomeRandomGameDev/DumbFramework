@@ -57,6 +57,10 @@ private:
    */
   bool _running;
 
+  /**
+   * Copy of the initial window hints.
+   */
+  WindowHint _hint;
 private:
 
   /**
@@ -67,32 +71,32 @@ private:
   /**
    * Wrapper to key event callback.
    */
-  static void handleKey(int, int);
+  static void handleKey(GLFWwindow*, int, int);
 
   /**
    * Wrapper to mouse button event callback.
    */
-  static void handleMouseButton(int, int);
+  static void handleMouseButton(GLFWwindow*, int, int);
 
   /**
    * Wrapper to mouse position event callback.
    */
-  static void handleMousePosition(int, int);
+  static void handleMousePosition(GLFWwindow*, double, double);
 
   /**
    * Wrapper to mouse wheel event callback.
    */
-  static void handleMouseWheel(int);
+  static void handleMouseWheel(GLFWwindow*, double, double);
 
   /**
    * Wrapper to window closing event callback.
    */
-  static int handleWindowClose();
+  static void handleWindowClose(GLFWwindow *);
 
   /**
    * Wrapper to window resizing event callback.
    */
-  static void handleWindowSize(int, int);
+  static void handleWindowSize(GLFWwindow *, int, int);
 
 };
 

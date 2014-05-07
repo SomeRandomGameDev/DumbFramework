@@ -164,10 +164,10 @@ void GearScene::handleKeyAction(int key, int action) {
 void GearScene::handleMouseButtonAction(int, int) {
 }
 
-void GearScene::handleMousePositionAction(int, int) {
+void GearScene::handleMousePositionAction(double, double) {
 }
 
-void GearScene::handleMouseWheelAction(int) {
+void GearScene::handleMouseWheelAction(double, double) {
 }
 
 void GearScene::handleWindowSize(int width, int height) {

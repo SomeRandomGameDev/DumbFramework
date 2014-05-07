@@ -287,7 +287,7 @@ class Entity
 	private:
 		glm::vec3 m_position;
 		glm::quat m_orientation;
-		Program   m_program;
+		Render::Program   m_program;
 		// Materials
 		// Mesh
 		// Bones
