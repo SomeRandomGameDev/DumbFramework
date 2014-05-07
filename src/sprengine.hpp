@@ -273,7 +273,7 @@ private:
   /**
    * Vertex Buffer Object identifier.
    */
-  BufferObject _buffer;
+  Render::BufferObject _buffer;
 
   /**
    * Vertex Shader identifier.

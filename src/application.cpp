@@ -1,6 +1,6 @@
-#include <application.hpp>
 #include <GL/glew.h>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
+#include <application.hpp>
 
 Application* Application::_application = 0;
 
@@ -24,13 +24,13 @@ void Application::clear() {
     }
     _scene = 0;
   }
-  glfwSetKeyCallback(0);
-  glfwSetMouseButtonCallback(0);
-  glfwSetMousePosCallback(0);
-  glfwSetMouseWheelCallback(0);
-  glfwSetWindowSizeCallback(0);
-  glfwSetWindowCloseCallback(0);
-  _application = 0; // THIS is not thread safe.
+  GLFWwindow *window = _hint.getWindow();
+  glfwSetKeyCallback(window, 0);
+  glfwSetMouseButtonCallback(window, 0);
+  glfwSetCursorPosCallback(window, 0);
+  glfwSetScrollCallback(window, 0);
+  glfwSetWindowSizeCallback(window, 0);
+  glfwSetWindowCloseCallback(window, 0);
   _initialized = false;
 }
 
@@ -40,23 +40,25 @@ bool Application::start(WindowHint hint, Scene *scene) {
   if((_application != 0) || (scene == 0)) {
     return false; // (Terribly) Poor protection against concurrent runs.
   }
+  _hint = hint;
   _application = this;
   if(result) {
     _initialized = true;
-    result = hint.openWindow();
+    result = _hint.openWindow();
     if(result) {
+      GLFWwindow* window = _hint.getWindow();
       GLenum glewError = glewInit();
       if(GLEW_OK != glewError) {
         glfwTerminate();
         // TODO : Error Message.
         return false;
       }
-      glfwSetKeyCallback(Application::handleKey);
-      glfwSetMouseButtonCallback(Application::handleMouseButton);
-      glfwSetMousePosCallback(Application::handleMousePosition);
-      glfwSetMouseWheelCallback(Application::handleMouseWheel);
-      glfwSetWindowSizeCallback(Application::handleWindowSize);
-      glfwSetWindowCloseCallback(Application::handleWindowClose);
+      glfwSetKeyCallback(window, Application::handleKey);
+      glfwSetMouseButtonCallback(window, Application::handleMouseButton);
+      glfwSetCursorPosCallback(window, Application::handleMousePosition);
+      glfwSetScrollCallback(window, Application::handleMouseWheel);
+      glfwSetWindowSizeCallback(window, Application::handleWindowSize);
+      glfwSetWindowCloseCallback(window, Application::handleWindowClose);
       _running = true;
       Scene *next = 0;
       _scene->resume();
@@ -70,7 +72,8 @@ bool Application::start(WindowHint hint, Scene *scene) {
            }
            _scene = next;
          }
-         glfwSwapBuffers();
+         glfwPollEvents();
+         glfwSwapBuffers(window);
       }
       clear();
     }
@@ -85,30 +88,29 @@ void Application::stop() {
   clear();
 }
 
-void GLFWCALL Application::handleKey(int key, int action) {
+void Application::handleKey(GLFWwindow *window, int key, int action) {
   _application->_scene->handleKeyAction(key, action);
 }
 
-void GLFWCALL Application::handleMouseButton(int button, int action) {
+void Application::handleMouseButton(GLFWwindow *window, int button, int action) {
   _application->_scene->handleMouseButtonAction(button, action);
 }
 
-void GLFWCALL Application::handleMousePosition(int x, int y) {
+void Application::handleMousePosition(GLFWwindow *window, double x, double y) {
   _application->_scene->handleMousePositionAction(x, y);
 }
 
-void GLFWCALL Application::handleMouseWheel(int pos) {
-  _application->_scene->handleMouseWheelAction(pos);
+void Application::handleMouseWheel(GLFWwindow *window, double x, double y) {
+  _application->_scene->handleMouseWheelAction(x, y);
 }
 
-void GLFWCALL Application::handleWindowSize(int width, int height) {
+void Application::handleWindowSize(GLFWwindow *window, int width, int height) {
   _application->_scene->handleWindowSize(width, height);
 }
 
-int GLFWCALL Application::handleWindowClose() {
+void Application::handleWindowClose(GLFWwindow *window) {
   _application->_running = false;
                     // The other accessor (in the main loop) is additive :
                     // Let's consider this as  thread-safe.
-  return GL_TRUE;
 }
 

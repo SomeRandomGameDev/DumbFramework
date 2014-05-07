@@ -75,6 +75,7 @@ bool Program::link()
 		infoLog();
 		return false;
 	}
+	return true;
 }
 
 /**

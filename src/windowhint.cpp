@@ -7,7 +7,7 @@ WindowHint::WindowHint() {
   _height = 480;
   _red = _blue = _green = _alpha = 0;
   _stencil = _depth = 0;
-  _mode = GLFW_WINDOW;
+  _mode = 0;
   _title.assign("DumbFramework");
 }
 
@@ -19,7 +19,7 @@ WindowHint::WindowHint(int w, int h, std::string &title) {
 
   _red = _blue = _green = _alpha = 0;
   _stencil = _depth = 0;
-  _mode = GLFW_WINDOW;
+  _mode = 0;
 }
 
 bool WindowHint::openWindow() {

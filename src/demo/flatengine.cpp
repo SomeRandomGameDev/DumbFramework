@@ -1,5 +1,6 @@
 // You'll never see an uglyiest test executable !
 
+#include <GL/glew.h> // Hot fix : There's a big issue in the includes management.
 #include <application.hpp>
 #include <scene.hpp>
 #include <sprengine.hpp>
