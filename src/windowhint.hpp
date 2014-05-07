@@ -1,6 +1,7 @@
 #ifndef _DUMB_FW_WHINT_
 #define _DUMB_FW_WHINT_
 
+#include <GLFW/glfw3.h>
 #include <string>
 
 
@@ -74,6 +75,12 @@ public:
    * @return Window mode (as described in GLFW documentation).
    */
   inline int getMode() { return _mode; }
+
+  /**
+   * Retrieve window context.
+   * @return Window context.
+   */
+  inline GLFWwindow* getWindow() { return _window; }
 
   /**
    * Retrieve window title.

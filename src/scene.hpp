@@ -27,13 +27,14 @@ public:
    * @param x Coordinate of the mouse cursor on the X Axis in the window.
    * @param y Coordinate of the mouse cursor on the Y Axis in the window.
    */
-  virtual void handleMousePositionAction(int /* x */, int /* y */) {}
+  virtual void handleMousePositionAction(double /* x */, double /* y */) {}
 
   /**
    * Handle mouse wheel movement.
-   * @param pos Absolute position of the wheel.
+   * @param x Absolute position of the wheel on x axis.
+   * @param y Absolute position of the wheel on y axis.
    */
-  virtual void handleMouseWheelAction(int /* pos */) {}
+  virtual void handleMouseWheelAction(double /* x */, double /* y */) {}
 
   /**
    * Handle window size change.

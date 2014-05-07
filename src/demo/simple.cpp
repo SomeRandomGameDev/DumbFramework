@@ -1,7 +1,7 @@
 #include <application.hpp>
 #include <iostream>
 #include <string.h>
-#include <GL/glfw.h>
+#include <GLFW/glfw3.h>
 
 class MyScene : public Scene {
 public:

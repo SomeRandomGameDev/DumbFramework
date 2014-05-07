@@ -1,6 +1,7 @@
 #ifndef _DUMB_FW_GEOMETRY_
 #define _DUMB_FW_GEOMETRY_
 
+#include <memory>
 #include <vector>
 
 #include "bufferobject.hpp"
