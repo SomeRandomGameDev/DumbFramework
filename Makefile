@@ -20,7 +20,7 @@ CFLAGS += -s
 endif
 OBJDIR := $(OUTDIR)/obj
 
-LIBS := -lGL -lGLU -lglfw -lGLEW -lSOIL -lexpat -lm
+LIBS := -lGL -lGLU -lglfw -lGLEW -lSOIL -lexpat -lm -lpthread
 
 SRC := $(wildcard src/*.cpp)
 OBJFILES := $(SRC:.cpp=.o)

@@ -71,12 +71,12 @@ private:
   /**
    * Wrapper to key event callback.
    */
-  static void handleKey(GLFWwindow*, int, int);
+  static void handleKey(GLFWwindow*, int, int, int, int);
 
   /**
    * Wrapper to mouse button event callback.
    */
-  static void handleMouseButton(GLFWwindow*, int, int);
+  static void handleMouseButton(GLFWwindow*, int, int, int);
 
   /**
    * Wrapper to mouse position event callback.

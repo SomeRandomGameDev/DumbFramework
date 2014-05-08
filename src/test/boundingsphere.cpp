@@ -1,4 +1,4 @@
-#include <UnitTest++/UnitTest++.h>
+#include <unittest++/UnitTest++.h>
 #include "boundingsphere.hpp"
 
 using namespace Dumb::Framework;

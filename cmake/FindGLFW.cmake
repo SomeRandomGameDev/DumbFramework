@@ -112,16 +112,6 @@ else ()
         
         find_package(X11 REQUIRED)
         
-        if(NOT X11_Xrandr_FOUND)
-            message(FATAL_ERROR "Xrandr library not found - required for GLFW")
-        endif()
-
-        if(NOT X11_xf86vmode_FOUND)
-            message(FATAL_ERROR "xf86vmode library not found - required for GLFW")
-        endif()
-
-        list(APPEND GLFW_x11_LIBRARY "${X11_Xrandr_LIB}" "${X11_Xxf86vm_LIB}")
-
         find_library( GLFW_glfw_LIBRARY
             NAMES 
                 glfw

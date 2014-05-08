@@ -1,4 +1,4 @@
-#include <UnitTest++/UnitTest++.h>
+#include <unittest++/UnitTest++.h>
 
 int main(int, char const *[])
 {

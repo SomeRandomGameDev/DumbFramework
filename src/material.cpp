@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "material.hpp"
 
 namespace Render {
