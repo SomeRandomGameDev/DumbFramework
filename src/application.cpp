@@ -49,6 +49,8 @@ bool Application::start(WindowHint hint, Scene *scene) {
         _initialized = true;
         result = _hint.openWindow();
         if(result) {
+            std::cout << "Renderer : " << glGetString(GL_RENDERER) << std::endl;
+            std::cout << "Version : " << glGetString(GL_VERSION) << std::endl;
             GLFWwindow* window = _hint.getWindow();
             GLenum glewError = glewInit();
             if(GLEW_OK != glewError) {
