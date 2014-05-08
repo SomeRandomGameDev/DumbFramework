@@ -540,7 +540,7 @@ namespace Sprite {
         glUniform1i(_uniformTexture, 0);
         GLfloat *ptr = (GLfloat *) _buffer.map(Render::BufferObject::BUFFER_WRITE);
         memcpy(ptr, _cell, VBO_STRIDE * _count);
-        Render::BufferObject::unmap();
+        _buffer.unmap();
 
         // Send VAO.
         glBindVertexArray(_vao);
