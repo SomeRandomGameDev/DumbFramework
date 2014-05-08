@@ -128,13 +128,13 @@ void TestEngine::handleMouseButtonAction(int button, int action) {
 }
 
 void TestEngine::handleKeyAction(int key, int action) {
-  _quit = (GLFW_PRESS == action) && (GLFW_KEY_ESC == key);
+  _quit = (GLFW_PRESS == action) && (GLFW_KEY_ESCAPE == key);
 
   if((GLFW_PRESS == action) && (GLFW_KEY_SPACE == key)) {
     _engine->copy(_evilTwin, _identifier);
   }
 
-  if((GLFW_PRESS == action) && (GLFW_KEY_RCTRL == key)) {
+  if((GLFW_PRESS == action) && (GLFW_KEY_RIGHT_CONTROL == key)) {
     Sprite::Identifier fantom = _engine->clone(_evilTwin);
     if(fantom >= 0) {
       _engine->move(fantom, glm::vec2(0, 0));

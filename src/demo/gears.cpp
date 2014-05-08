@@ -140,7 +140,7 @@ GearScene::GearScene() {
 }
 
 void GearScene::handleKeyAction(int key, int action) {
-  _quit |= (key == GLFW_KEY_ESC);
+  _quit |= (key == GLFW_KEY_ESCAPE);
   if(GLFW_PRESS == action) {
     switch(key) {
       case GLFW_KEY_UP:
