@@ -95,21 +95,10 @@ const char *s_geometryShader =
 
 GLuint makeShader(GLenum type, const char *content) {
     GLuint shader;
-    GLint length;
     GLint value;
 
-    int sourceSize = strlen(content);
-    GLchar *shaderText = new GLchar[sourceSize+1];
-    memcpy(shaderText, content, sourceSize);
-    shaderText[sourceSize] = '\0';
-
-    std::cout << "Create Shader : " << std::endl << shaderText << std::endl; 
-    std::cout << "-------------------------------" << std::endl;
     shader = glCreateShader(type);
-    if(0 == glShaderSource) {
-        std::cerr << "No glShaderSource" << std::endl;
-    }
-    glShaderSource(shader, 1, (const GLchar **) &shaderText, &length);
+    glShaderSource(shader, 1, (const GLchar **) &content, 0);
     glCompileShader(shader);
     glGetShaderiv(shader, GL_COMPILE_STATUS, &value);
     if(!value) {
@@ -122,7 +111,6 @@ GLuint makeShader(GLenum type, const char *content) {
         delete[]log;
         shader = 0;
     }
-    delete []shaderText;
     return shader;
 }
 
@@ -347,6 +335,9 @@ namespace Sprite {
         Identifier inside = _count++;
         Instance *instance = _instance + inside;
         instance->_definition = _atlas->get(definitionId);
+        if(0 == instance->_definition) {
+            std::cerr << "No Definition in Atlas for identifier (" << definitionId << ")" << std::endl;
+        }
 
         // Add an entry in the lookup table.
         // Get the first free slot.

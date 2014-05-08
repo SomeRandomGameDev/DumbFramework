@@ -1,6 +1,7 @@
 #ifndef _DUMB_FW_XML_
 #define _DUMB_FW_XML_
 
+#include <iostream>
 #include <stdlib.h>
 
 #include <expat.h>
@@ -30,7 +31,7 @@ public:
     
     ret = input.open(filename, File::READ_ONLY);
     if(!ret) {
-      // TODO ERROR
+      std::cerr << "Can't read " << filename << "!" << std::endl;
       return;
     }
 

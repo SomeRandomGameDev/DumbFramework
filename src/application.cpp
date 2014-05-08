@@ -6,6 +6,10 @@
 
 Application* Application::_application = 0;
 
+void SimpleErrorCallback(int errorCode, const char *description) {
+    std::cerr << "GLFW Error(" << errorCode << ") " << description << std::endl;
+}
+
 Application::Application() {
     _scene = 0;
     _initialized = false;
@@ -37,6 +41,7 @@ void Application::clear() {
 }
 
 bool Application::start(WindowHint hint, Scene *scene) {
+    glfwSetErrorCallback(SimpleErrorCallback);
     bool result = ((scene != 0) && glfwInit());
     _scene = scene;
     if((_application != 0) || (scene == 0)) {
