@@ -6,6 +6,7 @@
 #include <sprengine.hpp>
 
 #include <iostream>
+#include <string>
 
 // Shaders
 
@@ -97,8 +98,18 @@ GLuint makeShader(GLenum type, const char *content) {
     GLint length;
     GLint value;
 
+    int sourceSize = strlen(content);
+    GLchar *shaderText = new GLchar[sourceSize+1];
+    memcpy(shaderText, content, sourceSize);
+    shaderText[sourceSize] = '\0';
+
+    std::cout << "Create Shader : " << std::endl << shaderText << std::endl; 
+    std::cout << "-------------------------------" << std::endl;
     shader = glCreateShader(type);
-    glShaderSource(shader, 1, (const GLchar **) &content, &length);
+    if(0 == glShaderSource) {
+        std::cerr << "No glShaderSource" << std::endl;
+    }
+    glShaderSource(shader, 1, (const GLchar **) &shaderText, &length);
     glCompileShader(shader);
     glGetShaderiv(shader, GL_COMPILE_STATUS, &value);
     if(!value) {
@@ -111,6 +122,7 @@ GLuint makeShader(GLenum type, const char *content) {
         delete[]log;
         shader = 0;
     }
+    delete []shaderText;
     return shader;
 }
 

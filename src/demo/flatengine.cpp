@@ -8,7 +8,7 @@
 
 class TestEngine : public Scene {
 public:
-  TestEngine();
+  TestEngine(int, int);
   Scene *output();
 
   void handleKeyAction(int, int);
@@ -62,7 +62,8 @@ private:
 
 #define SCALE_FACTOR 0.2f
 
-TestEngine::TestEngine() : _atlas(0), _engine(0), _centerX(0), _centerY(0),
+TestEngine::TestEngine(int w, int h) : _atlas(0), _engine(0), _centerX(0), _centerY(0),
+                           _width(w), _height(h),
                            _scale(1.0), _evilScale(1.0),
                            _lastWheelPosition(0), _rightPressed(false),
                            _rotate(0) { _pressed = _init = _quit = false; }
@@ -154,6 +155,14 @@ void TestEngine::handleWindowSize(int width, int height) {
 }
 
 void TestEngine::resume() {
+  if(0 == _atlas) {
+    _atlas = new Sprite::Atlas("test.xml");
+    _engine = new Sprite::Engine(_atlas, 8);
+    _init = true;
+  }
+  _engine->viewport(_centerX, _centerY, _width, _height);
+  glViewport(0, 0, _width, _height);
+
   _identifier = _engine->create(0, glm::vec2(100, 100), 0);
   _evilTwin = _engine->create(0, glm::vec2(-100, 0), 0);
   _start = glfwGetTime();
@@ -174,7 +183,7 @@ void TestEngine::pause() {
 
 int main(void) {
   std::string title("Sprite EngineTest");
-  TestEngine testScene;
+  TestEngine testScene(640, 480);
   WindowHint hint(640, 480, title);
   Application application;
 
