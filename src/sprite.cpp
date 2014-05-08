@@ -57,6 +57,8 @@ void Atlas::startElement(const XML_Char *tag, const XML_Char **attr) {
         _state = STATE_FAULTED;
         std::cerr << "##! Invalid number of definition" << std::endl;
       } else {
+      std::cout << "##? Prepare to read " << size
+                << " sprite definition(s)." << std::endl;
         _definitions = new Container<Definition *>(size);
         for(int i = 0; i < size; ++i) {
           *(_definitions->data(i)) = 0;
@@ -81,6 +83,9 @@ void Atlas::startElement(const XML_Char *tag, const XML_Char **attr) {
             _state = STATE_FAULTED;
             std::cerr << "##! Invalid path to texture" << std::endl;
           }
+        } else {
+            std::cerr << "##! No filename specified for the sprite atlas."
+                      << std::endl;
         }
       }
     }
