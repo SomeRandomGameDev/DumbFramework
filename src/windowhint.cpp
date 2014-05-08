@@ -24,6 +24,7 @@ WindowHint::WindowHint(int w, int h, std::string &title) {
 
 bool WindowHint::openWindow() {
   _window = glfwCreateWindow(_width, _height, _title.c_str(), NULL, NULL); // [todo] monitor + share
+  glfwMakeContextCurrent(_window);
   if(_window == NULL)
   {
 	  return false;

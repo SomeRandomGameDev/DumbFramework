@@ -97,7 +97,7 @@ public:
 private:
 
   /**
-   * Window hendle.
+   * Window handle.
    */
   GLFWwindow* _window;
 
