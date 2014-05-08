@@ -69,9 +69,16 @@ BoundingSphere& BoundingSphere::operator= (const BoundingSphere& sphere)
 /** Check if the current bounding sphere contains the specified bounding sphere. */
 ContainmentType::Value BoundingSphere::contains(const BoundingSphere& sphere)
 {
-	float distance = glm::distance(center, sphere.center);
-	if(distance < (radius-sphere.radius)) { return ContainmentType::Contains;  }
-	if(distance > (radius+sphere.radius)) { return ContainmentType::Disjoints; }
+	glm::vec3 delta = center - sphere.center;
+	
+	float squareDistance = glm::dot(delta, delta);
+	float dr0 = radius + sphere.radius;
+	float dr1 = radius - sphere.radius;
+	float sqdr0 = dr0 * dr0;
+	float sqdr1 = dr1 * dr1;
+
+	if(squareDistance > sqdr0) { return ContainmentType::Disjoints;  }
+	if(squareDistance < sqdr1) { return ContainmentType::Contains; }
 	return ContainmentType::Intersects;
 }
 /** Check if the current bounding sphere contains the specified list of points.
