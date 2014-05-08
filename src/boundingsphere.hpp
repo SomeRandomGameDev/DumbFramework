@@ -1,7 +1,8 @@
-#ifndef _DUMB_FW_BOUNDING_SHPERE_
-#define _DUMB_FW_BOUNDING_SHPERE_
+#ifndef _DUMB_FW_BOUNDING_SPHERE_
+#define _DUMB_FW_BOUNDING_SPHERE_
 
 #include <glm/glm.hpp>
+#include <ray.hpp>
 
 namespace Dumb      {
 namespace Framework {
@@ -60,7 +61,11 @@ struct BoundingSphere
 	  * @param [in] point Point to be tested.
 	  */
 	ContainmentType::Value contains(const glm::vec3& point);
-	
+    /** Check if the current bounding sphere contains or intersects the specified ray.
+      * @param [in] ray Ray to be tested.
+      */
+    ContainmentType::Value contains(const Ray& ray);
+
 	// [todo] MORE!
 
     /** Center  */
@@ -71,4 +76,4 @@ struct BoundingSphere
 
 }}
 
-#endif /* _DUMB_FW_BOUNDING_SHPERE_ */
+#endif /* _DUMB_FW_BOUNDING_SPHERE_ */
