@@ -37,6 +37,7 @@ include_directories( ${EXPAT_INCLUDE_DIR}
 set(DUMB_FRAMEWORK_SOURCES
     src/application.cpp
     src/boundingsphere.cpp
+    src/ray.cpp
     src/bufferobject.cpp
     src/file.cpp
     src/log.cpp
