@@ -25,10 +25,10 @@ LIBS := -lGL -lGLU -lglfw -lGLEW -lSOIL -lexpat -lm
 SRC := $(wildcard src/*.cpp)
 OBJFILES := $(SRC:.cpp=.o)
 OBJS := $(addprefix $(OBJDIR)/, $(OBJFILES))
-
+EXE := flatengine gears simple vbo
 DEPEND = .depend
 
-all: flatengine gears simple vbo
+all: $(EXE)
 
 simple: src/demo/simple.cpp $(OBJS)
 	@$(ECHO) " LD $@"
@@ -52,9 +52,9 @@ $(DEPEND):
 	@$(ECHO) " MKDEP"
 	@$(CC) -MM -MG $(CFLAGS) $(SRC) > $(DEPEND)
 
-$(EXE): $(OBJS)
-	@$(ECHO) " LD $@"
-	@$(CC) -o $(EXE) $^ $(LIBS)
+#$(EXE): $(OBJS)
+#	@$(ECHO) " LD $@"
+#	@$(CC) -o $(EXE) $^ $(LIBS)
 
 $(OBJDIR)/%.o: %.cpp
 	@$(ECHO) " CC $@"
