@@ -15,9 +15,9 @@ public:
   void handleWindowSize(int, int);
 
   void handleMouseButtonAction(int, int);
-  void handleMousePositionAction(int, int);
+  void handleMousePositionAction(double, double);
 
-  void handleMouseWheelAction(int);
+  void handleMouseWheelAction(double, double);
 
   void resume();
   void pause();
@@ -79,7 +79,7 @@ Scene *TestEngine::output() {
   return _quit?0:this;
 }
 
-void TestEngine::handleMouseWheelAction(int wheel) {
+void TestEngine::handleMouseWheelAction(double, double wheel) {
   int diff = wheel - _lastWheelPosition;
   _lastWheelPosition = wheel;
   if(_rightPressed) {
@@ -107,7 +107,7 @@ void TestEngine::handleMouseWheelAction(int wheel) {
   }
 }
 
-void TestEngine::handleMousePositionAction(int x, int y) {
+void TestEngine::handleMousePositionAction(double x, double y) {
   if(_pressed) {
     _centerX = _lastX + (_initX - x) * _scale;
     _centerY = _lastY + (_initY - y) * _scale;
