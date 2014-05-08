@@ -95,7 +95,7 @@ class BufferObject
 		/**
 		 * Unmap buffer.
 		 */
-		static void unmap();
+		void unmap();
 
 		GLuint id    () const { return _id;     }
 		GLint  target() const { return _target; }
