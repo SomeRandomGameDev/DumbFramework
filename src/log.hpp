@@ -163,6 +163,7 @@ namespace Log
             if(_filter.eval(module, severity))
             {
                 LogProcessor& processor = LogProcessor::instance();
+                (void)processor;
                 _format.build(out, module, severity, infos, format, args);
                 return true;
             }

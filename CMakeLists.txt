@@ -4,8 +4,7 @@ project(DumbFramework)
 
 option(BUILD_TESTS "Build unit tests." OFF)
 
-set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
-SET (CMAKE_CXX_FLAGS "-Wall -std=c++11")
+SET (CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 if(MSVC)
@@ -36,6 +35,7 @@ include_directories( ${EXPAT_INCLUDE_DIR}
 
 set(DUMB_FRAMEWORK_SOURCES
     src/application.cpp
+    src/boundingbox.cpp
     src/boundingsphere.cpp
     src/ray.cpp
     src/bufferobject.cpp

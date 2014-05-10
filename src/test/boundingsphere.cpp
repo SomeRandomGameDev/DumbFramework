@@ -58,4 +58,23 @@ SUITE(BoundingSphere)
 		res = big.contains(small);
 		CHECK_EQUAL(ContainmentType::Intersects, res);
 	}
+	
+	TEST(RaySphere)
+	{
+		BoundingSphere sphere(glm::vec3(1.0f, 0.0f, 0.0f), 2.0f);
+		Ray ray(glm::vec3(0.5f), glm::vec3(-1.0f));
+		
+		ContainmentType::Value res;
+		
+		res = sphere.contains(ray);
+		CHECK_EQUAL(ContainmentType::Contains, res);
+		
+		ray.origin = glm::vec3(4.0f);
+		res = sphere.contains(ray);
+		CHECK_EQUAL(ContainmentType::Intersects, res);
+
+		ray.origin = glm::vec3(-6.0f);
+		res = sphere.contains(ray);
+		CHECK_EQUAL(ContainmentType::Disjoints, res);
+	}
 }
