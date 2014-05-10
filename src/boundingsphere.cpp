@@ -1,5 +1,4 @@
-#include <sys/types.h>
-#include "boundingsphere.hpp"
+#include "boundingobjects.hpp"
 
 namespace Dumb      {
 namespace Framework {
@@ -13,7 +12,7 @@ BoundingSphere::BoundingSphere()
  *  @param [in] c  Bounding sphere center.
  *  @param [in] r  Bounding sphere radius.
  */
-BoundingSphere::BoundingSphere(const glm::vec3 c, float r)
+BoundingSphere::BoundingSphere(const glm::vec3& c, float r)
 	: center(c)
 	, radius(r)
 {}
@@ -25,11 +24,12 @@ BoundingSphere::BoundingSphere(const glm::vec3 c, float r)
 BoundingSphere::BoundingSphere(const float* buffer, size_t count, size_t stride)
 {
 	off_t offset, inc;
-	glm::vec3 pmin, pmax;
-	
-	pmin = pmax = glm::vec3(buffer[0], buffer[1], buffer[2]);
 	inc = stride + 3;
 	offset = inc;
+	
+	glm::vec3 pmin, pmax;	
+	pmin = pmax = glm::vec3(buffer[0], buffer[1], buffer[2]);
+
 	for(size_t i=1; i<count; i++, offset+=inc)
 	{
 		glm::vec3 dummy(buffer[offset], buffer[offset+1], buffer[offset+2]);
@@ -66,7 +66,13 @@ BoundingSphere& BoundingSphere::operator= (const BoundingSphere& sphere)
 	center = sphere.center;
 	radius = sphere.radius;
 	return *this;
-}	
+}
+/** Check if the current bounding sphere contains the specified bounding box. */
+ContainmentType::Value BoundingSphere::contains(const BoundingBox& box)
+{
+	/// @todo
+	return ContainmentType::Disjoints;
+}
 /** Check if the current bounding sphere contains the specified bounding sphere. */
 ContainmentType::Value BoundingSphere::contains(const BoundingSphere& sphere)
 {
@@ -123,12 +129,28 @@ ContainmentType::Value BoundingSphere::contains(const Ray& ray)
     glm::vec3 diff = center - ray.origin;
     float t0 = glm::dot(diff, ray.direction);
     float r2 = radius * radius;
-    float d2 = glm::dot(ray.direction, ray.direction) - (t0 * t0);
+    float d2 = glm::dot(diff, diff) - (t0 * t0);
     if(d2 > r2) { return ContainmentType::Disjoints; }
     float t1 = sqrt(r2 - d2);
     distance = (t0 > (t1 + epsilon)) ? (t0 - t1) : (t0 + t1);
     if(distance > epsilon) { return ContainmentType::Intersects; }
     return ContainmentType::Disjoints;
+}
+/** Apply transformation.
+ *  @param [in] m 4*4 transformation matrix.
+ */
+void BoundingSphere::transform(const glm::mat4& m)
+{
+	// Transform center.
+	glm::vec4 pt = m * glm::vec4(center, 1.0f);
+	center = glm::vec3(pt.x, pt.y, pt.z);
+	
+	// Find the biggest scale.
+	glm::vec3 sx(m[0].x, m[1].x, m[2].x);
+	glm::vec3 sy(m[0].y, m[1].y, m[2].y);
+	glm::vec3 sz(m[0].z, m[1].z, m[2].z);
+	float scale = glm::max(glm::max(glm::dot(sx,sx), glm::dot(sy,sy)), glm::dot(sz,sz));
+	radius = radius * sqrt(scale);
 }
 
 }}

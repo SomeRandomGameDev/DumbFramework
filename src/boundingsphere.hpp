@@ -1,21 +1,10 @@
 #ifndef _DUMB_FW_BOUNDING_SPHERE_
 #define _DUMB_FW_BOUNDING_SPHERE_
 
-#include <glm/glm.hpp>
-#include <ray.hpp>
+#include "boundingobjects.hpp"
 
 namespace Dumb      {
 namespace Framework {
-
-namespace ContainmentType
-{
-	enum Value
-	{
-		Contains = 0,
-		Intersects,
-		Disjoints
-	};
-}
 
 /**
  * Bounding sphere.
@@ -28,7 +17,7 @@ struct BoundingSphere
 	 *  @param [in] c  Bounding sphere center.
 	 *  @param [in] r  Bounding sphere radius.
 	 */
-	BoundingSphere(const glm::vec3 c, float r);
+	BoundingSphere(const glm::vec3& c, float r);
 	/** Constructor.
 	 *  @param [in] buffer Pointer to the point array.
 	 *  @param [in] count  Number of points 
@@ -48,26 +37,29 @@ struct BoundingSphere
      *  @param [in] sphere Source bounding sphere.
 	 */
 	BoundingSphere& operator= (const BoundingSphere& sphere);
-	
+	/** Check if the current bounding sphere contains the specified bounding box. */
+	ContainmentType::Value contains(const BoundingBox& box);
 	/** Check if the current bounding sphere contains the specified bounding sphere. */
 	ContainmentType::Value contains(const BoundingSphere& sphere);
 	/** Check if the current bounding sphere contains the specified list of points.
-	  * @param [in] buffer Pointer to the point array.
-	  * @param [in] count  Number of points 
-	  * @param [in] stride Offset between two consecutive points. (default=0)
-	  */
+	 *  @param [in] buffer Pointer to the point array.
+	 *  @param [in] count  Number of points 
+	 *  @param [in] stride Offset between two consecutive points. (default=0)
+	 */
 	ContainmentType::Value contains(const float* buffer, size_t count, size_t stride=0);
 	/** Check if the current bounding sphere contains the specified point.
-	  * @param [in] point Point to be tested.
-	  */
+	 *  @param [in] point Point to be tested.
+	 */
 	ContainmentType::Value contains(const glm::vec3& point);
     /** Check if the current bounding sphere contains or intersects the specified ray.
-      * @param [in] ray Ray to be tested.
-      */
+     *  @param [in] ray Ray to be tested.
+     */
     ContainmentType::Value contains(const Ray& ray);
-
-	// [todo] MORE!
-
+	/** Apply transformation.
+	 *  @param [in] m 4*4 transformation matrix.
+	 */
+	void transform(const glm::mat4& m);
+	
     /** Center  */
     glm::vec3 center;
     /** Radius */
