@@ -30,13 +30,6 @@ void Application::clear() {
         }
         _scene = 0;
     }
-    GLFWwindow *window = _hint.getWindow();
-    glfwSetKeyCallback(window, 0);
-    glfwSetMouseButtonCallback(window, 0);
-    glfwSetCursorPosCallback(window, 0);
-    glfwSetScrollCallback(window, 0);
-    glfwSetWindowSizeCallback(window, 0);
-    glfwSetWindowCloseCallback(window, 0);
     _initialized = false;
 }
 
