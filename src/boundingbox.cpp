@@ -89,7 +89,36 @@ ContainmentType::Value BoundingBox::contains(const BoundingBox& box)
 /** Check if the current bounding box contains the specified bounding sphere. */
 ContainmentType::Value BoundingBox::contains(const BoundingSphere& sphere)
 {
-	/// @todo
+	glm::vec3 diffMin = sphere.center - min;
+	glm::vec3 diffMax = max - sphere.center;
+	
+	if((diffMin.x >= sphere.radius) &&
+	   (diffMin.y >= sphere.radius) &&
+	   (diffMin.z >= sphere.radius) &&
+	   (diffMax.x >= sphere.radius) &&
+	   (diffMax.y >= sphere.radius) &&
+	   (diffMax.z >= sphere.radius))
+    { return ContainmentType::Contains; }
+
+	float dmin = 0.0f;
+	float dmax = 0.0f;
+	glm::vec3 sqrMin = diffMin * diffMin;
+	glm::vec3 sqrMax = diffMax * diffMax;
+	for(int i=0; i<3; i++)
+	{
+		dmax += glm::max(sqrMin[i], sqrMax[i]);
+		if(diffMin[i] < 0.0f)
+		{
+			dmin += sqrMin[i];
+		}
+		else if(diffMax[i] < 0.0f)
+		{
+			dmin += sqrMax[i];
+		}
+	}
+	float r2 = sphere.radius * sphere.radius;
+	if((dmin <= r2) && (r2 <= dmax))
+	{ return ContainmentType::Intersects; }
 	return ContainmentType::Disjoints;
 }
 /** Check if the current bounding box contains the specified list of points.

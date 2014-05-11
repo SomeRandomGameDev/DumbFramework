@@ -39,7 +39,39 @@ SUITE(BoundingBox)
     
 	TEST(ContainsSphere)
     {
-        /// @todo
+        BoundingSphere sphere(glm::vec3(1.0f, 1.0f, 1.0f), 2.0f);
+        BoundingBox box;
+    	ContainmentType::Value res;
+	    
+        box.min = glm::vec3(0.5f);
+        box.max = glm::vec3(1.0f);
+        res = box.contains(sphere);
+        CHECK_EQUAL(ContainmentType::Disjoints, res);
+		
+        box.min = glm::vec3(0.5f, 0.5f,-2.0f);
+        box.max = glm::vec3(1.5f, 1.5f, 3.0f);
+        res = box.contains(sphere);
+        CHECK_EQUAL(ContainmentType::Intersects, res);
+		
+        box.min = glm::vec3(-1.75f);
+        box.max = glm::vec3( 0.25f);
+        res = box.contains(sphere);
+        CHECK_EQUAL(ContainmentType::Intersects, res);
+
+        box.min = glm::vec3(1.8f);
+        box.max = glm::vec3(4.25f);
+        res = box.contains(sphere);
+        CHECK_EQUAL(ContainmentType::Intersects, res);
+
+        box.min = glm::vec3(-10.25f);
+        box.max = glm::vec3( 10.75f);
+        res = box.contains(sphere);
+        CHECK_EQUAL(ContainmentType::Contains, res);
+        
+        box.min = glm::vec3(0.0f, 0.0f,-120.0f);
+        box.max = glm::vec3(1.0f, 1.0f, -80.0f);
+        res = box.contains(sphere);
+        CHECK_EQUAL(ContainmentType::Disjoints, res);
 	}
 	
 	TEST(ContainsRay)
