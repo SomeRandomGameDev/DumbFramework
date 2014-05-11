@@ -139,7 +139,7 @@ GearScene::GearScene() {
   _gear1 = _gear2 = _gear3 = -1;
 }
 
-void GearScene::handleKeyAction(int key, int action) {
+void GearScene::handleKeyAction(int key, int /* scancode */, int action, int /* mods */) {
   _quit |= (key == GLFW_KEY_ESCAPE);
   if(GLFW_PRESS == action) {
     switch(key) {

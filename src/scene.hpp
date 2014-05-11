@@ -10,9 +10,11 @@ public:
   /**
    * Handle key event.
    * @param key Key identifier.
+   * @param scancode Scancode.
    * @param action GLFW_PRESS or GLFW_RELEASE.
+   * @param mods Key modifiers.
    */
-  virtual void handleKeyAction(int /* key */, int /* action */) {}
+  virtual void handleKeyAction(int /* key */, int /* scancode */, int /* action */, int /* mods */) {}
 
   /**
    * Handle mouse button action.

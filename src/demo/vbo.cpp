@@ -103,7 +103,7 @@ class TestScene : public Scene {
 public:
   TestScene();
   Scene * output();
-  void handleKeyAction(int, int);
+  void handleKeyAction(int, int, int, int);
   void handleWindowSize(int, int);
   void resume();
   void pause();
@@ -162,8 +162,8 @@ TestScene::TestScene() {
   _init = false;
 }
 
-void TestScene::handleKeyAction(int key, int) {
-  _quit |= (key == GLFW_KEY_ESC);
+void TestScene::handleKeyAction(int key, int, int, int) {
+  _quit |= (key == GLFW_KEY_ESCAPE);
 }
 
 void TestScene::handleWindowSize(int width, int height) {

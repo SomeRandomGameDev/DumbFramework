@@ -11,7 +11,7 @@ public:
   TestEngine(int, int);
   Scene *output();
 
-  void handleKeyAction(int, int);
+  void handleKeyAction(int, int, int, int);
   void handleWindowSize(int, int);
 
   void handleMouseButtonAction(int, int);
@@ -127,7 +127,7 @@ void TestEngine::handleMouseButtonAction(int button, int action) {
   _middlePressed = (GLFW_PRESS == action) && (GLFW_MOUSE_BUTTON_MIDDLE == button);
 }
 
-void TestEngine::handleKeyAction(int key, int action) {
+void TestEngine::handleKeyAction(int key, int /* scancode */, int action, int /* mods */) {
   _quit = (GLFW_PRESS == action) && (GLFW_KEY_ESCAPE == key);
 
   if((GLFW_PRESS == action) && (GLFW_KEY_SPACE == key)) {
