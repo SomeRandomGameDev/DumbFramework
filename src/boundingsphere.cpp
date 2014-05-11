@@ -145,23 +145,21 @@ ContainmentType::Value BoundingSphere::contains(const glm::vec3& point)
 	if(distance > radius) { return ContainmentType::Disjoints; }
 	return ContainmentType::Intersects;
 }
-/** Check if the current bounding sphere contains or intersects the specified ray.
+/** Check if the current bounding sphere intersects the specified ray.
   * @param [in] ray Ray to be tested.
   */
-ContainmentType::Value BoundingSphere::contains(const Ray& ray)
+bool BoundingSphere::intersects(const Ray& ray)
 {
     float epsilon = std::numeric_limits<float>::epsilon();
     float distance = glm::distance(center, ray.origin);
-    if(distance < radius) { return ContainmentType::Contains; }
     glm::vec3 diff = center - ray.origin;
     float t0 = glm::dot(diff, ray.direction);
     float r2 = radius * radius;
     float d2 = glm::dot(diff, diff) - (t0 * t0);
-    if(d2 > r2) { return ContainmentType::Disjoints; }
+    if(d2 > r2) { return false; }
     float t1 = sqrt(r2 - d2);
     distance = (t0 > (t1 + epsilon)) ? (t0 - t1) : (t0 + t1);
-    if(distance > epsilon) { return ContainmentType::Intersects; }
-    return ContainmentType::Disjoints;
+    return (distance > epsilon);
 }
 /** Apply transformation.
  *  @param [in] m 4*4 transformation matrix.

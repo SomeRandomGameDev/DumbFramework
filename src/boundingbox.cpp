@@ -163,13 +163,43 @@ ContainmentType::Value BoundingBox::contains(const glm::vec3& point)
 	{ return ContainmentType::Intersects; }
 	return ContainmentType::Contains;
 }
-/** Check if the current bounding box contains or intersects the specified ray.
+/** Check if the current bounding box intersects the specified ray.
 *  @param [in] ray Ray to be tested.
 */
-ContainmentType::Value BoundingBox::contains(const Ray& ray)
+bool BoundingBox::intersects(const Ray& ray)
 {
 	/// @todo
-	return ContainmentType::Disjoints;
+/*
+    ref : http://www.cg.cs.tu-bs.de/media/publications/fast-rayaxis-aligned-bounding-box-overlap-tests-using-ray-slopes.pdf
+    r->ii = 1.0/i; // inverse ray direction
+    r->ij = 1.0/j;
+    r->ik = 1.0/k
+
+    r->s_yx = r->i * r->ij; // ray slopes
+    r->s_xy = r->j * r->ii;
+    r->s_zy = r->j * r->ik;
+    r->s_yz = r->k * r->ij;
+    r->s_xz = r->i * r->ik;
+    r->s_zx = r->k * r->ii;
+
+    r->c_xy = r->y - r->s_xy * r->x; // precomputation
+    r->c_yx = r->x - r->s_yx * r->y;
+    r->c_zy = r->y - r->s_zy * r->z;
+    r->c_yz = r->z - r->s_yz * r->y;
+    r->c_xz = r->z - r->s_xz * r->x;
+    r->c_zx = r->x - r->s_zx * r->z 
+ 
+	if ((r->ox > b->x1) || (r->oy > b->y1) || (r->oz > b->z1)
+	 || (r->s_xy * b->x1 - b->y0 + r->c_xy < 0)
+	 || (r->s_yx * b->y1 - b->x0 + r->c_yx < 0)
+	 || (r->s_zy * b->z1 - b->y0 + r->c_zy < 0)
+	 || (r->s_yz * b->y1 - b->z0 + r->c_yz < 0)
+	 || (r->s_xz * b->x1 - b->z0 + r->c_xz < 0)
+	 || (r->s_zx * b->z1 - b->x0 + r->c_zx < 0))
+		return false;
+	return true
+*/
+	return false;
 }
 /** Apply transformation.
 *  @param [in] m 4*4 transformation matrix.

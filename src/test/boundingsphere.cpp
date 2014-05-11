@@ -64,23 +64,23 @@ SUITE(BoundingSphere)
 		CHECK_EQUAL(ContainmentType::Intersects, res);
 	}
 	
-	TEST(ContainsRay)
+	TEST(IntersectsRay)
 	{
 		BoundingSphere sphere(glm::vec3(1.0f, 0.0f, 0.0f), 2.0f);
 		Ray ray(glm::vec3(0.5f), glm::vec3(-1.0f));
 		
-		ContainmentType::Value res;
-		
-		res = sphere.contains(ray);
-		CHECK_EQUAL(ContainmentType::Contains, res);
+        bool res;
+        
+		res = sphere.intersects(ray);
+		CHECK_EQUAL(true, res);
 		
 		ray.origin = glm::vec3(4.0f);
-		res = sphere.contains(ray);
-		CHECK_EQUAL(ContainmentType::Intersects, res);
+		res = sphere.intersects(ray);
+		CHECK_EQUAL(true, res);
 
 		ray.origin = glm::vec3(-6.0f);
-		res = sphere.contains(ray);
-		CHECK_EQUAL(ContainmentType::Disjoints, res);
+		res = sphere.intersects(ray);
+		CHECK_EQUAL(false, res);
 	}
     
     TEST(ContainsBox)

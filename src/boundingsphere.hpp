@@ -51,10 +51,10 @@ struct BoundingSphere
 	 *  @param [in] point Point to be tested.
 	 */
 	ContainmentType::Value contains(const glm::vec3& point);
-    /** Check if the current bounding sphere contains or intersects the specified ray.
+    /** Check if the current bounding sphere intersects the specified ray.
      *  @param [in] ray Ray to be tested.
      */
-    ContainmentType::Value contains(const Ray& ray);
+    bool intersects(const Ray& ray);
 	/** Apply transformation.
 	 *  @param [in] m 4*4 transformation matrix.
 	 */
