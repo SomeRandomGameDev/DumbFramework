@@ -70,7 +70,28 @@ BoundingSphere& BoundingSphere::operator= (const BoundingSphere& sphere)
 /** Check if the current bounding sphere contains the specified bounding box. */
 ContainmentType::Value BoundingSphere::contains(const BoundingBox& box)
 {
-	/// @todo
+	float r2 = radius * radius;
+	
+	glm::vec3 diffMin = box.min - center;
+	glm::vec3 diffMax = box.max - center;
+	
+	diffMin *= diffMin;
+	diffMax *= diffMax;
+	
+	bool any = false;
+	bool all = true;
+	
+	for(int i=0; i<3; i++)
+	{
+		bool testMin = (diffMin[i] <= r2);
+		bool testMax = (diffMax[i] <= r2);
+		
+		any = (any || testMin) || testMax;
+		all = (all && testMin) && testMax; 
+	}
+	
+	if(all) { return ContainmentType::Contains; }
+	if(any) { return ContainmentType::Intersects; }
 	return ContainmentType::Disjoints;
 }
 /** Check if the current bounding sphere contains the specified bounding sphere. */

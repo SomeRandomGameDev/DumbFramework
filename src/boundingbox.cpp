@@ -40,9 +40,9 @@ BoundingBox::BoundingBox(const float* buffer, size_t count, size_t stride)
 */
 BoundingBox::BoundingBox(const BoundingSphere& sphere)
 {
-	glm::vec3 direction = glm::normalize(glm::vec3(1.0f));
-	min = sphere.center - sphere.radius*direction;
-	max = sphere.center + sphere.radius*direction;
+	glm::vec3 direction = glm::vec3(sphere.radius);
+	min = sphere.center - direction;
+	max = sphere.center + direction;
 }
 /** Constructor.
 *  Merge two bounding boxes.
