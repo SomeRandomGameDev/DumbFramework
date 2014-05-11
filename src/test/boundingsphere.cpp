@@ -1,5 +1,5 @@
 #include <unittest++/UnitTest++.h>
-#include "boundingsphere.hpp"
+#include "boundingobjects.hpp"
 
 using namespace Dumb::Framework;
 
@@ -59,7 +59,7 @@ SUITE(BoundingSphere)
 		CHECK_EQUAL(ContainmentType::Intersects, res);
 	}
 	
-	TEST(RaySphere)
+	TEST(ContainsRay)
 	{
 		BoundingSphere sphere(glm::vec3(1.0f, 0.0f, 0.0f), 2.0f);
 		Ray ray(glm::vec3(0.5f), glm::vec3(-1.0f));
@@ -77,4 +77,36 @@ SUITE(BoundingSphere)
 		res = sphere.contains(ray);
 		CHECK_EQUAL(ContainmentType::Disjoints, res);
 	}
+    
+    TEST(ContainsBox)
+    {
+        BoundingSphere sphere(glm::vec3(1.0f, 1.0f, 1.0f), 2.0f);
+        BoundingBox box;
+    	ContainmentType::Value res;
+	    
+        box.min = glm::vec3(-0.5f);
+        box.max = glm::vec3( 0.5f);
+        res = sphere.contains(box);
+        CHECK_EQUAL(ContainmentType::Contains, res);
+		
+        box.min = glm::vec3(-1.75f);
+        box.max = glm::vec3( 0.25f);
+        res = sphere.contains(box);
+        CHECK_EQUAL(ContainmentType::Intersects, res);
+
+        box.min = glm::vec3(1.8f);
+        box.max = glm::vec3(3.25f);
+        res = sphere.contains(box);
+        CHECK_EQUAL(ContainmentType::Intersects, res);
+
+        box.min = glm::vec3(-2.25f);
+        box.max = glm::vec3( 3.75f);
+        res = sphere.contains(box);
+        CHECK_EQUAL(ContainmentType::Disjoints, res);
+        
+        box.min = glm::vec3(5.125f);
+        box.max = glm::vec3(5.75f);
+        res = sphere.contains(box);
+        CHECK_EQUAL(ContainmentType::Disjoints, res);
+	 }
 }
