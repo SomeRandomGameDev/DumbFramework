@@ -70,8 +70,21 @@ BoundingBox& BoundingBox::operator= (const BoundingBox& box)
 /** Check if the current bounding box contains the specified bounding box. */
 ContainmentType::Value BoundingBox::contains(const BoundingBox& box)
 {
-	/// @todo
-	return ContainmentType::Disjoints;
+	if((box.max.x < min.x) ||
+	   (box.min.x > max.x) ||
+	   (box.max.y < min.y) ||
+	   (box.min.y > max.y) ||
+	   (box.max.z < min.z) ||
+	   (box.min.z > max.z))
+	{ return ContainmentType::Disjoints; }	
+	if((box.min.x >= min.x) &&
+	   (box.max.x <= max.x) &&
+	   (box.min.y >= min.y) &&
+	   (box.max.y <= max.y) &&
+	   (box.min.z >= min.z) &&
+	   (box.max.z <= max.z))
+	{ return ContainmentType::Contains; }	
+	return ContainmentType::Intersects;
 }
 /** Check if the current bounding box contains the specified bounding sphere. */
 ContainmentType::Value BoundingBox::contains(const BoundingSphere& sphere)
@@ -105,29 +118,21 @@ ContainmentType::Value BoundingBox::contains(const float* buffer, size_t count, 
 */
 ContainmentType::Value BoundingBox::contains(const glm::vec3& point)
 {
-	glm::bvec3 isBetween((point.x > min.x) && (point.x < max.x),
-						 (point.y > min.y) && (point.y < max.y),
-						 (point.z > min.z) && (point.z < max.z));
-	if(isBetween.x && isBetween.y && isBetween.z)
-	{
-		return ContainmentType::Contains;
-	}
-	if((point.x == min.x) || (point.x == max.x))
-	{
-		if(isBetween.y && isBetween.z)
-		{ return ContainmentType::Intersects; }
-	}
-	if((point.y == min.y) || (point.y == max.y))
-	{
-		if(isBetween.z && isBetween.x)
-		{ return ContainmentType::Intersects; }
-	}
-	if((point.z == min.z) || (point.z == max.z))
-	{
-		if(isBetween.x && isBetween.y)
-		{ return ContainmentType::Intersects; }
-	}
-	return ContainmentType::Disjoints;
+	if((point.x < min.x) ||
+	   (point.y < min.y) ||
+	   (point.z < min.z) ||
+	   (point.x > max.x) ||
+	   (point.y > max.y) ||
+	   (point.z > max.z))
+	{ return ContainmentType::Disjoints; }
+	if((point.x == min.x) ||
+	   (point.y == min.y) ||
+	   (point.z == min.z) ||
+	   (point.x == max.x) ||
+	   (point.y == max.y) ||
+	   (point.z == max.z))
+	{ return ContainmentType::Intersects; }
+	return ContainmentType::Contains;
 }
 /** Check if the current bounding box contains or intersects the specified ray.
 *  @param [in] ray Ray to be tested.

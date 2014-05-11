@@ -1,3 +1,4 @@
+#include <iostream>
 #include "boundingobjects.hpp"
 
 namespace Dumb      {
@@ -70,28 +71,34 @@ BoundingSphere& BoundingSphere::operator= (const BoundingSphere& sphere)
 /** Check if the current bounding sphere contains the specified bounding box. */
 ContainmentType::Value BoundingSphere::contains(const BoundingBox& box)
 {
-	float r2 = radius * radius;
-	
-	glm::vec3 diffMin = box.min - center;
+	glm::vec3 diffMin = center  - box.min;
 	glm::vec3 diffMax = box.max - center;
 	
-	diffMin *= diffMin;
-	diffMax *= diffMax;
+	glm::vec3 eMin = diffMin * diffMin;
+	glm::vec3 eMax = diffMax * diffMax;
 	
-	bool any = false;
-	bool all = true;
-	
+	float r2 = radius * radius;
+
+	float dmin = 0.0f;
 	for(int i=0; i<3; i++)
 	{
-		bool testMin = (diffMin[i] <= r2);
-		bool testMax = (diffMax[i] <= r2);
-		
-		any = (any || testMin) || testMax;
-		all = (all && testMin) && testMax; 
+		if     (diffMin[i] < 0.0f) { dmin += eMin[i]; }
+		else if(diffMax[i] < 0.0f) { dmin += eMax[i]; }
 	}
-	
-	if(all) { return ContainmentType::Contains; }
-	if(any) { return ContainmentType::Intersects; }
+
+	if(dmin <= r2)
+	{
+		bool all=true, any=false;
+		for(int i=0; i<3; i++)
+		{
+			bool tMin = (eMin[i] <= r2);
+			bool tMax(eMax[i] <= r2);
+			all = all && (tMin && tMax);
+			any = any || (tMin || tMax);
+		}
+		if(all) { return ContainmentType::Contains;   }
+		if(any) { return ContainmentType::Intersects; }
+	}
 	return ContainmentType::Disjoints;
 }
 /** Check if the current bounding sphere contains the specified bounding sphere. */
@@ -105,8 +112,8 @@ ContainmentType::Value BoundingSphere::contains(const BoundingSphere& sphere)
 	float sqdr0 = dr0 * dr0;
 	float sqdr1 = dr1 * dr1;
 
-	if(squareDistance > sqdr0) { return ContainmentType::Disjoints;  }
-	if(squareDistance < sqdr1) { return ContainmentType::Contains; }
+	if(squareDistance >  sqdr0) { return ContainmentType::Disjoints;  }
+	if(squareDistance <= sqdr1) { return ContainmentType::Contains; }
 	return ContainmentType::Intersects;
 }
 /** Check if the current bounding sphere contains the specified list of points.
