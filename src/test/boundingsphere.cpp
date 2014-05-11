@@ -36,6 +36,11 @@ SUITE(BoundingSphere)
 		CHECK_EQUAL(ContainmentType::Disjoints, res);
     }
 
+    TEST(ContainsPointList)
+    {
+        /// @todo
+    }
+
 	TEST(ContainsSphere)
     {
         BoundingSphere big(glm::vec3(0.0f, 2.0f, 0.0f), 4.0f);

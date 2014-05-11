@@ -142,7 +142,13 @@ ContainmentType::Value BoundingBox::contains(const Ray& ray)
 */
 void BoundingBox::transform(const glm::mat4& m)
 {
-	/// @todo
+	glm::vec3 dummy[2] =
+	{ 
+		glm::vec3(m * glm::vec4(min,1.0f)),
+		glm::vec3(m * glm::vec4(max,1.0f))
+	};
+	min = glm::min(dummy[0], dummy[1]);
+	max = glm::max(dummy[0], dummy[1]);
 }
 
 }}

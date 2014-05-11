@@ -61,6 +61,7 @@ if(BUILD_TESTS)
     include_directories( ${UNITTEST++_INCLUDE_DIR} )
 
     set(DUMB_FRAMEWORK_TEST_SOURCES
+        src/test/boundingbox.cpp
         src/test/boundingsphere.cpp
         src/test/runtests.cpp)
     
