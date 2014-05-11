@@ -133,4 +133,4 @@ Of course, there's some other methods to actually move the sprites, rotate them,
 
 Have fun with that.
 
-//SomeRandomGameDev//
+*SomeRandomGameDev*
