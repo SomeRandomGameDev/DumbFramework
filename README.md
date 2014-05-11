@@ -132,3 +132,5 @@ And that's it !
 Of course, there's some other methods to actually move the sprites, rotate them, perform zooming and so on. (and this will be documented later even if it's totally done in the code).
 
 Have fun with that.
+
+//SomeRandomGameDev//
