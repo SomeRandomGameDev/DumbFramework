@@ -106,8 +106,8 @@ void Application::stop() {
     clear();
 }
 
-void Application::handleKey(GLFWwindow* /*window*/, int key, int action, int, int) {
-    _application->_scene->handleKeyAction(key, action);
+void Application::handleKey(GLFWwindow* /*window*/, int key, int scancode, int action, int mods) {
+    _application->_scene->handleKeyAction(key, scancode, action, mods);
 }
 
 void Application::handleMouseButton(GLFWwindow* /*window*/, int button, int action, int) {
