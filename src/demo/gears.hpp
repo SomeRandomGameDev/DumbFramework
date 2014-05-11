@@ -20,7 +20,7 @@ public:
  
   void pause();
 
-  void resume();
+  void resume(GLFWwindow *);
 
   GearScene();
 

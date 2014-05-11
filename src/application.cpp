@@ -54,8 +54,6 @@ bool Application::start(WindowHint hint, Scene *scene) {
         _initialized = true;
         result = _hint.openWindow();
         if(result) {
-            std::cout << "Renderer : " << glGetString(GL_RENDERER) << std::endl;
-            std::cout << "Version : " << glGetString(GL_VERSION) << std::endl;
             GLFWwindow* window = _hint.getWindow();
             GLenum glewError = glewInit();
             if(GLEW_OK != glewError) {
@@ -72,7 +70,7 @@ bool Application::start(WindowHint hint, Scene *scene) {
             glfwSetWindowCloseCallback(window, Application::handleWindowClose);
             _running = true;
             Scene *next = 0;
-            _scene->resume();
+            _scene->resume(window);
             while(_running) {
                 next = _scene->output();
                 if(next != _scene) {
@@ -82,7 +80,7 @@ bool Application::start(WindowHint hint, Scene *scene) {
                     }
                     _running &= 0 != next;
                     if(_running) {
-                        next->resume();
+                        next->resume(window);
                     }
                     _scene = next;
                 }

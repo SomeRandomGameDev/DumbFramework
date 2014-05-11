@@ -235,7 +235,7 @@ Scene* GearScene::output() {
 void GearScene::pause() {
 }
 
-void GearScene::resume() {
+void GearScene::resume(GLFWwindow * /*window*/) {
   static GLfloat pos[4] = { 5.0, 5.0, 10.0, 0.0 };
   static GLfloat red[4] = { 0.8, 0.1, 0.0, 1.0 };
   static GLfloat green[4] = { 0.0, 0.8, 0.2, 1.0 };

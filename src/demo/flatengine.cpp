@@ -19,7 +19,7 @@ public:
 
   void handleMouseWheelAction(double, double);
 
-  void resume();
+  void resume(GLFWwindow *);
   void pause();
 
 private:
@@ -154,7 +154,7 @@ void TestEngine::handleWindowSize(int width, int height) {
   glViewport(0, 0, _width, _height);
 }
 
-void TestEngine::resume() {
+void TestEngine::resume(GLFWwindow * /* window */) {
   if(0 == _atlas) {
     _atlas = new Sprite::Atlas("test.xml");
     _engine = new Sprite::Engine(_atlas, 8);

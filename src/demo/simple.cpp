@@ -13,7 +13,7 @@ public:
   void handleWindowSize(int width, int height);
   Scene* output();
   void pause();
-  void resume();
+  void resume(GLFWwindow *);
 
 private:
   bool quit;
@@ -42,7 +42,7 @@ void MyScene::handleWindowSize(int width, int height) {
   std::cout << "Window Resized to " << width << " x " << height << std::endl;
 }
 
-void MyScene::resume() {
+void MyScene::resume(GLFWwindow * /* window */) {
   std::cout << "Resume" << std::endl;
   quit = false;
 }
