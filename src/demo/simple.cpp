@@ -6,42 +6,43 @@
 class MyScene : public Scene {
 public:
 
-  void handleKeyAction(int key, int action);
+  void handleKeyAction(int key, int scancode, int action, int mods);
   void handleMouseButtonAction(int button, int action);
-  void handleMousePositionAction(int x, int y);
-  void handleMouseWheelAction(int pos);
+  void handleMousePositionAction(double x, double y);
+  void handleMouseWheelAction(double xpos, double ypos);
   void handleWindowSize(int width, int height);
   Scene* output();
   void pause();
-  void resume();
+  void resume(GLFWwindow *);
 
 private:
   bool quit;
 };
 
 
-void MyScene::handleKeyAction(int key, int action) {
-  std::cout << "Key : " << key << ", " << action << std::endl;
-  quit |= (key == GLFW_KEY_ESC);
+void MyScene::handleKeyAction(int key, int scancode, int action, int mods) {
+  std::cout << "Key : " << key << ", Action : " << action << std::endl;
+  std::cout << "ScanCode : " << scancode << ", Modifiers : " << mods << std::endl;
+  quit |= (key == GLFW_KEY_ESCAPE);
 }
 
 void MyScene::handleMouseButtonAction(int button, int action) {
   std::cout << "Mouse Button : " << button << ", " << action << std::endl;
 }
 
-void MyScene::handleMousePositionAction(int x, int y) {
+void MyScene::handleMousePositionAction(double x, double y) {
   std::cout << "Mouse Position : " << x << ", " << y << std::endl;
 }
 
-void MyScene::handleMouseWheelAction(int pos) {
-  std::cout << "Mouse Wheel : " << pos << std::endl;
+void MyScene::handleMouseWheelAction(double xpos, double ypos) {
+  std::cout << "Mouse Wheel : (" << xpos << ", " << ypos << ")" << std::endl;
 }
 
 void MyScene::handleWindowSize(int width, int height) {
   std::cout << "Window Resized to " << width << " x " << height << std::endl;
 }
 
-void MyScene::resume() {
+void MyScene::resume(GLFWwindow * /* window */) {
   std::cout << "Resume" << std::endl;
   quit = false;
 }

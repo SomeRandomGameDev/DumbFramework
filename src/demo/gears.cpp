@@ -139,7 +139,7 @@ GearScene::GearScene() {
   _gear1 = _gear2 = _gear3 = -1;
 }
 
-void GearScene::handleKeyAction(int key, int action) {
+void GearScene::handleKeyAction(int key, int /* scancode */, int action, int /* mods */) {
   _quit |= (key == GLFW_KEY_ESCAPE);
   if(GLFW_PRESS == action) {
     switch(key) {
@@ -235,7 +235,7 @@ Scene* GearScene::output() {
 void GearScene::pause() {
 }
 
-void GearScene::resume() {
+void GearScene::resume(GLFWwindow * /*window*/) {
   static GLfloat pos[4] = { 5.0, 5.0, 10.0, 0.0 };
   static GLfloat red[4] = { 0.8, 0.1, 0.0, 1.0 };
   static GLfloat green[4] = { 0.0, 0.8, 0.2, 1.0 };

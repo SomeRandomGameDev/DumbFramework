@@ -1,0 +1,22 @@
+@startuml
+
+participant "Main" as main
+participant "Application" as app
+participant "Scene" as scn
+
+main -> app: start
+activate app
+
+app -> app: init
+
+app -> scn: output
+activate scn
+scn -> app:
+deactivate scn
+app -> app: swap buffers
+deactivate app
+app -> main:
+deactivate main
+
+
+@enduml

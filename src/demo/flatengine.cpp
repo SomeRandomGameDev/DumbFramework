@@ -11,7 +11,7 @@ public:
   TestEngine(int, int);
   Scene *output();
 
-  void handleKeyAction(int, int);
+  void handleKeyAction(int, int, int, int);
   void handleWindowSize(int, int);
 
   void handleMouseButtonAction(int, int);
@@ -19,7 +19,7 @@ public:
 
   void handleMouseWheelAction(double, double);
 
-  void resume();
+  void resume(GLFWwindow *);
   void pause();
 
 private:
@@ -127,7 +127,7 @@ void TestEngine::handleMouseButtonAction(int button, int action) {
   _middlePressed = (GLFW_PRESS == action) && (GLFW_MOUSE_BUTTON_MIDDLE == button);
 }
 
-void TestEngine::handleKeyAction(int key, int action) {
+void TestEngine::handleKeyAction(int key, int /* scancode */, int action, int /* mods */) {
   _quit = (GLFW_PRESS == action) && (GLFW_KEY_ESCAPE == key);
 
   if((GLFW_PRESS == action) && (GLFW_KEY_SPACE == key)) {
@@ -154,7 +154,7 @@ void TestEngine::handleWindowSize(int width, int height) {
   glViewport(0, 0, _width, _height);
 }
 
-void TestEngine::resume() {
+void TestEngine::resume(GLFWwindow * /* window */) {
   if(0 == _atlas) {
     _atlas = new Sprite::Atlas("test.xml");
     _engine = new Sprite::Engine(_atlas, 8);

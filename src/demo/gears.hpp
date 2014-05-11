@@ -6,7 +6,7 @@
 
 class GearScene : public Scene {
 public:
-  void handleKeyAction(int key, int action);
+  void handleKeyAction(int key, int scancode, int action, int mods);
 
   void handleMouseButtonAction(int button, int action);
 
@@ -20,7 +20,7 @@ public:
  
   void pause();
 
-  void resume();
+  void resume(GLFWwindow *);
 
   GearScene();
 
