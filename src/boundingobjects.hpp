@@ -10,6 +10,7 @@ namespace Framework {
 
 struct BoundingBox;
 struct BoundingSphere;
+class  BoundingFrustum;
 
 }}
 
@@ -17,5 +18,6 @@ struct BoundingSphere;
 
 #include "boundingbox.hpp"
 #include "boundingsphere.hpp"
+#include "boundingfrustum.hpp"
 
 #endif /* defined(_DUMB_FW_BOUNDING_BOX_) or defined(_DUMB_FW_BOUNDING_SPHERE_) */
