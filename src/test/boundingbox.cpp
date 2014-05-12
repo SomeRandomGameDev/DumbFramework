@@ -74,9 +74,30 @@ SUITE(BoundingBox)
         CHECK_EQUAL(ContainmentType::Disjoints, res);
 	}
 	
-	TEST(ContainsRay)
+	TEST(IntersectsRay)
 	{
-        /// @todo
+        Dumb::Framework::BoundingBox box(glm::vec3(-3.1f, 1.2f, -2.6f), glm::vec3(4.5f, 6.7f, 5.1f));
+        Dumb::Framework::Ray ray;
+        bool res;
+        
+        ray.origin    = glm::vec3(-1.4f, 3.2f, 1.1f);
+        ray.direction = glm::normalize(glm::vec3(-1.0f, 1.0f, 0.5f));
+        res = box.intersects(ray);
+        CHECK_EQUAL(true, res);
+        
+        ray.origin    = glm::vec3(6.25f,-2.7f,-8.8f);
+        ray.direction = glm::normalize(glm::vec3(-1.0f, 0.0f,-1.0f));
+        res = box.intersects(ray);
+        CHECK_EQUAL(false, res);
+
+        ray.direction = glm::normalize(glm::vec3(-1.0f,-1.0f, 1.0f));
+        res = box.intersects(ray);
+        CHECK_EQUAL(false, res);
+
+        ray.origin = glm::vec3(5.7f, 8.95f, 6.25f);
+        ray.direction = glm::normalize(glm::vec3(-1.0f,-1.0f,-1.0f));
+        res = box.intersects(ray);
+        CHECK_EQUAL(true, res);
 	}
     
     TEST(ContainsBox)
