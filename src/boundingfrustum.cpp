@@ -2,38 +2,47 @@
 
 namespace Dumb      {
 namespace Framework {
-
-#if 0
-/// Construct from camera.
-/// \param [in] camera Source camera.
-void Frustum::Create(const Camera& camera)
+/** Constructor. */
+BoundingFrustum::BoundingFrustum()
+	: m_camera()
+	, m_projection()
+{
+    for(size_t i=0; i<FRUSTUM_PLANE_COUNT; i++)
+    {
+    	m_planes[i] = glm::vec4(0.0f)
+    }
+}
+/** Build frustum from camera and projection matrices.
+ * @param [in] camera Camera matrix.
+ * @param [in] projection Projection matrix.
+ */
+BoundingFrustum::BoundingFrustum(const glm::mat4& camera, const glm::mat4& projection)
+	: m_camera(camera)
+	, m_projection(projection)
 {
 	float t;
 	float clip[16];
 	glm::vec4 plane;
 
-	const glm::mat4& modelview  = camera.GetModelview();
-	const glm::mat4& projection = camera.GetProjection();
+	clip[ 0] =  camera[0][0] * projection[0][0];
+	clip[ 1] =  camera[0][1] * projection[1][1];
+	clip[ 2] =  camera[0][2] * projection[2][2];
+	clip[ 3] = -camera[0][2];
 
-	clip[ 0] =  modelview[0][0] * projection[0][0];
-	clip[ 1] =  modelview[0][1] * projection[1][1];
-	clip[ 2] =  modelview[0][2] * projection[2][2];
-	clip[ 3] = -modelview[0][2];
+	clip[ 4] =  camera[1][0] * projection[0][0];
+	clip[ 5] =  camera[1][1] * projection[1][1];
+	clip[ 6] =  camera[1][2] * projection[2][2];
+	clip[ 7] = -camera[1][2];
 
-	clip[ 4] =  modelview[1][0] * projection[0][0];
-	clip[ 5] =  modelview[1][1] * projection[1][1];
-	clip[ 6] =  modelview[1][2] * projection[2][2];
-	clip[ 7] = -modelview[1][2];
+	clip[ 8] =  camera[2][0] * projection[0][0];
+	clip[ 9] =  camera[2][1] * projection[1][1];
+	clip[10] =  camera[2][2] * projection[2][2];
+	clip[11] = -camera[2][2];
 
-	clip[ 8] =  modelview[2][0] * projection[0][0];
-	clip[ 9] =  modelview[2][1] * projection[1][1];
-	clip[10] =  modelview[2][2] * projection[2][2];
-	clip[11] = -modelview[2][2];
-
-	clip[12] =  modelview[3][0] * projection[0][0];
-	clip[13] =  modelview[3][1] * projection[1][1];
-	clip[14] =  modelview[3][2] * projection[2][2] + projection[3][2];
-	clip[15] = -modelview[3][2];
+	clip[12] =  camera[3][0] * projection[0][0];
+	clip[13] =  camera[3][1] * projection[1][1];
+	clip[14] =  camera[3][2] * projection[2][2] + projection[3][2];
+	clip[15] = -camera[3][2];
 
 	// right
 	plane.x = clip[ 3] - clip[ 0];
@@ -89,55 +98,35 @@ void Frustum::Create(const Camera& camera)
 
 	t = sqrt( plane.x*plane.x + plane.y*plane.y + plane.z*plane.z );
 	m_planes[FRUSTUM_PLANE_NEAR] = plane / t;
-}
 
-/// Test if the given point is inside the frustum.
-/// \param [in] point Point to be tested.
-/// \return true if the point is inside the frustum.
-bool Frustum::Contains(const glm::vec3& point) const
+}
+/** Copy constructor.
+ * @param [in] frustum Source bounding frustum.
+ */
+BoundingFrustum::BoundingFrustum(const BoundingFrustum& frustum)
+	: m_camera(frustum.m_camera)
+	, m_projection(frustum.m_projection)
 {
-	glm::vec4 p(point, 1.0);
-
-	for(int i=0; i<FRUSTUM_PLANE_COUNT; i++)
+	for(size_t i=0; i<FRUSTUM_PLANE_COUNT; i++)
 	{
-		if(glm::dot(m_planes[i], p) < 0)
-		{
-			return false;
-		}
+		m_planes[i] = frustum.m_planes[i];
 	}
-
-	return true;
 }
-
-/// Test if the given axis aligned bouding box is inside the frustum.
-/// \param [in] box Axis aligned bounding box.
-/// \return true if the axis aligned bounding box is inside the frustum.
-bool Frustum::Contains(const AABB& box) const
+/** Copy operator.
+ * @param [in] frustum Source bounding frustum.
+ */
+BoundingFrustum& BoundingFrustum::operator= (const BoundingFrustum& frustum)
 {
-	glm::vec4 neg(1.0);
-
-	for(int i=0; i<FRUSTUM_PLANE_COUNT; i++)
+	m_camera = frustum.m_camera;
+	m_projection = frustum.m_projection;
+	for(size_t i=0; i<FRUSTUM_PLANE_COUNT; i++)
 	{
-		const glm::vec4& plane = m_planes[i];
-		neg.x = (plane.x > 0) ? box.min.x : box.max.x;
-		neg.y = (plane.y > 0) ? box.min.y : box.max.y;
-		neg.z = (plane.z > 0) ? box.min.z : box.max.z;
-		if(glm::dot(m_planes[i], neg) < 0)
-		{
-			return false;
-		}
+		m_planes[i] = frustum.m_planes[i];
 	}
-
-	return true;
+	return *this;
 }
-
-/// Test if an axis aligned bouding box intersects the frustum.
-/// \param [in] box Axis aligned bounding box to be tested.
-/// \return
-///		-1 if the axis aligned bounding box is outside the frustum.
-///      0 if the axis aligned bounding box is inside the frustum.
-///      1 if the axis aligned bounding box intersects the frustum.
-int Frustum::Intersects(const AABB& box) const
+/** Check if the current bounding frustum contains the specified bounding box. */
+ContainmentType::Value BoundingFrustum::contains(const BoundingBox& box)
 {
 	glm::vec4 neg(1.0);
 	glm::vec4 pos(1.0);
@@ -153,16 +142,69 @@ int Frustum::Intersects(const AABB& box) const
 		pos.z = (plane.z > 0) ? box.max.z : box.min.z;
 		if(glm::dot(m_planes[i], neg) < 0)
 		{
-			return -1;
+			return ContainmentType::Disjoints;
 		}
 		if(glm::dot(m_planes[i], pos) < 0)
 		{
-			return 1;
+			return ContainmentType::Intersects;
 		}
 	}
 
-	return 0;
+	return ContainmentType::Contains;
 }
-#endif
+/** Check if the current bounding frustum contains the specified bounding sphere. */
+ContainmentType::Value BoundingFrustum::contains(const BoundingSphere& sphere)
+{
+	/// @todo
+	return ContainmentType::Disjoints;
+}
+/** Check if the current bounding frustum contains the specified bounding frustum. */
+ContainmentType::Value BoundingFrustum::contains(const BoundingFrustum& frustum)
+{
+	/// @todo
+	return ContainmentType::Disjoints;
+}
+/** Check if the current bounding frustum contains the specified list of points.
+ * @param [in] buffer Pointer to the point array.
+ * @param [in] count Number of points
+ * @param [in] stride Offset between two consecutive points. (default=0)
+ */
+ContainmentType::Value BoundingFrustum::contains(const float* buffer, size_t count, size_t stride)
+{
+	/// @todo
+	return ContainmentType::Disjoints;
+}
+/** Check if the current bounding box contains the specified point.
+ * @param [in] point Point to be tested.
+ */
+ContainmentType::Value BoundingFrustum::contains(const glm::vec3& point)
+{
+	/// @todo
+	return ContainmentType::Disjoints;
+}
+/** Check if the current bounding box intersects the specified ray.
+ * @param [in] ray Ray to be tested.
+ */
+bool BoundingFrustum::intersects(const Ray& ray)
+{
+	/// @todo
+	return false;
+}
+/** Get camera matrix used to build frustum planes. **/
+const glm::mat4& BoundingFrustum::getCameraMatrix() const { return m_camera; }
+/** Get projection matrix used to build frustum planes. **/
+const glm::mat4& BoundingFrustum::getProjectionMatrix() const { return m_projection; }
+/** Get near plane. **/
+const glm::vec4& BoundingFrustum::getNear() const { return m_planes[FRUSTUM_PLANE_NEAR]; }
+/** Get far plane. **/
+glm::vec4 BoundingFrustum::getFar() const { return m_planes[FRUSTUM_PLANE_NEAR]; }
+/** Get top plane. **/
+glm::vec4 BoundingFrustum::getTop() const { return m_planes[FRUSTUM_PLANE_TOP]; }
+/** Get bottom plane. **/
+glm::vec4 BoundingFrustum::getBottom() const { return m_planes[FRUSTUM_PLANE_BOTTOM]; }
+/** Get left plane. **/
+glm::vec4 BoundingFrustum::getLeft() const { return m_planes[FRUSTUM_PLANE_LEFT]; }
+/** Get right plane. **/
+glm::vec4 BoundingFrustum::getRight() const { return m_planes[FRUSTUM_PLANE_RIGHT]; }
 
 }}
