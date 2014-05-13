@@ -19,9 +19,9 @@ public:
      *  @param [in] projection Projection matrix.
      */
     BoundingFrustum(const glm::mat4& camera, const glm::mat4& projection);
-	/** Copy constructor.
-	 *  @param [in] frustum Source bounding frustum.
-	 */
+   /** Copy constructor.
+    *  @param [in] frustum Source bounding frustum.
+    */
     BoundingFrustum(const BoundingFrustum& frustum);
 	/** Copy operator.
 	 *  @param [in] frustum Source bounding frustum.
@@ -32,7 +32,7 @@ public:
 	/** Check if the current bounding frustum contains the specified bounding sphere. */
 	ContainmentType::Value contains(const BoundingSphere& sphere);
 	/** Check if the current bounding frustum contains the specified bounding frustum. */
-	ContainmentType::Value contains(const BoundingFrustum& sphere);
+	ContainmentType::Value contains(const BoundingFrustum& frustum);
 	/** Check if the current bounding frustum contains the specified list of points.
 	 *  @param [in] buffer Pointer to the point array.
 	 *  @param [in] count  Number of points 
@@ -48,18 +48,22 @@ public:
      */
     bool intersects(const Ray& ray);
     
+    /** Get camera matrix used to build frustum planes. **/
+    const glm::mat4& getCameraMatrix() const;
+    /** Get projection matrix used to build frustum planes. **/
+    const glm::mat4& getProjectionMatrix() const;
     /** Get near plane. **/
-    glm::vec4 getNear() const;
+    const glm::vec4& getNear() const;
     /** Get far plane. **/
-    glm::vec4 getFar() const;
+    const glm::vec4& getFar() const;
     /** Get top plane. **/
-    glm::vec4 getTop() const;
+    const glm::vec4& getTop() const;
     /** Get bottom plane. **/
-    glm::vec4 getBottom() const;
+    const glm::vec4& getBottom() const;
     /** Get left plane. **/
-    glm::vec4 getLeft() const;
+    const glm::vec4& getLeft() const;
     /** Get right plane. **/
-    glm::vec4 getRight() const;
+    const glm::vec4& getRight() const;
     
 private:
     /** Plane names **/
