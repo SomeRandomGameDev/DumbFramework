@@ -78,11 +78,11 @@ private:
         FRUSTUM_PLANE_COUNT
     };
     /** Camera matrix used to build planes. **/
-    glm::mat4 m_camera;
+    glm::mat4 _camera;
     /** Projection matrix used to build planes. **/
-    glm::mat4 m_projection;
+    glm::mat4 _projection;
     /** Planes. **/
-    glm::vec4 m_planes[FRUSTUM_PLANE_COUNT];
+    glm::vec4 _planes[FRUSTUM_PLANE_COUNT];
 };
 
 }}
