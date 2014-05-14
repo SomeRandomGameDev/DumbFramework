@@ -70,8 +70,8 @@ BoundingSphere& BoundingSphere::operator= (const BoundingSphere& sphere)
 /** Check if the current bounding sphere contains the specified bounding box. */
 ContainmentType::Value BoundingSphere::contains(const BoundingBox& box)
 {
-	glm::vec3 diffMin = center  - box.min;
-	glm::vec3 diffMax = box.max - center;
+	glm::vec3 diffMin = center  - box.getMin();
+	glm::vec3 diffMax = box.getMax() - center;
 	
 	glm::vec3 eMin = diffMin * diffMin;
 	glm::vec3 eMax = diffMax * diffMax;

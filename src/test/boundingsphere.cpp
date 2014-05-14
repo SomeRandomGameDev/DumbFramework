@@ -89,33 +89,27 @@ SUITE(BoundingSphere)
         BoundingBox box;
     	ContainmentType::Value res;
 	    
-        box.min = glm::vec3(0.5f);
-        box.max = glm::vec3(1.0f);
+        box = BoundingBox::BoundingBox(glm::vec3(0.5f), glm::vec3(1.0f));
         res = sphere.contains(box);
         CHECK_EQUAL(ContainmentType::Contains, res);
 		
-        box.min = glm::vec3(0.9f,-8.0f, 0.9f);
-        box.max = glm::vec3(1.1f, 8.0f, 1.1f);
+        box = BoundingBox::BoundingBox(glm::vec3(0.9f,-8.0f, 0.9f), glm::vec3(1.1f, 8.0f, 1.1f));
         res = sphere.contains(box);
         CHECK_EQUAL(ContainmentType::Intersects, res);
 		
-        box.min = glm::vec3(-1.75f);
-        box.max = glm::vec3( 0.25f);
+        box = BoundingBox::BoundingBox(glm::vec3(-1.75f), glm::vec3( 0.25f));
         res = sphere.contains(box);
         CHECK_EQUAL(ContainmentType::Intersects, res);
 
-        box.min = glm::vec3(1.8f);
-        box.max = glm::vec3(4.25f);
+        box = BoundingBox::BoundingBox(glm::vec3(1.8f), glm::vec3(4.25f));
         res = sphere.contains(box);
         CHECK_EQUAL(ContainmentType::Intersects, res);
 
-        box.min = glm::vec3(-10.25f);
-        box.max = glm::vec3( 10.75f);
+        box = BoundingBox::BoundingBox(glm::vec3(-10.25f), glm::vec3( 10.75f));
         res = sphere.contains(box);
         CHECK_EQUAL(ContainmentType::Disjoints, res);
         
-        box.min = glm::vec3(0.0f, 0.0f,-120.0f);
-        box.max = glm::vec3(1.0f, 1.0f, -80.0f);
+        box = BoundingBox::BoundingBox(glm::vec3(0.0f, 0.0f,-120.0f), glm::vec3(1.0f, 1.0f, -80.0f));
         res = sphere.contains(box);
         CHECK_EQUAL(ContainmentType::Disjoints, res);
 	 }

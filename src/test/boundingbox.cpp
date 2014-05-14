@@ -13,8 +13,8 @@ SUITE(BoundingBox)
 		
 		BoundingBox merged(b0, b1);
 		
-        CHECK_EQUAL(merged.min, glm::min(b0.min, b1.min));
-        CHECK_EQUAL(merged.max, glm::max(b0.max, b1.max));
+        CHECK_EQUAL(merged.getMin(), glm::min(b0.getMin(), b1.getMin()));
+        CHECK_EQUAL(merged.getMax(), glm::max(b0.getMax(), b1.getMax()));
 	}
 
     TEST(ContainsPoint)
@@ -43,33 +43,27 @@ SUITE(BoundingBox)
         BoundingBox box;
     	ContainmentType::Value res;
 	    
-        box.min = glm::vec3(0.5f);
-        box.max = glm::vec3(1.0f);
+        box = BoundingBox::BoundingBox(glm::vec3(0.5f), glm::vec3(1.0f));
         res = box.contains(sphere);
         CHECK_EQUAL(ContainmentType::Disjoints, res);
 		
-        box.min = glm::vec3(0.5f, 0.5f,-2.0f);
-        box.max = glm::vec3(1.5f, 1.5f, 3.0f);
+        box = BoundingBox::BoundingBox(glm::vec3(0.5f, 0.5f,-2.0f), glm::vec3(1.5f, 1.5f, 3.0f));
         res = box.contains(sphere);
         CHECK_EQUAL(ContainmentType::Intersects, res);
 		
-        box.min = glm::vec3(-1.75f);
-        box.max = glm::vec3( 0.25f);
+        box = BoundingBox::BoundingBox(glm::vec3(-1.75f), glm::vec3( 0.25f));
         res = box.contains(sphere);
         CHECK_EQUAL(ContainmentType::Intersects, res);
 
-        box.min = glm::vec3(1.8f);
-        box.max = glm::vec3(4.25f);
+        box = BoundingBox::BoundingBox(glm::vec3(1.8f), glm::vec3(4.25f));
         res = box.contains(sphere);
         CHECK_EQUAL(ContainmentType::Intersects, res);
 
-        box.min = glm::vec3(-10.25f);
-        box.max = glm::vec3( 10.75f);
+        box = BoundingBox::BoundingBox(glm::vec3(-10.25f), glm::vec3( 10.75f));
         res = box.contains(sphere);
         CHECK_EQUAL(ContainmentType::Contains, res);
         
-        box.min = glm::vec3(0.0f, 0.0f,-120.0f);
-        box.max = glm::vec3(1.0f, 1.0f, -80.0f);
+        box = BoundingBox::BoundingBox(glm::vec3(0.0f, 0.0f,-120.0f), glm::vec3(1.0f, 1.0f, -80.0f));
         res = box.contains(sphere);
         CHECK_EQUAL(ContainmentType::Disjoints, res);
 	}

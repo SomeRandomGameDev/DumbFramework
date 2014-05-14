@@ -20,7 +20,6 @@ BoundingFrustum::BoundingFrustum(const glm::mat4& camera, const glm::mat4& proje
 	: _camera(camera)
 	, _projection(projection)
 {
-	float t;
 	float clip[16];
 	glm::vec4 plane;
 
@@ -49,56 +48,42 @@ BoundingFrustum::BoundingFrustum(const glm::mat4& camera, const glm::mat4& proje
 	plane.y = clip[ 7] - clip[ 4];
 	plane.z = clip[11] - clip[ 8];
 	plane.w = clip[15] - clip[12];
-
-	t = sqrt( plane.x*plane.x + plane.y*plane.y + plane.z*plane.z );
-	_planes[FRUSTUM_PLANE_RIGHT] = plane / t;
+	_planes[FRUSTUM_PLANE_RIGHT] = plane;
 
 	// left
 	plane.x = clip[ 3] + clip[ 0];
 	plane.y = clip[ 7] + clip[ 4];
 	plane.z = clip[11] + clip[ 8];
 	plane.w = clip[15] + clip[12];
-
-	t = sqrt( plane.x*plane.x + plane.y*plane.y + plane.z*plane.z );
-	_planes[FRUSTUM_PLANE_LEFT] = plane / t;
-	
+	_planes[FRUSTUM_PLANE_LEFT] = plane;
 
 	// bottom
 	plane.x = clip[ 3] + clip[ 1];
 	plane.y = clip[ 7] + clip[ 5];
 	plane.z = clip[11] + clip[ 9];
 	plane.w = clip[15] + clip[13];
+	_planes[FRUSTUM_PLANE_BOTTOM] = plane;
 
-	t = sqrt( plane.x*plane.x + plane.y*plane.y + plane.z*plane.z );
-	_planes[FRUSTUM_PLANE_BOTTOM] = plane / t;
-	
 	// top
 	plane.x = clip[ 3] - clip[ 1];
 	plane.y = clip[ 7] - clip[ 5];
 	plane.z = clip[11] - clip[ 9];
 	plane.w = clip[15] - clip[13];
-
-	t = sqrt( plane.x*plane.x + plane.y*plane.y + plane.z*plane.z );
-	_planes[FRUSTUM_PLANE_TOP] = plane / t;
-
+    _planes[FRUSTUM_PLANE_TOP] = plane;
+	
 	// far
 	plane.x = clip[ 3] - clip[ 2];
 	plane.y = clip[ 7] - clip[ 6];
 	plane.z = clip[11] - clip[10];
 	plane.w = clip[15] - clip[14];
-
-	t = sqrt( plane.x*plane.x + plane.y*plane.y + plane.z*plane.z );
-	_planes[FRUSTUM_PLANE_FAR] = plane / t;
+    _planes[FRUSTUM_PLANE_FAR] = plane;
 
 	// near
 	plane.x = clip[ 3] + clip[ 2];
 	plane.y = clip[ 7] + clip[ 6];
 	plane.z = clip[11] + clip[10];
 	plane.w = clip[15] + clip[14];
-
-	t = sqrt( plane.x*plane.x + plane.y*plane.y + plane.z*plane.z );
-	_planes[FRUSTUM_PLANE_NEAR] = plane / t;
-
+    _planes[FRUSTUM_PLANE_NEAR] = plane;
 }
 /** Copy constructor.
  * @param [in] frustum Source bounding frustum.
@@ -128,23 +113,26 @@ BoundingFrustum& BoundingFrustum::operator= (const BoundingFrustum& frustum)
 /** Check if the current bounding frustum contains the specified bounding box. */
 ContainmentType::Value BoundingFrustum::contains(const BoundingBox& box)
 {
-	glm::vec4 neg(1.0f);
-	glm::vec4 pos(1.0f);
+    const glm::vec3& bmin = box.getMin();
+    const glm::vec3& bmax = box.getMax();
+    
+	glm::vec3 neg;
+	glm::vec3 pos;
 
 	for(int i=0; i<FRUSTUM_PLANE_COUNT; i++)
 	{
-		const glm::vec4& plane = _planes[i];
-		neg.x = (plane.x > 0) ? box.min.x : box.max.x;
-		pos.x = (plane.x > 0) ? box.max.x : box.min.x;
-		neg.y = (plane.y > 0) ? box.min.y : box.max.y;
-		pos.y = (plane.y > 0) ? box.max.y : box.min.y;
-		neg.z = (plane.z > 0) ? box.min.z : box.max.z;
-		pos.z = (plane.z > 0) ? box.max.z : box.min.z;
-		if(glm::dot(_planes[i], neg) < 0)
+		const glm::vec3& pnormal = _planes[i].getNormal();
+		neg.x = (pnormal.x > 0) ? bmin.x : bmax.x;
+		pos.x = (pnormal.x > 0) ? bmax.x : bmin.x;
+		neg.y = (pnormal.y > 0) ? bmin.y : bmax.y;
+		pos.y = (pnormal.y > 0) ? bmax.y : bmin.y;
+		neg.z = (pnormal.z > 0) ? bmin.z : bmax.z;
+		pos.z = (pnormal.z > 0) ? bmax.z : bmin.z;
+		if(_planes[i].distance(neg) < 0)
 		{
 			return ContainmentType::Disjoints;
 		}
-		if(glm::dot(_planes[i], pos) < 0)
+		if(_planes[i].distance(pos) < 0)
 		{
 			return ContainmentType::Intersects;
 		}
@@ -195,16 +183,16 @@ const glm::mat4& BoundingFrustum::getCameraMatrix() const { return _camera; }
 /** Get projection matrix used to build frustum planes. **/
 const glm::mat4& BoundingFrustum::getProjectionMatrix() const { return _projection; }
 /** Get near plane. **/
-const glm::vec4& BoundingFrustum::getNear() const { return _planes[FRUSTUM_PLANE_NEAR]; }
+const Plane& BoundingFrustum::getNear() const { return _planes[FRUSTUM_PLANE_NEAR]; }
 /** Get far plane. **/
-const glm::vec4& BoundingFrustum::getFar() const { return _planes[FRUSTUM_PLANE_NEAR]; }
+const Plane& BoundingFrustum::getFar() const { return _planes[FRUSTUM_PLANE_NEAR]; }
 /** Get top plane. **/
-const glm::vec4& BoundingFrustum::getTop() const { return _planes[FRUSTUM_PLANE_TOP]; }
+const Plane& BoundingFrustum::getTop() const { return _planes[FRUSTUM_PLANE_TOP]; }
 /** Get bottom plane. **/
-const glm::vec4& BoundingFrustum::getBottom() const { return _planes[FRUSTUM_PLANE_BOTTOM]; }
+const Plane& BoundingFrustum::getBottom() const { return _planes[FRUSTUM_PLANE_BOTTOM]; }
 /** Get left plane. **/
-const glm::vec4& BoundingFrustum::getLeft() const { return _planes[FRUSTUM_PLANE_LEFT]; }
+const Plane& BoundingFrustum::getLeft() const { return _planes[FRUSTUM_PLANE_LEFT]; }
 /** Get right plane. **/
-const glm::vec4& BoundingFrustum::getRight() const { return _planes[FRUSTUM_PLANE_RIGHT]; }
+const Plane& BoundingFrustum::getRight() const { return _planes[FRUSTUM_PLANE_RIGHT]; }
 
 }}

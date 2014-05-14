@@ -53,17 +53,17 @@ public:
     /** Get projection matrix used to build frustum planes. **/
     const glm::mat4& getProjectionMatrix() const;
     /** Get near plane. **/
-    const glm::vec4& getNear() const;
+    const Plane& getNear() const;
     /** Get far plane. **/
-    const glm::vec4& getFar() const;
+    const Plane& getFar() const;
     /** Get top plane. **/
-    const glm::vec4& getTop() const;
+    const Plane& getTop() const;
     /** Get bottom plane. **/
-    const glm::vec4& getBottom() const;
+    const Plane& getBottom() const;
     /** Get left plane. **/
-    const glm::vec4& getLeft() const;
+    const Plane& getLeft() const;
     /** Get right plane. **/
-    const glm::vec4& getRight() const;
+    const Plane& getRight() const;
     
 private:
     /** Plane names **/
@@ -82,7 +82,7 @@ private:
     /** Projection matrix used to build planes. **/
     glm::mat4 _projection;
     /** Planes. **/
-    glm::vec4 _planes[FRUSTUM_PLANE_COUNT];
+    Plane _planes[FRUSTUM_PLANE_COUNT];
 };
 
 }}

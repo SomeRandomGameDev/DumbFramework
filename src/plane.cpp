@@ -27,12 +27,14 @@ Plane::Plane(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2)
     _distance = -glm::dot(_normal, p0);
 }
 /** Build plane from a vec4.
- *  @param [in] p Plane equation.
+ *  @param [in] p Raw data.
  */
 Plane::Plane(const glm::vec4& p)
     : _normal(p.x, p.y, p.z)
     , _distance(p.w)
-{}
+{
+    normalize();
+}
 /** Copy constructor.
  *  @param [in] plane Source plane.
  */
@@ -49,18 +51,35 @@ Plane& Plane::operator= (const Plane& plane)
     _distance = plane._distance;
     return *this;
 }
+/** Initialize from vec4.
+ *  @param [in] p Raw data.
+ */
+Plane& Plane::operator= (const glm::vec4& p)
+{
+    _normal   = glm::vec3(p.x, p.y, p.z);
+    _distance = p.w;
+    normalize();
+    return *this;
+}
 /** Normalize plane. **/
 Plane normalize(const Plane& plane)
 {
     float length = glm::length(plane._normal);
     return Plane(plane._normal/length, plane._distance/length);
 }
-/** Compute distance of a point to the plane.
+/** Normalize plane. **/
+void Plane::normalize()
+{
+    float length = glm::length(_normal);
+    _normal   /= length;
+    _distance /= length;
+}
+/** Compute pseudo distance of a point to the plane.
  *  @param [in] p Point.
  */
 float Plane::distance(const glm::vec3& p) const
 {
-    return glm::abs(glm::dot(p, _normal) + _distance);
+    return glm::dot(p, _normal) + _distance;
 }
 /** Tell on which side the specified point is.
  *  @param [in] p Point.
@@ -68,7 +87,7 @@ float Plane::distance(const glm::vec3& p) const
 Plane::Side Plane::classifiy(const glm::vec3& p) const
 {
     float epsilon = std::numeric_limits<float>::epsilon();
-    float signedDistance = glm::dot(p, _normal) + _distance;
+    float signedDistance = distance(p);
     if(signedDistance < -epsilon)
     {
         return Plane::Back;
@@ -98,7 +117,7 @@ bool Plane::intersects(const Ray& ray, float& distance)
 /** Compute closest point on the plane from the specified point. **/
 glm::vec3 Plane::closestPoint(const glm::vec3& p) const
 {
-    return p - (distance(p) * _normal);
+    return p - (glm::abs(distance(p)) * _normal);
 }
 /** Get normal. **/
 const glm::vec3& Plane::getNormal() const { return _normal; }

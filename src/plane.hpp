@@ -35,7 +35,7 @@ public:
      */
     Plane(const glm::vec3& n, float d);
     /** Build plane from a vec4.
-     *  @param [in] p Plane equation.
+     *  @param [in] p Raw data.
      */
     Plane(const glm::vec4& p);
     /** Copy constructor.
@@ -46,8 +46,14 @@ public:
      *  @param [in] plane Source plane.
 	 */
 	Plane& operator= (const Plane& plane);
+	/** Initialize from vec4.
+     *  @param [in] p Raw data.
+	 */
+	Plane& operator= (const glm::vec4& p);
     /** Normalize plane. **/
     friend Plane normalize(const Plane& plane);
+    /** Normalize plane. **/
+    void normalize();
     /** Compute distance of a point to the plane.
      *  @param [in] p Point.
      */

@@ -5,17 +5,21 @@ namespace Framework {
 
 /** Constructor. */
 BoundingBox::BoundingBox()
-	: min(0.0f)
-	, max(0.0f)
+	: _min(0.0f)
+	, _max(0.0f)
+	, _center(0.0f)
+	, _extent(0.0f)
 {}
 /** Constructor. 
 *  @param [in] bmin Bounding box minimum point.
 *  @param [in] bmax Bounding box maximum point.
 */
 BoundingBox::BoundingBox(const glm::vec3& bmin, const glm::vec3& bmax)
-	: min(bmin)
-	, max(bmax)
-{}
+	: _min(bmin)
+	, _max(bmax)
+{
+	_update();
+}
 /** Constructor.
 *  @param [in] buffer Pointer to the point array.
 *  @param [in] count  Number of points 
@@ -27,13 +31,15 @@ BoundingBox::BoundingBox(const float* buffer, size_t count, size_t stride)
 	inc = stride + 3;
 	offset = inc;
 	
-	min = max = glm::vec3(buffer[0], buffer[1], buffer[2]);
+	_min = _max = glm::vec3(buffer[0], buffer[1], buffer[2]);
 	for(size_t i=1; i<count; i++, offset+=inc)
 	{
 		glm::vec3 dummy(buffer[offset], buffer[offset+1], buffer[offset+2]);
-		min = glm::min(min, dummy);
-		max = glm::max(max, dummy);
+		_min = glm::min(_min, dummy);
+		_max = glm::max(_max, dummy);
 	}
+	
+	_update();
 }
 /** Constructor.
 *  @param [in] sphere Bounding sphere.
@@ -41,56 +47,63 @@ BoundingBox::BoundingBox(const float* buffer, size_t count, size_t stride)
 BoundingBox::BoundingBox(const BoundingSphere& sphere)
 {
 	glm::vec3 direction = glm::vec3(sphere.radius);
-	min = sphere.center - direction;
-	max = sphere.center + direction;
+	_min = sphere.center - direction;
+	_max = sphere.center + direction;
+	_update();
 }
 /** Constructor.
 *  Merge two bounding boxes.
 */
 BoundingBox::BoundingBox(const BoundingBox& b0, const BoundingBox& b1)
-	: min(glm::min(b0.min, b1.min))
-	, max(glm::max(b0.max, b1.max))
-{}
+	: _min(glm::min(b0._min, b1._min))
+	, _max(glm::max(b0._max, b1._max))
+{
+	_update();
+}
 /** Copy constructor.
 *  @param [in] box Source bounding box.
 */
 BoundingBox::BoundingBox(const BoundingBox& box)
-	: min(box.min)
-	, max(box.max)
+	: _min(box._min)
+	, _max(box._max)
+	, _center(box._center)
+	, _extent(box._extent)
 {}
 /** Copy operator.
 *  @param [in] box Source bounding box.
 */
 BoundingBox& BoundingBox::operator= (const BoundingBox& box)
 {
-	min = box.min;
-	max = box.max;
+	_min    = box._min;
+	_max    = box._max;
+	_center = box._center;
+	_extent = box._extent;
 	return *this;
 }
 /** Check if the current bounding box contains the specified bounding box. */
 ContainmentType::Value BoundingBox::contains(const BoundingBox& box)
 {
-	if((box.max.x < min.x) ||
-	   (box.min.x > max.x) ||
-	   (box.max.y < min.y) ||
-	   (box.min.y > max.y) ||
-	   (box.max.z < min.z) ||
-	   (box.min.z > max.z))
+	if((box._max.x < _min.x) ||
+	   (box._min.x > _max.x) ||
+	   (box._max.y < _min.y) ||
+	   (box._min.y > _max.y) ||
+	   (box._max.z < _min.z) ||
+	   (box._min.z > _max.z))
 	{ return ContainmentType::Disjoints; }	
-	if((box.min.x >= min.x) &&
-	   (box.max.x <= max.x) &&
-	   (box.min.y >= min.y) &&
-	   (box.max.y <= max.y) &&
-	   (box.min.z >= min.z) &&
-	   (box.max.z <= max.z))
+	if((box._min.x >= _min.x) &&
+	   (box._max.x <= _max.x) &&
+	   (box._min.y >= _min.y) &&
+	   (box._max.y <= _max.y) &&
+	   (box._min.z >= _min.z) &&
+	   (box._max.z <= _max.z))
 	{ return ContainmentType::Contains; }	
 	return ContainmentType::Intersects;
 }
 /** Check if the current bounding box contains the specified bounding sphere. */
 ContainmentType::Value BoundingBox::contains(const BoundingSphere& sphere)
 {
-	glm::vec3 diffMin = sphere.center - min;
-	glm::vec3 diffMax = max - sphere.center;
+	glm::vec3 diffMin = sphere.center - _min;
+	glm::vec3 diffMax = _max - sphere.center;
 	
 	if((diffMin.x >= sphere.radius) &&
 	   (diffMin.y >= sphere.radius) &&
@@ -133,9 +146,9 @@ ContainmentType::Value BoundingBox::contains(const float* buffer, size_t count, 
 	for(size_t i=0; i<count; i++, offset+=inc)
 	{
 		glm::vec3 point(buffer[offset], buffer[offset+1], buffer[offset+2]);
-		inside += ((point.x >= min.x) && (point.x <= max.x) &&
-		           (point.y >= min.y) && (point.y <= max.y) &&
-				   (point.z >= min.z) && (point.z <= max.z));
+		inside += ((point.x >= _min.x) && (point.x <= _max.x) &&
+		           (point.y >= _min.y) && (point.y <= _max.y) &&
+				   (point.z >= _min.z) && (point.z <= _max.z));
 	}
 
 	if(inside == 0) { return ContainmentType::Disjoints;  }
@@ -147,19 +160,19 @@ ContainmentType::Value BoundingBox::contains(const float* buffer, size_t count, 
 */
 ContainmentType::Value BoundingBox::contains(const glm::vec3& point)
 {
-	if((point.x < min.x) ||
-	   (point.y < min.y) ||
-	   (point.z < min.z) ||
-	   (point.x > max.x) ||
-	   (point.y > max.y) ||
-	   (point.z > max.z))
+	if((point.x < _min.x) ||
+	   (point.y < _min.y) ||
+	   (point.z < _min.z) ||
+	   (point.x > _max.x) ||
+	   (point.y > _max.y) ||
+	   (point.z > _max.z))
 	{ return ContainmentType::Disjoints; }
-	if((point.x == min.x) ||
-	   (point.y == min.y) ||
-	   (point.z == min.z) ||
-	   (point.x == max.x) ||
-	   (point.y == max.y) ||
-	   (point.z == max.z))
+	if((point.x == _min.x) ||
+	   (point.y == _min.y) ||
+	   (point.z == _min.z) ||
+	   (point.x == _max.x) ||
+	   (point.y == _max.y) ||
+	   (point.z == _max.z))
 	{ return ContainmentType::Intersects; }
 	return ContainmentType::Contains;
 }
@@ -168,8 +181,8 @@ ContainmentType::Value BoundingBox::contains(const glm::vec3& point)
 */
 bool BoundingBox::intersects(const Ray& ray)
 {
-	glm::vec3 t0 = (min - ray.origin) / ray.direction;
-	glm::vec3 t1 = (max - ray.origin) / ray.direction;
+	glm::vec3 t0 = (_min - ray.origin) / ray.direction;
+	glm::vec3 t1 = (_max - ray.origin) / ray.direction;
 
 	glm::vec3 t2 = glm::min(t0, t1);
 	glm::vec3 t3 = glm::max(t0, t1);
@@ -181,6 +194,18 @@ bool BoundingBox::intersects(const Ray& ray)
 	{ return false; }
 	return true;
 }
+/** Tell on which side of the specified plane the current bounding box is.
+ *  @param [in] plane Plane.
+ */
+Plane::Side BoundingBox::classifiy(const Plane& plane) const
+{
+	float radius   = glm::dot(glm::abs(plane.getNormal()), _extent);
+	float distance = plane.distance(_center);
+    
+	if(distance < -radius) { return Plane::Back;  }
+	if(distance >  radius) { return Plane::Front; }
+	return Plane::On;
+}
 /** Apply transformation.
 *  @param [in] m 4*4 transformation matrix.
 */
@@ -188,11 +213,26 @@ void BoundingBox::transform(const glm::mat4& m)
 {
 	glm::vec3 dummy[2] =
 	{ 
-		glm::vec3(m * glm::vec4(min,1.0f)),
-		glm::vec3(m * glm::vec4(max,1.0f))
+		glm::vec3(m * glm::vec4(_min,1.0f)),
+		glm::vec3(m * glm::vec4(_max,1.0f))
 	};
-	min = glm::min(dummy[0], dummy[1]);
-	max = glm::max(dummy[0], dummy[1]);
+	_min = glm::min(dummy[0], dummy[1]);
+	_max = glm::max(dummy[0], dummy[1]);
+	_update();
+}
+/** Get lowest box corner. **/
+const glm::vec3& BoundingBox::getMin() const { return _min; }
+/** Get highest box corner. **/
+const glm::vec3& BoundingBox::getMax() const { return _max; }
+/** Get box center. **/
+const glm::vec3& BoundingBox::getCenter() const { return _center; }
+/** Get box extent. **/
+const glm::vec3& BoundingBox::getExtent() const { return _extent; }
+/** Update center and extent. **/
+void BoundingBox::_update()
+{
+	_center = (_min + _max) / 2.0f;
+	_extent = glm::abs(_max - _center);	
 }
 
 }}
