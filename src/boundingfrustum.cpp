@@ -143,8 +143,18 @@ ContainmentType::Value BoundingFrustum::contains(const BoundingBox& box)
 /** Check if the current bounding frustum contains the specified bounding sphere. */
 ContainmentType::Value BoundingFrustum::contains(const BoundingSphere& sphere)
 {
-	/// @todo
-	return ContainmentType::Disjoints;
+    Plane::Side side;
+    bool intersects = false;
+    
+    for(int i=0; i<FRUSTUM_PLANE_COUNT; i++)
+    {
+        side = sphere.classify(_planes[i]);
+        if(Plane::Front == side)
+        { return ContainmentType::Disjoints; }
+        intersects = intersects || (Plane::On == side);
+    }
+    
+	return intersects ? ContainmentType::Intersects : ContainmentType::Contains;
 }
 /** Check if the current bounding frustum contains the specified bounding frustum. */
 ContainmentType::Value BoundingFrustum::contains(const BoundingFrustum& frustum)

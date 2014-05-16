@@ -161,6 +161,18 @@ bool BoundingSphere::intersects(const Ray& ray)
     distance = (t0 > (t1 + epsilon)) ? (t0 - t1) : (t0 + t1);
     return (distance > epsilon);
 }
+/** Tell on which side of the specified plane the current bounding sphere is.
+ *  @param [in] plane Plane.
+ */
+Plane::Side BoundingSphere::classify(const Plane& plane) const
+{
+	float d = plane.distance(center);
+	if(d <= -radius)
+	{ return Plane::Back; }
+	if(d >= radius)
+	{ return Plane::Front; }
+	return Plane::On;
+}
 /** Apply transformation.
  *  @param [in] m 4*4 transformation matrix.
  */

@@ -55,6 +55,10 @@ struct BoundingSphere
      *  @param [in] ray Ray to be tested.
      */
     bool intersects(const Ray& ray);
+	/** Tell on which side of the specified plane the current bounding sphere is.
+     *  @param [in] plane Plane.
+     */
+    Plane::Side classify(const Plane& plane) const;
 	/** Apply transformation.
 	 *  @param [in] m 4*4 transformation matrix.
 	 */

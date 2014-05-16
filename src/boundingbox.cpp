@@ -160,21 +160,16 @@ ContainmentType::Value BoundingBox::contains(const float* buffer, size_t count, 
 */
 ContainmentType::Value BoundingBox::contains(const glm::vec3& point)
 {
-	if((point.x < _min.x) ||
-	   (point.y < _min.y) ||
-	   (point.z < _min.z) ||
-	   (point.x > _max.x) ||
-	   (point.y > _max.y) ||
-	   (point.z > _max.z))
+	glm::vec3 dummy = glm::abs(_center - point);
+	if((dummy.x < _extent.x) &&
+	   (dummy.y < _extent.y) &&
+	   (dummy.z < _extent.z))
+	{ return ContainmentType::Contains; }
+	if((dummy.x > _extent.x) &&
+	   (dummy.y > _extent.y) &&
+	   (dummy.z > _extent.z))
 	{ return ContainmentType::Disjoints; }
-	if((point.x == _min.x) ||
-	   (point.y == _min.y) ||
-	   (point.z == _min.z) ||
-	   (point.x == _max.x) ||
-	   (point.y == _max.y) ||
-	   (point.z == _max.z))
-	{ return ContainmentType::Intersects; }
-	return ContainmentType::Contains;
+	return ContainmentType::Intersects;
 }
 /** Check if the current bounding box intersects the specified ray.
 *  @param [in] ray Ray to be tested.
@@ -197,7 +192,7 @@ bool BoundingBox::intersects(const Ray& ray)
 /** Tell on which side of the specified plane the current bounding box is.
  *  @param [in] plane Plane.
  */
-Plane::Side BoundingBox::classifiy(const Plane& plane) const
+Plane::Side BoundingBox::classify(const Plane& plane) const
 {
 	float radius   = glm::dot(glm::abs(plane.getNormal()), _extent);
 	float distance = plane.distance(_center);

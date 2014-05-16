@@ -62,7 +62,7 @@ public:
     /** Tell on which side of the specified plane the current bounding box is.
      *  @param [in] plane Plane.
      */
-    Plane::Side classifiy(const Plane& plane) const;
+    Plane::Side classify(const Plane& plane) const;
 	/** Apply transformation.
 	 *  @param [in] m 4*4 transformation matrix.
 	 */
