@@ -84,7 +84,7 @@ float Plane::distance(const glm::vec3& p) const
 /** Tell on which side the specified point is.
  *  @param [in] p Point.
  */
-Plane::Side Plane::classifiy(const glm::vec3& p) const
+Plane::Side Plane::classify(const glm::vec3& p) const
 {
     float epsilon = std::numeric_limits<float>::epsilon();
     float signedDistance = distance(p);

@@ -61,7 +61,7 @@ public:
     /** Tell on which side the specified point is.
      *  @param [in] p Point.
      */
-    Side classifiy(const glm::vec3& p) const;
+    Side classify(const glm::vec3& p) const;
     /** Compute intersection between the specified ray and the plane.
      *  @param [in]  ray       Ray to be tested.
      *  @param [out] distance  Distance from origin to plane if the ray instersects. -1.0 otherwise.
