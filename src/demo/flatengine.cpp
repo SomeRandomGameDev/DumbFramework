@@ -81,7 +81,7 @@ Scene *TestEngine::output() {
 }
 
 void TestEngine::handleMouseWheelAction(double, double wheel) {
-  int diff = wheel - _lastWheelPosition;
+  int diff = wheel;
   _lastWheelPosition = wheel;
   if(_rightPressed) {
      _rotate += (diff * 5);
