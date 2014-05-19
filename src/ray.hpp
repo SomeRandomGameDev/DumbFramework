@@ -3,8 +3,7 @@
 
 #include <glm/glm.hpp>
 
-namespace Dumb      {
-namespace Framework {
+namespace Dumb {
 
 /**
  * Ray.
@@ -34,6 +33,6 @@ struct Ray
 	glm::vec3 direction;
 };
 
-}}
+}
 
 #endif /* _DUMB_FW_RAY_ */

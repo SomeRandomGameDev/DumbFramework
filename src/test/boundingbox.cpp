@@ -2,7 +2,7 @@
 #include <glm/gtx/io.hpp>
 #include "boundingobjects.hpp"
 
-using namespace Dumb::Framework;
+using namespace Dumb;
 
 SUITE(BoundingBox)
 {
@@ -70,8 +70,8 @@ SUITE(BoundingBox)
 	
 	TEST(IntersectsRay)
 	{
-        Dumb::Framework::BoundingBox box(glm::vec3(-3.1f, 1.2f, -2.6f), glm::vec3(4.5f, 6.7f, 5.1f));
-        Dumb::Framework::Ray ray;
+        BoundingBox box(glm::vec3(-3.1f, 1.2f, -2.6f), glm::vec3(4.5f, 6.7f, 5.1f));
+        Ray ray;
         bool res;
         
         ray.origin    = glm::vec3(-1.4f, 3.2f, 1.1f);

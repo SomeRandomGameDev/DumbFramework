@@ -1,7 +1,6 @@
 #include "boundingobjects.hpp"
 
-namespace Dumb      {
-namespace Framework {
+namespace Dumb {
 
 /** Constructor. */
 BoundingBox::BoundingBox()
@@ -230,4 +229,4 @@ void BoundingBox::_update()
 	_extent = glm::abs(_max - _center);	
 }
 
-}}
+}

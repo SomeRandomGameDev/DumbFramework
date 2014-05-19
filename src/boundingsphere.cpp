@@ -1,7 +1,6 @@
 #include "boundingobjects.hpp"
 
-namespace Dumb      {
-namespace Framework {
+namespace Dumb {
 
 /** Constructor. */
 BoundingSphere::BoundingSphere()
@@ -190,4 +189,4 @@ void BoundingSphere::transform(const glm::mat4& m)
 	radius = radius * sqrt(scale);
 }
 
-}}
+}

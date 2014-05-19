@@ -4,8 +4,7 @@
 #include <glm/glm.hpp>
 #include "ray.hpp"
 
-namespace Dumb      {
-namespace Framework {
+namespace Dumb {
 
 /**
  * Plane.
@@ -81,6 +80,6 @@ private:
     float _distance;
 };
 
-}}
+}
 
 #endif /* _DUMB_FW_PLANE_ */

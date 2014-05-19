@@ -3,8 +3,7 @@
 
 #include "boundingobjects.hpp"
 
-namespace Dumb      {
-namespace Framework {
+namespace Dumb {
 
 /**
  * Axis aligned bounding box.
@@ -91,6 +90,6 @@ private:
 	glm::vec3 _extent;
 };
 
-}}
+}
 
 #endif /* _DUMB_FW_BOUNDING_BOX_ */

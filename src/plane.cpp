@@ -1,7 +1,6 @@
 #include "plane.hpp"
 
-namespace Dumb      {
-namespace Framework {
+namespace Dumb {
 
 /** Constructor. */
 Plane::Plane()
@@ -108,20 +107,20 @@ bool Plane::intersects(const Ray& ray, float& distance)
     float nd = glm::dot(_normal, ray.direction);
     if(glm::abs(nd) < epsilon)
     {
-        distance = -1.0f;
+        distance = -std::numeric_limits<float>::max();
         return false;
     }
     distance = -(glm::dot(_normal, ray.origin) + _distance) / nd;
-	return true;
+    return (distance >= 0);
 }
 /** Compute closest point on the plane from the specified point. **/
 glm::vec3 Plane::closestPoint(const glm::vec3& p) const
 {
-    return p - (glm::abs(distance(p)) * _normal);
+    return p - (distance(p) * _normal);
 }
 /** Get normal. **/
 const glm::vec3& Plane::getNormal() const { return _normal; }
 /** Get distance. **/
 float Plane::getDistance() const { return _distance; }
 
-}}
+}

@@ -1,7 +1,7 @@
 #include "boundingobjects.hpp"
 
-namespace Dumb      {
-namespace Framework {
+namespace Dumb {
+
 /** Constructor. */
 BoundingFrustum::BoundingFrustum()
 	: _camera()
@@ -205,4 +205,4 @@ const Plane& BoundingFrustum::getLeft() const { return _planes[FRUSTUM_PLANE_LEF
 /** Get right plane. **/
 const Plane& BoundingFrustum::getRight() const { return _planes[FRUSTUM_PLANE_RIGHT]; }
 
-}}
+}

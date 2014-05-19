@@ -3,8 +3,7 @@
 
 #include "boundingobjects.hpp"
 
-namespace Dumb      {
-namespace Framework {
+namespace Dumb {
 
 /**
  * Bounding sphere.
@@ -70,6 +69,6 @@ struct BoundingSphere
 	float radius;
 };
 
-}}
+}
 
 #endif /* _DUMB_FW_BOUNDING_SPHERE_ */

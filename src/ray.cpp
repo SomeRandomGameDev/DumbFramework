@@ -1,7 +1,6 @@
 #include "ray.hpp"
 
-namespace Dumb      {
-namespace Framework {
+namespace Dumb {
 
     /** Constructor. */
     Ray::Ray() 
@@ -32,5 +31,5 @@ namespace Framework {
         direction = r.direction;
         return *this;    
     }
-}}
 
+}

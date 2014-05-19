@@ -1,8 +1,7 @@
 #ifndef _DUMB_FW_CONTAINMENT_
 #define _DUMB_FW_CONTAINMENT_
 
-namespace Dumb      {
-namespace Framework {
+namespace Dumb {
 
 namespace ContainmentType
 {
@@ -14,6 +13,6 @@ namespace ContainmentType
 	};
 }
 
-}}
+}
 
 #endif /* _DUMB_FW_CONTAINMENT_ */

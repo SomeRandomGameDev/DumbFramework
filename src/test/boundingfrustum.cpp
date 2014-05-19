@@ -1,7 +1,7 @@
 #include <unittest++/UnitTest++.h>
 #include "boundingobjects.hpp"
 
-using namespace Dumb::Framework;
+using namespace Dumb;
 
 SUITE(BoundingFrustum)
 {

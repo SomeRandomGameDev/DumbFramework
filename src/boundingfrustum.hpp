@@ -3,8 +3,7 @@
 
 #include "boundingobjects.hpp"
 
-namespace Dumb      {
-namespace Framework {
+namespace Dumb {
 
 /**
  * Frustum (truncated pyramid).
@@ -85,6 +84,6 @@ private:
     Plane _planes[FRUSTUM_PLANE_COUNT];
 };
 
-}}
+}
 
 #endif /* _DUMB_FW_BOUNDING_FRUSTUM_ */
