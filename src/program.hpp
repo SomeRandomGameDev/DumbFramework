@@ -125,6 +125,11 @@ class Program
 		 */
 		void infoLog() const;
 
+        /**
+         * Delete attached shaders.
+         */
+        void destroyShaders();
+        
 	private:
 		GLuint _id; /**< Program id */
 };

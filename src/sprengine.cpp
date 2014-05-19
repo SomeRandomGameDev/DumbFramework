@@ -5,6 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <sprengine.hpp>
 
+#include <array>
 #include <iostream>
 #include <string>
 
@@ -93,27 +94,6 @@ const char *s_geometryShader =
 // vec2 (top-tex) + vec2 (bottom-tex) + rotate + scale
 #define VBO_STRIDE (sizeof(GLfloat) * 12)
 
-GLuint makeShader(GLenum type, const char *content) {
-    GLuint shader;
-    GLint value;
-
-    shader = glCreateShader(type);
-    glShaderSource(shader, 1, (const GLchar **) &content, 0);
-    glCompileShader(shader);
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &value);
-    if(!value) {
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &value);
-        char *log = new char[value];
-        glGetShaderInfoLog(shader, value, &value, log);
-        std::cout << "##! Error while compiling shader." << std::endl;
-        std::cout << log << std::endl;
-        glDeleteShader(shader);
-        delete[]log;
-        shader = 0;
-    }
-    return shader;
-}
-
 namespace Sprite {
 
     // Dumb design ahead.
@@ -122,10 +102,7 @@ namespace Sprite {
         _atlas(atlas),
         _vao(0),
         _buffer(),
-        _vertexShader(0),
-        _fragmentShader(0),
-        _geometryShader(0),
-        _program(0),
+        _program(),
         _texture(0),
         _uniformTexture(0),
         _uniformMatrix(0),
@@ -208,38 +185,30 @@ namespace Sprite {
             _time = glfwGetTime();
 
             // Create program.
-            _vertexShader = makeShader(GL_VERTEX_SHADER, s_vertexShader);
-            _fragmentShader = makeShader(GL_FRAGMENT_SHADER, s_fragmentShader);
-            _geometryShader = makeShader(GL_GEOMETRY_SHADER, s_geometryShader);
-            _program = glCreateProgram();
-            glAttachShader(_program, _vertexShader);
-            glAttachShader(_program, _fragmentShader);
-            glAttachShader(_program, _geometryShader);
+            std::array<Render::Shader, 3> shaders;
+            shaders[0].create(Render::Shader::VERTEX_SHADER,   s_vertexShader  );
+            shaders[1].create(Render::Shader::FRAGMENT_SHADER, s_fragmentShader);
+            shaders[2].create(Render::Shader::GEOMETRY_SHADER, s_geometryShader);
 
-            glBindAttribLocation(_program, VERTEX_INDEX, "vs_position");
-            glBindAttribLocation(_program, OFFSET_INDEX, "vs_offset");
-            glBindAttribLocation(_program, SIZE_INDEX, "vs_dimension");
-            glBindAttribLocation(_program, TOP_TEX_INDEX, "vs_toptex");
-            glBindAttribLocation(_program, DOWN_TEX_INDEX, "vs_bottomtex");
-            glBindAttribLocation(_program, ROTATE_INDEX, "vs_angle");
-            glBindAttribLocation(_program, SCALE_INDEX, "vs_scale");
-
-            glLinkProgram(_program);
-            GLint status;
-            glGetProgramiv(_program, GL_LINK_STATUS, &status);
-            if(!status) {
-                GLchar *log = 0;
-                GLint size = 0;
-                glGetProgramiv(_program, GL_INFO_LOG_LENGTH, &size);
-                log = new char[size];
-                glGetProgramInfoLog(_program, size, &size, log);
-                std::cout << "##! Can't link program." << std::endl;
-                std::cout << log << std::endl;
-                delete []log;
-            } else {
-                _uniformMatrix = glGetUniformLocation(_program, "pMatrix");
-                _uniformTexture = glGetUniformLocation(_program, "texture");
+            _program.create();
+            for(int i=0; i<shaders.size(); i++)
+            {
+                shaders[i].infoLog();
+                _program.attach(shaders[i]);
             }
+
+            _program.bindAttribLocation(VERTEX_INDEX,   "vs_position" );
+            _program.bindAttribLocation(OFFSET_INDEX,   "vs_offset"   );
+            _program.bindAttribLocation(SIZE_INDEX,     "vs_dimension");
+            _program.bindAttribLocation(TOP_TEX_INDEX,  "vs_toptex"   );
+            _program.bindAttribLocation(DOWN_TEX_INDEX, "vs_bottomtex");
+            _program.bindAttribLocation(ROTATE_INDEX,   "vs_angle"    );
+            _program.bindAttribLocation(SCALE_INDEX,    "vs_scale"    );
+
+            _program.link();
+            _program.infoLog();
+            _uniformMatrix  = _program.getUniformLocation("pMatrix");
+            _uniformTexture = _program.getUniformLocation("texture");
         }
 
     Engine::~Engine() {
@@ -248,13 +217,9 @@ namespace Sprite {
         delete []_table;
 
         // Program deletion.
-        if(_program != 0) {
-            glDeleteShader(_vertexShader);
-            glDeleteShader(_fragmentShader);
-            glDeleteShader(_geometryShader);
-            glDeleteProgram(_program);
-        }
-
+        _program.destroyShaders();
+        _program.destroy();
+        
         // VBO/VAO deletion.
         if(_vao != 0) {
             glDeleteVertexArrays(1, &_vao);
@@ -535,19 +500,18 @@ namespace Sprite {
 
         // Retrieve buffer and memcpy.
         glBindTexture(0, _texture);
-        glUseProgram(_program);
-        glUniformMatrix4fv(_uniformMatrix, 1, GL_FALSE, glm::value_ptr(_matrix));
-        glUniform1i(_uniformTexture, 0);
-        GLfloat *ptr = (GLfloat *) _buffer.map(Render::BufferObject::BUFFER_WRITE);
-        memcpy(ptr, _cell, VBO_STRIDE * _count);
-        _buffer.unmap();
+        _program.begin();
+            glUniformMatrix4fv(_uniformMatrix, 1, GL_FALSE, glm::value_ptr(_matrix));
+            glUniform1i(_uniformTexture, 0);
+            GLfloat *ptr = (GLfloat *) _buffer.map(Render::BufferObject::BUFFER_WRITE);
+            memcpy(ptr, _cell, VBO_STRIDE * _count);
+            _buffer.unmap();
 
-        // Send VAO.
-        glBindVertexArray(_vao);
-        glDrawArrays(GL_POINTS, 0, _count);
-        glBindVertexArray(0);
-
-        glUseProgram(0);
+            // Send VAO.
+            glBindVertexArray(_vao);
+            glDrawArrays(GL_POINTS, 0, _count);
+            glBindVertexArray(0);
+        _program.end();
     }
 
 }

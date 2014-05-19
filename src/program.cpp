@@ -209,4 +209,26 @@ void Program::transformFeedbackVaryings(const char** varyingNames, int varyingNa
 	glTransformFeedbackVaryings(_id, varyingNameCount, varyingNames, (interleaved ? GL_INTERLEAVED_ATTRIBS : GL_SEPARATE_ATTRIBS));
 }
 
+/**
+ * Delete attached shaders.
+ */
+void Program::destroyShaders()
+{
+    if(_id)
+    {
+        GLsizei count;
+        glGetProgramiv(_id, GL_ATTACHED_SHADERS, &count);
+        if(count)
+        {
+            GLuint* shaders = new GLuint[count];
+            glGetAttachedShaders(_id, count, NULL, &shaders[0]);
+            for(GLsizei i=0; i<count; i++)
+            {
+                glDeleteShader(shaders[i]);
+            }
+            delete [] shaders;
+        }
+    }
+}
+
 }

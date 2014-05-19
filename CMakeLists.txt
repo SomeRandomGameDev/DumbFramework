@@ -43,6 +43,8 @@ set(DUMB_FRAMEWORK_SOURCES
     src/bufferobject.cpp
     src/file.cpp
     src/log.cpp
+    src/shader.cpp
+    src/program.cpp
     src/sprengine.cpp
     src/sprite.cpp
     src/windowhint.cpp)

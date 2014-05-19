@@ -10,9 +10,7 @@ Shader::Shader()
 
 /** Destructor. */
 Shader::~Shader()
-{
-    destroy();
-}
+{}
 
 /** Translate shader type to OpenGL enum.
  *  @param [in] type Shader type.

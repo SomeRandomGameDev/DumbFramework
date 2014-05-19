@@ -3,6 +3,7 @@
 
 #include <sprite.hpp>
 #include <bufferobject.hpp>
+#include <program.hpp>
 
 namespace Sprite {
 
@@ -276,24 +277,9 @@ private:
   Render::BufferObject _buffer;
 
   /**
-   * Vertex Shader identifier.
-   */
-  GLuint _vertexShader;
-
-  /**
-   * Fragment Shader identifier.
-   */
-  GLuint _fragmentShader;
-
-  /**
-   * Geometry Shader identifier.
-   */
-  GLuint _geometryShader;
-
-  /**
    * GLSL Program identifier.
    */
-  GLuint _program;
+  Render::Program _program;
 
   /**
    * Sprite Atlas identifier.
