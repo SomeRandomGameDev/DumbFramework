@@ -149,7 +149,7 @@ ContainmentType::Value BoundingFrustum::contains(const BoundingSphere& sphere)
     for(int i=0; i<FRUSTUM_PLANE_COUNT; i++)
     {
         side = sphere.classify(_planes[i]);
-        if(Plane::Front == side)
+        if(Plane::Back == side)
         { return ContainmentType::Disjoints; }
         intersects = intersects || (Plane::On == side);
     }
@@ -195,7 +195,7 @@ const glm::mat4& BoundingFrustum::getProjectionMatrix() const { return _projecti
 /** Get near plane. **/
 const Plane& BoundingFrustum::getNear() const { return _planes[FRUSTUM_PLANE_NEAR]; }
 /** Get far plane. **/
-const Plane& BoundingFrustum::getFar() const { return _planes[FRUSTUM_PLANE_NEAR]; }
+const Plane& BoundingFrustum::getFar() const { return _planes[FRUSTUM_PLANE_FAR]; }
 /** Get top plane. **/
 const Plane& BoundingFrustum::getTop() const { return _planes[FRUSTUM_PLANE_TOP]; }
 /** Get bottom plane. **/
