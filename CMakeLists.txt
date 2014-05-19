@@ -37,6 +37,8 @@ set(DUMB_FRAMEWORK_SOURCES
     src/application.cpp
     src/boundingbox.cpp
     src/boundingsphere.cpp
+    src/boundingfrustum.cpp
+    src/plane.cpp
     src/ray.cpp
     src/bufferobject.cpp
     src/file.cpp
@@ -61,7 +63,10 @@ if(BUILD_TESTS)
     include_directories( ${UNITTEST++_INCLUDE_DIR} )
 
     set(DUMB_FRAMEWORK_TEST_SOURCES
+        src/test/boundingbox.cpp
         src/test/boundingsphere.cpp
+        src/test/boundingfrustum.cpp
+        src/test/plane.cpp
         src/test/runtests.cpp)
     
     add_executable(RunTests ${DUMB_FRAMEWORK_TEST_SOURCES} ${DUMB_FRAMEWORK_SOURCES})

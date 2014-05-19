@@ -9,8 +9,9 @@ namespace Framework {
 /**
  * Axis aligned bounding box.
  */
-struct BoundingBox
+class BoundingBox
 {
+public:
     /** Constructor. */
     BoundingBox();
     /** Constructor. 
@@ -54,19 +55,40 @@ struct BoundingBox
 	 *  @param [in] point Point to be tested.
 	 */
 	ContainmentType::Value contains(const glm::vec3& point);
-    /** Check if the current bounding box contains or intersects the specified ray.
+    /** Check if the current bounding box intersects the specified ray.
      *  @param [in] ray Ray to be tested.
      */
-    ContainmentType::Value contains(const Ray& ray);
+    bool intersects(const Ray& ray);
+    /** Tell on which side of the specified plane the current bounding box is.
+     *  @param [in] plane Plane.
+     */
+    Plane::Side classify(const Plane& plane) const;
 	/** Apply transformation.
 	 *  @param [in] m 4*4 transformation matrix.
 	 */
 	void transform(const glm::mat4& m);
+	/** Get lowest box corner. **/
+	const glm::vec3& getMin() const;
+	/** Get highest box corner. **/
+	const glm::vec3& getMax() const;
+	/** Get box center. **/
+	const glm::vec3& getCenter() const;
+	/** Get box extent. **/
+	const glm::vec3& getExtent() const;
+
+private:
+	/** Update center and extent. **/
+	void _update();
 	
-    /** Minimum point  */
-    glm::vec3 min;
-    /** Maximum point */
-	glm::vec3 max;
+private:	
+    /** Minimum point **/
+    glm::vec3 _min;
+    /** Maximum point **/
+	glm::vec3 _max;
+	/** Center **/
+	glm::vec3 _center;
+	/** Extent **/
+	glm::vec3 _extent;
 };
 
 }}
