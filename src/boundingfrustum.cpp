@@ -177,8 +177,18 @@ ContainmentType::Value BoundingFrustum::contains(const float* buffer, size_t cou
  */
 ContainmentType::Value BoundingFrustum::contains(const glm::vec3& point)
 {
-	/// @todo
-	return ContainmentType::Disjoints;
+    Plane::Side side;
+    bool intersects = false;
+    
+    for(int i=0; i<FRUSTUM_PLANE_COUNT; i++)
+    {
+        side = _planes[i].classify(point);
+        if(Plane::Back == side)
+        { return ContainmentType::Disjoints; }
+        intersects = intersects || (Plane::On == side);
+    }
+    
+	return intersects ? ContainmentType::Intersects : ContainmentType::Contains;
 }
 /** Check if the current bounding box intersects the specified ray.
  * @param [in] ray Ray to be tested.
