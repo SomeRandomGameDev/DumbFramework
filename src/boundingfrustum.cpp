@@ -169,8 +169,24 @@ ContainmentType::Value BoundingFrustum::contains(const BoundingFrustum& frustum)
  */
 ContainmentType::Value BoundingFrustum::contains(const float* buffer, size_t count, size_t stride)
 {
-	/// @todo
-	return ContainmentType::Disjoints;
+    Plane::Side side;
+    size_t out = 0;
+    stride += 3;
+    for(size_t j=0; j<count; j++, buffer+=stride)
+    {
+        glm::vec3 point(buffer[0], buffer[1], buffer[2]);
+        side = Plane::Front;
+        for(int i=0; (i<FRUSTUM_PLANE_COUNT) && (Plane::Back != side); i++)
+        {
+            side = _planes[i].classify(point);
+        }
+        out += (Plane::Back != side);
+    }
+    if(out == count)
+    { return ContainmentType::Contains; }
+    if(out == 0)
+    { return ContainmentType::Disjoints; }
+    return ContainmentType::Intersects;
 }
 /** Check if the current bounding box contains the specified point.
  * @param [in] point Point to be tested.

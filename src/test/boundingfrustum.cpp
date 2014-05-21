@@ -1,5 +1,7 @@
 #include <unittest++/UnitTest++.h>
+#include <vector>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/random.hpp>
 #include "boundingobjects.hpp"
 
 using namespace Dumb;
@@ -49,7 +51,59 @@ SUITE(BoundingFrustum)
 
     TEST(ContainsPointList)
     {
-        /// @todo
+        glm::mat4 camera;
+        glm::mat4 projection;
+        
+        glm::vec3 eye   ( 1.1f, 7.8f, 11.2f);
+        glm::vec3 target( 5.7f, 5.1f, 8.0f);
+        glm::vec3 up    ( 0.0f, 1.0f, 0.0f);
+        
+        camera     = glm::lookAt(eye, target, up);
+        projection = glm::perspective(70.0f, 16.0f/9.0f, 2.0f, 100.0f);
+
+        BoundingFrustum frustum(camera, projection);
+        ContainmentType::Value ret;
+        
+        glm::vec3 center = eye + frustum.getNear().getNormal() * 4.0f;
+        
+        std::vector<float> pointList;
+        size_t count = 11;
+        for(size_t i=0; i<count; i++)
+        {
+            glm::vec3 dummy = center + glm::ballRand(2.0f);
+            pointList.push_back(dummy.x);
+            pointList.push_back(dummy.y);
+            pointList.push_back(dummy.z);
+            pointList.push_back(0.0f);
+        }
+        ret = frustum.contains(&pointList[0], count, 1);
+        CHECK_EQUAL(ContainmentType::Contains, ret);
+        
+        pointList.clear();
+        count = 22;
+        center = eye;
+        for(size_t i=0; i<count; i++)
+        {
+            glm::vec3 dummy = center + glm::ballRand(31.0f);
+            pointList.push_back(dummy.x);
+            pointList.push_back(dummy.y);
+            pointList.push_back(dummy.z);
+        }
+        ret = frustum.contains(&pointList[0], count, 0);
+        CHECK_EQUAL(ContainmentType::Intersects, ret);
+        
+        pointList.clear();
+        count = 9;
+        center = eye + frustum.getFar().getNormal() * 4.0f + frustum.getTop().getNormal() * 7.0f;
+        for(size_t i=0; i<count; i++)
+        {
+            glm::vec3 dummy = center + glm::ballRand(3.3f);
+            pointList.push_back(dummy.x);
+            pointList.push_back(dummy.y);
+            pointList.push_back(dummy.z);
+        }
+        ret = frustum.contains(&pointList[0], count, 0);
+        CHECK_EQUAL(ContainmentType::Disjoints, ret);
     }
 
 	TEST(ContainsPoint)

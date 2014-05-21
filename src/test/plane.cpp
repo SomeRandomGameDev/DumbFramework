@@ -27,7 +27,7 @@ SUITE(Plane)
         glm::vec3 p3 = (p0 + (p1+p2)/2.0f) / 2.0f;
         side = plane.classify(p3);
         CHECK_EQUAL(Plane::On, side);
-        
+
         side = plane.classify(p3 + plane.getNormal()*5.0f);
         CHECK_EQUAL(Plane::Front, side);
         
@@ -56,14 +56,14 @@ SUITE(Plane)
         ray.direction = -plane.getNormal();
         ret = plane.intersects(ray, distance);
         CHECK_EQUAL(true, ret);
-        CHECK_CLOSE(5.0f, distance, std::numeric_limits<float>::epsilon());
+        CHECK_CLOSE(5.0f, distance, 0.0001f);
         
         glm::vec3 target = p0 + glm::normalize(p1-p0) * 7.1f;
         ray.origin   += (p2-p1) * 4.5f;
         ray.direction = glm::normalize(target - ray.origin);
         ret = plane.intersects(ray, distance);
         CHECK_EQUAL(true, ret);
-        CHECK_CLOSE(glm::distance(ray.origin, target), distance, 0.0001f);
+        CHECK_CLOSE(glm::distance(ray.origin, target), distance, 0.001f);
         
         ray.direction *= -1.0f;
         ret = plane.intersects(ray, distance);
