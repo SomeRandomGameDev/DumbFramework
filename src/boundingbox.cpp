@@ -1,6 +1,6 @@
 #include "boundingobjects.hpp"
 
-namespace Dumb {
+namespace Framework {
 
 /** Constructor. */
 BoundingBox::BoundingBox()

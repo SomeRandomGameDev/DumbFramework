@@ -4,7 +4,7 @@
 #include <glm/gtc/random.hpp>
 #include "boundingobjects.hpp"
 
-using namespace Dumb;
+using namespace Framework;
 
 SUITE(BoundingFrustum)
 {

@@ -2,7 +2,7 @@
 #include <glm/gtc/random.hpp>
 #include "plane.hpp"
 
-using namespace Dumb;
+using namespace Framework;
 
 SUITE(Plane)
 {

@@ -1,6 +1,6 @@
 #include "ray.hpp"
 
-namespace Dumb {
+namespace Framework {
 
     /** Constructor. */
     Ray::Ray() 

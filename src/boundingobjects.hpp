@@ -6,7 +6,7 @@
 
 #if defined(_DUMB_FW_BOUNDING_BOX_) or defined(_DUMB_FW_BOUNDING_SPHERE_)
 
-namespace Dumb {
+namespace Framework {
 
 class BoundingBox;
 struct BoundingSphere;

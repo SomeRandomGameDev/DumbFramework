@@ -1,6 +1,6 @@
 #include "plane.hpp"
 
-namespace Dumb {
+namespace Framework {
 
 /** Constructor. */
 Plane::Plane()

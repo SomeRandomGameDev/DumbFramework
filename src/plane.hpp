@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include "ray.hpp"
 
-namespace Dumb {
+namespace Framework {
 
 /**
  * Plane.

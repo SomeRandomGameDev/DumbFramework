@@ -2,7 +2,7 @@
 #include <glm/gtx/io.hpp>
 #include "boundingobjects.hpp"
 
-using namespace Dumb;
+using namespace Framework;
 
 SUITE(BoundingBox)
 {

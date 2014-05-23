@@ -1,7 +1,7 @@
 #include <unittest++/UnitTest++.h>
 #include "boundingobjects.hpp"
 
-using namespace Dumb;
+using namespace Framework;
 
 SUITE(BoundingSphere)
 {

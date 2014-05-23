@@ -3,7 +3,7 @@
 
 #include "boundingobjects.hpp"
 
-namespace Dumb {
+namespace Framework {
 
 /**
  * Axis aligned bounding box.
