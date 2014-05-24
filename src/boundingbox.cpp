@@ -45,9 +45,9 @@ BoundingBox::BoundingBox(const float* buffer, size_t count, size_t stride)
 */
 BoundingBox::BoundingBox(const BoundingSphere& sphere)
 {
-	glm::vec3 direction = glm::vec3(sphere.radius);
-	_min = sphere.center - direction;
-	_max = sphere.center + direction;
+	glm::vec3 direction = glm::vec3(sphere.getRadius());
+	_min = sphere.getCenter() - direction;
+	_max = sphere.getCenter() + direction;
 	_update();
 }
 /** Constructor.
@@ -101,15 +101,15 @@ ContainmentType::Value BoundingBox::contains(const BoundingBox& box)
 /** Check if the current bounding box contains the specified bounding sphere. */
 ContainmentType::Value BoundingBox::contains(const BoundingSphere& sphere)
 {
-	glm::vec3 diffMin = sphere.center - _min;
-	glm::vec3 diffMax = _max - sphere.center;
+	glm::vec3 diffMin = sphere.getCenter() - _min;
+	glm::vec3 diffMax = _max - sphere.getCenter();
 	
-	if((diffMin.x >= sphere.radius) &&
-	   (diffMin.y >= sphere.radius) &&
-	   (diffMin.z >= sphere.radius) &&
-	   (diffMax.x >= sphere.radius) &&
-	   (diffMax.y >= sphere.radius) &&
-	   (diffMax.z >= sphere.radius))
+	if((diffMin.x >= sphere.getRadius()) &&
+	   (diffMin.y >= sphere.getRadius()) &&
+	   (diffMin.z >= sphere.getRadius()) &&
+	   (diffMax.x >= sphere.getRadius()) &&
+	   (diffMax.y >= sphere.getRadius()) &&
+	   (diffMax.z >= sphere.getRadius()))
     { return ContainmentType::Contains; }
 
 	float dmin = 0.0f;
@@ -128,7 +128,7 @@ ContainmentType::Value BoundingBox::contains(const BoundingSphere& sphere)
 			dmin += sqrMax[i];
 		}
 	}
-	float r2 = sphere.radius * sphere.radius;
+	float r2 = sphere.getSquareRadius();
 	if((dmin <= r2) && (r2 <= dmax))
 	{ return ContainmentType::Intersects; }
 	return ContainmentType::Disjoints;

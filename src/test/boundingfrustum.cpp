@@ -29,22 +29,23 @@ SUITE(BoundingFrustum)
         ret = frustum.contains(sphere);
         CHECK_EQUAL(ContainmentType::Contains, ret);
         
-        sphere.center = eye;
-        sphere.radius = 2.0f;
+        glm::vec3 center = eye;
+        sphere = BoundingSphere(center, 2.0f);
         ret = frustum.contains(sphere);
         CHECK_EQUAL(ContainmentType::Intersects, ret);
         
-        sphere.center = eye + frustum.getNear().getNormal() * 2.0f + frustum.getTop().getNormal();
-        sphere.radius = 1.0f;
+        center = eye + frustum.getNear().getNormal() * 2.0f + frustum.getTop().getNormal();
+        sphere = BoundingSphere(center, 1.0f);
         ret = frustum.contains(sphere);
         CHECK_EQUAL(ContainmentType::Intersects, ret);
 
-        sphere.center = eye + frustum.getFar().getNormal() * 200.0f;
-        sphere.radius = 12.0f;
+        center = eye + frustum.getFar().getNormal() * 200.0f;
+        sphere = BoundingSphere(center, 12.0f);
         ret = frustum.contains(sphere);
         CHECK_EQUAL(ContainmentType::Disjoints, ret);
 
-        sphere.center = eye - (frustum.getBottom().getNormal() + frustum.getLeft().getNormal()) * 11.0f;
+        center = eye - (frustum.getBottom().getNormal() + frustum.getLeft().getNormal()) * 11.0f;
+        sphere = BoundingSphere(center, 12.0f);
         ret = frustum.contains(sphere);
         CHECK_EQUAL(ContainmentType::Disjoints, ret);
     }

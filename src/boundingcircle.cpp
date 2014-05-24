@@ -35,7 +35,7 @@ BoundingCircle::BoundingCircle(const float* buffer, size_t count, size_t stride)
         pmax = glm::max(pmax, dummy);
     }
     _center = (pmax + pmin) / 2.0f;
-    _squareRadius = glm::dot(pmax-pmin, pmax-pmin);
+    _squareRadius = glm::dot(pmax-pmin, pmax-pmin) / 4.0f;
     _radius = sqrt(_squareRadius);
 }
 /** Constructor.

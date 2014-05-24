@@ -8,8 +8,9 @@ namespace Framework {
 /**
  * Bounding sphere.
  */
-struct BoundingSphere
+class BoundingSphere
 {
+public:
     /** Constructor. */
     BoundingSphere();
     /** Constructor. 
@@ -62,11 +63,21 @@ struct BoundingSphere
 	 *  @param [in] m 4*4 transformation matrix.
 	 */
 	void transform(const glm::mat4& m);
-	
+
+    /** Get sphere center. **/
+    const glm::vec3& getCenter() const;
+    /** Get sphere radius. **/
+    float getRadius() const;
+    /** Get sphere squared radius. **/
+    float getSquareRadius() const;
+    
+private:	
     /** Center  */
-    glm::vec3 center;
+    glm::vec3 _center;
     /** Radius */
-	float radius;
+	float _radius;
+    /** Square radius */
+	float _squareRadius;
 };
 
 }

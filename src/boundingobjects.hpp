@@ -15,7 +15,7 @@ class BoundingCircle;
 
 /* 3D */
 class BoundingBox;
-struct BoundingSphere;
+class BoundingSphere;
 class BoundingFrustum;
 
 }
