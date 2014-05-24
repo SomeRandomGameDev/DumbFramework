@@ -38,6 +38,7 @@ set(DUMB_FRAMEWORK_SOURCES
     src/boundingbox.cpp
     src/boundingsphere.cpp
     src/boundingfrustum.cpp
+    src/boundingcircle.cpp
     src/plane.cpp
     src/ray.cpp
     src/bufferobject.cpp
