@@ -17,7 +17,7 @@ public:
 	 *  @param [in] c  Bounding circle center.
 	 *  @param [in] r  Bounding sphere radius.
 	 */
-	BoundingCircle(const glm::vec3& c, float r);
+	BoundingCircle(const glm::vec2& c, float r);
 	/** Constructor.
 	 *  @param [in] buffer Pointer to the point array.
 	 *  @param [in] count  Number of points 

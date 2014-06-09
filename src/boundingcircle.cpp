@@ -12,7 +12,7 @@ BoundingCircle::BoundingCircle()
  *  @param [in] c  Bounding circle center.
  *  @param [in] r  Bounding sphere radius.
  */
-BoundingCircle::BoundingCircle(const glm::vec3& c, float r)
+BoundingCircle::BoundingCircle(const glm::vec2& c, float r)
     : _center(c)
     , _radius(r)
     , _squareRadius(r*r)

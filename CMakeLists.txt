@@ -48,6 +48,7 @@ set(DUMB_FRAMEWORK_SOURCES
     src/program.cpp
     src/sprengine.cpp
     src/sprite.cpp
+    src/texture2d.cpp
     src/windowhint.cpp)
 
 add_library(DumbFramework STATIC ${DUMB_FRAMEWORK_SOURCES})
@@ -72,7 +73,7 @@ if(BUILD_TESTS)
         src/test/plane.cpp
         src/test/runtests.cpp)
     
-    add_executable(RunTests ${DUMB_FRAMEWORK_TEST_SOURCES} ${DUMB_FRAMEWORK_SOURCES})
+    add_executable(RunTests ${DUMB_FRAMEWORK_TEST_SOURCES})
     target_link_libraries(RunTests DumbFramework)
     target_link_libraries(RunTests ${UNITTEST++_LIBRARY})
 endif()
