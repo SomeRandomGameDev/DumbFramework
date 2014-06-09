@@ -26,7 +26,7 @@ class Texture2D
         void setMinFilter(Texture::MinFilter filter);
         void setWrap(Texture::Wrap s, Texture::Wrap t);
         void setBorderColor(const glm::vec4& color);
-        
+
         void buildMipmap();
         
     private:

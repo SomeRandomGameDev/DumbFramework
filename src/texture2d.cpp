@@ -1,3 +1,4 @@
+#include <glm/gtc/type_ptr.hpp>
 #include "texture2d.hpp"
 
 namespace Render  {
@@ -92,20 +93,64 @@ void Texture2D::bind()
     glBindTexture(GL_TEXTURE_2D, _id);
 }
 
-/// @todo
+/**
+ * Set texel magnification filter.
+ * @param [in] filter Magnification filter.
+ */
 void Texture2D::setMagFilter(Texture::MagFilter filter)
-{}
-/// @todo
+{
+    static const GLenum glMagFilter[] = { GL_NEAREST, GL_LINEAR };
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, glMagFilter[filter]);
+}
+/**
+ * Set texel minification filter.
+ * @param [in] filter Minification filter.
+ */
 void Texture2D::setMinFilter(Texture::MinFilter filter)
-{}
-/// @todo
+{
+    static const GLenum glMinFilter[] = 
+    { 
+        GL_NEAREST, GL_LINEAR,
+        GL_NEAREST_MIPMAP_NEAREST,
+        GL_NEAREST_MIPMAP_LINEAR,
+        GL_LINEAR_MIPMAP_NEAREST,
+        GL_LINEAR_MIPMAP_LINEAR
+    };
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, glMinFilter[filter]);    
+}
+/**
+ * Set texture coordinates wrap mode.
+ * @param [in] s Wrap mode for s coordinate (1st).
+ * @param [in] t Wrap mode for t coordinate (2nd).
+ */
 void Texture2D::setWrap(Texture::Wrap s, Texture::Wrap t)
-{}
-/// @todo
+{
+    static const GLenum glWrapMode[] =
+    {
+        GL_REPEAT,
+        GL_CLAMP_TO_EDGE,
+        GL_CLAMP_TO_BORDER,
+        GL_MIRRORED_REPEAT,
+        GL_MIRROR_CLAMP_TO_EDGE
+    };
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrapMode[s]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrapMode[t]);
+}
+/**
+ * Set border color.
+ * @param [in] color Border color (rgba).
+ */
 void Texture2D::setBorderColor(const glm::vec4& color)
-{}
-/// @todo
+{
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(color));
+}
+/**
+ * Generate mipmap from texture.
+ */
 void Texture2D::buildMipmap()
-{}
+{
+    glBindTexture(GL_TEXTURE_2D, _id);
+    glGenerateMipmap(GL_TEXTURE_2D);
+}
 
 }
