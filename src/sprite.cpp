@@ -14,11 +14,44 @@
 
 namespace Sprite {
 
-Atlas::Atlas(const char *path) {
-  _state = STATE_NEW;
+/**
+ * Constructor.
+ * @param time Time of appearance in seconds.
+ * @param offset Offset in pixels.
+ * @param size Size in pixels.
+ * @param top Top texture coordinates.
+ * @param bottom Bottom texture coordinates.
+ */
+Frame::Frame(double time, 
+             const glm::ivec2& offset, const glm::ivec2& size,
+             const glm::dvec2& top, const glm::dvec2& bottom)
+        : _time(time)
+        , _offset(offset)
+        , _size(size)
+        , _top(top)
+        , _bottom(bottom)
+{}
+
+/**
+ * Constructor.
+ * @param path Path to description file.
+ */
+Atlas::Atlas(const char *path)
+    : _definitions(0)
+    , _texture(0)
+    , _state(STATE_NEW)
+    , _width(0)
+    , _height(0)
+    , _lastDefinition(0)
+    , _lastAnimation(0)
+    , _lastFrameId(0)
+{
   XML::Parser<Atlas>::parse(this, path);
 }
 
+/**
+ * Destructor.
+ */
 Atlas::~Atlas() {
   if(STATE_READY == _state) {
     int defCount = _definitions->capacity();
@@ -40,6 +73,34 @@ Atlas::~Atlas() {
   }
 }
 
+/**
+ * Access texture identifier.
+ * @return OGL-wise texture identifier.
+ */
+GLuint Atlas::texture() const
+{
+    return _texture;
+}
+
+/**
+ * Access to definitions.
+ * @param index Definition number.
+ * @return Definition.
+ */
+Definition *Atlas::get(unsigned int index)
+{
+    return (STATE_READY == _state)?_definitions->get(index):0;
+}
+
+/**
+ * Provide the number of definitions.
+ * @return Number of definitions.
+ */
+unsigned int Atlas::count() const
+{ 
+    return _definitions->capacity();
+}
+
 void Atlas::startElement(const XML_Char *tag, const XML_Char **attr) {
   // Ugly code ahead !
     if((STATE_NEW == _state) && (strcasecmp(tag, "atlas") == 0)) {
@@ -59,7 +120,7 @@ void Atlas::startElement(const XML_Char *tag, const XML_Char **attr) {
       } else {
       std::cout << "##? Prepare to read " << size
                 << " sprite definition(s)." << std::endl;
-        _definitions = new Container<Definition *>(size);
+        _definitions = new Framework::Container<Definition *>(size);
         for(int i = 0; i < size; ++i) {
           *(_definitions->data(i)) = 0;
         }
