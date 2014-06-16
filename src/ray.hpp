@@ -6,33 +6,41 @@
 namespace Framework {
 
 /**
- * Ray.
- */
-struct Ray
+ * N-Dimensional ray.
+ **/
+template <class vec>
+struct NDRay
 {
     /** Constructor. */
-    Ray();
+    NDRay();
     /** Constructor. 
-	 *  @param [in] o  Origin.
-	 *  @param [in] d  Direction.
-	 */
-	Ray(const glm::vec3& o, const glm::vec3& d);
-	/** Copy constructor.
-	 *  @param [in] r Source ray.
-	 */
-    Ray(const Ray& r);
-
-	/** Copy operator.
+     *  @param [in] o  Origin.
+     *  @param [in] d  Direction.
+     */
+    NDRay(const vec& o, const vec& d);
+    /** Copy constructor.
      *  @param [in] r Source ray.
-	 */
-	Ray& operator= (const Ray& r);
-	
+     */
+    NDRay(const NDRay& r);
+
+    /** Copy operator.
+     *  @param [in] r Source ray.
+     */
+    NDRay& operator= (const NDRay& r);
+
     /** Origin */
-    glm::vec3 origin;
+    vec origin;
     /** Direction */
-	glm::vec3 direction;
+    vec direction;   
 };
 
+/** 3d ray. **/
+typedef NDRay<glm::vec3> Ray;
+/** 2d ray. **/
+typedef NDRay<glm::vec2> Ray2d;
+
 }
+
+#include "ray.inl"
 
 #endif /* _DUMB_FW_RAY_ */

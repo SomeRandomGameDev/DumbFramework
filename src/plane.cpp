@@ -4,7 +4,7 @@ namespace Framework {
 
 /** Constructor. */
 Plane::Plane()
-    : _normal()
+    : _normal(0.0f)
     , _distance(0.0f)
 {}
 /** Constructor.
@@ -25,15 +25,6 @@ Plane::Plane(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2)
     _normal   =  glm::normalize(glm::cross(p1-p0, p2-p0));
     _distance = -glm::dot(_normal, p0);
 }
-/** Build plane from a vec4.
- *  @param [in] p Raw data.
- */
-Plane::Plane(const glm::vec4& p)
-    : _normal(p.x, p.y, p.z)
-    , _distance(p.w)
-{
-    normalize();
-}
 /** Copy constructor.
  *  @param [in] plane Source plane.
  */
@@ -48,16 +39,6 @@ Plane& Plane::operator= (const Plane& plane)
 {
     _normal   = plane._normal;
     _distance = plane._distance;
-    return *this;
-}
-/** Initialize from vec4.
- *  @param [in] p Raw data.
- */
-Plane& Plane::operator= (const glm::vec4& p)
-{
-    _normal   = glm::vec3(p.x, p.y, p.z);
-    _distance = p.w;
-    normalize();
     return *this;
 }
 /** Normalize plane. **/
@@ -83,19 +64,19 @@ float Plane::distance(const glm::vec3& p) const
 /** Tell on which side the specified point is.
  *  @param [in] p Point.
  */
-Plane::Side Plane::classify(const glm::vec3& p) const
+Side Plane::classify(const glm::vec3& p) const
 {
-    float epsilon = std::numeric_limits<float>::epsilon();
+    float epsilon = 1e-6f;
     float signedDistance = distance(p);
     if(signedDistance < -epsilon)
     {
-        return Plane::Back;
+        return Side::Back;
     }
     if(signedDistance > epsilon)
     {
-        return Plane::Front;
+        return Side::Front;
     }
-    return Plane::On;
+    return Side::On;
 }
 /** Compute intersection between the specified ray and the plane.
  *  @param [in]  ray       Ray to be tested.

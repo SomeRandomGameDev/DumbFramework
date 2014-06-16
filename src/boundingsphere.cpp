@@ -168,14 +168,14 @@ bool BoundingSphere::intersects(const Ray& ray)
 /** Tell on which side of the specified plane the current bounding sphere is.
  *  @param [in] plane Plane.
  */
-Plane::Side BoundingSphere::classify(const Plane& plane) const
+Side BoundingSphere::classify(const Plane& plane) const
 {
 	float d = plane.distance(_center);
 	if(d <= -_radius)
-	{ return Plane::Back; }
+	{ return Side::Back; }
 	if(d >= _radius)
-	{ return Plane::Front; }
-	return Plane::On;
+	{ return Side::Front; }
+	return Side::On;
 }
 /** Apply transformation.
  *  @param [in] m 4*4 transformation matrix.

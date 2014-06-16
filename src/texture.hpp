@@ -51,6 +51,7 @@ namespace Texture {
         inline MagFilter() : value(NEAREST_TEXEL) {}
         inline MagFilter(Value v) : value(v) {}
         inline operator Value() { return value; }
+        inline operator const Value() const { return value; }
     };
     /** Texture wrap. **/
     struct Wrap
@@ -66,6 +67,7 @@ namespace Texture {
         inline Wrap() : value(REPEAT) {}
         inline Wrap(Value v) : value(v) {}
         inline operator Value() { return value; }
+        inline operator const Value() const { return value; }
     };
 
     /** Returns number of bytes per pixel. **/

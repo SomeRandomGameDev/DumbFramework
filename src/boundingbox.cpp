@@ -191,14 +191,14 @@ bool BoundingBox::intersects(const Ray& ray)
 /** Tell on which side of the specified plane the current bounding box is.
  *  @param [in] plane Plane.
  */
-Plane::Side BoundingBox::classify(const Plane& plane) const
+Side BoundingBox::classify(const Plane& plane) const
 {
 	float radius   = glm::dot(glm::abs(plane.getNormal()), _extent);
 	float distance = plane.distance(_center);
     
-	if(distance < -radius) { return Plane::Back;  }
-	if(distance >  radius) { return Plane::Front; }
-	return Plane::On;
+	if(distance < -radius) { return Side::Back;  }
+	if(distance >  radius) { return Side::Front; }
+	return Side::On;
 }
 /** Apply transformation.
 *  @param [in] m 4*4 transformation matrix.

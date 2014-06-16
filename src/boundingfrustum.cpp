@@ -6,12 +6,7 @@ namespace Framework {
 BoundingFrustum::BoundingFrustum()
 	: _camera()
 	, _projection()
-{
-    for(size_t i=0; i<FRUSTUM_PLANE_COUNT; i++)
-    {
-    	_planes[i] = glm::vec4(0.0f);
-    }
-}
+{}
 /** Build frustum from camera and projection matrices.
  * @param [in] camera Camera matrix.
  * @param [in] projection Projection matrix.
@@ -22,7 +17,7 @@ BoundingFrustum::BoundingFrustum(const glm::mat4& camera, const glm::mat4& proje
 {
 	float clip[16];
 	glm::vec4 plane;
-
+    
 	clip[ 0] =  camera[0][0] * projection[0][0];
 	clip[ 1] =  camera[0][1] * projection[1][1];
 	clip[ 2] =  camera[0][2] * projection[2][2];
@@ -48,42 +43,47 @@ BoundingFrustum::BoundingFrustum(const glm::mat4& camera, const glm::mat4& proje
 	plane.y = clip[ 7] - clip[ 4];
 	plane.z = clip[11] - clip[ 8];
 	plane.w = clip[15] - clip[12];
-	_planes[FRUSTUM_PLANE_RIGHT] = plane;
+	_planes[FRUSTUM_PLANE_RIGHT] = Plane(glm::vec3(plane), plane.w);
 
 	// left
 	plane.x = clip[ 3] + clip[ 0];
 	plane.y = clip[ 7] + clip[ 4];
 	plane.z = clip[11] + clip[ 8];
 	plane.w = clip[15] + clip[12];
-	_planes[FRUSTUM_PLANE_LEFT] = plane;
+	_planes[FRUSTUM_PLANE_LEFT] = Plane(glm::vec3(plane), plane.w);
 
 	// bottom
 	plane.x = clip[ 3] + clip[ 1];
 	plane.y = clip[ 7] + clip[ 5];
 	plane.z = clip[11] + clip[ 9];
 	plane.w = clip[15] + clip[13];
-	_planes[FRUSTUM_PLANE_BOTTOM] = plane;
+    _planes[FRUSTUM_PLANE_BOTTOM] = Plane(glm::vec3(plane), plane.w);
 
 	// top
 	plane.x = clip[ 3] - clip[ 1];
 	plane.y = clip[ 7] - clip[ 5];
 	plane.z = clip[11] - clip[ 9];
 	plane.w = clip[15] - clip[13];
-    _planes[FRUSTUM_PLANE_TOP] = plane;
+    _planes[FRUSTUM_PLANE_TOP] = Plane(glm::vec3(plane), plane.w);
 	
 	// far
 	plane.x = clip[ 3] - clip[ 2];
 	plane.y = clip[ 7] - clip[ 6];
 	plane.z = clip[11] - clip[10];
 	plane.w = clip[15] - clip[14];
-    _planes[FRUSTUM_PLANE_FAR] = plane;
+    _planes[FRUSTUM_PLANE_FAR] = Plane(glm::vec3(plane), plane.w);
 
 	// near
 	plane.x = clip[ 3] + clip[ 2];
 	plane.y = clip[ 7] + clip[ 6];
 	plane.z = clip[11] + clip[10];
 	plane.w = clip[15] + clip[14];
-    _planes[FRUSTUM_PLANE_NEAR] = plane;
+    _planes[FRUSTUM_PLANE_NEAR] = Plane(glm::vec3(plane), plane.w);
+    
+	for(int i=0; i<FRUSTUM_PLANE_COUNT; i++)
+	{
+        _planes[i].normalize();
+    }
 }
 /** Copy constructor.
  * @param [in] frustum Source bounding frustum.
@@ -143,15 +143,15 @@ ContainmentType::Value BoundingFrustum::contains(const BoundingBox& box)
 /** Check if the current bounding frustum contains the specified bounding sphere. */
 ContainmentType::Value BoundingFrustum::contains(const BoundingSphere& sphere)
 {
-    Plane::Side side;
+    Side side;
     bool intersects = false;
     
     for(int i=0; i<FRUSTUM_PLANE_COUNT; i++)
     {
         side = sphere.classify(_planes[i]);
-        if(Plane::Back == side)
+        if(Side::Back == side)
         { return ContainmentType::Disjoints; }
-        intersects = intersects || (Plane::On == side);
+        intersects = intersects || (Side::On == side);
     }
     
 	return intersects ? ContainmentType::Intersects : ContainmentType::Contains;
@@ -160,6 +160,7 @@ ContainmentType::Value BoundingFrustum::contains(const BoundingSphere& sphere)
 ContainmentType::Value BoundingFrustum::contains(const BoundingFrustum& frustum)
 {
 	/// @todo
+    (void)frustum;
 	return ContainmentType::Disjoints;
 }
 /** Check if the current bounding frustum contains the specified list of points.
@@ -169,18 +170,18 @@ ContainmentType::Value BoundingFrustum::contains(const BoundingFrustum& frustum)
  */
 ContainmentType::Value BoundingFrustum::contains(const float* buffer, size_t count, size_t stride)
 {
-    Plane::Side side;
+    Side side;
     size_t out = 0;
     stride += 3;
     for(size_t j=0; j<count; j++, buffer+=stride)
     {
         glm::vec3 point(buffer[0], buffer[1], buffer[2]);
-        side = Plane::Front;
-        for(int i=0; (i<FRUSTUM_PLANE_COUNT) && (Plane::Back != side); i++)
+        side = Side::Front;
+        for(int i=0; (i<FRUSTUM_PLANE_COUNT) && (Side::Back != side); i++)
         {
             side = _planes[i].classify(point);
         }
-        out += (Plane::Back != side);
+        out += (Side::Back != side);
     }
     if(out == count)
     { return ContainmentType::Contains; }
@@ -193,15 +194,15 @@ ContainmentType::Value BoundingFrustum::contains(const float* buffer, size_t cou
  */
 ContainmentType::Value BoundingFrustum::contains(const glm::vec3& point)
 {
-    Plane::Side side;
+    Side side;
     bool intersects = false;
     
     for(int i=0; i<FRUSTUM_PLANE_COUNT; i++)
     {
         side = _planes[i].classify(point);
-        if(Plane::Back == side)
+        if(Side::Back == side)
         { return ContainmentType::Disjoints; }
-        intersects = intersects || (Plane::On == side);
+        intersects = intersects || (Side::On == side);
     }
     
 	return intersects ? ContainmentType::Intersects : ContainmentType::Contains;
@@ -212,6 +213,7 @@ ContainmentType::Value BoundingFrustum::contains(const glm::vec3& point)
 bool BoundingFrustum::intersects(const Ray& ray)
 {
 	/// @todo
+    (void)ray;
 	return false;
 }
 /** Get camera matrix used to build frustum planes. **/

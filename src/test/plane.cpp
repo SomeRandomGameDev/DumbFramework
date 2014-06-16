@@ -13,26 +13,26 @@ SUITE(Plane)
         glm::vec3 p2(glm::sphericalRand(10.0f));
         
         Plane plane(p0, p1, p2);
-        Plane::Side side;
+        Side side;
         
         side = plane.classify(p0);
-        CHECK_EQUAL(Plane::On, side);
+        CHECK_EQUAL(Side::On, side);
 
         side = plane.classify(p1);
-        CHECK_EQUAL(Plane::On, side);
+        CHECK_EQUAL(Side::On, side);
 
         side = plane.classify(p2);
-        CHECK_EQUAL(Plane::On, side);
+        CHECK_EQUAL(Side::On, side);
 
         glm::vec3 p3 = (p0 + (p1+p2)/2.0f) / 2.0f;
         side = plane.classify(p3);
-        CHECK_EQUAL(Plane::On, side);
+        CHECK_EQUAL(Side::On, side);
 
         side = plane.classify(p3 + plane.getNormal()*5.0f);
-        CHECK_EQUAL(Plane::Front, side);
+        CHECK_EQUAL(Side::Front, side);
         
         side = plane.classify((p1+p2)/2.0f - plane.getNormal()*2.0f);
-        CHECK_EQUAL(Plane::Back, side);
+        CHECK_EQUAL(Side::Back, side);
     }
     
     TEST(Intersects)
