@@ -25,6 +25,15 @@ Plane::Plane(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2)
     _normal   =  glm::normalize(glm::cross(p1-p0, p2-p0));
     _distance = -glm::dot(_normal, p0);
 }
+/** Build plane from a vec4.
+ *  @param [in] p Raw data.
+ */
+Plane::Plane(const glm::vec4& p)
+    : _normal(p.x, p.y, p.z)
+    , _distance(p.w)
+{
+    normalize();
+}
 /** Copy constructor.
  *  @param [in] plane Source plane.
  */
@@ -39,6 +48,16 @@ Plane& Plane::operator= (const Plane& plane)
 {
     _normal   = plane._normal;
     _distance = plane._distance;
+    return *this;
+}
+/** Initialize from vec4.
+ *  @param [in] p Raw data.
+ */
+Plane& Plane::operator= (const glm::vec4& p)
+{
+    _normal   = glm::vec3(p.x, p.y, p.z);
+    _distance = p.w;
+    normalize();
     return *this;
 }
 /** Normalize plane. **/

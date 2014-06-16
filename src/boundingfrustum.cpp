@@ -43,47 +43,42 @@ BoundingFrustum::BoundingFrustum(const glm::mat4& camera, const glm::mat4& proje
 	plane.y = clip[ 7] - clip[ 4];
 	plane.z = clip[11] - clip[ 8];
 	plane.w = clip[15] - clip[12];
-	_planes[FRUSTUM_PLANE_RIGHT] = Plane(glm::vec3(plane), plane.w);
+	_planes[FRUSTUM_PLANE_RIGHT] = plane;
 
 	// left
 	plane.x = clip[ 3] + clip[ 0];
 	plane.y = clip[ 7] + clip[ 4];
 	plane.z = clip[11] + clip[ 8];
 	plane.w = clip[15] + clip[12];
-	_planes[FRUSTUM_PLANE_LEFT] = Plane(glm::vec3(plane), plane.w);
+	_planes[FRUSTUM_PLANE_LEFT] = plane;
 
 	// bottom
 	plane.x = clip[ 3] + clip[ 1];
 	plane.y = clip[ 7] + clip[ 5];
 	plane.z = clip[11] + clip[ 9];
 	plane.w = clip[15] + clip[13];
-    _planes[FRUSTUM_PLANE_BOTTOM] = Plane(glm::vec3(plane), plane.w);
+    _planes[FRUSTUM_PLANE_BOTTOM] = plane;
 
 	// top
 	plane.x = clip[ 3] - clip[ 1];
 	plane.y = clip[ 7] - clip[ 5];
 	plane.z = clip[11] - clip[ 9];
 	plane.w = clip[15] - clip[13];
-    _planes[FRUSTUM_PLANE_TOP] = Plane(glm::vec3(plane), plane.w);
+    _planes[FRUSTUM_PLANE_TOP] = plane;
 	
 	// far
 	plane.x = clip[ 3] - clip[ 2];
 	plane.y = clip[ 7] - clip[ 6];
 	plane.z = clip[11] - clip[10];
 	plane.w = clip[15] - clip[14];
-    _planes[FRUSTUM_PLANE_FAR] = Plane(glm::vec3(plane), plane.w);
+    _planes[FRUSTUM_PLANE_FAR] = plane;
 
 	// near
 	plane.x = clip[ 3] + clip[ 2];
 	plane.y = clip[ 7] + clip[ 6];
 	plane.z = clip[11] + clip[10];
 	plane.w = clip[15] + clip[14];
-    _planes[FRUSTUM_PLANE_NEAR] = Plane(glm::vec3(plane), plane.w);
-    
-	for(int i=0; i<FRUSTUM_PLANE_COUNT; i++)
-	{
-        _planes[i].normalize();
-    }
+    _planes[FRUSTUM_PLANE_NEAR] = plane;
 }
 /** Copy constructor.
  * @param [in] frustum Source bounding frustum.
