@@ -21,7 +21,7 @@ find_package(GLM)
 
 set(DUMB_FRAMEWORK_VERSION 0.1a)
 set(PROJECT_NAME DumbFramework)
-set(EXECUTABLE_OUTPUT_PATH build/${CMAKE_BUILD_TYPE})
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE})
 
 include_directories( ${EXPAT_INCLUDE_DIR} 
                      ${PTHREADS_INCLUDE_DIR}
