@@ -71,6 +71,7 @@ if(BUILD_TESTS)
         src/test/boundingbox.cpp
         src/test/boundingsphere.cpp
         src/test/boundingfrustum.cpp
+        src/test/boundingcircle.cpp
         src/test/plane.cpp
         src/test/runtests.cpp)
     

@@ -14,43 +14,47 @@ public:
     /** Constructor. */
     BoundingCircle();
     /** Constructor. 
-	 *  @param [in] c  Bounding circle center.
-	 *  @param [in] r  Bounding sphere radius.
-	 */
-	BoundingCircle(const glm::vec2& c, float r);
-	/** Constructor.
-	 *  @param [in] buffer Pointer to the point array.
-	 *  @param [in] count  Number of points 
-	 *  @param [in] stride Offset between two consecutive points. (default=0)
-	 */
-	BoundingCircle(const float* buffer, size_t count, size_t stride=0);
-	/** Constructor.
-	 *  Merge two bounding circles.
-	 */
-	BoundingCircle(const BoundingCircle& c0, const BoundingCircle& c1);
-	/** Copy constructor.
-	 *  @param [in] circle Source bounding circle.
-	 */
+     *  @param [in] c  Bounding circle center.
+     *  @param [in] r  Bounding sphere radius.
+     */
+    BoundingCircle(const glm::vec2& c, float r);
+    /** Constructor.
+     *  @param [in] buffer Pointer to the point array.
+     *  @param [in] count  Number of points 
+     *  @param [in] stride Offset between two consecutive points. (default=0)
+     */
+    BoundingCircle(const float* buffer, size_t count, size_t stride=0);
+    /** Constructor.
+     *  Merge two bounding circles.
+     */
+    BoundingCircle(const BoundingCircle& c0, const BoundingCircle& c1);
+    /** Copy constructor.
+     *  @param [in] circle Source bounding circle.
+     */
     BoundingCircle(const BoundingCircle& circle);
 
-	/** Copy operator.
+    /** Copy operator.
      *  @param [in] circle Source bounding circle.
-	 */
-	BoundingCircle& operator= (const BoundingCircle& circle);
+     */
+    BoundingCircle& operator= (const BoundingCircle& circle);
 
-	/** Check if the current bounding circle contains the specified bounding circle. */
-	ContainmentType::Value contains(const BoundingCircle& circle);
-	/** Check if the current bounding circle contains the specified list of points.
-	 *  @param [in] buffer Pointer to the point array.
-	 *  @param [in] count  Number of points 
-	 *  @param [in] stride Offset between two consecutive points. (default=0)
+    /** Check if the current bounding circle contains the specified bounding circle. */
+    ContainmentType::Value contains(const BoundingCircle& circle);
+    /** Check if the current bounding circle contains the specified list of points.
+     *  @param [in] buffer Pointer to the point array.
+     *  @param [in] count  Number of points 
+     *  @param [in] stride Offset between two consecutive points. (default=0)
+     */
+    ContainmentType::Value contains(const float* buffer, size_t count, size_t stride=0);
+    /** Check if the current bounding circle contains the specified point.
+     *  @param [in] point Point to be tested.
+     */
+    ContainmentType::Value contains(const glm::vec2& point);
+    /** Apply transformation.
+	 *  @param [in] m 3*3 transformation matrix.
 	 */
-	ContainmentType::Value contains(const float* buffer, size_t count, size_t stride=0);
-	/** Check if the current bounding circle contains the specified point.
-	 *  @param [in] point Point to be tested.
-	 */
-	ContainmentType::Value contains(const glm::vec2& point);
-	
+	void transform(const glm::mat3& m);
+    
     /** Get circle center. **/
     const glm::vec2& getCenter() const;
     /** Get circle radius. **/
@@ -64,7 +68,7 @@ private:
     /** Center  */
     glm::vec2 _center;
     /** Radius */
-	float _radius;
+    float _radius;
     /** Square radius */
     float _squareRadius;
 };

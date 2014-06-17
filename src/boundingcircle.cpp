@@ -72,16 +72,16 @@ BoundingCircle& BoundingCircle::operator= (const BoundingCircle& circle)
 /** Check if the current bounding circle contains the specified bounding circle. */
 ContainmentType::Value BoundingCircle::contains(const BoundingCircle& circle)
 {
-	glm::vec2 delta = _center - circle._center;
-	
-	float squareDistance = glm::dot(delta, delta);
-	float r0r1 = 2.0f * _radius * circle._radius;
-	float sqdr0 = _squareRadius + circle._squareRadius + r0r1;
-	float sqdr1 = _squareRadius + circle._squareRadius - r0r1;
+    glm::vec2 delta = _center - circle._center;
+    
+    float squareDistance = glm::dot(delta, delta);
+    float r0r1 = 2.0f * _radius * circle._radius;
+    float sqdr0 = _squareRadius + circle._squareRadius + r0r1;
+    float sqdr1 = _squareRadius + circle._squareRadius - r0r1;
 
-	if(squareDistance >  sqdr0) { return ContainmentType::Disjoints;  }
-	if(squareDistance <= sqdr1) { return ContainmentType::Contains; }
-	return ContainmentType::Intersects;
+    if(squareDistance >  sqdr0) { return ContainmentType::Disjoints;  }
+    if(squareDistance <= sqdr1) { return ContainmentType::Contains; }
+    return ContainmentType::Intersects;
 }
 /** Check if the current bounding circle contains the specified list of points.
  *  @param [in] buffer Pointer to the point array.
@@ -109,10 +109,26 @@ ContainmentType::Value BoundingCircle::contains(const float* buffer, size_t coun
 ContainmentType::Value BoundingCircle::contains(const glm::vec2& point)
 {
     glm::vec2 delta = point - _center;
-	float squareDistance = glm::dot(delta, delta);
-	if(squareDistance < _squareRadius) { return ContainmentType::Contains;  }
-	if(squareDistance > _squareRadius) { return ContainmentType::Disjoints; }
-	return ContainmentType::Intersects;
+    float squareDistance = glm::dot(delta, delta);
+    if(squareDistance < _squareRadius) { return ContainmentType::Contains;  }
+    if(squareDistance > _squareRadius) { return ContainmentType::Disjoints; }
+    return ContainmentType::Intersects;
+}
+/** Apply transformation.
+ *  @param [in] m 3*3 transformation matrix.
+ */
+void BoundingCircle::transform(const glm::mat3& m)
+{
+	// Transform center.
+	glm::vec3 pt = m * glm::vec3(_center, 1.0f);
+	_center = glm::vec2(pt.x, pt.y);
+	
+	// Find the biggest scale.
+	glm::vec2 sx(m[0].x, m[1].x);
+	glm::vec2 sy(m[0].y, m[1].y);
+	float scale = glm::max(glm::dot(sx,sx), glm::dot(sy,sy));
+	_squareRadius = _squareRadius * scale;
+	_radius = _radius * sqrt(scale);
 }
 
 /** Get circle center. **/
