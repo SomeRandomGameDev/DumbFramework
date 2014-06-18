@@ -149,7 +149,6 @@ ContainmentType::Value BoundingBox::contains(const float* buffer, size_t count, 
 		           (point.y >= _min.y) && (point.y <= _max.y) &&
 				   (point.z >= _min.z) && (point.z <= _max.z));
 	}
-
 	if(inside == 0) { return ContainmentType::Disjoints;  }
 	if(inside < count) { return ContainmentType::Intersects; }
 	return ContainmentType::Contains;

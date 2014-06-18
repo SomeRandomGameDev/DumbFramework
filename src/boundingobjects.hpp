@@ -8,12 +8,14 @@
 #if defined(_DUMB_FW_BOUNDING_BOX_)     \
  or defined(_DUMB_FW_BOUNDING_SPHERE_)  \
  or defined(_DUMB_FW_BOUNDING_FRUSTUM_) \
- or defined(_DUMB_FW_BOUNDING_CIRCLE_)
+ or defined(_DUMB_FW_BOUNDING_CIRCLE_)  \
+ or defined(_DUMB_FW_BOUNDING_QUAD_)
  
 namespace Framework {
 
 /* 2D */
 class BoundingCircle;
+class BoundingQuad;
 
 /* 3D */
 class BoundingBox;
@@ -26,6 +28,7 @@ class BoundingFrustum;
 
 /* 2D */
 #include "boundingcircle.hpp"
+#include "boundingquad.hpp"
 
 /* 3D */
 #include "boundingbox.hpp"
@@ -35,5 +38,6 @@ class BoundingFrustum;
 #endif /*    defined(_DUMB_FW_BOUNDING_BOX_) 
         * or defined(_DUMB_FW_BOUNDING_SPHERE_)
         * or defined(_DUMB_FW_BOUNDING_FRUSTUM_)
-        * or defines(_DUMB_FW_BOUNDING_CIRCLE_)
+        * or defined(_DUMB_FW_BOUNDING_CIRCLE_)
+        * or defined(_DUMB_FW_BOUNDING_QUAD_)
         */

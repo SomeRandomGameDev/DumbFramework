@@ -1,4 +1,6 @@
 #include <unittest++/UnitTest++.h>
+#include <vector>
+#include <glm/gtc/random.hpp>
 #include "boundingobjects.hpp"
 
 using namespace Framework;
@@ -39,7 +41,7 @@ SUITE(BoundingSphere)
     TEST(ContainsPointList)
     {
         BoundingSphere s0, s1;
-        ContainmentType::Value ret;
+        ContainmentType::Value res;
         std::vector<float> pointList;
         size_t count;
         
@@ -56,9 +58,10 @@ SUITE(BoundingSphere)
             pointList.push_back(0.0f);
             pointList.push_back(0.0f);
         }
-        ret = s0.contains(&pointList[0], count, 2);
-        CHECK_EQUAL(ContainmentType::Contains, ret);
+        res = s0.contains(&pointList[0], count, 2);
+        CHECK_EQUAL(ContainmentType::Contains, res);
      
+        pointList.clear();
         s1 = BoundingSphere(glm::vec3(-10.0f, 4.0f, 0.0f), 1.4f);
 		count = 45;
         for(size_t i=0; i<count; i++)
@@ -68,10 +71,11 @@ SUITE(BoundingSphere)
             pointList.push_back(dummy.y);
             pointList.push_back(dummy.z);
         }
-        ret = s0.contains(&pointList[0], count, 0);
+        res = s0.contains(&pointList[0], count, 0);
         CHECK_EQUAL(ContainmentType::Disjoints, res);
 
-		s1 = BoundingSphere(glm::vec3(0.0f, 5.0f, -5.0f), 2.125f);
+        pointList.clear();
+		s1 = BoundingSphere(glm::vec3(0.0f, 5.0f, -5.0f), 3.125f);
 		count = 17;
         for(size_t i=0; i<count; i++)
         {
@@ -84,7 +88,7 @@ SUITE(BoundingSphere)
             pointList.push_back(3.0f);
             pointList.push_back(4.0f);
         }
-        ret = s0.contains(&pointList[0], count, 4);
+        res = s0.contains(&pointList[0], count, 4);
         CHECK_EQUAL(ContainmentType::Intersects, res);
     }
 

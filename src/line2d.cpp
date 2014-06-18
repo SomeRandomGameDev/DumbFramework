@@ -11,10 +11,14 @@ Line2d::Line2d()
  */
 Line2d::Line2d(const glm::vec2& p0, const glm::vec2& p1)
 {
-    glm::vec2 direction = glm::normalize(p1 - p0);
+    glm::vec2 direction = p1 - p0;
     _normal.x = -direction.y;
     _normal.y =  direction.x;
     _distance = (p0.x * p1.y) - (p1.x * p0.y);
+    
+    float length = glm::length(direction);
+    _normal   /= length;
+    _distance /= length;
 }
 /** Copy constructor.
  *  @param [in] plane Source plane.

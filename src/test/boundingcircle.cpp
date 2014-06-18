@@ -101,4 +101,46 @@ SUITE(BoundingCircle)
         ret = c0.contains(dummy);
         CHECK_EQUAL(ContainmentType::Disjoints, ret);
     }
+    
+    TEST(ClassifyLine)
+    {
+        Framework::BoundingCircle c0;
+        Framework::Line2d l;
+        Framework::Side ret;
+        
+        c0 = Framework::BoundingCircle(glm::vec2( 5.5f, 9.1f), 7.3f);
+        
+        l  = Framework::Line2d(glm::vec2(-1.0f, 2.0f), glm::vec2( 0.5f,-2.2f));
+        ret = c0.classify(l);
+        CHECK_EQUAL(Framework::Side::Front, ret);
+
+        l  = Framework::Line2d(glm::vec2( 0.5f,-2.2f), glm::vec2(-1.0f, 2.0f));
+        ret = c0.classify(l);
+        CHECK_EQUAL(Framework::Side::Back, ret);
+
+        l  = Framework::Line2d(glm::vec2(0.5f,8.5f), glm::vec2(5.5f, 9.1f));
+        ret = c0.classify(l);
+        CHECK_EQUAL(Framework::Side::On, ret);
+    }
+    
+    TEST(Intersects)
+    {
+        Framework::BoundingCircle c0;
+        Framework::Ray2d ray;
+        bool ret;
+        
+        c0 = Framework::BoundingCircle(glm::vec2( 5.5f, 9.1f), 7.3f);
+        
+        ray = Framework::Ray2d(glm::vec2(4.0f, 7.6f), glm::vec2(-1.0f,-1.0f));
+        ret = c0.intersects(ray);
+        CHECK_EQUAL(true, ret);
+
+        ray = Framework::Ray2d(glm::vec2(-5.5f,-9.2f), glm::vec2( 1.0f, 1.0f));
+        ret = c0.intersects(ray);
+        CHECK_EQUAL(true, ret);
+
+        ray = Framework::Ray2d(glm::vec2(-5.5f,-9.2f), glm::vec2( 0.0f, 1.0f));
+        ret = c0.intersects(ray);
+        CHECK_EQUAL(false, ret);
+    }
 }

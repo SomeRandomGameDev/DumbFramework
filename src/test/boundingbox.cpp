@@ -1,4 +1,6 @@
 #include <unittest++/UnitTest++.h>
+#include <vector>
+#include <glm/gtc/random.hpp>
 #include <glm/gtx/io.hpp>
 #include "boundingobjects.hpp"
 
@@ -34,7 +36,59 @@ SUITE(BoundingBox)
 
     TEST(ContainsPointList)
     {
-        /// @todo
+        ContainmentType::Value ret;
+        std::vector<float> pointList;
+        size_t count;
+        float radius;
+        
+        BoundingBox b0, b1;
+        
+        b0 = BoundingBox(glm::vec3(-1.0f,-2.0f,-1.0f), glm::vec3( 1.1f, 0.2f, 1.2f));
+        
+        b1 = BoundingBox(glm::vec3(-0.7f,-1.1f,-0.5f), glm::vec3( 1.0f, 0.0f, 0.1f));
+        radius = glm::length(b1.getExtent()) / 2.0f;
+        count = 11;
+        for(size_t i=0; i<count; i++)
+        {
+            glm::vec3 dummy = b1.getCenter() + glm::ballRand(radius);
+            pointList.push_back(dummy.x);
+            pointList.push_back(dummy.y);
+            pointList.push_back(dummy.z);
+            pointList.push_back(1.0f);
+            pointList.push_back(2.0f);
+            pointList.push_back(3.0f);
+        }
+        ret = b0.contains(&pointList[0], count, 3);
+        CHECK_EQUAL(ContainmentType::Contains, ret);
+
+        pointList.clear();
+        b1 = BoundingBox(glm::vec3(-2.0f,-3.0f,-2.0f), glm::vec3(-0.5f,-0.5f,-0.2f));
+        radius = glm::length(b1.getExtent()) / 2.0f;
+        count = 20;
+        for(size_t i=0; i<count; i++)
+        {
+            glm::vec3 dummy = b1.getCenter() + glm::ballRand(radius);
+            pointList.push_back(dummy.x);
+            pointList.push_back(dummy.y);
+            pointList.push_back(dummy.z);
+        }
+        ret = b0.contains(&pointList[0], count, 0);
+        CHECK_EQUAL(ContainmentType::Intersects, ret);
+        
+        pointList.clear();
+        b1 = BoundingBox(glm::vec3( 7.0f, 3.1f, 3.4f), glm::vec3( 9.9f, 4.4f, 4.7f));
+        radius = glm::length(b1.getExtent()) / 2.0f;
+        count = 25;
+        for(size_t i=0; i<count; i++)
+        {
+            glm::vec3 dummy = b1.getCenter() + glm::ballRand(radius);
+            pointList.push_back(dummy.x);
+            pointList.push_back(dummy.y);
+            pointList.push_back(dummy.z);
+            pointList.push_back(0.0f);
+        }
+        ret = b0.contains(&pointList[0], count, 1);
+        CHECK_EQUAL(ContainmentType::Disjoints, ret);
     }
     
 	TEST(ContainsSphere)

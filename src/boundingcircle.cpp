@@ -1,3 +1,4 @@
+#include <iostream>
 #include "boundingobjects.hpp"
 
 namespace Framework {
@@ -113,6 +114,33 @@ ContainmentType::Value BoundingCircle::contains(const glm::vec2& point)
     if(squareDistance < _squareRadius) { return ContainmentType::Contains;  }
     if(squareDistance > _squareRadius) { return ContainmentType::Disjoints; }
     return ContainmentType::Intersects;
+}
+/** Check if the current bounding circle intersects the specified ray.
+ *  @param [in] ray Ray to be tested.
+ */
+bool BoundingCircle::intersects(const Ray2d& ray)
+{
+    float epsilon = std::numeric_limits<float>::epsilon();
+    float distance = glm::distance(_center, ray.origin);
+    glm::vec2 diff = _center - ray.origin;
+    float t0 = glm::dot(diff, ray.direction);
+    float d2 = glm::dot(diff, diff) - (t0 * t0);
+    if(d2 > _squareRadius) { return false; }
+    float t1 = sqrt(_squareRadius - d2);
+    distance = (t0 > (t1 + epsilon)) ? (t0 - t1) : (t0 + t1);
+    return (distance > epsilon);
+}
+/** Tell on which side of the specified line the current bounding circle is.
+ *  @param [in] line Line.
+ */
+Side BoundingCircle::classify(const Line2d& line)
+{
+    float d = line.distance(_center);
+	if(d <= -_radius)
+	{ return Side::Back; }
+	if(d >= _radius)
+	{ return Side::Front; }
+	return Side::On;
 }
 /** Apply transformation.
  *  @param [in] m 3*3 transformation matrix.

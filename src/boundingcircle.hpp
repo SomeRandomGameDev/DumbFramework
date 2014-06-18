@@ -50,6 +50,14 @@ public:
      *  @param [in] point Point to be tested.
      */
     ContainmentType::Value contains(const glm::vec2& point);
+    /** Check if the current bounding circle intersects the specified ray.
+     *  @param [in] ray Ray to be tested.
+     */
+    bool intersects(const Ray2d& ray);
+    /** Tell on which side of the specified line the current bounding circle is.
+     *  @param [in] line Line.
+     */
+    Side classify(const Line2d& line);
     /** Apply transformation.
 	 *  @param [in] m 3*3 transformation matrix.
 	 */
@@ -62,7 +70,7 @@ public:
     /** Get circle squared radius. **/
     float getSquareRadius() const;
     
-    /// @todo : transform, contains/classify rectangle, line, etc...
+    /// @todo : contains/classify rectangle, ray
     
 private:
     /** Center  */
