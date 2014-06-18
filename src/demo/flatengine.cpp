@@ -128,6 +128,7 @@ void TestEngine::handleMouseButtonAction(int button, int action) {
 }
 
 void TestEngine::handleKeyAction(int key, int /* scancode */, int action, int /* mods */) {
+  static int last = 2;
   _quit = (GLFW_PRESS == action) && (GLFW_KEY_ESCAPE == key);
 
   if((GLFW_PRESS == action) && (GLFW_KEY_SPACE == key)) {
@@ -135,10 +136,12 @@ void TestEngine::handleKeyAction(int key, int /* scancode */, int action, int /*
   }
 
   if((GLFW_PRESS == action) && (GLFW_KEY_RIGHT_CONTROL == key)) {
-    Sprite::Identifier fantom = _engine->clone(_evilTwin);
+  /*  Sprite::Identifier fantom = _engine->clone(_evilTwin);
     if(fantom >= 0) {
       _engine->move(fantom, glm::vec2(0, 0));
-    }
+    }*/
+    _engine->setLayer(_identifier, last);
+    last = (last == 0)?2:0;
   }
 }
 
@@ -162,9 +165,11 @@ void TestEngine::resume(GLFWwindow * /* window */) {
   }
   _engine->viewport(_centerX, _centerY, _width, _height);
   glViewport(0, 0, _width, _height);
+  glClearColor(1.0f, 0.0f, 1.0f, 0.0f);
 
   _identifier = _engine->create(0, glm::vec2(100, 100), 0);
-  _evilTwin = _engine->create(0, glm::vec2(-100, 0), 0);
+  _evilTwin = _engine->create(0, glm::vec2(50, 0), 0, true, 0.0f, 2.0f, 1);
+  // Layer 1 is behind
   _start = glfwGetTime();
   _elapsed = 0;
   glEnable(GL_DEPTH_TEST);

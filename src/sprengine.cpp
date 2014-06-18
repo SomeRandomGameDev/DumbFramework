@@ -191,7 +191,7 @@ namespace Sprite {
             shaders[2].create(Render::Shader::GEOMETRY_SHADER, s_geometryShader);
 
             _program.create();
-            for(int i=0; i<shaders.size(); i++)
+            for(unsigned long i=0; i<shaders.size(); i++)
             {
                 shaders[i].infoLog();
                 _program.attach(shaders[i]);
@@ -246,6 +246,13 @@ namespace Sprite {
             std::cout << " --> " << id << " ( " << _table[id]._target << " )";
         }
         std::cout << std::endl;
+
+        // Instance Table.
+        std::cout << "## Instances" << std::endl;
+        for(unsigned int i = 0; i < _count; ++i) {
+            std::cout << "#" << i << " Reverse : " << _instance[i]._reverse << std::endl;
+        }
+        std::cout << "########" << std::endl;
     }
 
     void Engine::move(Identifier id, glm::vec2 pos) {
@@ -260,6 +267,16 @@ namespace Sprite {
         if(!_table[id]._free) {
             Cell * cell = _cell + _table[id]._target;
             cell->_angle = angle;
+        }
+    }
+
+    void Engine::setLayer(Identifier id, unsigned int layer) {
+        if(!_table[id]._free) {
+            Cell * cell = _cell + _table[id]._target;
+            Instance * instance = _instance + _table[id]._target;
+            set(id, glm::vec2(cell->_posX, cell->_posY), instance->_animation,
+                              instance->_cycle, 0.0, cell->_angle, cell->_scale,
+                              layer);
         }
     }
 
@@ -290,7 +307,9 @@ namespace Sprite {
         return result;
     }
 
-    Identifier Engine::create(unsigned int definitionId, glm::vec2 pos, unsigned int firstAnim, bool cycle, float angle, float scale) {
+    Identifier Engine::create(unsigned int definitionId, glm::vec2 pos,
+                              unsigned int firstAnim, bool cycle, float angle,
+                              float scale, unsigned int layer) {
         // Size check.
         if(_count == _capacity) {
             return -1;
@@ -301,7 +320,8 @@ namespace Sprite {
         Instance *instance = _instance + inside;
         instance->_definition = _atlas->get(definitionId);
         if(0 == instance->_definition) {
-            std::cerr << "No Definition in Atlas for identifier (" << definitionId << ")" << std::endl;
+            std::cerr << "No Definition in Atlas for identifier ("
+                      << definitionId << ")" << std::endl;
         }
 
         // Add an entry in the lookup table.
@@ -317,8 +337,9 @@ namespace Sprite {
             _table[_used]._previous = result;
         }
         _used = result;
+        _instance[inside]._reverse = result;
 
-        (void) set(result, pos, firstAnim, cycle, 0.0, angle, scale);
+        (void) set(result, pos, firstAnim, cycle, 0.0, angle, scale, layer);
 
         return result;
     }
@@ -354,13 +375,12 @@ namespace Sprite {
         }
     }
 
-    bool Engine::set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle, double /* progress */, float angle, float scale) {
+    bool Engine::set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle, double /* progress */, float angle, float scale, unsigned int layer) {
         bool result = false;
         // TODO Include progress computation.
         if((id < (int) _count) && (_table[id]._free != true)) {
             Identifier inside = _table[id]._target;
             Instance *instance = _instance + inside;
-            Cell *cell = _cell + inside;
             Animation *animation = 0;
 
             if(0 != instance->_definition) {
@@ -368,6 +388,7 @@ namespace Sprite {
                 instance->_frame = 0;
                 instance->_elapsed = 0;
                 instance->_cycle = cycle;
+                instance->_layer = layer;
                 animation = instance->_definition->get(animId);
                 if(0 != animation) {
                     instance->_still = animation->capacity()<2;
@@ -381,11 +402,45 @@ namespace Sprite {
             // 'animation' is not null anymore.
             // Get the first frame.
             Frame *frame = animation->get(0);
-            assignFrameToCell(frame, cell, pos.x, pos.y, angle, scale);
+            // Check layer and swap to lower.
+            while((inside > 0) &&
+                  (_instance[inside]._layer > _instance[inside - 1]._layer)) {
+/*
+                Instance buffer = _instance[inside];
+                Cell cellBuffer = _cell[inside];
+                _instance[inside] = _instance[inside - 1];
+                _cell[inside] = _cell[inside - 1];
+                _instance[inside - 1] = buffer;
+                _cell[inside - 1] = cellBuffer;
+                _table[id]._target = inside - 1;
+                _table[_instance[inside]._reverse]._target = inside;
+*/
+                swapInstances(id, inside, inside - 1);
+                --inside;
+            }
+            // Check layer and swap to higher.
+            while((inside < (int) (_count - 1)) &&
+                  (instance[inside]._layer < _instance[inside + 1]._layer)) {
+                swapInstances(id, inside, inside + 1);
+                ++inside;
+            }
+
+            assignFrameToCell(frame, _cell + inside, pos.x, pos.y, angle, scale);
 
             result = true;
         }
         return result;
+    }
+
+    void Engine::swapInstances(Identifier id, Identifier a, Identifier b) {
+        Instance buffer = _instance[a];
+        Cell cellBuffer = _cell[a];
+        _instance[a] = _instance[b];
+        _cell[a] = _cell[b];
+        _instance[b] = buffer;
+        _cell[b] = cellBuffer;
+        _table[id]._target = b;
+        _table[_instance[a]._reverse]._target = a;        
     }
 
     void Engine::assignFrameToCell(Frame *frame, Cell *cell, double x, double y, float angle, float scale) {
@@ -413,7 +468,7 @@ namespace Sprite {
             float scale) {
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        glOrtho(0, width, height, 0, 0, 1);
+        glOrtho(0, width, height, 0, 0, 256.0);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         float dw = (width / 2.0f) * scale;
@@ -424,7 +479,7 @@ namespace Sprite {
         _height = height;
         _centerX = x;
         _centerY = y;
-        _matrix = glm::ortho(-dw + x, dw + x, dh + y, -dh + y, 0.0f, 1.0f);
+        _matrix = glm::ortho(-dw + x, dw + x, dh + y, -dh + y, 0.0f, 256.0f);
     }
 
     void Engine::translate(float relX, float relY) {
@@ -489,7 +544,8 @@ namespace Sprite {
                 _instance[i]._elapsed = elapsed;
                 Frame *frame = animation->get(frameNum);
                 Cell *cell = _cell + i;
-                assignFrameToCell(frame, cell, cell->_posX, cell->_posY, cell->_angle, cell->_scale);
+                assignFrameToCell(frame, cell, cell->_posX, cell->_posY,
+                                  cell->_angle, cell->_scale);
             }
         }
     }
@@ -499,6 +555,7 @@ namespace Sprite {
         animate();
 
         // Retrieve buffer and memcpy.
+        glDepthMask(GL_FALSE);
         glBindTexture(0, _texture);
         _program.begin();
             glUniformMatrix4fv(_uniformMatrix, 1, GL_FALSE, glm::value_ptr(_matrix));
@@ -512,6 +569,7 @@ namespace Sprite {
             glDrawArrays(GL_POINTS, 0, _count);
             glBindVertexArray(0);
         _program.end();
+        glDepthMask(GL_TRUE);
     }
 
 }

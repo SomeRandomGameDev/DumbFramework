@@ -1,6 +1,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "texture2d.hpp"
 
+#ifndef GL_MIRROR_CLAMP_TO_EDGE
+#define GL_MIRROR_CLAMP_TO_EDGE GL_MIRROR_CLAMP_TO_EDGE_EXT
+#endif
+
 namespace Render  {
 
 /** Construct from pixel format. **/
@@ -52,7 +56,7 @@ Texture2D::~Texture2D()
  * @param [in] size   Texture size.
  * @param [in] format Texture format.
  */
-bool Texture2D::create(const glm::ivec2& size, Texture::PixelFormat format)
+bool Texture2D::create(const glm::ivec2& /*size*/, Texture::PixelFormat format)
 {
     if(_id)
     {
@@ -81,7 +85,7 @@ void Texture2D::destroy()
  * Set texture data.
  * @param [in] data Image buffer.
  */
-void Texture2D::setData(void* data)
+void Texture2D::setData(void* /*data*/)
 {
     glTexImage2D(GL_TEXTURE_2D, 0, _infos.internalFormat, _size.x, _size.y, 0, _infos.format, _infos.type, NULL);
 }

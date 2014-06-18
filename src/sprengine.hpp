@@ -56,10 +56,17 @@ typedef struct {
    */
   double _elapsed;
   /**
+   * Layer information.
+   */
+  unsigned int _layer;
+  /**
+   * Reserve identification in lookup table.
+   */
+  unsigned int _reverse;
+  /**
    * Cycle flag.
    */
   bool _cycle;
-
   /**
    * Still flag. Useful to quickly manage animation with only one frame.
    */
@@ -139,10 +146,12 @@ public:
     * @param cycle if <code>true</code>, cycle the first animation.
     * @param angle Initial sprite rotation angle.
     * @param scale Initial sprite scale factor.
+    * @param layer Sprite layer.
     * @return An identifier to sprite instance or a negative value in case of
     * invalid parameters.
     */
-   Identifier create(unsigned int definitionId, glm::vec2 pos, unsigned int firstAnim = 0, bool cycle=true, float angle=0.0f, float scale=1.0f);
+   Identifier create(unsigned int definitionId, glm::vec2 pos, unsigned int firstAnim = 0,
+                     bool cycle=true, float angle=0.0f, float scale=1.0f, unsigned int layer=0.0f);
 
    /**
     * Destroy/Remove a sprite instance for the engine.
@@ -174,7 +183,8 @@ public:
     * @param angle Sprite rotation angle.
     * @return <code>false</code> in case of invalid parameters.
     */
-   bool set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle=true, double progress=0, float angle=0.0f, float scale=1.0f);
+   bool set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle=true,
+            double progress=0, float angle=0.0f, float scale=1.0f, unsigned int layer=0.0f);
 
    /**
     * Move a sprite to the specified position.
@@ -188,6 +198,13 @@ public:
     * @param angle Angle.
     */
    void rotate(Identifier id, float angle);
+
+   /**
+    * Set the sprite layer.
+    * @param id Sprite instance identifier.
+    * @param layer Sprite depth.
+    */
+   void setLayer(Identifier id, unsigned int layer);
 
    /**
     * Apply a scale factor to the specified sprite instance.
@@ -250,6 +267,7 @@ private:
    * @param y Display position of the frame (on y axis)
    * @param angle Sprite angle.
    * @param scale Sprite scaling factor.
+   * @param layer Sprite layer.
    */
   inline void assignFrameToCell(Frame *frame, Cell *cell,
                  double x, double y, float angle, float scale);
@@ -258,6 +276,14 @@ private:
    * Animate sprites.
    */
   void animate();
+
+  /**
+   * Swap instances.
+   * @param id Look-up table identifier.
+   * @param a First instance.
+   * @param b Second instance.
+   */
+  void swapInstances(Identifier id, Identifier a, Identifier b);
 
 private:
 
