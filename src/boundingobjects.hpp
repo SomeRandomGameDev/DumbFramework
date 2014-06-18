@@ -1,13 +1,15 @@
 #include <sys/types.h>
 #include <glm/glm.hpp>
+#include "line2d.hpp"
 #include "ray.hpp"
 #include "containment.hpp"
 #include "plane.hpp"
 
 #if defined(_DUMB_FW_BOUNDING_BOX_)     \
  or defined(_DUMB_FW_BOUNDING_SPHERE_)  \
- or defined(_DUMB_FW_BOUNDING_FRUSTUM_)
-
+ or defined(_DUMB_FW_BOUNDING_FRUSTUM_) \
+ or defined(_DUMB_FW_BOUNDING_CIRCLE_)
+ 
 namespace Framework {
 
 /* 2D */
@@ -30,4 +32,8 @@ class BoundingFrustum;
 #include "boundingsphere.hpp"
 #include "boundingfrustum.hpp"
 
-#endif /* defined(_DUMB_FW_BOUNDING_BOX_) or defined(_DUMB_FW_BOUNDING_SPHERE_) or defined(_DUMB_FW_BOUNDING_FRUSTUM_) */
+#endif /*    defined(_DUMB_FW_BOUNDING_BOX_) 
+        * or defined(_DUMB_FW_BOUNDING_SPHERE_)
+        * or defined(_DUMB_FW_BOUNDING_FRUSTUM_)
+        * or defines(_DUMB_FW_BOUNDING_CIRCLE_)
+        */

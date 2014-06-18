@@ -38,7 +38,54 @@ SUITE(BoundingSphere)
 
     TEST(ContainsPointList)
     {
-        /// @todo
+        BoundingSphere s0, s1;
+        ContainmentType::Value ret;
+        std::vector<float> pointList;
+        size_t count;
+        
+        s0 = BoundingSphere(glm::vec3(0.0f, 2.0f, 0.0f), 4.0f);
+		s1 = BoundingSphere(glm::vec3(0.5f, 0.5f, 0.5f), 0.25f);
+	    
+        count = 11;
+        for(size_t i=0; i<count; i++)
+        {
+            glm::vec3 dummy = s1.getCenter() + glm::ballRand(s1.getRadius());
+            pointList.push_back(dummy.x);
+            pointList.push_back(dummy.y);
+            pointList.push_back(dummy.z);
+            pointList.push_back(0.0f);
+            pointList.push_back(0.0f);
+        }
+        ret = s0.contains(&pointList[0], count, 2);
+        CHECK_EQUAL(ContainmentType::Contains, ret);
+     
+        s1 = BoundingSphere(glm::vec3(-10.0f, 4.0f, 0.0f), 1.4f);
+		count = 45;
+        for(size_t i=0; i<count; i++)
+        {
+            glm::vec3 dummy = s1.getCenter() + glm::ballRand(s1.getRadius());
+            pointList.push_back(dummy.x);
+            pointList.push_back(dummy.y);
+            pointList.push_back(dummy.z);
+        }
+        ret = s0.contains(&pointList[0], count, 0);
+        CHECK_EQUAL(ContainmentType::Disjoints, res);
+
+		s1 = BoundingSphere(glm::vec3(0.0f, 5.0f, -5.0f), 2.125f);
+		count = 17;
+        for(size_t i=0; i<count; i++)
+        {
+            glm::vec3 dummy = s1.getCenter() + glm::ballRand(s1.getRadius());
+            pointList.push_back(dummy.x);
+            pointList.push_back(dummy.y);
+            pointList.push_back(dummy.z);
+            pointList.push_back(1.0f);
+            pointList.push_back(2.0f);
+            pointList.push_back(3.0f);
+            pointList.push_back(4.0f);
+        }
+        ret = s0.contains(&pointList[0], count, 4);
+        CHECK_EQUAL(ContainmentType::Intersects, res);
     }
 
 	TEST(ContainsSphere)
