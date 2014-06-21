@@ -25,10 +25,12 @@ class Frame {
          * @param size Size in pixels.
          * @param top Top texture coordinates.
          * @param bottom Bottom texture coordinates.
+         * @param ind Texture index.
          */
         Frame(double time,
               const glm::ivec2& offset, const glm::ivec2& size,
-              const glm::dvec2& top, const glm::dvec2& bottom);
+              const glm::dvec2& top, const glm::dvec2& bottom,
+              unsigned int ind);
 
         // Accessors.
 
@@ -62,12 +64,19 @@ class Frame {
          */
         inline const glm::dvec2& getBottom() const { return _bottom; }
 
+        /**
+         * Provides texture index.
+         * @return Texture index in the texture array.
+         */
+        inline const unsigned int getTexture() const { return _texture; }
+
     private:
-        double     _time;   /**< Time of appearance in seconds. **/
-        glm::ivec2 _offset; /**< Position offset. **/
-        glm::ivec2 _size;   /**< Size. **/
-        glm::dvec2 _top;    /**< Texture coordinate top (upper left). **/
-        glm::dvec2 _bottom; /**< Texture coordinate bottom (lower right). **/
+        double       _time;    /**< Time of appearance in seconds. **/
+        glm::ivec2   _offset;  /**< Position offset. **/
+        glm::ivec2   _size;    /**< Size. **/
+        glm::dvec2   _top;     /**< Texture coordinate top (upper left). **/
+        glm::dvec2   _bottom;  /**< Texture coordinate bottom (lower right). **/
+        unsigned int _texture; /**< Texture layer in the texture array. **/
 };
 
 /**
@@ -129,6 +138,14 @@ class Atlas {
         void endElement(const XML_Char *);
 
     private:
+
+        /**
+         * Load textures into a texture array.
+         * @param filename Paths to the textures. It is filenames separated by a semi-colon.
+         */
+        void loadTextures(const char *filename);
+
+    private:
         Framework::Container<Definition *> *_definitions; /**< Definitions. **/
         
         GLuint _texture; /**< Identifier to texture. **/
@@ -170,8 +187,8 @@ class Entity
         // void set/get program
 
     private:
-        glm::vec3 m_position;
-        glm::quat m_orientation;
+        glm::vec3         m_position;
+        glm::quat         m_orientation;
         Render::Program   m_program;
         // Materials
         // Mesh
