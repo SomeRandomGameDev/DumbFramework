@@ -1,4 +1,5 @@
 #include "shader.hpp"
+#include <iostream>
 
 namespace Render {
 
@@ -144,6 +145,7 @@ void Shader::infoLog() const
     }
 
     glGetShaderInfoLog(_id, maxLogLength, &loglength, log);
+    std::cerr << "##! " << log << std::endl;
     Log_Error(ModuleID::RENDER, "%s", log);
 
     delete [] log;

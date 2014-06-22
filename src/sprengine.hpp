@@ -116,6 +116,11 @@ typedef struct {
    * Sprite scale.
    */
   GLfloat _scale;
+
+  /**
+   * Texture in which the sprite actually resides in the array.
+   */
+  GLuint _texture;
 } Cell;
 
 /**

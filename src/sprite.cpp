@@ -4,6 +4,10 @@
 #include <SOIL/SOIL.h>
 #include <iostream>
 #include <string.h>
+#include <string>
+#include <sstream>
+
+#define MAX_LOADABLE_TEXTURES            32
 
 #define STATE_FAULTED                    -1
 #define STATE_NEW                         0
@@ -129,6 +133,10 @@ namespace Sprite {
                 }
                 if(0 != filename) {
                     loadTextures(filename);
+                } else {
+                    _state = STATE_FAULTED;
+                    std::cerr << "##! Invalid path to texture"
+                        << std::endl;
                 }
             }
         }
@@ -242,26 +250,94 @@ namespace Sprite {
         }
     }
 
-    void Atlas::loadTextures(const char *filename) {
-        _texture = SOIL_load_OGL_texture( filename, SOIL_LOAD_AUTO,
-                SOIL_CREATE_NEW_ID,
-                SOIL_FLAG_COMPRESS_TO_DXT );
-        if(0 != _texture) {
-            glBindTexture(0, _texture);
-            glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &_width);
-            glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &_height);
-            if(_height <= 0) {
-                _height = 1;
-            }
-            if(_width <= 0) {
-                _width = 1;
-            }
-            std::cout << "##? Atlas Size : " << _width << "x" << _height << std::endl;
-            _state = STATE_PARSE_DEFINITION;
-        } else {
-            _state = STATE_FAULTED;
-            std::cerr << "##! Invalid path to texture" << std::endl;
+    void Atlas::setFaulted(const char *msg,
+        unsigned int cnt,
+        unsigned char **textures) {
+        std::cerr << "##! " << msg << std::endl;
+        _state = STATE_FAULTED;
+        for(unsigned int i = 0; i < cnt; ++i) {
+            SOIL_free_image_data(textures[i]);
         }
+    }
+
+    void Atlas::loadTextures(const char *filename) {
+        // Parse all texture path.
+        // The paths are separated by a semi-colon ';'.
+        std::stringstream ss(filename);
+        std::string item;
+        int width = -1;
+        int currentWidth;
+        int height = -1;
+        int currentHeight;
+        int channels; // Should be 4. Else, rejects.
+        unsigned char *loadedTextures[MAX_LOADABLE_TEXTURES];
+        unsigned int count = 0;
+        while (std::getline(ss, item, ';')) {
+            std::cout << "##? Loading '" << item << "'" << std::endl;
+            loadedTextures[count] = SOIL_load_image(
+                item.c_str(),
+                &currentWidth, &currentHeight, &channels,
+                SOIL_LOAD_AUTO);
+            if(channels != 4) {
+                std::cerr << "##! Channel = " << channels << std::endl;
+                setFaulted("Incorrect channel size !", count,
+                    loadedTextures);
+                return;
+            }
+            if(width == -1) {
+                width = currentWidth;
+                height = currentHeight;
+            } else {
+                if((width != currentWidth) || (height != currentHeight)) {
+                    setFaulted("Textures are not of the same size !",
+                        count,
+                        loadedTextures);
+                    return;
+                }
+            }
+            ++count;
+        }
+
+        // Make a big buffer.
+        unsigned char *bigBuffer = new unsigned char[
+                width*height*channels*count];
+        // Concatenate the loaded textures.
+        unsigned int size = width * height * channels;
+        for(unsigned int i = 0; i < count; ++i) {
+            memcpy(bigBuffer + (i * size), loadedTextures[i], size);
+        }
+        std::cout << std::dec;
+
+        // Make GL Texture.
+        glGenTextures(1, &_texture);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, _texture);
+
+        glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8,
+            width, height, count);
+        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0,
+            width, height, count, GL_RGBA, GL_UNSIGNED_BYTE,
+            bigBuffer);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER,
+            GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER,
+            GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S,
+            GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T,
+            GL_CLAMP_TO_EDGE);
+
+
+        for(unsigned int i = 0; i < count; ++i) {
+            SOIL_free_image_data(loadedTextures[i]);            
+        }
+        delete []bigBuffer;
+
+        _width = width;
+        _height = height;
+
+        std::cout << "##? Atlas Size : "
+            << _width << "x" << _height << std::endl;
+        _state = STATE_PARSE_DEFINITION;
     }
 }
 
@@ -306,6 +382,7 @@ namespace Sprite {
    <!-- Fixed length animations -->
    <!-- One animation per line -->
    <definition size="6"
+   texture="1"
    length="6"
    asize="5"
    startX="32" startY="32"

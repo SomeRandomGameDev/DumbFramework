@@ -12,11 +12,14 @@
 // Shaders
 
 const char *s_fragmentShader =
-"#version 150\n"
-"uniform sampler2D texture;"
+"#version 410 core\n"
+"layout (binding=0) uniform sampler2DArray un_texture;"
+"flat in int fs_index;"
 "in vec2 fs_tex;"
+"out vec4 out_Color;"
 "void main() {"
-"gl_FragColor = texture2D(texture, fs_tex); }";
+"out_Color = texture(un_texture, vec3(fs_tex, fs_index));"
+" }";
 
 const char *s_vertexShader =
 "#version 150\n"
@@ -27,12 +30,14 @@ const char *s_vertexShader =
 "in vec2 vs_bottomtex;"
 "in float vs_angle;"
 "in float vs_scale;"
+"in int vs_index;"
 "noperspective centroid out vec2 gs_dimension;"
 "out vec2 gs_toptex;"
 "out vec2 gs_bottomtex;"
 "out vec2 gs_offset;"
 "out float gs_angle;"
 "out float gs_scale;"
+"flat out int gs_index;"
 "void main() {"
 "gl_Position = vec4(vs_position.x, vs_position.y, 0.0, 1.0);"
 "gs_dimension = vs_dimension;"
@@ -41,8 +46,10 @@ const char *s_vertexShader =
 "gs_offset = vs_offset;"
 "gs_angle = vs_angle;"
 "gs_scale = vs_scale;"
+"gs_index = vs_index;"
 "}";
 
+// 205, 26 -> 0.20019 , 0,02539
 const char *s_geometryShader =
 "#version 150\n"
 "layout (points) in;"
@@ -53,13 +60,16 @@ const char *s_geometryShader =
 "in vec2 gs_offset[1];"
 "in float gs_angle[1];"
 "in float gs_scale[1];"
+"flat in int gs_index[1];"
 "uniform mat4 pMatrix;"
 "out vec2 fs_tex;"
+"flat out int fs_index;"
 "void main() {"
 "vec2 dim = gs_dimension[0] / 2.0;"
 "float ca = cos(gs_angle[0]);"
 "float sa = sin(gs_angle[0]);"
 "float sc = gs_scale[0];"
+"fs_index = gs_index[0];"
 "vec2 tpos = vec2(-dim.x * ca + dim.y * sa, -dim.y * ca - dim.x * sa) * sc;"
 "vec4 pos = gl_in[0].gl_Position + vec4(gs_offset[0].x, gs_offset[0].y, 0, 0);"
 "gl_Position = pMatrix * vec4(pos.x + tpos.x, pos.y + tpos.y, 0.0, 1.0);"
@@ -89,10 +99,11 @@ const char *s_geometryShader =
 #define DOWN_TEX_INDEX 4
 #define ROTATE_INDEX   5
 #define SCALE_INDEX    6
+#define TEXTURE_INDEX  7
 
 // vec2 (pos) + vec2(offset) + vec2 (dim) +
-// vec2 (top-tex) + vec2 (bottom-tex) + rotate + scale
-#define VBO_STRIDE (sizeof(GLfloat) * 12)
+// vec2 (top-tex) + vec2 (bottom-tex) + rotate + scale + texture
+#define VBO_STRIDE (sizeof(GLfloat) * 12 + sizeof(GLuint))
 
 namespace Sprite {
 
@@ -103,7 +114,7 @@ namespace Sprite {
         _vao(0),
         _buffer(),
         _program(),
-        _texture(0),
+        _texture(atlas->texture()),
         _uniformTexture(0),
         _uniformMatrix(0),
         _matrix(glm::mat4(1.0)),
@@ -179,6 +190,11 @@ namespace Sprite {
                     GL_FALSE,
                     VBO_STRIDE,
                     (GLvoid *) (sizeof(float) * 11));
+            glVertexAttribPointer(TEXTURE_INDEX,
+                    1, GL_UNSIGNED_INT,
+                    GL_FALSE,
+                    VBO_STRIDE,
+                    (GLvoid *) (sizeof(float) * 12));
             _buffer.unbind();
             glBindVertexArray(0);
 
@@ -204,11 +220,12 @@ namespace Sprite {
             _program.bindAttribLocation(DOWN_TEX_INDEX, "vs_bottomtex");
             _program.bindAttribLocation(ROTATE_INDEX,   "vs_angle"    );
             _program.bindAttribLocation(SCALE_INDEX,    "vs_scale"    );
+            _program.bindAttribLocation(TEXTURE_INDEX,  "vs_index"    );
 
             _program.link();
             _program.infoLog();
             _uniformMatrix  = _program.getUniformLocation("pMatrix");
-            _uniformTexture = _program.getUniformLocation("texture");
+            _uniformTexture = _program.getUniformLocation("un_texture");
         }
 
     Engine::~Engine() {
@@ -405,16 +422,6 @@ namespace Sprite {
             // Check layer and swap to lower.
             while((inside > 0) &&
                   (_instance[inside]._layer > _instance[inside - 1]._layer)) {
-/*
-                Instance buffer = _instance[inside];
-                Cell cellBuffer = _cell[inside];
-                _instance[inside] = _instance[inside - 1];
-                _cell[inside] = _cell[inside - 1];
-                _instance[inside - 1] = buffer;
-                _cell[inside - 1] = cellBuffer;
-                _table[id]._target = inside - 1;
-                _table[_instance[inside]._reverse]._target = inside;
-*/
                 swapInstances(id, inside, inside - 1);
                 --inside;
             }
@@ -448,6 +455,7 @@ namespace Sprite {
         glm::ivec2 size = frame->getSize();
         glm::dvec2 top = frame->getTop();
         glm::dvec2 bottom = frame->getBottom();
+        GLuint texture = frame->getTexture();
 
         cell->_posX = x;
         cell->_posY = y;
@@ -461,6 +469,7 @@ namespace Sprite {
         cell->_bottomV = bottom.y;
         cell->_angle = angle;
         cell->_scale = scale;
+        cell->_texture = texture;
     }
 
     void Engine::viewport(float x, float y,
@@ -556,10 +565,12 @@ namespace Sprite {
 
         // Retrieve buffer and memcpy.
         glDepthMask(GL_FALSE);
-        glBindTexture(0, _texture);
+        glEnable(GL_TEXTURE_2D_ARRAY);
         _program.begin();
             glUniformMatrix4fv(_uniformMatrix, 1, GL_FALSE, glm::value_ptr(_matrix));
             glUniform1i(_uniformTexture, 0);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, _texture);
             GLfloat *ptr = (GLfloat *) _buffer.map(Render::BufferObject::BUFFER_WRITE);
             memcpy(ptr, _cell, VBO_STRIDE * _count);
             _buffer.unmap();

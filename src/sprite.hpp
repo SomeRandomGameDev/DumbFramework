@@ -68,7 +68,7 @@ class Frame {
          * Provides texture index.
          * @return Texture index in the texture array.
          */
-        inline const unsigned int getTexture() const { return _texture; }
+        inline const GLuint getTexture() const { return static_cast<GLuint>(_texture); }
 
     private:
         double       _time;    /**< Time of appearance in seconds. **/
@@ -144,6 +144,16 @@ class Atlas {
          * @param filename Paths to the textures. It is filenames separated by a semi-colon.
          */
         void loadTextures(const char *filename);
+
+        /**
+         * Flush/Free the memory occupied by previously loaded textures,
+         * display an error message and set the parser to FAULTED.
+         * @param msg Error message to display.
+         * @param cnt Number of textures to free.
+         * @param textures Array of textures to free.
+         */
+        void setFaulted(const char *msg,
+            unsigned int cnt, unsigned char **textures);
 
     private:
         Framework::Container<Definition *> *_definitions; /**< Definitions. **/
