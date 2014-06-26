@@ -193,7 +193,7 @@ void BoundingCircle::transform(const glm::mat3& m)
  * Find bounding box support point.
  * @param [in] direction Normalized direction vector.
  */
-glm::vec2 BoundingCircle::support(const glm::vec2& direction)
+glm::vec2 BoundingCircle::support(const glm::vec2& direction) const
 {
     return _center + _radius * direction;
 }

@@ -49,11 +49,4 @@ private:
 
 }
 
-/*
-template <typename FirstShape, typename SecondShape, typename VectorType>
-VectorType support(const FirstShape& shape0, const SecondShape& shape1, const VectorType& direction)
-{
-    return shape0.support(direction) - shape1.support(-direction);
-}*/
-
 #endif // _DUMB_FW_COLLISION_SIMPLEX_

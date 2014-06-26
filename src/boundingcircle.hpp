@@ -68,7 +68,7 @@ public:
 	 * Find bounding circle support point.
 	 * @param [in] direction Normalized direction vector.
 	 */
-	glm::vec2 support(const glm::vec2& direction);
+	glm::vec2 support(const glm::vec2& direction) const;
     /** Get circle center. **/
     const glm::vec2& getCenter() const;
     /** Get circle radius. **/

@@ -70,7 +70,7 @@ public:
      * Find bounding quad support point.
      * @param [in] direction Normalized direction vector.
      */
-    glm::vec2 support(const glm::vec2& direction);
+    glm::vec2 support(const glm::vec2& direction) const;
     /** Get lowest quad corner. **/
     const glm::vec2& getMin() const;
     /** Get highest quad corner. **/

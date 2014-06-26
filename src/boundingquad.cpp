@@ -209,7 +209,7 @@ void BoundingQuad::transform(const glm::mat3& m)
  * Find bounding quad support point.
  * @param [in] direction Normalized direction vector.
  */
-glm::vec2 BoundingQuad::support(const glm::vec2& direction)
+glm::vec2 BoundingQuad::support(const glm::vec2& direction) const
 {
     return glm::vec2((direction.x >= 0) ? _max.x : _min.x,
                      (direction.y >= 0) ? _max.y : _min.y);

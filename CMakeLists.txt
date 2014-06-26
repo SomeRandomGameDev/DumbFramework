@@ -74,6 +74,7 @@ if(BUILD_TESTS)
         src/test/boundingcircle.cpp
         src/test/plane.cpp
         src/collision/test/simplex.cpp
+        src/collision/test/narrowphase.cpp
         src/test/runtests.cpp)
     
     add_executable(RunTests ${DUMB_FRAMEWORK_TEST_SOURCES})
