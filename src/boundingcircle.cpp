@@ -195,7 +195,7 @@ void BoundingCircle::transform(const glm::mat3& m)
  */
 glm::vec2 BoundingCircle::support(const glm::vec2& direction) const
 {
-    return _center + _radius * direction;
+    return _center + _radius * glm::normalize(direction);
 }
 /** Get circle center. **/
 const glm::vec2& BoundingCircle::getCenter() const
