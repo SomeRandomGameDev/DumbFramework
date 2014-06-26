@@ -63,7 +63,11 @@ public:
 	 *  @param [in] m 4*4 transformation matrix.
 	 */
 	void transform(const glm::mat4& m);
-
+	/**
+	 * Find sphere support point.
+	 * @param [in] direction Normalized direction vector.
+	 */
+	glm::vec3 support(const glm::vec3& direction);
     /** Get sphere center. **/
     const glm::vec3& getCenter() const;
     /** Get sphere radius. **/

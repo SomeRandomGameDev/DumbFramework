@@ -2,8 +2,6 @@ cmake_minimum_required (VERSION 2.6)
 
 project(DumbFramework)
 
-option(BUILD_TESTS "Build unit tests." OFF)
-
 SET (CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
@@ -51,7 +49,8 @@ set(DUMB_FRAMEWORK_SOURCES
     src/sprengine.cpp
     src/sprite.cpp
     src/texture2d.cpp
-    src/windowhint.cpp)
+    src/windowhint.cpp
+    src/collision/simplex.cpp)
 
 add_library(DumbFramework STATIC ${DUMB_FRAMEWORK_SOURCES})
 target_link_libraries(DumbFramework ${OPENGL_LIBRARIES} )
@@ -74,11 +73,11 @@ if(BUILD_TESTS)
         src/test/boundingfrustum.cpp
         src/test/boundingcircle.cpp
         src/test/plane.cpp
+        src/collision/test/simplex.cpp
         src/test/runtests.cpp)
     
     add_executable(RunTests ${DUMB_FRAMEWORK_TEST_SOURCES})
-    target_link_libraries(RunTests DumbFramework)
-    target_link_libraries(RunTests ${UNITTEST++_LIBRARY})
+    target_link_libraries(RunTests DumbFramework ${UNITTEST++_LIBRARY})
 endif()
 
 add_executable(flatengine src/demo/flatengine.cpp)

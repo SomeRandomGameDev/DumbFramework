@@ -194,6 +194,14 @@ void BoundingSphere::transform(const glm::mat4& m)
 	_squareRadius = _squareRadius * scale;
 	_radius = _radius * sqrt(scale);
 }
+/**
+ * Find sphere support point.
+ * @param [in] direction Normalized direction vector.
+ */
+glm::vec3 BoundingSphere::support(const glm::vec3& direction)
+{
+	return _center + _radius * direction;
+}
 
 /** Get sphere center. **/
 const glm::vec3& BoundingSphere::getCenter() const

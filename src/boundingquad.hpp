@@ -66,6 +66,11 @@ public:
      *  @param [in] m 3*3 transformation matrix.
      */
     void transform(const glm::mat3& m);
+    /**
+     * Find bounding quad support point.
+     * @param [in] direction Normalized direction vector.
+     */
+    glm::vec2 support(const glm::vec2& direction);
     /** Get lowest quad corner. **/
     const glm::vec2& getMin() const;
     /** Get highest quad corner. **/

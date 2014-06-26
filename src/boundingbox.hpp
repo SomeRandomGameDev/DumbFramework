@@ -66,6 +66,11 @@ public:
      *  @param [in] m 4*4 transformation matrix.
      */
     void transform(const glm::mat4& m);
+	/**
+	 * Find bounding box support point.
+	 * @param [in] direction Normalized direction vector.
+	 */
+	glm::vec3 support(const glm::vec3& direction);
     /** Get lowest box corner. **/
     const glm::vec3& getMin() const;
     /** Get highest box corner. **/

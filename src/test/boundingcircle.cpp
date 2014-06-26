@@ -102,6 +102,25 @@ SUITE(BoundingCircle)
         CHECK_EQUAL(ContainmentType::Disjoints, ret);
     }
     
+    TEST(ContainsQuad)
+    {
+        ContainmentType::Value ret;
+        Framework::BoundingQuad dummy;
+        Framework::BoundingCircle c0(glm::vec2(4.0f), 2.0f);
+
+        dummy = Framework::BoundingQuad(glm::vec2(3.0f), glm::vec2(5.0f));
+        ret = c0.contains(dummy);
+        CHECK_EQUAL(ContainmentType::Contains, ret);
+                
+        dummy = Framework::BoundingQuad(glm::vec2(4.0f,3.0f), glm::vec2(8.0f,7.0f));
+        ret = c0.contains(dummy);
+        CHECK_EQUAL(ContainmentType::Intersects, ret);
+
+        dummy = Framework::BoundingQuad(glm::vec2(-1.0f,-2.0f), glm::vec2(1.0f,1.0f));
+        ret = c0.contains(dummy);
+        CHECK_EQUAL(ContainmentType::Disjoints, ret);
+    }
+    
     TEST(ClassifyLine)
     {
         Framework::BoundingCircle c0;

@@ -40,6 +40,8 @@ public:
 
     /** Check if the current bounding circle contains the specified bounding circle. */
     ContainmentType::Value contains(const BoundingCircle& circle);
+    /** Check if the current bounding circle contains the specified bounding quad. */
+    ContainmentType::Value contains(const BoundingQuad& quad);
     /** Check if the current bounding circle contains the specified list of points.
      *  @param [in] buffer Pointer to the point array.
      *  @param [in] count  Number of points 
@@ -62,7 +64,11 @@ public:
 	 *  @param [in] m 3*3 transformation matrix.
 	 */
 	void transform(const glm::mat3& m);
-    
+    /**
+	 * Find bounding circle support point.
+	 * @param [in] direction Normalized direction vector.
+	 */
+	glm::vec2 support(const glm::vec2& direction);
     /** Get circle center. **/
     const glm::vec2& getCenter() const;
     /** Get circle radius. **/

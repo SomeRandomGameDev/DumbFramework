@@ -213,6 +213,16 @@ void BoundingBox::transform(const glm::mat4& m)
 	_max = glm::max(dummy[0], dummy[1]);
 	_update();
 }
+/**
+ * Find bounding box support point.
+ * @param [in] direction Normalized direction vector.
+ */
+glm::vec3 BoundingBox::support(const glm::vec3& direction)
+{
+	return glm::vec3((direction.x >= 0) ? _max.x : _min.x,
+	                 (direction.y >= 0) ? _max.y : _min.y,
+	                 (direction.z >= 0) ? _max.z : _min.z);
+}
 /** Get lowest box corner. **/
 const glm::vec3& BoundingBox::getMin() const { return _min; }
 /** Get highest box corner. **/

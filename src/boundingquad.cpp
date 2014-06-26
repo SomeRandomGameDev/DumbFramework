@@ -205,6 +205,15 @@ void BoundingQuad::transform(const glm::mat3& m)
 	_max = glm::max(dummy[0], dummy[1]);
 	_update();
 }
+/**
+ * Find bounding quad support point.
+ * @param [in] direction Normalized direction vector.
+ */
+glm::vec2 BoundingQuad::support(const glm::vec2& direction)
+{
+    return glm::vec2((direction.x >= 0) ? _max.x : _min.x,
+                     (direction.y >= 0) ? _max.y : _min.y);
+}
 /** Get lowest quad corner. **/
 const glm::vec2& BoundingQuad::getMin() const { return _min; }
 /** Get highest quad corner. **/

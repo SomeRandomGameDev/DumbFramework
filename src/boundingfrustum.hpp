@@ -46,7 +46,11 @@ public:
      *  @param [in] ray Ray to be tested.
      */
     bool intersects(const Ray& ray);
-    
+   /**
+    * Find bounding frustum support point.
+    * @param [in] direction Normalized direction vector.
+    */
+	// [todo] glm::vec3 support(const glm::vec3& direction); 
     /** Get camera matrix used to build frustum planes. **/
     const glm::mat4& getCameraMatrix() const;
     /** Get projection matrix used to build frustum planes. **/
@@ -76,12 +80,16 @@ private:
         FRUSTUM_PLANE_BOTTOM,
         FRUSTUM_PLANE_COUNT
     };
+    /** Corner points count **/
+    // [todo] enum{ FRUSTUM_CORNER_COUNT = 8 };
     /** Camera matrix used to build planes. **/
     glm::mat4 _camera;
     /** Projection matrix used to build planes. **/
     glm::mat4 _projection;
     /** Planes. **/
     Plane _planes[FRUSTUM_PLANE_COUNT];
+    /** Frustum points. **/
+    // [todo] glm::vec3 _corners[FRUSTUM_CORNER_COUNT];
 };
 
 }

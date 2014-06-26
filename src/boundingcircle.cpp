@@ -84,6 +84,37 @@ ContainmentType::Value BoundingCircle::contains(const BoundingCircle& circle)
     if(squareDistance <= sqdr1) { return ContainmentType::Contains; }
     return ContainmentType::Intersects;
 }
+/** Check if the current bounding circle contains the specified bounding quad. */
+ContainmentType::Value BoundingCircle::contains(const BoundingQuad& quad)
+{
+    glm::vec2 diffMin = _center  - quad.getMin();
+	glm::vec2 diffMax = quad.getMax() - _center;
+	
+	glm::vec2 eMin = diffMin * diffMin;
+	glm::vec2 eMax = diffMax * diffMax;
+	
+	float dmin = 0.0f;
+	for(int i=0; i<2; i++)
+	{
+		if     (diffMin[i] < 0.0f) { dmin += eMin[i]; }
+		else if(diffMax[i] < 0.0f) { dmin += eMax[i]; }
+	}
+
+	if(dmin <= _squareRadius)
+	{
+		bool all=true, any=false;
+		for(int i=0; i<2; i++)
+		{
+			bool tMin = (eMin[i] <= _squareRadius);
+			bool tMax(eMax[i] <= _squareRadius);
+			all = all && (tMin && tMax);
+			any = any || (tMin || tMax);
+		}
+		if(all) { return ContainmentType::Contains;   }
+		if(any) { return ContainmentType::Intersects; }
+	}
+	return ContainmentType::Disjoints;
+}
 /** Check if the current bounding circle contains the specified list of points.
  *  @param [in] buffer Pointer to the point array.
  *  @param [in] count  Number of points 
@@ -158,7 +189,14 @@ void BoundingCircle::transform(const glm::mat3& m)
 	_squareRadius = _squareRadius * scale;
 	_radius = _radius * sqrt(scale);
 }
-
+/**
+ * Find bounding box support point.
+ * @param [in] direction Normalized direction vector.
+ */
+glm::vec2 BoundingCircle::support(const glm::vec2& direction)
+{
+    return _center + _radius * direction;
+}
 /** Get circle center. **/
 const glm::vec2& BoundingCircle::getCenter() const
 { return _center; }
