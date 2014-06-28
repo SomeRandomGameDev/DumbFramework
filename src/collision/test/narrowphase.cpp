@@ -3,7 +3,9 @@
 #include <iostream>
 #include <glm/gtc/random.hpp>
 #include <glm/gtx/io.hpp>
+#include <glm/gtx/matrix_transform_2d.hpp>
 #include "boundingobjects.hpp"
+#include "polygon2d.hpp"
 #include "collision/narrowphase.hpp"
 
 using namespace Framework;
@@ -74,5 +76,71 @@ SUITE(NarrowPhase)
         groundTruth = q0.contains(q1);
         ret = NarrowPhase::intersects(q0, q1, simplex, direction);
         CHECK((groundTruth == ContainmentType::Contains) && (ret == true));
+    }
+    
+    void createPolygon(size_t count, float radius, const glm::vec2& displacement, Polygon2d& poly)
+    {
+        std::vector<float> points;
+        float angle = 0.0f;
+        float delta = 2.0f * M_PI / (float)count;
+        points.resize(count*2);
+        for(size_t i=0; i<count; i++, angle+=delta)
+        {
+            points[2*i + 0] = (radius * cos(angle)) + displacement.x;
+            points[2*i + 1] = (radius * sin(angle)) + displacement.y;
+        }
+        poly.set(&points[0], count, 0);
+    }
+    
+    TEST(Polygon2d)
+    {
+        bool ret;
+        Simplex2d simplex;
+        glm::vec2 direction;
+        
+        Polygon2d p0;
+        Polygon2d p1;
+
+        // nonagon
+        createPolygon( 9, 3.7f, glm::vec2( 3.5f, 1.4f), p0);
+        // dodecagon 
+        createPolygon(12, 3.5f, glm::vec2(-0.3f,-0.7f), p1);
+
+        ret = NarrowPhase::intersects(p0, p1, simplex, direction);
+        CHECK_EQUAL(true, ret);
+        
+        // move p1 away from p0
+        glm::mat3 m = glm::translate(glm::mat3(), glm::vec2(-11.5f, 21.2f));
+        p1.transform(m);
+        ret = NarrowPhase::intersects(p0, p1, simplex, direction);
+        CHECK_EQUAL(false, ret);
+    }
+    
+    TEST(Hybrid)
+    {
+        bool ret;
+        Simplex2d simplex;
+        glm::vec2 direction;
+        
+        // heptagon
+        Polygon2d poly;
+        createPolygon( 7, 2.6f, glm::vec2(-3.7f, 2.4f), poly);
+        // quad
+        BoundingQuad quad(glm::vec2(-2.7f, 0.3f), glm::vec2(-1.5f, 1.1f));
+        // circle
+        BoundingCircle c0(glm::vec2(0.5f,  3.1f), 1.8f);
+        BoundingCircle c1(glm::vec2(9.1f,-17.9f), 4.2f);
+        
+        ret = NarrowPhase::intersects(quad, poly, simplex, direction);
+        CHECK_EQUAL(true, ret);
+        
+        ret = NarrowPhase::intersects(poly, c0, simplex, direction);
+        CHECK_EQUAL(true, ret);
+
+        ret = NarrowPhase::intersects(poly, c1, simplex, direction);
+        CHECK_EQUAL(false, ret);
+        
+        ret = NarrowPhase::intersects(c0, quad, simplex, direction);
+        CHECK_EQUAL(false, ret);
     }
 }

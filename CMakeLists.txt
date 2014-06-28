@@ -38,6 +38,7 @@ set(DUMB_FRAMEWORK_SOURCES
     src/boundingfrustum.cpp
     src/boundingcircle.cpp
     src/boundingquad.cpp
+    src/polygon2d.cpp
     src/line2d.cpp
     src/plane.cpp
     src/ray.cpp
@@ -74,6 +75,7 @@ if(BUILD_TESTS)
         src/test/boundingfrustum.cpp
         src/test/boundingcircle.cpp
         src/test/plane.cpp
+        src/test/polygon2d.cpp
         src/collision/test/simplex.cpp
         src/collision/test/narrowphase.cpp
         src/test/runtests.cpp)
