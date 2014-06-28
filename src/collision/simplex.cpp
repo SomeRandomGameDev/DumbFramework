@@ -3,12 +3,17 @@
 namespace Framework {
 
 /**
- * Add a point to simplex.
+ * Add support points and compute the Minkowski difference.
+ * @param [in] pA  Support point for the first shape.
+ * @param [in] pB  Support point for the second shape.
  */
-void Simplex2d::add(const glm::vec2& pt)
+void Simplex2d::add(const glm::vec2& pA, const glm::vec2& pB)
 {
     if(_count > 3) { return; }
-    _points[_count++] = pt;
+    _points[_count].pA = pA;
+    _points[_count].pB = pB;
+    _points[_count].p  = pA - pB;
+    ++_count;
 }
 /**
  * Remove all points from simplex;
@@ -28,7 +33,7 @@ int Simplex2d::count() const
  * Retrieve last point in simplex.
  * @warning unsafe method.
  */
-const glm::vec2& Simplex2d::last() const
+const Simplex2d::Vertex& Simplex2d::last() const
 {
     return _points[_count-1];
 }
@@ -63,8 +68,8 @@ bool Simplex2d::update(glm::vec2& direction)
     if(2 == _count)
     {
         // Line segment.
-        glm::vec2 a  = _points[1];
-        glm::vec2 b  = _points[0];
+        glm::vec2 a  = _points[1].p;
+        glm::vec2 b  = _points[0].p;
         glm::vec2 ab = b - a;
         glm::vec2 ao = -a;
         // Compute normal.
@@ -78,9 +83,9 @@ bool Simplex2d::update(glm::vec2& direction)
     else if(3 == _count)
     {
         // Triangle.
-        glm::vec2 a  = _points[2];
-        glm::vec2 b  = _points[1];
-        glm::vec2 c  = _points[0];
+        glm::vec2 a  = _points[2].p;
+        glm::vec2 b  = _points[1].p;
+        glm::vec2 c  = _points[0].p;
         glm::vec2 ab = b - a;
         glm::vec2 ac = c - a;
         glm::vec2 ao = -a;
@@ -91,15 +96,15 @@ bool Simplex2d::update(glm::vec2& direction)
         if(glm::dot(ao, acp) >= 0)
         {
             _count = 2;
-            _points[1] = _points[2];
+            _points[1].p = _points[2].p;
             direction = acp;
         }
         // Check if the origin is beyond ab
         else if(glm::dot(ao, abp) >= 0)
         {
             _count = 2;
-            _points[0] = _points[1];
-            _points[1] = _points[2];
+            _points[0].p = _points[1].p;
+            _points[1].p = _points[2].p;
             direction = abp;
         }
         // The triangle contains the origin.

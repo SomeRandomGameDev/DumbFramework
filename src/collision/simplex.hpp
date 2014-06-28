@@ -11,14 +11,28 @@ namespace Framework {
 class Simplex2d
 {
 public:
+    /** 2d simplex vertex. **/
+    struct Vertex
+    {
+        /** Support point for the first shape. **/
+        glm::vec2 pA;
+        /** Support point for the second shape. **/
+        glm::vec2 pB;
+        /** Minkowski difference point. **/
+        glm::vec2 p;
+    };
+    
+public:
     /** Constructor. **/
     Simplex2d();
     /** Destructor. **/
     ~Simplex2d();
     /**
-     * Add a point to simplex.
+     * Add support points and compute the Minkowski difference.
+     * @param [in] pA  Support point for the first shape.
+     * @param [in] pB  Support point for the second shape.
      */
-    void add(const glm::vec2& pt);
+    void add(const glm::vec2& pA, const glm::vec2& pB);
     /**
      * Remove all points from simplex;
      */
@@ -27,7 +41,7 @@ public:
      * Retrieve last point in simplex.
      * @warning unsafe method.
      */
-    const glm::vec2& last() const;
+    const Vertex& last() const;
     /**
      * Get point count.
      */
@@ -40,11 +54,12 @@ public:
      * @return true if the simplex contains the origin.
      */
     bool update(glm::vec2& direction);
+
 private:
     /** Number of points. **/
     int _count;
     /** Point stack. **/
-    glm::vec2 _points[3];
+    Vertex _points[3];
 };
 
 }

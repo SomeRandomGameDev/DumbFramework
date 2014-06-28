@@ -50,10 +50,9 @@ bool NarrowPhase::intersects(const FirstShape2d& a, const SecondShape2d& b, Simp
     simplex.clear();
     
     // Compute Minkowski difference point and add it to the simplex.
-    glm::vec2 dummy = a.support(direction) - b.support(-direction);
-    simplex.add(dummy);
+    simplex.add(a.support(direction), b.support(-direction));
     // Check if the new point is past the origin along the search direction vector.
-    if(glm::dot(dummy, direction) <= 0)
+    if(glm::dot(simplex.last().p, direction) <= 0)
     {
         return false;
     }
@@ -62,11 +61,10 @@ bool NarrowPhase::intersects(const FirstShape2d& a, const SecondShape2d& b, Simp
     for(int i=0; i<NarrowPhase::MAX_ITERATION; i++)
     {
         // Compute Minkowski difference point and add it to the simplex.
-        dummy = a.support(direction) - b.support(-direction);
-        simplex.add(dummy);
-        
+        simplex.add(a.support(direction), b.support(-direction));
+    
         // Check if the new point is past the origin along the search direction vector.
-        if(glm::dot(dummy, direction) <= 0)
+        if(glm::dot(simplex.last().p, direction) <= 0)
         {
             return false;
         }
