@@ -5,15 +5,40 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * Ultra speed coding !
+ */
+
 #define MAX_NUMBER_OF_TEXTURE 8
-#define TEXTURE_FILENAME_SIZE 255
+#define TEXTURE_FILENAME_SIZE 4096
+
 /*
  * Control structure.
  */
-typedef struct {
-    char _textureFile[TEXTURE_FILENAME_SIZE][MAX_NUMBER_OF_TEXTURE];
+class ControlStructure {
+public:
+    char         _textureToLoad[TEXTURE_FILENAME_SIZE];
+    char**       _textures;
     unsigned int _textureCount;
-} ControlStructure;
+    TwBar*       _mainBar;
+    char *       _active;
+
+public:
+    ControlStructure() {
+        _active = new char[MAX_NUMBER_OF_TEXTURE];
+        _textureCount = 0;
+        _textures = new char*[MAX_NUMBER_OF_TEXTURE];
+    }
+
+    ~ControlStructure() {
+        delete []_active;
+        for(unsigned int i = 0; i < _textureCount; ++i) {
+            delete []_textures[i];
+        }
+        delete []_textures;
+        // ## What about the bar ?
+    }
+};
 
 
 /*
@@ -57,7 +82,10 @@ void glfwMainMouseClickCallback(GLFWwindow *window, int button, int action, int 
  * GLFW Main char callback.
  */
 void glfwMainCharCallback(GLFWwindow *window, unsigned int chr) {
-    if(!TwEventCharGLFW((int) chr, GLFW_PRESS)) {
+    int press = TwEventCharGLFW((int) chr, GLFW_PRESS);
+    int release = TwEventCharGLFW((int) chr, GLFW_RELEASE);
+
+    if(press != 0 && release != 0) {
         /* TODO */
     }
 }
@@ -74,13 +102,45 @@ void glfwMainMouseWheelCallback(GLFWwindow *window, double xOffset, double yOffs
 }
 
 
+// ## Add Callback for texture removal.
+
+void TW_CALL setTextureToLoad(const void *value, void *cD)
+{
+  ControlStructure *clientData = (ControlStructure *) cD;
+  const char *src = (const char *)value;
+  strncpy(clientData->_textureToLoad, src, TEXTURE_FILENAME_SIZE);
+  clientData->_textureToLoad[TEXTURE_FILENAME_SIZE-1] = '\0';
+
+  printf("Let's load texture %s\n", clientData->_textureToLoad);
+  if((clientData->_textureCount < MAX_NUMBER_OF_TEXTURE) && (clientData->_textureToLoad[0] != 0)) {
+        char properties[128 + TEXTURE_FILENAME_SIZE];
+        char name[64];
+        snprintf(name, 64, "texture%d", clientData->_textureCount);
+        snprintf(properties, 128 + TEXTURE_FILENAME_SIZE, " group=Load true=Enabled false=Disabled label='%s'",
+            clientData->_textureToLoad);
+        printf("Add '%s'\n", name);
+        TwAddVarRW(clientData->_mainBar, name, TW_TYPE_BOOL8, clientData->_active + clientData->_textureCount,
+            properties );
+        ++clientData->_textureCount;
+  }
+  
+}
+
+void TW_CALL getTextureToLoad(void *value, void *cD)
+{
+  ControlStructure *clientData = (ControlStructure *) cD;
+  char *dest = (char *)value;
+  strncpy(dest, clientData->_textureToLoad, TEXTURE_FILENAME_SIZE-1);
+  dest[TEXTURE_FILENAME_SIZE-1] = '\0';
+}
+
+
 /*
  * Main Procedure/Entry Point.
  */
 int main() {
     GLFWwindow *window;
-    TwBar *mainBar;
-    ControlStructure *controlStructure = (ControlStructure *) malloc(sizeof(ControlStructure));
+    ControlStructure *controlStructure = new ControlStructure();
     int initW;
     int initH;
 
@@ -92,13 +152,14 @@ int main() {
     }
 
     window = glfwCreateWindow(800, 600, "Atlas Maker",
-            glfwGetPrimaryMonitor(), NULL);
+            NULL, NULL);
 
     if(0 == window) {
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
 
+    glfwSetWindowUserPointer(window, controlStructure);
     glfwMakeContextCurrent(window);
     glfwSetKeyCallback(window, glfwMainKeyCallback);
     glfwSetCharCallback(window, glfwMainCharCallback);
@@ -109,21 +170,22 @@ int main() {
 
     TwInit(TW_OPENGL, 0);
     TwWindowSize(initW, initH);
-    mainBar = TwNewBar("Main Control");
-    TwDefine("GLOBAL help='Main control'");
-    TwAddVarRW(mainBar, "Texture 1",
+    controlStructure->_mainBar = TwNewBar("Main");
+    TwDefine(" Main label='Main control'");
+
+    TwAddVarCB(controlStructure->_mainBar, "TextureToLoad",
             TW_TYPE_CSSTRING(TEXTURE_FILENAME_SIZE),
-            controlStructure->_textureFile[0], "");
+            setTextureToLoad,
+            getTextureToLoad,
+            controlStructure, " group=Load");
 
-
+    TwDefine(" Main/Load label='Texture Management'");
     while(!glfwWindowShouldClose(window)) {
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
         TwDraw();
         glfwSwapBuffers(window);
         glfwPollEvents();
-
-        printf("Texture 1 : %s\n", controlStructure->_textureFile[0]);
     }
 
     TwTerminate();

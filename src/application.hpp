@@ -64,11 +64,6 @@ private:
 private:
 
   /**
-   * Unique instance of the application.
-   */
-  static Application *_application;
-
-  /**
    * Wrapper to key event callback.
    */
   static void handleKey(GLFWwindow*, int, int, int, int);

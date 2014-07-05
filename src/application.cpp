@@ -4,8 +4,6 @@
 
 #include <iostream>
 
-Application* Application::_application = 0;
-
 void SimpleErrorCallback(int errorCode, const char *description) {
     std::cerr << "GLFW Error(" << errorCode << ") " << description << std::endl;
 }
@@ -37,17 +35,17 @@ bool Application::start(WindowHint hint, Scene *scene) {
     glfwSetErrorCallback(SimpleErrorCallback);
     bool result = ((scene != 0) && glfwInit());
     _scene = scene;
-    if((_application != 0) || (scene == 0)) {
+    if(scene == 0) {
         std::cerr << "Concurrent access" << std::endl;
         return false; // (Terribly) Poor protection against concurrent runs.
     }
     _hint = hint;
-    _application = this;
     if(result) {
         _initialized = true;
         result = _hint.openWindow();
         if(result) {
             GLFWwindow* window = _hint.getWindow();
+            glfwSetWindowUserPointer(window, this);
             GLenum glewError = glewInit();
             if(GLEW_OK != glewError) {
                 std::cerr << "Can't initialize GLEW" << std::endl;
@@ -64,7 +62,7 @@ bool Application::start(WindowHint hint, Scene *scene) {
             _running = true;
             Scene *next = 0;
             _scene->resume(window);
-            while(_running) {
+            while((0 != _scene) && (!glfwWindowShouldClose(window))) {
                 next = _scene->output();
                 if(next != _scene) {
                     _scene->pause();
@@ -89,7 +87,6 @@ bool Application::start(WindowHint hint, Scene *scene) {
     } else {
         std::cerr << "Can't initialize GLFW" << std::endl;
     }
-    _application = 0;
     return result;
 }
 
@@ -97,29 +94,32 @@ void Application::stop() {
     clear();
 }
 
-void Application::handleKey(GLFWwindow* /*window*/, int key, int scancode, int action, int mods) {
-    _application->_scene->handleKeyAction(key, scancode, action, mods);
+void Application::handleKey(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    Application *app = static_cast<Application *>(glfwGetWindowUserPointer(window));
+    app->_scene->handleKeyAction(key, scancode, action, mods);
 }
 
-void Application::handleMouseButton(GLFWwindow* /*window*/, int button, int action, int) {
-    _application->_scene->handleMouseButtonAction(button, action);
+void Application::handleMouseButton(GLFWwindow* window, int button, int action, int) {
+    Application *app = static_cast<Application *>(glfwGetWindowUserPointer(window));
+    app->_scene->handleMouseButtonAction(button, action);
 }
 
-void Application::handleMousePosition(GLFWwindow* /*window*/, double x, double y) {
-    _application->_scene->handleMousePositionAction(x, y);
+void Application::handleMousePosition(GLFWwindow* window, double x, double y) {
+    Application *app = static_cast<Application *>(glfwGetWindowUserPointer(window));
+    app->_scene->handleMousePositionAction(x, y);
 }
 
-void Application::handleMouseWheel(GLFWwindow* /*window*/, double x, double y) {
-    _application->_scene->handleMouseWheelAction(x, y);
+void Application::handleMouseWheel(GLFWwindow* window, double x, double y) {
+    Application *app = static_cast<Application *>(glfwGetWindowUserPointer(window));
+    app->_scene->handleMouseWheelAction(x, y);
 }
 
-void Application::handleWindowSize(GLFWwindow* /*window*/, int width, int height) {
-    _application->_scene->handleWindowSize(width, height);
+void Application::handleWindowSize(GLFWwindow* window, int width, int height) {
+    Application *app = static_cast<Application *>(glfwGetWindowUserPointer(window));
+    app->_scene->handleWindowSize(width, height);
 }
 
-void Application::handleWindowClose(GLFWwindow* /*window*/) {
-    _application->_running = false;
-    // The other accessor (in the main loop) is additive :
-    // Let's consider this as  thread-safe.
+void Application::handleWindowClose(GLFWwindow* window) {
+    glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
