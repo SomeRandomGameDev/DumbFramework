@@ -4,8 +4,11 @@ project(DumbFramework)
 
 option(BUILD_TESTS "Build unit tests." OFF)
 
-SET (CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
+set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
 
 if(MSVC)
     add_definitions (/D "_CRT_SECURE_NO_WARNINGS")
@@ -19,13 +22,10 @@ find_package(GLEW)
 find_package(GLFW)
 find_package(GLM)
 find_package(BOX2D)
+find_package(AntTweakBar)
 
 set(DUMB_FRAMEWORK_VERSION 0.1a)
 set(PROJECT_NAME DumbFramework)
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CMAKE_BUILD_TYPE} ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CMAKE_BUILD_TYPE} ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CMAKE_BUILD_TYPE} ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
 
 include_directories( ${EXPAT_INCLUDE_DIR} 
                      ${PTHREADS_INCLUDE_DIR}
@@ -85,5 +85,7 @@ if(BUILD_TESTS)
     target_link_libraries(RunTests ${UNITTEST++_LIBRARY})
 endif()
 
+#add_subdirectory(external/freetype-gl)
+
 add_executable(flatengine src/demo/flatengine.cpp)
-target_link_libraries(flatengine DumbFramework)
+target_link_libraries(flatengine DumbFramework freetype-gl)
