@@ -12,6 +12,8 @@
  * void handleMousePositionAction(double x, double y);
  * void handleMouseWheelAction(double x, double y);
  * void handleWindowSize(int x, int y);
+ * void handleChar(unsigned int unicodeChar);
+ * void handleCursorEnter(int flag);
  */
 
 /**
@@ -68,6 +70,16 @@ template <typename T> class Wrapper {
          */
         static void handleWindowSize(GLFWwindow *, int, int);
 
+        /**
+         * Wrapper to Unicode character input.
+         */
+        static void handleChar(GLFWwindow *, unsigned int);
+
+        /**
+         * Wrapper to cursor enter/leave window.
+         */
+        static void handleCursorEnter(GLFWwindow *, int);
+
 };
 
 // Implementation **********************************************
@@ -90,6 +102,8 @@ template <typename T> bool Wrapper<T>::start() {
                 glfwSetScrollCallback(window, Wrapper<T>::handleMouseWheel);
                 glfwSetWindowSizeCallback(window, Wrapper<T>::handleWindowSize);
                 glfwSetWindowCloseCallback(window, Wrapper<T>::handleWindowClose);
+                glfwSetCharCallback(window, Wrapper<T>::handleChar);
+                glfwSetCursorEnterCallback(window, Wrapper<T>::handleCursorEnter);
                 _delegate->init();
                 while(!glfwWindowShouldClose(window)) {
                     _delegate->render();
@@ -140,5 +154,16 @@ template <typename T> void Wrapper<T>::handleWindowSize(GLFWwindow* window, int 
 template <typename T> void Wrapper<T>::handleWindowClose(GLFWwindow* window) {
     glfwSetWindowShouldClose(window, GL_TRUE);
 }
+
+template <typename T> void Wrapper<T>::handleChar(GLFWwindow *window, unsigned int chr) {
+    Wrapper<T> *app = static_cast<Wrapper<T> *>(glfwGetWindowUserPointer(window));
+    app->_delegate->handleChar(chr);
+}
+
+template <typename T> void Wrapper<T>::handleCursorEnter(GLFWwindow *window, int flag) {
+    Wrapper<T> *app = static_cast<Wrapper<T> *>(glfwGetWindowUserPointer(window));
+    app->_delegate->handleCursorEnter(flag);
+}
+
 
 #endif
