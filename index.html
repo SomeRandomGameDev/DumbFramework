@@ -28,25 +28,27 @@
     <div id="content-wrapper">
       <div class="inner clearfix">
         <section id="main-content">
-          <h3>Purpose</h3>
+          <h3>
+<a name="purpose" class="anchor" href="#purpose"><span class="octicon octicon-link"></span></a>Purpose</h3>
 
 <p>There's many good libraries for speeding up your productivity. But sometimes, speeding up is not enough. You're always running out of time. One can always get libraries like GLFW, GLEW, SOIL. But you need to do basic stuff over and over again. Here comes the dumb framework. It implements the glue, a slightly higher level of abstraction that combines underneath libraries without cutting you from them.</p>
 
 <p>We're talking about ultra-lightweight productions here. It's not about getting a middleware, pushing your assets and publishing a fat prototype. It's about coding a couple of routines, launch your favorite compilers and obtaining a shiny tiny executable.</p>
 
-<h3>So, how can I use your stuff ?</h3>
+<h3>
+<a name="so-how-can-i-use-your-stuff-" class="anchor" href="#so-how-can-i-use-your-stuff-"><span class="octicon octicon-link"></span></a>So, how can I use your stuff ?</h3>
 
 <p>Assuming you're comfortable with C++, here is the thing: There's a class, named Application, that represents the core of your prod. Its purpose is to display one scene at a time (perhaps your app is about a single scene, why not ?). A scene is just an object that can collect information from input devices (keyboard, mouse ...) and output a result (on screen, with sound).
 One only needs to create a scene class by deriving the Scene interface.</p>
 
-<div class="highlight"><pre><span class="k">class</span> <span class="nc">MyScene</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Scene</span> <span class="p">{</span>
+<div class="highlight highlight-cpp"><pre><span class="k">class</span> <span class="nc">MyScene</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Scene</span> <span class="p">{</span>
    <span class="c1">// ... See the Scene class code, it pretty straightforward.</span>
 <span class="p">};</span>
 </pre></div>
 
 <p>Then, you just have to use it like that.</p>
 
-<div class="highlight"><pre><span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+<div class="highlight highlight-cpp"><pre><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">MyScene</span> <span class="n">myScene</span><span class="p">;</span>
   <span class="n">Application</span> <span class="n">myApplication</span><span class="p">;</span>      
   <span class="n">WindowHint</span> <span class="n">hint</span><span class="p">;</span>
@@ -59,11 +61,56 @@ One only needs to create a scene class by deriving the Scene interface.</p>
 
 <p>Complete examples are available in the git repository, under the 'demo' directory.</p>
 
-<h3>What if I want to play with sprites ?</h3>
+<h3>
+<a name="or-what-about-making-things-simplier-" class="anchor" href="#or-what-about-making-things-simplier-"><span class="octicon octicon-link"></span></a>Or what about making things simplier ?</h3>
+
+<p>Not concerned about scene management and all that stuff ?
+Just use the Wrapper.
+What you've got to do is just to create a class that implement the following methods:</p>
+
+<div class="highlight highlight-cpp"><pre><span class="n">GLFWwindow</span> <span class="o">*</span><span class="nf">createWindow</span><span class="p">();</span>
+<span class="kt">void</span> <span class="nf">destroyWindow</span><span class="p">(</span><span class="n">GLFWwindow</span> <span class="o">*</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">init</span><span class="p">();</span>
+<span class="kt">void</span> <span class="nf">render</span><span class="p">();</span>
+<span class="kt">void</span> <span class="nf">handleKeyAction</span><span class="p">(</span><span class="kt">int</span> <span class="n">key</span><span class="p">,</span> <span class="kt">int</span> <span class="n">scancode</span><span class="p">,</span> <span class="kt">int</span> <span class="n">action</span><span class="p">,</span> <span class="kt">int</span> <span class="n">mods</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">handleMouseButtonAction</span><span class="p">(</span><span class="kt">int</span> <span class="n">button</span><span class="p">,</span> <span class="kt">int</span> <span class="n">action</span><span class="p">,</span> <span class="kt">int</span> <span class="n">mods</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">handleMousePositionAction</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span><span class="p">,</span> <span class="kt">double</span> <span class="n">y</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">handleMouseWheelAction</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span><span class="p">,</span> <span class="kt">double</span> <span class="n">y</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">handleWindowSize</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">y</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">handleChar</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">unicodeChar</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">handleCursorEnter</span><span class="p">(</span><span class="kt">int</span> <span class="n">flag</span><span class="p">);</span>
+</pre></div>
+
+<p>And that's about it. Then, merges it with the wrapper using the magic of the templates like this:</p>
+
+<div class="highlight highlight-cpp"><pre><span class="c1">// Include GLFW/GLEW stuff</span>
+<span class="cp">#include &lt;wrapper.hpp&gt;</span>
+<span class="cp">#include "the_place_where_you_declared_your_class.hpp"</span>
+
+<span class="c1">// Let say that your class is named 'MySimpleApplication'.</span>
+
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">Wrapper</span><span class="o">&lt;</span><span class="n">MySimpleApplication</span><span class="o">&gt;</span> <span class="o">*</span><span class="n">wrapper</span><span class="p">;</span>
+  <span class="n">MySimpleApplication</span> <span class="o">*</span><span class="n">app</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MySimpleApplication</span><span class="p">(</span><span class="cm">/* your own flavour of constructor */</span><span class="p">);</span>
+  <span class="c1">// Do whatever you want to prepare your stuff. Then.</span>
+
+  <span class="n">wrapper</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Wrapper</span><span class="o">&lt;</span><span class="n">MySimpleApplication</span><span class="o">&gt;</span><span class="p">(</span><span class="n">app</span><span class="p">);</span>
+
+  <span class="n">wrapper</span><span class="o">-&gt;</span><span class="n">start</span><span class="p">();</span>
+
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+<p>And voilà !</p>
+
+<h3>
+<a name="what-if-i-want-to-play-with-sprites-" class="anchor" href="#what-if-i-want-to-play-with-sprites-"><span class="octicon octicon-link"></span></a>What if I want to play with sprites ?</h3>
 
 <p>The way to flat happiness is short with this dumb framework. But it requires a little descriptive effort. What you need is a square picture, about power of two (16x16, 32x32 ... but usually 512x512 or even 1024x1024) and an XML file that describe what's in it in term of sprite and animation of sprite. Here's an example:</p>
 
-<div class="highlight"><pre><span class="c">&lt;!-- First the path to the picture. Note that is can be</span>
+<div class="highlight highlight-xml"><pre><span class="c">&lt;!-- First the path to the picture. Note that is can be</span>
 <span class="c">absolute OR relative - from where you've launched your</span>
 <span class="c">program. Then come the number of sprite definition. --&gt;</span>
 <span class="nt">&lt;atlas</span> <span class="na">path=</span><span class="s">"testsprite.png"</span> <span class="na">size=</span><span class="s">"1"</span><span class="nt">&gt;</span>
@@ -131,26 +178,26 @@ One only needs to create a scene class by deriving the Scene interface.</p>
 <p>Now, how to use that ?
 First, you'll have to include header files sprite.hpp and sprengine.hpp. Then, in you shiny prototype, declare an atlas (you know, this big picture with all your sprite in it), like this:</p>
 
-<div class="highlight"><pre><span class="n">Sprite</span><span class="o">::</span><span class="n">Atlas</span> <span class="o">*</span><span class="n">atlas</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Sprite</span><span class="o">::</span><span class="n">Atlas</span><span class="p">(</span><span class="s">"/path/to/the/xml"</span><span class="p">);</span>
+<div class="highlight highlight-cpp"><pre><span class="n">Sprite</span><span class="o">::</span><span class="n">Atlas</span> <span class="o">*</span><span class="n">atlas</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Sprite</span><span class="o">::</span><span class="n">Atlas</span><span class="p">(</span><span class="s">"/path/to/the/xml"</span><span class="p">);</span>
 </pre></div>
 
 <p>From this object, you'll have access to all the sprite definitions/animations/frame you've declared earlier.
 Then, you'll need an 'engine' to display/move all this.</p>
 
-<div class="highlight"><pre><span class="n">Sprite</span><span class="o">::</span><span class="n">Engine</span> <span class="o">*</span><span class="n">engine</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Sprite</span><span class="o">::</span><span class="n">Engine</span><span class="p">(</span><span class="n">atlas</span><span class="p">,</span> <span class="mi">150000</span><span class="p">);</span>
+<div class="highlight highlight-cpp"><pre><span class="n">Sprite</span><span class="o">::</span><span class="n">Engine</span> <span class="o">*</span><span class="n">engine</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Sprite</span><span class="o">::</span><span class="n">Engine</span><span class="p">(</span><span class="n">atlas</span><span class="p">,</span> <span class="mi">150000</span><span class="p">);</span>
 </pre></div>
 
 <p>The above line declares a sprite engine that will use you previously declared atlas and will be able to displayed 150000 sprites.
 When setting your scene, be sure to set the viewing window of the sprite engine (it is very important : it can't guess it by itself). For example, given that you have a rendering window with a physical size of 600 per 400 pixels, and you want your sprites rendered at a 1:1 ratio, initialise the sprite engine rendering service like this.</p>
 
-<div class="highlight"><pre><span class="n">engine</span><span class="o">-&gt;</span><span class="n">viewport</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">400</span><span class="p">);</span>
+<div class="highlight highlight-cpp"><pre><span class="n">engine</span><span class="o">-&gt;</span><span class="n">viewport</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">400</span><span class="p">);</span>
 </pre></div>
 
 <p>The "view" will be centered on coordinate (0, 0). Upper left corner will have coordinate (-300, -200) and bottom right (300, 200).</p>
 
 <p>Now, it's time to play with the sprites. Remember that we've defined a sprite scheme with identifier '0'. Let's create one instance of it.</p>
 
-<div class="highlight"><pre><span class="c1">// Create an instance of sprite from definition 'O', initialy</span>
+<div class="highlight highlight-cpp"><pre><span class="c1">// Create an instance of sprite from definition 'O', initialy</span>
 <span class="c1">// place at coordinates (100, 100) and starting with animation '0'.</span>
 <span class="n">Sprite</span><span class="o">::</span><span class="n">Identifier</span> <span class="n">identifier</span> <span class="o">=</span> <span class="n">engine</span><span class="o">-&gt;</span><span class="n">create</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">glm</span><span class="o">::</span><span class="n">vec2</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="mi">0</span><span class="p">);</span>
 </pre></div>
@@ -159,7 +206,7 @@ When setting your scene, be sure to set the viewing window of the sprite engine 
 
 <p>Finally, to render the sprite, just invoke the following:</p>
 
-<div class="highlight"><pre><span class="n">engine</span><span class="o">-&gt;</span><span class="n">render</span><span class="p">();</span> <span class="c1">// Magic !</span>
+<div class="highlight highlight-cpp"><pre><span class="n">engine</span><span class="o">-&gt;</span><span class="n">render</span><span class="p">();</span> <span class="c1">// Magic !</span>
 </pre></div>
 
 <p>And that's it !</p>
@@ -167,6 +214,8 @@ When setting your scene, be sure to set the viewing window of the sprite engine 
 <p>Of course, there's some other methods to actually move the sprites, rotate them, perform zooming and so on. (and this will be documented later even if it's totally done in the code).</p>
 
 <p>Have fun with that.</p>
+
+<p><em>SomeRandomGameDev</em> and <em>BlockoS</em></p>
         </section>
 
         <aside id="sidebar">
@@ -181,7 +230,7 @@ When setting your scene, be sure to set the viewing window of the sprite engine 
 
           <p class="repo-owner"><a href="https://github.com/SomeRandomGameDev/DumbFramework"></a> is maintained by <a href="https://github.com/SomeRandomGameDev">SomeRandomGameDev</a>.</p>
 
-          <p>This page was generated by <a href="pages.github.com">GitHub Pages</a> using the Architect theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.</p>
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
         </aside>
       </div>
     </div>
