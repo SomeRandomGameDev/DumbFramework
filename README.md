@@ -28,6 +28,46 @@ int main(void) {
 ```
 
 Complete examples are available in the git repository, under the 'demo' directory.
+### Or what about making things simplier ?
+Not concerned about scene management and all that stuff ?
+Just use the Wrapper.
+What you've got to do is just to create a class that implement the following methods:
+```cpp
+GLFWwindow *createWindow();
+void destroyWindow(GLFWwindow *);
+void init();
+void render();
+void handleKeyAction(int key, int scancode, int action, int mods);
+void handleMouseButtonAction(int button, int action, int mods);
+void handleMousePositionAction(double x, double y);
+void handleMouseWheelAction(double x, double y);
+void handleWindowSize(int x, int y);
+void handleChar(unsigned int unicodeChar);
+void handleCursorEnter(int flag);
+```
+And that's about it. Then, merges it with the wrapper using the magic of the templates like this:
+```cpp
+// Include GLFW/GLEW stuff
+#include <wrapper.hpp>
+#include "the_place_where_you_declared_your_class.hpp"
+
+// Let say that your class is named 'MySimpleApplication'.
+
+
+int main(void) {
+  Wrapper<MySimpleApplication> *wrapper;
+  MySimpleApplication *app = new MySimpleApplication(/* your own flavour of constructor */);
+  // Do whatever you want to prepare your stuff. Then.
+
+  wrapper = new Wrapper<MySimpleApplication>(app);
+
+  wrapper->start();
+
+  return 0;
+}
+```
+
+And voilà !
 
 ### What if I want to play with sprites ?
 The way to flat happiness is short with this dumb framework. But it requires a little descriptive effort. What you need is a square picture, about power of two (16x16, 32x32 ... but usually 512x512 or even 1024x1024) and an XML file that describe what's in it in term of sprite and animation of sprite. Here's an example:
