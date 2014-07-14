@@ -68,7 +68,7 @@ class Frame {
          * Provides texture index.
          * @return Texture index in the texture array.
          */
-        inline const GLuint getTexture() const { return static_cast<GLuint>(_texture); }
+        inline GLuint getTexture() const { return static_cast<GLuint>(_texture); }
 
     private:
         double       _time;    /**< Time of appearance in seconds. **/

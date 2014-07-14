@@ -32,7 +32,7 @@ namespace Render {
         GLenum err;
         if(_id)
         {
-            Log_Warning(ModuleID::RENDER, "Destroying buffer object %d!", _id);
+            Log_Warning(Framework::Module::Render, "Destroying buffer object %d!", _id);
             destroy();
         }
 
@@ -50,7 +50,7 @@ namespace Render {
 
         if(err != GL_NO_ERROR)
         {
-            Log_Warning(ModuleID::RENDER, "An error occured while creating buffer object %d: %s", _id, gluErrorString(err));
+            Log_Warning(Framework::Module::Render, "An error occured while creating buffer object %d: %s", _id, gluErrorString(err));
             return false;
         }
 
@@ -148,13 +148,13 @@ namespace Render {
     {
         if(offset >= _size)
         {
-            Log_Error(ModuleID::RENDER, "Offset (%d) out of bound (vbo size: %d)", offset, _size);
+            Log_Error(Framework::Module::Render, "Offset (%d) out of bound (vbo size: %d)", offset, _size);
             return false;
         }
 
         if((offset+size) > _size)
         {
-            Log_Error(ModuleID::RENDER, "Buffer overflow (offset: %d, size: %d, vbo size: %d)", offset, size, _size);
+            Log_Error(Framework::Module::Render, "Buffer overflow (offset: %d, size: %d, vbo size: %d)", offset, size, _size);
             return false;
         }
 
@@ -179,7 +179,7 @@ namespace Render {
         if(ptr == NULL)
         {
             GLenum err = glGetError();
-            Log_Error(ModuleID::RENDER, "An error occured while mapping buffer object %d: %s", _id, gluErrorString(err));
+            Log_Error(Framework::Module::Render, "An error occured while mapping buffer object %d: %s", _id, gluErrorString(err));
             return 0;
         }
 
@@ -202,7 +202,7 @@ namespace Render {
         if(ptr == NULL)
         {
             GLenum err = glGetError();
-            Log_Error(ModuleID::RENDER, "An error occured while mapping buffer object %d: %s", _id, gluErrorString(err));
+            Log_Error(Framework::Module::Render, "An error occured while mapping buffer object %d: %s", _id, gluErrorString(err));
             return 0;
         }
 
@@ -217,4 +217,4 @@ namespace Render {
         glUnmapBuffer(_target);
     }
 
-}
+} /* Render */

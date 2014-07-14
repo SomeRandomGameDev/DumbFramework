@@ -185,7 +185,7 @@ void TestTerrain::resume(GLFWwindow *window) {
         glfwGetWindowSize(window, &width, &height);
 
         // We can initialize GL context.
-        glViewport(0, 0, _width, _height);
+        glViewport(0, 0, width, height);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_BLEND);

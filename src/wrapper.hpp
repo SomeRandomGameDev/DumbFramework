@@ -1,6 +1,16 @@
 #ifndef _DUMB_FW_WRAPPER_
 #define _DUMB_FW_WRAPPER_
 
+/**
+ * GLFW error callback
+ * @param [in] errorCode      Error code.
+ * @param [in] description    UTF-8 encoded string describing the error.
+ */
+static void Log_GLFWErrorCallback(int errorCode, const char* description)
+{
+     Log_Error(ModuleID::Base, "GLFW failed with error code %d: %s", errorCode, description);
+}
+
 /*
  * The delegated concept shall implement:
  * GLFWwindow *createWindow();
@@ -87,15 +97,16 @@ template <typename T> class Wrapper {
 template <typename T> bool Wrapper<T>::start() {
     bool result = glfwInit();
     if(result) {
+        glfwSetErrorCallback(Log_GLFWErrorCallback);
         GLFWwindow *window = _delegate->createWindow();
         if(0 == window) {
-            // TODO Log Error on window opening.
+            Log_Error(ModuleID::BASE, "Failed to create window.");
             glfwTerminate();
             result = false;
         } else {
             glfwSetWindowUserPoint(window, this);
             GLenum glewError = glewInit();
-            if(GLEW_OK == glError) {       
+            if(GLEW_OK == glewError) {       
                 glfwSetKeyCallback(window, Wrapper<T>::handleKey);
                 glfwSetMouseButtonCallback(window, Wrapper<T>::handleMouseButton);
                 glfwSetCursorPosCallback(window, Wrapper<T>::handleMousePosition);
@@ -114,13 +125,13 @@ template <typename T> bool Wrapper<T>::start() {
                 glfwTerminate();
                 result = true;
             } else {
-                // TODO Log Error on GLEW init.
+                Log_Error(ModuleID::BASE, "Failed to initialize OpenGL extensions: %s.", glewGetErrorString(glewError));
                 glfwTerminate();
                 result = false;
             }
         }
     } else {
-        // TODO Log Error for GLFW init.
+        Log_Error(ModuleID::BASE, "Failed to initialize OpenGL extensions: %s.", glewGetErrorString(glewError));
     }
 
     return result;

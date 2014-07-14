@@ -51,6 +51,8 @@ set(DUMB_FRAMEWORK_SOURCES
     src/ray.cpp
     src/bufferobject.cpp
     src/file.cpp
+    src/module.cpp
+    src/severity.cpp
     src/log.cpp
     src/shader.cpp
     src/program.cpp

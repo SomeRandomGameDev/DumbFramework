@@ -7,7 +7,7 @@
 { \
     if(_state != (expected)) \
     { \
-        Log_Error(ModuleID::RENDER, "Invalid state (expected \"" #expected "\") !");  \
+        Log_Error(Framework::Module::Render, "Invalid state (expected \"" #expected "\") !");  \
         return false; \
     } \
 } while(0);
@@ -120,7 +120,7 @@ namespace Render {
 
         if(_vao)
         {
-            Log_Error(ModuleID::RENDER, "Inconsistent state.");
+            Log_Error(Framework::Module::Render, "Inconsistent state.");
             return false;
         }
 
@@ -130,7 +130,7 @@ namespace Render {
         GLenum err = glGetError();
         if(GL_NONE != err)
         {
-            Log_Error(ModuleID::RENDER, "An error occured while creating vertex array object: %s", gluErrorString(err));
+            Log_Error(Framework::Module::Render, "An error occured while creating vertex array object: %s", gluErrorString(err));
             return false;
         }
 
@@ -157,7 +157,7 @@ namespace Render {
         {
             if(i == index)
             {
-                Log_Error(ModuleID::RENDER, "Attributes #%d already in use.", index);
+                Log_Error(Framework::Module::Render, "Attributes #%d already in use.", index);
                 return false;
             }
         }
@@ -181,13 +181,13 @@ namespace Render {
         // [todo] make a isValid like method
         if(!_vao)
         {
-            Log_Error(ModuleID::RENDER, "Invalid vertex array object id: %x\n", _vao);
+            Log_Error(Framework::Module::Render, "Invalid vertex array object id: %x\n", _vao);
             return false;
         }
 
         if(0 == _attributes.size())
         {
-            Log_Error(ModuleID::RENDER, "Empty attributes.");
+            Log_Error(Framework::Module::Render, "Empty attributes.");
             return false;
         }
 

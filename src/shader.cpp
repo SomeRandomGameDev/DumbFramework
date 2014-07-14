@@ -145,10 +145,9 @@ void Shader::infoLog() const
     }
 
     glGetShaderInfoLog(_id, maxLogLength, &loglength, log);
-    std::cerr << "##! " << log << std::endl;
-    Log_Error(ModuleID::RENDER, "%s", log);
+    Log_Error(Framework::Module::Render, "%s", log);
 
     delete [] log;
 }
 
-}
+} /* Render */

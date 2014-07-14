@@ -3,8 +3,9 @@
 #include <iostream>
 #include <log.hpp>
 
-namespace Log
-{
+namespace Framework {
+namespace Log {
+    
     /** Constructor. */
     BaseLogBuilder::BaseLogBuilder()
     {}
@@ -14,18 +15,18 @@ namespace Log
     /** Constructor. */
     LogProcessor::LogProcessor()
         : _lock(PTHREAD_MUTEX_INITIALIZER)
-          , _alive(PTHREAD_MUTEX_INITIALIZER)
-          , _task()
-          , _msgQueue()
-          , _builder(NULL)
+        , _alive(PTHREAD_MUTEX_INITIALIZER)
+        , _task()
+        , _msgQueue()
+        , _builder(NULL)
     {}
     /** Constructor. */
     LogProcessor::LogProcessor(LogProcessor const &)
         : _lock(PTHREAD_MUTEX_INITIALIZER)
-          , _alive(PTHREAD_MUTEX_INITIALIZER)
-          , _task()
-          , _msgQueue()
-          , _builder(NULL)
+        , _alive(PTHREAD_MUTEX_INITIALIZER)
+        , _task()
+        , _msgQueue()
+        , _builder(NULL)
     {}
     /** Destructor. */
     LogProcessor::~LogProcessor()
@@ -121,7 +122,7 @@ namespace Log
         return ret;
     }
 
-    void LogProcessor::write(size_t module, size_t severity, SourceInfos const & infos, char const * format, ...)
+    void LogProcessor::write(Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, ...)
     {
         if(NULL == _builder)
         {
@@ -164,25 +165,46 @@ namespace Log
         return *this;
     }
 
-    bool AllPassFilter::eval(size_t /*module*/, size_t /*severity*/)
+    /**
+     * Evaluate filter.
+     * @param [in] module Module id.
+     * @param [in] severity Severity.
+     */
+    bool AllPassFilter::eval(Framework::Module const & /*module*/, Framework::Severity const & /*severity*/)
     {
         return true;
     }
 
-    void SimpleMessageFormat::build(std::string & buffer, size_t /*module*/, size_t /*severity*/, SourceInfos const & /*infos*/, char const * format, va_list args)
+    /**
+     * Build log string.
+     * @param [out] buffer String buffer.
+     * @param [in]  module Module id.
+     * @param [in]  severity Severity.
+     * @param [in]  infos Log information.
+     * @param [in]  format String format.
+     * @param [in]  args Format argument list.
+     */
+    void SimpleMessageFormat::build(std::string & buffer, Framework::Module const & /*module*/, Framework::Severity const & /*severity*/, SourceInfos const & /*infos*/, char const * format, va_list args)
     {
         char data[1024];
         vsnprintf(data, 1024, format, args);
         buffer = data;
     }
 
+    /**
+     * Write to standard output.
+     * @param [in] msg Log message.
+     */
     bool ConsoleOutputPolicy::write(std::string & msg)
     {
         std::cout << msg << std::endl;
         return true;
     }
 
-    /// Write to log file.
+    /**
+     * Write to log file.
+     * @param [in] msg Log message.
+     */
     bool FileOutputPolicy::write(std::string & msg)
     {
         static File::OpenMode mode = File::WRITE_ONLY;
@@ -201,3 +223,4 @@ namespace Log
     }
 
 } // Log
+} // Framework

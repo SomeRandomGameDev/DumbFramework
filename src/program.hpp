@@ -146,7 +146,7 @@ GLint Program::getUniformLocation(const GLchar* name)
 	GLenum err = glGetError();
 	if(err != GL_NO_ERROR)
 	{
-		Log_Error(ModuleID::RENDER, "Can't get id for uniform var %s : %s", name, gluErrorString(err));
+		Log_Error(Framework::Module::Render, "Can't get id for uniform var %s : %s", name, gluErrorString(err));
 	}
 	return uid;
 }
@@ -161,5 +161,6 @@ GLint Program::getAttribLocation(const GLchar* name)
 	return glGetAttribLocation(_id, name);
 }
 
-}
+} /* Render */
+
 #endif /* _DUMB_FW_PROGRAM_ */

@@ -70,6 +70,6 @@ class Shader
         Shader::Type _type;
 };
 
-}
+} /* Render */
 
 #endif /* _DUMB_FW_SHADER_ */

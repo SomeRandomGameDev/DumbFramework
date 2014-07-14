@@ -9,14 +9,4 @@
 	// nothing atm
 #endif
 
-/// @todo Move this somewhere else.
-namespace ModuleID
-{
-	enum
-	{
-		BASE   = 0,
-		RENDER
-	};
-} // ModuleID
-
 #endif /* _DUMB_FW_CONFIG_ */

@@ -1,5 +1,4 @@
 #include <program.hpp>
-
 #include <stdarg.h>
 
 namespace Render {
@@ -41,7 +40,7 @@ bool Program::attach(const Shader& shader)
 { 
 	if(_id == 0)
 	{
-		Log_Error(ModuleID::RENDER, "Can't attach shader to an uninitialized program!");
+		Log_Error(Framework::Module::Render, "Can't attach shader to an uninitialized program!");
 		return false;
 	}
 
@@ -49,7 +48,7 @@ bool Program::attach(const Shader& shader)
 	GLenum err = glGetError();
 	if(err != GL_NO_ERROR)
 	{
-		Log_Error(ModuleID::RENDER, "Can't attach shader (%x) to program (%x) : %s", shader.getId(), _id, gluErrorString(err));
+		Log_Error(Framework::Module::Render, "Can't attach shader (%x) to program (%x) : %s", shader.getId(), _id, gluErrorString(err));
 		return false;
 	}
 	
@@ -139,12 +138,12 @@ void Program::infoLog() const
 	log = new GLchar[maxLogLength];
 	if(log == NULL)
 	{
-		Log_Error(ModuleID::RENDER, "Not enough memory");
+		Log_Error(Framework::Module::Render, "Not enough memory");
 		return;
 	}
 
 	glGetProgramInfoLog(_id, maxLogLength, &logLength, log);
-	Log_Error(ModuleID::RENDER, "%s", log);
+	Log_Error(Framework::Module::Render, "%s", log);
 
 	delete [] log;
 }
@@ -231,4 +230,4 @@ void Program::destroyShaders()
     }
 }
 
-}
+} /* Render */

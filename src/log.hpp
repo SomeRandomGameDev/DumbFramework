@@ -1,24 +1,18 @@
 #ifndef _DUMB_FW_LOG_
 #define _DUMB_FW_LOG_
 
-#include <config.hpp>
+#include "config.hpp"
 #include <string>
 #include <list>
 #include <stdarg.h>
 #include <pthread.h>
 
-#include <file.hpp>
+#include "module.hpp"
+#include "severity.hpp"
+#include "file.hpp"
 
-namespace Log
-{
-    /** Log severity. */
-    enum SEVERITY
-    {
-        TRACE = 0,
-        WARNING,
-        ERROR
-    };
-
+namespace Framework {
+namespace Log {
     /**
      * Log source.
      */
@@ -64,7 +58,7 @@ namespace Log
              * @param [in]  format   Format string.
              * @param [in]  args     Format string arguments.
              */
-            virtual bool build(std::string & out, size_t module, size_t severity, SourceInfos const & infos, char const * format, va_list args) = 0;
+            virtual bool build(std::string & out, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args) = 0;
     };
 
     /**
@@ -88,14 +82,16 @@ namespace Log
              * @param [in]  format   Format string.
              * @param [in]  args     Format string arguments.
              */
-            virtual bool build(std::string & out, size_t module, size_t severity, SourceInfos const & infos, char const * format, va_list args);
+            virtual bool build(std::string & out, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args);
 
         private:
             FilterPolicy _filter; /**< Message filter. */
             FormatPolicy _format; /**< Used to build log string. */
     };
 
-    /// Log message builder/manager.
+    /**
+     * Log message builder/manager.
+     */
     class LogProcessor
     {
         public:
@@ -103,7 +99,7 @@ namespace Log
 
             static LogProcessor& instance();
 
-            void write(size_t module, size_t severity, SourceInfos const & infos, char const * format, ...);
+            void write(Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, ...);
 
             bool start(BaseLogBuilder* builder, OutputPolicyBase* outputPolicy);
             bool stop();
@@ -158,7 +154,7 @@ namespace Log
      * @param [in]  args     Format string arguments.
      */
     template <class FilterPolicy, class FormatPolicy>
-        bool LogBuilder<FilterPolicy, FormatPolicy>::build(std::string & out, size_t module, size_t severity, SourceInfos const & infos, char const * format, va_list args)
+        bool LogBuilder<FilterPolicy, FormatPolicy>::build(std::string & out, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args)
         {
             if(_filter.eval(module, severity))
             {
@@ -178,7 +174,7 @@ namespace Log
          * @param [in] module Module id.
          * @param [in] severity Severity.
          */
-        bool eval(size_t module, size_t severity);
+        bool eval(Framework::Module const & module, Framework::Severity const & severity);
     };
 
     /** Simple message format. */
@@ -193,23 +189,34 @@ namespace Log
          * @param [in]  format String format.
          * @param [in]  args Format argument list.
          */
-        void build(std::string & buffer, size_t module, size_t severity, SourceInfos const & infos, char const * format, va_list args);
+        void build(std::string & buffer, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args);
     };
 
+    /** Write log to console. **/
     struct ConsoleOutputPolicy : public OutputPolicyBase
     {
+        /**
+         * Write to standard output.
+         * @param [in] msg Log message.
+         */
         bool write(std::string & msg);
     };
 
+    /** Write log to file. **/
     struct FileOutputPolicy : public OutputPolicyBase
     {
+        /**
+         * Write to log file.
+         * @param [in] msg Log message.
+         */
         bool write(std::string & msg);
     };
 
 } // Log
+} // Framework
 
-#define Log_Trace(module, format, ...)   do { Log::LogProcessor::instance().write(module, Log::TRACE,   Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
-#define Log_Warning(module, format, ...) do { Log::LogProcessor::instance().write(module, Log::WARNING, Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
-#define Log_Error(module, format, ...)   do { Log::LogProcessor::instance().write(module, Log::ERROR,   Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
+#define Log_Trace(module, format, ...)   do { Framework::Log::LogProcessor::instance().write(module, Framework::Severity::Trace,   Framework::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
+#define Log_Warning(module, format, ...) do { Framework::Log::LogProcessor::instance().write(module, Framework::Severity::Warning, Framework::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
+#define Log_Error(module, format, ...)   do { Framework::Log::LogProcessor::instance().write(module, Framework::Severity::Error,   Framework::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
 
 #endif /* _DUMB_FW_LOG_ */
