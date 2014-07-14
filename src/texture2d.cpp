@@ -56,7 +56,7 @@ Texture2D::~Texture2D()
  * @param [in] size   Texture size.
  * @param [in] format Texture format.
  */
-bool Texture2D::create(const glm::ivec2& /*size*/, Texture::PixelFormat format)
+bool Texture2D::create(const glm::ivec2& size, Texture::PixelFormat format)
 {
     if(_id)
     {
@@ -65,9 +65,88 @@ bool Texture2D::create(const glm::ivec2& /*size*/, Texture::PixelFormat format)
     glGenTextures( 1, &_id );
     _format = format;
     _infos  = Texture2D::OpenGLTextureInfos(format);
-
+    _size   = size;
+    
     setData(NULL);
     
+    return true;
+}
+/** 
+ * Create from existing texture (no duplication).
+ * @param [in] id   Texture id.
+ */
+bool Texture2D::create(GLuint id)
+{
+    // Sanity check
+    if(!id)
+    {
+        return false;
+    }
+    if(GL_FALSE == glIsTexture(id))
+    {
+        return false;
+    }
+    
+    _id = id;
+    
+    bind();
+    if(GL_NO_ERROR != glGetError()) { return false; }
+
+    // Size
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH,  &_size.x);
+    if(GL_NO_ERROR != glGetError()) { return false; }
+    
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &_size.y);
+    if(GL_NO_ERROR != glGetError()) { return false; }
+    
+    // Format
+    GLint dummy;
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &dummy);
+    if(GL_NO_ERROR != glGetError()) { return false; }
+
+    _infos.format = dummy;
+
+    switch(_infos.format)
+    {
+        case GL_RGB:
+            _format = Texture::PixelFormat::RGB_8;
+            _infos.internalFormat = GL_RGB8;
+            _infos.type = GL_UNSIGNED_BYTE;
+            break;
+        case GL_RGBA:
+            _format = Texture::PixelFormat::RGBA_8;
+            _infos.internalFormat = GL_RGBA8;
+            _infos.type = GL_UNSIGNED_INT_8_8_8_8_REV;
+            break;
+        case GL_RED:
+        {
+            GLint size;
+            glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_RED_SIZE, &size);
+            if(GL_NO_ERROR != glGetError()) { return false; }
+            
+            if(8 == size)
+            {
+                _format = Texture::PixelFormat::LUMINANCE_8;
+                _infos.internalFormat = GL_R8;
+                _infos.type = GL_UNSIGNED_BYTE;
+            }
+            else if(16 == size)
+            {
+                _format = Texture::PixelFormat::LUMINANCE_16;
+                _infos.internalFormat = GL_R16;
+                _infos.type = GL_UNSIGNED_SHORT;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        break;
+        default:
+            return false;
+    };
+    
+    glBindTexture(GL_TEXTURE_2D, 0);
     return true;
 }
 /**
@@ -85,9 +164,9 @@ void Texture2D::destroy()
  * Set texture data.
  * @param [in] data Image buffer.
  */
-void Texture2D::setData(void* /*data*/)
+void Texture2D::setData(void* data)
 {
-    glTexImage2D(GL_TEXTURE_2D, 0, _infos.internalFormat, _size.x, _size.y, 0, _infos.format, _infos.type, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, _infos.internalFormat, _size.x, _size.y, 0, _infos.format, _infos.type, data);
 }
 /**
  * Bind texture.

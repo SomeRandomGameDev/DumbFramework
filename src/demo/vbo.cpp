@@ -8,6 +8,8 @@
 #include <iostream>
 #include <math.h>
 
+#include "texture2d.hpp"
+
 // Shaders
 
 const char *s_vboFragmentShader =
@@ -124,7 +126,7 @@ private:
   GLuint _projMatrixId;
   GLuint _textureUniform;
 
-  GLuint _textureId;
+  Render::Texture2D _texture;
 
   glm::mat4 _projMatrix;
 
@@ -259,11 +261,19 @@ void TestScene::resume(GLFWwindow * /* window */) {
   } else {
     _projMatrixId = glGetUniformLocation(_program, "pMatrix");
     _textureUniform = glGetUniformLocation(_program, "texture");
-    _textureId = SOIL_load_OGL_texture("testsprite.png",
+    GLuint tId = SOIL_load_OGL_texture("testsprite.png",
                                        SOIL_LOAD_AUTO,
                                        SOIL_CREATE_NEW_ID,
                                        0 );
-    _init = true;
+    if(!_texture.create(tId))
+    {
+        std::cerr << "ARG!" << std::endl;
+        _quit = true;
+    }
+    else
+    {
+        _init = true;
+    }
   }
 }
 
@@ -293,7 +303,7 @@ Scene *TestScene::output() {
   }
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glBindTexture(0, _textureId);
+  _texture.bind();
   glUseProgram(_program);
   glUniformMatrix4fv(_projMatrixId, 1, GL_FALSE, glm::value_ptr(_projMatrix));
   glUniform1i(_textureUniform, 0);
@@ -320,6 +330,8 @@ Scene *TestScene::output() {
   glBindVertexArray(0);
 
   glUseProgram(0);
+
+  _texture.destroy();
 
   return _quit?0:this;
 }

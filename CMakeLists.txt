@@ -93,3 +93,7 @@ endif()
 
 add_executable(flatengine src/demo/flatengine.cpp)
 target_link_libraries(flatengine DumbFramework)
+
+add_executable(vbo src/demo/vbo.cpp)
+target_link_libraries(vbo DumbFramework)
+
