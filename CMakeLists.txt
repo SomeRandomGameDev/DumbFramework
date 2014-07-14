@@ -83,6 +83,7 @@ if(BUILD_TESTS)
         src/test/boundingfrustum.cpp
         src/test/boundingcircle.cpp
         src/test/plane.cpp
+        src/test/log.cpp
         src/test/runtests.cpp)
     
     add_executable(RunTests ${DUMB_FRAMEWORK_TEST_SOURCES})

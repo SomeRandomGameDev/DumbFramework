@@ -180,6 +180,8 @@ namespace Log {
     /** Simple message format. */
     struct SimpleMessageFormat
     {
+        /** Maximum buffer length. **/
+        static const size_t MaxBufferLen;
         /**
          * Build log string.
          * @param [out] buffer String buffer.

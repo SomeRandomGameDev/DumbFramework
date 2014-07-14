@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <log.hpp>
 
 namespace Framework {
@@ -141,20 +142,20 @@ namespace Log {
 
     SourceInfos::SourceInfos()
         : filename(__FILE__)
-          , line(__LINE__)
-          , function(__FUNCTION__)
+        , line(__LINE__)
+        , function(__FUNCTION__)
     {}
 
     SourceInfos::SourceInfos(char const * name, size_t num, char const * fnctl)
         : filename(name)
-          , line(num)
-          , function(fnctl)
+        , line(num)
+        , function(fnctl)
     {}
 
     SourceInfos::SourceInfos(SourceInfos const & infos)
         : filename(infos.filename)
-          , line(infos.line)
-          , function(infos.function)
+        , line(infos.line)
+        , function(infos.function)
     {}
 
     SourceInfos& SourceInfos::operator= (SourceInfos const & infos)
@@ -175,6 +176,9 @@ namespace Log {
         return true;
     }
 
+    /** Maximum buffer length. **/
+    const size_t SimpleMessageFormat::MaxBufferLen = 1024;
+
     /**
      * Build log string.
      * @param [out] buffer String buffer.
@@ -184,11 +188,15 @@ namespace Log {
      * @param [in]  format String format.
      * @param [in]  args Format argument list.
      */
-    void SimpleMessageFormat::build(std::string & buffer, Framework::Module const & /*module*/, Framework::Severity const & /*severity*/, SourceInfos const & /*infos*/, char const * format, va_list args)
+    void SimpleMessageFormat::build(std::string & buffer, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args)
     {
-        char data[1024];
-        vsnprintf(data, 1024, format, args);
-        buffer = data;
+        char data[SimpleMessageFormat::MaxBufferLen];
+        vsnprintf(data, MaxBufferLen, format, args);
+        
+        std::ostringstream oss;
+        oss << '[' << severity.toString() << "][" << module.toString() << ']' << ' ' << infos.function << ' ';
+        oss << data;
+        buffer = oss.str();
     }
 
     /**
