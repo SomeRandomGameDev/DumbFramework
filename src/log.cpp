@@ -191,7 +191,7 @@ namespace Log {
     void SimpleMessageFormat::build(std::string & buffer, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args)
     {
         char data[SimpleMessageFormat::MaxBufferLen];
-        vsnprintf(data, MaxBufferLen, format, args);
+        vsnprintf(data, SimpleMessageFormat::MaxBufferLen, format, args);
         
         std::ostringstream oss;
         oss << '[' << severity.toString() << "][" << module.toString() << ']' << ' ' << infos.function << ' ';
