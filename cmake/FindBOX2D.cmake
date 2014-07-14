@@ -1,6 +1,6 @@
 # Locate Box2D
 # This module defines
-#  BOX2D_FOUND, if false, do not try to link to Lua
+#  BOX2D_FOUND, if false, do not try to link to Box2D
 #  BOX2D_LIBRARIES / BOX2D_LIBRARY
 #  BOX2D_INCLUDE_DIR
 

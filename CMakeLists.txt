@@ -23,6 +23,7 @@ find_package(GLFW)
 find_package(GLM)
 find_package(BOX2D)
 find_package(AntTweakBar)
+find_package(Freetype-gl)
 
 set(DUMB_FRAMEWORK_VERSION 0.1a)
 set(PROJECT_NAME DumbFramework)
@@ -34,6 +35,7 @@ include_directories( ${EXPAT_INCLUDE_DIR}
                      ${GLEW_INCLUDE_DIRS}
                      ${GLM_INCLUDE_DIRS}
                      ${SOIL_INCLUDE_DIRS}
+                     ${FREETYPE_GL_INCLUDE_DIRS}
                      ${CMAKE_CURRENT_SOURCE_DIR} 
                      src/)
 
@@ -65,6 +67,7 @@ target_link_libraries(DumbFramework ${PTHREADS_LIBRARY} )
 target_link_libraries(DumbFramework ${SOIL_LIBRARIES} )
 target_link_libraries(DumbFramework ${EXPAT_LIBRARY} )
 target_link_libraries(DumbFramework ${THREAD_LIBRARY} )
+target_link_libraries(DumbFramework ${FREETYPE_GL_LIBRARY} )
 target_link_libraries(DumbFramework ${CMAKE_THREAD_LIBS_INIT})
 
 if(BUILD_TESTS)
@@ -85,7 +88,5 @@ if(BUILD_TESTS)
     target_link_libraries(RunTests ${UNITTEST++_LIBRARY})
 endif()
 
-#add_subdirectory(external/freetype-gl)
-
 add_executable(flatengine src/demo/flatengine.cpp)
-target_link_libraries(flatengine DumbFramework freetype-gl)
+target_link_libraries(flatengine DumbFramework)
