@@ -1,3 +1,0 @@
-[submodule "external/freetype-gl"]
-	path = external/freetype-gl
-	url = git@github.com:rougier/freetype-gl.git
