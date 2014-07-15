@@ -104,6 +104,8 @@ namespace Log {
             bool start(BaseLogBuilder* builder, OutputPolicyBase* outputPolicy);
             bool stop();
 
+            void flush();
+            
         protected:
             static void* taskRoutine(void *param);
 
@@ -124,7 +126,8 @@ namespace Log {
 
             std::list<std::string> _msgQueue;
 
-            BaseLogBuilder *_builder;
+            BaseLogBuilder   *_builder;
+            OutputPolicyBase *_output; 
     };
 
     /** 
