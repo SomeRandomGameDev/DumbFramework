@@ -20,6 +20,7 @@ namespace Log {
         , _task()
         , _msgQueue()
         , _builder(NULL)
+        , _output(NULL)
     {}
     /** Constructor. */
     LogProcessor::LogProcessor(LogProcessor const &)
@@ -28,6 +29,7 @@ namespace Log {
         , _task()
         , _msgQueue()
         , _builder(NULL)
+        , _output(NULL)
     {}
     /** Destructor. */
     LogProcessor::~LogProcessor()
@@ -45,21 +47,23 @@ namespace Log {
     void* LogProcessor::taskRoutine(void *param)
     {
         bool ret = true;
-        LogProcessor& processor = LogProcessor::instance();
+        LogProcessor* processor = reinterpret_cast<LogProcessor*>(param);
         std::string msg;
 
-        OutputPolicyBase *output = (OutputPolicyBase*)param;
-        if(param == NULL)
+        if((NULL == param) || (NULL == processor))
         {
             return NULL;
         }
-
-        while(!processor.mustStop() || ret)
+        if(NULL == processor->_output)
         {
-            ret = processor.dequeueMessage(msg);
+            return NULL;
+        }
+        while(!processor->mustStop() || ret)
+        {
+            ret = processor->dequeueMessage(msg);
             if(ret)
             {
-                output->write(msg);
+                processor->_output->write(msg);
             }
         }
         return NULL;
@@ -70,10 +74,11 @@ namespace Log {
     bool LogProcessor::start(BaseLogBuilder* builder, OutputPolicyBase* outputPolicy)
     {
         _builder = builder;
+        _output  = outputPolicy;
         pthread_mutex_init(&_lock, NULL);
         pthread_mutex_init(&_alive, NULL);
         pthread_mutex_lock(&_alive);
-        int ret = pthread_create(&_task, NULL, taskRoutine, outputPolicy);
+        int ret = pthread_create(&_task, NULL, taskRoutine, this);
         return (ret == 0);
     }
     /**
@@ -87,7 +92,22 @@ namespace Log {
         ret = pthread_join(_task, &data);
         return (ret == 0);
     }
-
+    /** Flush message queue. **/
+    void LogProcessor::flush()
+    {
+        if(NULL == _output)
+        {
+            return;
+        }
+        pthread_mutex_lock(&_lock);
+        while(!_msgQueue.empty())
+        {
+            std::string msg = _msgQueue.front();
+            _msgQueue.pop_front();
+            _output->write(msg);
+        }
+        pthread_mutex_unlock(&_lock);
+    }
     bool LogProcessor::mustStop()
     {
         int ret = pthread_mutex_trylock(&_alive);
