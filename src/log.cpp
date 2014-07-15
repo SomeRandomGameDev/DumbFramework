@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <ctime>
 #include <log.hpp>
 
 namespace Framework {
@@ -45,7 +46,10 @@ namespace Log {
         static LogProcessor processor;
         return processor;
     }
-    /** Logger thread callback */
+    /**
+     * Log processor thread routine.
+     * @param [in] param  Opaque pointer to log processor.
+     */
     void* LogProcessor::taskRoutine(void *param)
     {
         bool ret = true;
@@ -72,26 +76,35 @@ namespace Log {
     }
     /**
      * Start logging task.
+     * @param [in] builder       Log message builder.
+     * @param [in] outputPolicy  Filter and log output.
      */
     bool LogProcessor::start(BaseLogBuilder* builder, OutputPolicyBase* outputPolicy)
     {
+        if((NULL == builder) || (NULL == outputPolicy))
+        {
+            return false;
+        }
         _builder = builder;
         _output  = outputPolicy;
+        if(!_output->setup())
+        {
+            return false;
+        }
         pthread_mutex_init(&_lock, NULL);
         pthread_mutex_init(&_alive, NULL);
         pthread_mutex_lock(&_alive);
         int ret = pthread_create(&_task, NULL, taskRoutine, this);
         return (ret == 0);
     }
-    /**
-     * Stop logging task.
-     */
+    /** Stop logging task. **/
     bool LogProcessor::stop()
     {
         int   ret;
         void *data;
         pthread_mutex_unlock(&_alive);
         ret = pthread_join(_task, &data);
+        if(_output) { _output->teardown(); }
         return (ret == 0);
     }
     /** Flush message queue. **/
@@ -101,6 +114,7 @@ namespace Log {
         pthread_cond_wait(&_empty, &_lock);
         pthread_mutex_unlock(&_lock);
     }
+    /** Return true if the thread must stop. **/
     bool LogProcessor::mustStop()
     {
         int ret = pthread_mutex_trylock(&_alive);
@@ -114,14 +128,21 @@ namespace Log {
         }
         return true;
     }
-
+    /**
+     * Add string to message queue.
+     * @param [in] msg  Log message.
+     */
     void LogProcessor::queueMessage(std::string const & msg)
     {
         pthread_mutex_lock(&_lock);
         _msgQueue.push_back(msg);
         pthread_mutex_unlock(&_lock);
     }
-
+    /**
+     * Retrieve log message from queue.
+     * @param [out] msg  Log message.
+     * @return false if the queue is empty.
+     */
     bool LogProcessor::dequeueMessage(std::string & msg)
     {
         bool ret;
@@ -226,6 +247,25 @@ namespace Log {
         return true;
     }
 
+    /** Contructor. **/
+    FileOutputPolicy::FileOutputPolicy()
+        : _filename("")
+    {}
+    /** Destructor. **/
+    FileOutputPolicy::~FileOutputPolicy()
+    {}
+    /** Build log filename using current datetime. **/
+    bool FileOutputPolicy::setup()
+    {
+        std::time_t  t  = std::time(NULL);
+        std::tm     *tm = std::localtime(&t);
+        
+        char buffer[256];
+        std::strftime(buffer, sizeof(buffer), "log_%H%M%S_%d%m%Y.txt", tm);
+        _filename = buffer;
+        std::cout << _filename << std::endl;
+        return true;
+    }
     /**
      * Write to log file.
      * @param [in] msg Log message.
@@ -235,7 +275,7 @@ namespace Log {
         static File::OpenMode mode = File::WRITE_ONLY;
         File out;
 
-        bool ret = out.open("log.txt", mode);
+        bool ret = out.open(_filename.c_str(), mode);
         if(true != ret) return ret;
         mode = File::APPEND;
 

@@ -36,6 +36,8 @@ namespace Log {
     struct OutputPolicyBase
     {
         virtual ~OutputPolicyBase() {}
+        virtual bool setup()    { return true; }
+        virtual void teardown() {}
         virtual bool write(std::string & msg) = 0;
     };
 
@@ -95,23 +97,41 @@ namespace Log {
     class LogProcessor
     {
         public:
+            /** Destructor. **/
             ~LogProcessor();
-
+            /** Get log processor instance. */
             static LogProcessor& instance();
 
             void write(Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, ...);
-
+            /**
+             * Start logging task.
+             * @param [in] builder       Log message builder.
+             * @param [in] outputPolicy  Filter and log output.
+             */
             bool start(BaseLogBuilder* builder, OutputPolicyBase* outputPolicy);
+            /** Stop logging task. **/
             bool stop();
-
+            /** Flush message queue. **/
             void flush();
             
         protected:
+            /**
+             * Log processor thread routine.
+             * @param [in] param  Opaque pointer to log processor.
+             */
             static void* taskRoutine(void *param);
-
+            /**
+             * Add string to message queue.
+             * @param [in] msg  Log message.
+             */
             void queueMessage(std::string const & msg);
+            /**
+             * Retrieve log message from queue.
+             * @param [out] msg  Log message.
+             * @return false if the queue is empty.
+             */
             bool dequeueMessage(std::string & msg);
-
+            /** Return true if the thread must stop. **/
             bool mustStop();
 
         private:
@@ -209,13 +229,22 @@ namespace Log {
     };
 
     /** Write log to file. **/
-    struct FileOutputPolicy : public OutputPolicyBase
+    class FileOutputPolicy : public OutputPolicyBase
     {
-        /**
-         * Write to log file.
-         * @param [in] msg Log message.
-         */
-        bool write(std::string & msg);
+        public:
+            /** Contructor. **/
+            FileOutputPolicy();
+            /** Destructor. **/
+            ~FileOutputPolicy();
+            /** Build log filename using current datetime. **/
+            bool setup();
+            /**
+             * Write to log file.
+             * @param [in] msg Log message.
+             */
+            bool write(std::string & msg);
+        private:
+            std::string _filename; /**< Log filename. **/
     };
 
 } // Log
