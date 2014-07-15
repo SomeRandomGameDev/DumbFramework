@@ -122,6 +122,7 @@ namespace Log {
         private:
             pthread_mutex_t  _lock;
             pthread_mutex_t  _alive;
+            pthread_cond_t   _empty;
             pthread_t        _task;
 
             std::list<std::string> _msgQueue;

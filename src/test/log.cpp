@@ -1,5 +1,6 @@
 #include <unittest++/UnitTest++.h>
 #include <iostream>
+#include <vector>
 #include "log.hpp"
 
 using namespace Framework;
@@ -52,6 +53,45 @@ SUITE(Log)
         Log_Warning(Framework::Module::Base, "warn    %d!", i++);
         Log_Error(Framework::Module::Base,   "error   %d!", i++);
         
+        processor.stop();
+    }
+    
+    struct StringListOutputPolicy : public Framework::Log::OutputPolicyBase
+    {
+        std::vector<std::string> msgList;
+
+        bool write(std::string & msg)
+        {
+            msgList.push_back(msg);
+            return true;
+        }
+    };
+    
+    TEST(Flush)
+    {
+        Log::LogBuilder<Log::AllPassFilter, DummyMessageFormat> msgBuilder;
+        StringListOutputPolicy output;
+        std::string expected[3];
+        
+        expected[0] = "[Trace][Base] RunImpl trace   0!";
+        expected[1] = "[Warning][Base] RunImpl warn    1!";
+        expected[2] = "[Error][Base] RunImpl error   2!";
+
+        Log::LogProcessor& processor = Log::LogProcessor::instance();
+        processor.start(&msgBuilder, &output);
+        
+        int i = 0;
+                
+        Log_Trace(Framework::Module::Base,   "trace   %d!", i++);
+        Log_Warning(Framework::Module::Base, "warn    %d!", i++);
+        Log_Error(Framework::Module::Base,   "error   %d!", i++);
+
+        processor.flush();
+
+        CHECK_EQUAL(expected[2], output.msgList[2]);
+        CHECK_EQUAL(expected[1], output.msgList[1]);
+        CHECK_EQUAL(expected[0], output.msgList[0]);
+
         processor.stop();
     }
 }

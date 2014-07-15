@@ -17,6 +17,7 @@ namespace Log {
     LogProcessor::LogProcessor()
         : _lock(PTHREAD_MUTEX_INITIALIZER)
         , _alive(PTHREAD_MUTEX_INITIALIZER)
+        , _empty(PTHREAD_COND_INITIALIZER)
         , _task()
         , _msgQueue()
         , _builder(NULL)
@@ -26,6 +27,7 @@ namespace Log {
     LogProcessor::LogProcessor(LogProcessor const &)
         : _lock(PTHREAD_MUTEX_INITIALIZER)
         , _alive(PTHREAD_MUTEX_INITIALIZER)
+        , _empty(PTHREAD_COND_INITIALIZER)
         , _task()
         , _msgQueue()
         , _builder(NULL)
@@ -95,17 +97,8 @@ namespace Log {
     /** Flush message queue. **/
     void LogProcessor::flush()
     {
-        if(NULL == _output)
-        {
-            return;
-        }
         pthread_mutex_lock(&_lock);
-        while(!_msgQueue.empty())
-        {
-            std::string msg = _msgQueue.front();
-            _msgQueue.pop_front();
-            _output->write(msg);
-        }
+        pthread_cond_wait(&_empty, &_lock);
         pthread_mutex_unlock(&_lock);
     }
     bool LogProcessor::mustStop()
@@ -138,6 +131,10 @@ namespace Log {
         {
             msg = _msgQueue.front();
             _msgQueue.pop_front();
+        }
+        else
+        {
+            pthread_cond_signal(&_empty);
         }
         pthread_mutex_unlock(&_lock);
         return ret;
