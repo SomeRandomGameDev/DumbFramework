@@ -1,6 +1,9 @@
 #ifndef _DUMB_FW_WRAPPER_
 #define _DUMB_FW_WRAPPER_
 
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 /**
  * GLFW error callback
  * @param [in] errorCode      Error code.
