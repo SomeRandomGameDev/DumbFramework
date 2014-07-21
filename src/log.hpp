@@ -1,15 +1,15 @@
 #ifndef _DUMB_FW_LOG_
 #define _DUMB_FW_LOG_
 
-#include "config.hpp"
+#include <config.hpp>
 #include <string>
 #include <list>
 #include <stdarg.h>
 #include <pthread.h>
 
-#include "module.hpp"
-#include "severity.hpp"
-#include "file.hpp"
+#include <module.hpp>
+#include <severity.hpp>
+#include <file.hpp>
 
 namespace Framework {
 namespace Log {

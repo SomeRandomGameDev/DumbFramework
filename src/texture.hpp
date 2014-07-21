@@ -3,10 +3,13 @@
 
 #include <GL/glew.h>
 #include <config.hpp>
-#include <log.hpp>
 
-namespace Render  {
-namespace Texture {
+#ifndef GL_MIRROR_CLAMP_TO_EDGE
+#define GL_MIRROR_CLAMP_TO_EDGE GL_MIRROR_CLAMP_TO_EDGE_EXT
+#endif
+
+namespace Framework {
+namespace Texture   {
     /** Pixel format. **/
     struct PixelFormat
     {
@@ -39,6 +42,7 @@ namespace Texture {
         inline MinFilter() : value(NEAREST_TEXEL) {}
         inline MinFilter(Value v) : value(v) {}
         inline operator Value() { return value; }
+        inline operator GLint();
     };
     /** Texel magnification filter. **/
     struct MagFilter
@@ -52,6 +56,7 @@ namespace Texture {
         inline MagFilter(Value v) : value(v) {}
         inline operator Value() { return value; }
         inline operator const Value() const { return value; }
+        inline operator GLint();
     };
     /** Texture wrap. **/
     struct Wrap
@@ -68,6 +73,7 @@ namespace Texture {
         inline Wrap(Value v) : value(v) {}
         inline operator Value() { return value; }
         inline operator const Value() const { return value; }
+        inline operator GLint();
     };
 
     /** Returns number of bytes per pixel. **/
@@ -103,6 +109,45 @@ namespace Texture {
                 return 1;
         };
     }
-}}
+    
+    /** Return the associated OpenGL value. **/
+    MinFilter::operator GLint()
+    {
+		static const GLenum glMinFilter[] =
+		{ 
+			GL_NEAREST,
+			GL_LINEAR,
+			GL_NEAREST_MIPMAP_NEAREST,
+			GL_NEAREST_MIPMAP_LINEAR,
+			GL_LINEAR_MIPMAP_NEAREST,
+			GL_LINEAR_MIPMAP_LINEAR
+		};
+		return glMinFilter[value];
+	}
+	/** Return the associated OpenGL value. **/
+    MagFilter::operator GLint()
+    {
+		static const GLenum glMagFilter[] =
+		{
+			GL_NEAREST,
+			GL_LINEAR
+		};
+		return glMagFilter[value];
+	}
+	/** Return the associated OpenGL value. **/
+    Wrap::operator GLint()
+    {	
+	    static const GLenum glWrapMode[] =
+		{
+			GL_REPEAT,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_BORDER,
+			GL_MIRRORED_REPEAT,
+			GL_MIRROR_CLAMP_TO_EDGE
+		};
+		return glWrapMode[value];
+	}
+} // Texture
+} // Framework
 
 #endif /* _DUMB_FW_TEXTURE_ */

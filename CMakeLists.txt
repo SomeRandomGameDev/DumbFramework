@@ -59,6 +59,7 @@ set(DUMB_FRAMEWORK_SOURCES
     src/sprengine.cpp
     src/sprite.cpp
     src/texture2d.cpp
+    src/textureloader.cpp
     src/windowhint.cpp)
 
 add_library(DumbFramework STATIC ${DUMB_FRAMEWORK_SOURCES})

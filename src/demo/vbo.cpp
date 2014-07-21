@@ -4,11 +4,13 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <SOIL/SOIL.h>
+//#include <SOIL/SOIL.h>
 #include <iostream>
 #include <math.h>
 
+#include "log.hpp"
 #include "texture2d.hpp"
+#include "textureloader.hpp"
 
 // Shaders
 
@@ -126,7 +128,7 @@ private:
   GLuint _projMatrixId;
   GLuint _textureUniform;
 
-  Render::Texture2D _texture;
+  Framework::Texture2D _texture;
 
   glm::mat4 _projMatrix;
 
@@ -261,13 +263,9 @@ void TestScene::resume(GLFWwindow * /* window */) {
   } else {
     _projMatrixId = glGetUniformLocation(_program, "pMatrix");
     _textureUniform = glGetUniformLocation(_program, "texture");
-    GLuint tId = SOIL_load_OGL_texture("testsprite.png",
-                                       SOIL_LOAD_AUTO,
-                                       SOIL_CREATE_NEW_ID,
-                                       0 );
-    if(!_texture.create(tId))
+    Framework::Texture::Loader loader;
+    if(!loader.load("testsprite.png", _texture))
     {
-        std::cerr << "ARG!" << std::endl;
         _quit = true;
     }
     else
@@ -337,12 +335,18 @@ Scene *TestScene::output() {
 }
 
 int main(void) {
-  std::string title("Sprite Test");
-  TestScene testScene;
-  WindowHint hint(800, 600, title);
-  Application application;
+	Framework::Log::LogBuilder<Framework::Log::AllPassFilter, Framework::Log::SimpleMessageFormat> msgBuilder;
+	Framework::Log::ConsoleOutputPolicy output;
 
-  application.start(hint, &testScene);
+	Framework::Log::LogProcessor& processor = Framework::Log::LogProcessor::instance();
+	processor.start(&msgBuilder, &output);
 
-  return 0;
+	std::string title("Sprite Test");
+	TestScene testScene;
+	WindowHint hint(800, 600, title);
+	Application application;
+
+	application.start(hint, &testScene);
+
+	return 0;
 }

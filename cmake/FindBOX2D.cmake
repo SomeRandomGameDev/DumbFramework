@@ -22,7 +22,7 @@ find_path(BOX2D_INCLUDE_DIR
 )
 
 find_library(BOX2D_LIBRARY
-	NAMES Box2D
+	NAMES Box2D box2d
     PATH_SUFFIXES lib lib64 Library
 	PATHS
 		/usr

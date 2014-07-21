@@ -1,7 +1,7 @@
 #ifndef _DUMB_FW_BOUNDING_BOX_
 #define _DUMB_FW_BOUNDING_BOX_
 
-#include "boundingobjects.hpp"
+#include <boundingobjects.hpp>
 
 namespace Framework {
 

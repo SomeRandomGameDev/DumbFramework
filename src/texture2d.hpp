@@ -2,9 +2,9 @@
 #define _DUMB_FW_TEXTURE_2D_
 
 #include <glm/glm.hpp>
-#include "texture.hpp"
+#include <texture.hpp>
 
-namespace Render  {
+namespace Framework {
 
 /**
  * Texture 2D Wrapper.
@@ -20,22 +20,26 @@ class Texture2D
          * Create texture.
          * @param [in] size   Texture size.
          * @param [in] format Texture format.
+         * @param [in] layers Number of texture layer (default=1).
+         * @return true if the texture was succesfully created.
          */
-        bool create(const glm::ivec2& size, Texture::PixelFormat format);
-        /** 
-         * Create from existing texture (no duplication).
-         * @param [in] id   Texture id.
-         */
-        bool create(GLuint id);
-        /**
+        bool create(const glm::ivec2& size, Texture::PixelFormat format, int layers=1);
+		/**
          * Destroy texture.
          */
         void destroy();
         /**
+         * Tell if the texture is valid.
+         * @return true if the texture is valid.
+         */
+        bool isValid() const;
+        /**
          * Set texture data.
-         * @param [in] data Image buffer.
+         * @param [in] data  Image buffer.
+         * @param [in] layer Texture layer in which the data will be copied (default=-1).
+         *                   Initialize all possible layers if the layer value is negative.
          */        
-        void setData(void* data);
+        void setData(void* data, int layer=-1);
         /**
          * Bind texture.
          */
@@ -65,24 +69,39 @@ class Texture2D
          * Generate mipmap from texture.
          */
         void buildMipmap();
-        
+        /**
+         * Get texture width and height
+         * @return texture width and height as a glm::ivec2
+         */
+        const glm::ivec2& size() const;
+        /**
+         * Get texture pixel format.
+         * @return pixel format.
+         */
+        const Texture::PixelFormat& pixelFormat() const;
+        /**
+         * Get layer count.
+         * @return layer count.
+         */
+        int layerCount() const;
     private:
         glm::ivec2 _size;               /**< Texture width and height. **/
-        Texture::PixelFormat _format;   /**< Pixel format. **/
+        Texture::PixelFormat _format;   /**< Pixel format.             **/
+        GLuint _id;                     /**< Resource id.              **/
+		GLenum _target;                 /**< Texture binding target.   **/
+        int    _layers;                 /**< Number of layers.         **/
         
-        GLuint _id;                     /**< Resource id. **/
-
         /** OpenGL texture informations. **/
         struct OpenGLTextureInfos
         {
-            GLint  internalFormat; /**< Internal format. **/
+			GLint  internalFormat; /**< Internal format.   **/
             GLenum format;         /**< Pixel data format. **/
-            GLenum type;           /**< Pixel data type. **/
+            GLenum type;           /**< Pixel data type.   **/
             
             OpenGLTextureInfos(Texture::PixelFormat pixelFormat);
         } _infos;
 };
 
-}
+} // Framework
 
 #endif /* _DUMB_FW_TEXTURE_2D_ */
