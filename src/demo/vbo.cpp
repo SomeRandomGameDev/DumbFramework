@@ -4,13 +4,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-//#include <SOIL/SOIL.h>
+#include <SOIL/SOIL.h>
 #include <iostream>
 #include <math.h>
 
-#include "log.hpp"
-#include "texture2d.hpp"
-#include "textureloader.hpp"
+#include <log.hpp>
+#include <texture2d.hpp>
 
 // Shaders
 
@@ -263,8 +262,23 @@ void TestScene::resume(GLFWwindow * /* window */) {
   } else {
     _projMatrixId = glGetUniformLocation(_program, "pMatrix");
     _textureUniform = glGetUniformLocation(_program, "texture");
-    Framework::Texture::Loader loader;
-    if(!loader.load("testsprite.png", _texture))
+    
+    bool ret = false;
+	int width = -1;
+	int height = -1;
+    int channels = 4;
+    unsigned char *data;
+	
+    data = SOIL_load_image("testsprite.png", &width, &height, &channels, SOIL_LOAD_AUTO);
+    
+    if(NULL != data)
+    {
+		_texture.create(glm::ivec2(width, height), Framework::Texture::PixelFormat::RGBA_8, 1);
+		_texture.setData(data, 0);
+		SOIL_free_image_data(data);
+		ret = true;
+	}
+    if(!ret)
     {
         _quit = true;
     }

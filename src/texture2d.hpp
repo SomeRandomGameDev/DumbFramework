@@ -20,10 +20,11 @@ class Texture2D
          * Create texture.
          * @param [in] size   Texture size.
          * @param [in] format Texture format.
-         * @param [in] layers Number of texture layer (default=1).
+         * @param [in] layers Number of texture layer (default=-1).
+         *             Any value equal or less than zero will force the creation of a single standard texture.
          * @return true if the texture was succesfully created.
          */
-        bool create(const glm::ivec2& size, Texture::PixelFormat format, int layers=1);
+        bool create(const glm::ivec2& size, Texture::PixelFormat format, int layers=-1);
 		/**
          * Destroy texture.
          */
@@ -43,26 +44,34 @@ class Texture2D
         /**
          * Bind texture.
          */
-        void bind();
+        void bind() const;
+        /**
+         * Unbind texture.
+         */
+        void unbind() const;
         /**
          * Set texel magnification filter.
          * @param [in] filter Magnification filter.
+         * @note Texture must be bound before calling this method.
          */
         void setMagFilter(Texture::MagFilter filter);
         /**
          * Set texel minification filter.
          * @param [in] filter Minification filter.
+         * @note Texture must be bound before calling this method.
          */
         void setMinFilter(Texture::MinFilter filter);
         /**
          * Set texture coordinates wrap mode.
          * @param [in] s Wrap mode for s coordinate (1st).
          * @param [in] t Wrap mode for t coordinate (2nd).
+         * @note Texture must be bound before calling this method.
          */
         void setWrap(Texture::Wrap s, Texture::Wrap t);
         /**
          * Set border color.
          * @param [in] color Border color (rgba).
+         * @note Texture must be bound before calling this method.
          */
         void setBorderColor(const glm::vec4& color);
         /**

@@ -114,7 +114,7 @@ namespace Sprite {
         _vao(0),
         _buffer(),
         _program(),
-        _texture(atlas->texture()),
+		_texture(&atlas->texture()),
         _uniformTexture(0),
         _uniformMatrix(0),
         _matrix(glm::mat4(1.0)),
@@ -454,7 +454,7 @@ namespace Sprite {
         glm::ivec2 size = frame->getSize();
         glm::dvec2 top = frame->getTop();
         glm::dvec2 bottom = frame->getBottom();
-        GLuint texture = frame->getTexture();
+        GLuint layer = frame->getLayer();
 
         cell->_posX = x;
         cell->_posY = y;
@@ -468,7 +468,7 @@ namespace Sprite {
         cell->_bottomV = bottom.y;
         cell->_angle = angle;
         cell->_scale = scale;
-        cell->_texture = texture;
+        cell->_layer = layer;
     }
 
     void Engine::viewport(float x, float y,
@@ -569,7 +569,7 @@ namespace Sprite {
             glUniformMatrix4fv(_uniformMatrix, 1, GL_FALSE, glm::value_ptr(_matrix));
             glUniform1i(_uniformTexture, 0);
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, _texture);
+            _texture->bind();
             GLfloat *ptr = (GLfloat *) _buffer.map(Render::BufferObject::BUFFER_WRITE);
             memcpy(ptr, _cell, VBO_STRIDE * _count);
             _buffer.unmap();
