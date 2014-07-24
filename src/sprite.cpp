@@ -123,10 +123,9 @@ namespace Sprite {
             }
             if(size <= 0) {
                 _state = STATE_FAULTED;
-                std::cerr << "##! Invalid number of definition" << std::endl;
+                Log_Error(Framework::Module::Render, "Invalid number of definition.");
             } else {
-                std::cout << "##? Prepare to read " << size
-                    << " sprite definition(s)." << std::endl;
+				Log_Info(Framework::Module::Render, "Prepare to read %d sprite definition(s).", size);
                 _definitions = new Framework::Container<Definition *>(size);
                 for(int i = 0; i < size; ++i) {
                     *(_definitions->data(i)) = 0;
@@ -135,8 +134,7 @@ namespace Sprite {
                     loadTextures(filename);
                 } else {
                     _state = STATE_FAULTED;
-                    std::cerr << "##! Invalid path to texture"
-                        << std::endl;
+					Log_Error(Framework::Module::Render, "Invalid path to texture");
                 }
             }
         }
@@ -154,8 +152,7 @@ namespace Sprite {
             }
             if((id < 0) || (size <= 0)) {
                 _state = STATE_FAULTED;
-                std::cerr << "##! Invalid number of animations ("
-                    << size << ") in def " << id << std::endl;
+                Log_Error(Framework::Module::Render, "Invalid number of animations (%d) in def", size);
             } else {
                 Definition *definition = new Definition((unsigned int) size);
                 *(_definitions->data(id)) = definition;
@@ -181,7 +178,7 @@ namespace Sprite {
             }
             if((id < 0) || (size <= 0)) {
                 _state = STATE_FAULTED;
-                std::cerr << "##! Invalid number of frames" << std::endl;
+                Log_Error(Framework::Module::Render, "Invalid number of frames");
             } else {
                 Animation *animation = new Animation((unsigned int) size);
                 *(_lastDefinition->data(id)) = animation;
@@ -253,7 +250,7 @@ namespace Sprite {
     void Atlas::setFaulted(const char *msg,
         unsigned int cnt,
         unsigned char **textures) {
-        std::cerr << "##! " << msg << std::endl;
+		Log_Error(Framework::Module::Render, msg);
         _state = STATE_FAULTED;
         for(unsigned int i = 0; i < cnt; ++i) {
             SOIL_free_image_data(textures[i]);
@@ -273,13 +270,13 @@ namespace Sprite {
         unsigned char *loadedTextures[MAX_LOADABLE_TEXTURES];
         unsigned int count = 0;
         while (std::getline(ss, item, ';')) {
-            std::cout << "##? Loading '" << item << "'" << std::endl;
+            Log_Info(Framework::Module::Render, "Loading %s", item.c_str());
             loadedTextures[count] = SOIL_load_image(
                 item.c_str(),
                 &currentWidth, &currentHeight, &channels,
                 SOIL_LOAD_AUTO);
             if(channels != 4) {
-                std::cerr << "##! Channel = " << channels << std::endl;
+				Log_Error(Framework::Module::Render, "Channel = %d", channels);
                 setFaulted("Incorrect channel size !", count,
                     loadedTextures);
                 return;
@@ -335,8 +332,7 @@ namespace Sprite {
         _width = width;
         _height = height;
 
-        std::cout << "##? Atlas Size : "
-            << _width << "x" << _height << std::endl;
+		Log_Info(Framework::Module::Render, "Atlas Size : %d x %d", _width, _height);
         _state = STATE_PARSE_DEFINITION;
     }
 }
