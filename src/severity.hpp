@@ -6,7 +6,7 @@
 namespace Framework {
 
 BEGIN_ENUM(Severity)
-    DEFINE_ENUM(Trace)
+    DEFINE_ENUM(Info)
     DEFINE_ENUM(Warning)
     DEFINE_ENUM(Error)
 END_ENUM(Severity)

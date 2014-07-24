@@ -201,15 +201,15 @@ namespace Sprite {
             _time = glfwGetTime();
 
             // Create program.
-            std::array<Render::Shader, 3> shaders;
-            shaders[0].create(Render::Shader::VERTEX_SHADER,   s_vertexShader  );
-            shaders[1].create(Render::Shader::FRAGMENT_SHADER, s_fragmentShader);
-            shaders[2].create(Render::Shader::GEOMETRY_SHADER, s_geometryShader);
+            std::array<Framework::Shader, 3> shaders;
+            shaders[0].create(Framework::Shader::VERTEX_SHADER,   s_vertexShader  );
+            shaders[1].create(Framework::Shader::FRAGMENT_SHADER, s_fragmentShader);
+            shaders[2].create(Framework::Shader::GEOMETRY_SHADER, s_geometryShader);
 
             _program.create();
             for(unsigned long i=0; i<shaders.size(); i++)
             {
-                shaders[i].infoLog();
+                shaders[i].infoLog(Framework::Severity::Info);
                 _program.attach(shaders[i]);
             }
 
@@ -223,7 +223,7 @@ namespace Sprite {
             _program.bindAttribLocation(TEXTURE_INDEX,  "vs_index"    );
 
             _program.link();
-            _program.infoLog();
+            _program.infoLog(Framework::Severity::Info);
             _uniformMatrix  = _program.getUniformLocation("pMatrix");
             _uniformTexture = _program.getUniformLocation("un_texture");
         }
@@ -337,8 +337,7 @@ namespace Sprite {
         Instance *instance = _instance + inside;
         instance->_definition = _atlas->get(definitionId);
         if(0 == instance->_definition) {
-            std::cerr << "No Definition in Atlas for identifier ("
-                      << definitionId << ")" << std::endl;
+			Log_Error(Framework::Module::Render, "No Definition in Atlas for identifier (%d)", definitionId);
         }
 
         // Add an entry in the lookup table.

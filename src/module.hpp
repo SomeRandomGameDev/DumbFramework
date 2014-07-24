@@ -8,6 +8,7 @@ namespace Framework {
 BEGIN_ENUM(Module)
     DEFINE_ENUM(Base)
     DEFINE_ENUM(Render)
+    DEFINE_ENUM(App)
 END_ENUM(Module)
 
 } // Framework

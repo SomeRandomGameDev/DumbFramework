@@ -4,7 +4,7 @@
 #include <shader.hpp>
 #include <log.hpp>
 
-namespace Render {
+namespace Framework {
 
 /**
  * GLSL program wrapper.
@@ -123,7 +123,7 @@ class Program
 		/**
 		 * Output link status. 
 		 */
-		void infoLog() const;
+		void infoLog(Framework::Severity severity = Framework::Severity::Error) const;
 
         /**
          * Delete attached shaders.
@@ -161,6 +161,6 @@ GLint Program::getAttribLocation(const GLchar* name)
 	return glGetAttribLocation(_id, name);
 }
 
-} /* Render */
+} // Framework
 
 #endif /* _DUMB_FW_PROGRAM_ */

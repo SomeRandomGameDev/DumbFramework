@@ -310,7 +310,7 @@ private:
   /**
    * GLSL Program identifier.
    */
-  Render::Program _program;
+  Framework::Program _program;
 
   /**
    * Sprite Atlas identifier.

@@ -197,9 +197,9 @@ class Entity
         // void set/get program
 
     private:
-        glm::vec3         m_position;
-        glm::quat         m_orientation;
-        Render::Program   m_program;
+        glm::vec3 m_position;
+        glm::quat m_orientation;
+        Framework::Program m_program;
         // Materials
         // Mesh
         // Bones

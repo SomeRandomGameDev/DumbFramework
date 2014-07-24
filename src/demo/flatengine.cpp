@@ -1,6 +1,8 @@
 // You'll never see an uglyiest test executable !
 
 #include <GL/glew.h> // Hot fix : There's a big issue in the includes management.
+
+#include <log.hpp>
 #include <application.hpp>
 #include <scene.hpp>
 #include <sprengine.hpp>
@@ -190,6 +192,12 @@ void TestEngine::pause() {
 }
 
 int main(void) {
+  Framework::Log::LogBuilder<Framework::Log::AllPassFilter, Framework::Log::SimpleMessageFormat> msgBuilder;
+  Framework::Log::ConsoleOutputPolicy output;
+
+  Framework::Log::LogProcessor& processor = Framework::Log::LogProcessor::instance();
+  processor.start(&msgBuilder, &output);
+
   std::string title("Sprite EngineTest");
   TestEngine testScene(640, 480);
   WindowHint hint(640, 480, title);
@@ -197,6 +205,8 @@ int main(void) {
 
   application.start(hint, &testScene);
 
-  std::cout << "End ..." << std::endl;
+  Log_Info(Framework::Module::App, "End ...");
+  processor.stop();
+  
   return 0;
 }

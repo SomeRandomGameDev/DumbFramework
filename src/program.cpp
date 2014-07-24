@@ -1,7 +1,7 @@
 #include <program.hpp>
 #include <stdarg.h>
 
-namespace Render {
+namespace Framework {
 
 /**
  * Constructor.
@@ -25,7 +25,6 @@ bool Program::create()
 
 	if(_id == 0)
 	{
-		// todo InfoLog();
 		return false;
 	}
 
@@ -126,7 +125,7 @@ void Program::destroy()
 /**
  * Output link status. 
  */
-void Program::infoLog() const
+void Program::infoLog(Framework::Severity severity) const
 {
 	GLsizei maxLogLength, logLength;
 	GLchar *log;
@@ -143,7 +142,7 @@ void Program::infoLog() const
 	}
 
 	glGetProgramInfoLog(_id, maxLogLength, &logLength, log);
-	Log_Error(Framework::Module::Render, "%s", log);
+	Log_Ex(Framework::Module::Render, severity, log);
 
 	delete [] log;
 }
@@ -230,4 +229,4 @@ void Program::destroyShaders()
     }
 }
 
-} /* Render */
+} // Framework

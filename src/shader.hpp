@@ -5,7 +5,7 @@
 #include <config.hpp>
 #include <log.hpp>
 
-namespace Render {
+namespace Framework {
 
 /**
  * GLSL Shader wrapper.
@@ -61,7 +61,7 @@ class Shader
         /** Retrieve internal shader info logs. 
          *  @todo add return value. 
          */
-        void infoLog() const;
+        void infoLog(Framework::Severity severity = Framework::Severity::Error) const;
 
     private:
         /** Id  */
@@ -70,6 +70,6 @@ class Shader
         Shader::Type _type;
 };
 
-} /* Render */
+} // Framework
 
 #endif /* _DUMB_FW_SHADER_ */

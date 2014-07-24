@@ -232,7 +232,7 @@ namespace Log {
         vsnprintf(data, SimpleMessageFormat::MaxBufferLen, format, args);
         
         std::ostringstream oss;
-        oss << '[' << severity.toString() << "][" << module.toString() << ']' << ' ' << infos.function << ' ';
+        oss << '[' << severity.toString() << "][" << module.toString() << "][" << infos.function << "]";
         oss << data;
         buffer = oss.str();
     }
@@ -243,7 +243,11 @@ namespace Log {
      */
     bool ConsoleOutputPolicy::write(std::string & msg)
     {
-        std::cout << msg << std::endl;
+        std::cout << msg;
+		if(msg[msg.size()-1] != '\n')
+		{
+			std::cout << std::endl;
+		}
         return true;
     }
 
