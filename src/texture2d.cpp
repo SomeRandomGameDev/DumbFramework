@@ -4,6 +4,49 @@
 
 namespace Framework {
 
+/** @return OpengGL texture binding query according to texture target. **/
+static GLenum QueryFromTextureTarget(GLenum target)
+{
+    switch(target)
+    {
+        case GL_TEXTURE_2D:
+            return GL_TEXTURE_BINDING_2D;
+        case GL_TEXTURE_2D_ARRAY:
+            return GL_TEXTURE_BINDING_2D_ARRAY;
+        default:
+            return GL_NONE;
+    }
+}
+/** @return Texture target name. **/
+static char const* GetTextureTargetName(GLenum target)
+{
+    switch(target)
+    {
+        case GL_TEXTURE_2D:
+            return "GL_TEXTURE_2D";
+        case GL_TEXTURE_2D_ARRAY:
+            return "GL_TEXTURE_2D_ARRAY";
+        default:
+            return "UNKNOWN TARGET";
+    }
+}
+/**
+ * Retrieve the id of the texture currently bound for a specific texture target. 
+ * @param [in] target  Texture target (can be GL_TEXTURE_2D or GL_TEXTURE_2D_ARRAY).
+ * @return id of the texture currently bound.
+ */
+static GLuint GetCurrentTextureId(GLenum target)
+{
+    if((GL_TEXTURE_2D != target) && (GL_TEXTURE_2D_ARRAY != target))
+    {
+        return 0;
+    }
+    GLuint texID;
+    GLenum query = QueryFromTextureTarget(target);
+    glGetIntegerv(query, (GLint*)&texID);
+    return texID;
+}
+
 /** Construct from pixel format. **/
 Texture2D::OpenGLTextureInfos::OpenGLTextureInfos(Texture::PixelFormat pixelFormat)
 {
@@ -148,6 +191,22 @@ bool Texture2D::setData(void* data, int layer)
  */
 void Texture2D::bind() const
 {
+#if defined(SANITY_CHECK)
+    // Warning! This may spam your logs!
+    if(!isValid())
+    {
+        Log_Warning(Module::Render, "You are trying to bind an invalid texture for target %s", GetTextureTargetName(_target));
+    }
+    else
+    {
+        GLuint texID = GetCurrentTextureId(_target);
+        if(texID && (texID != _id))
+        {
+            Log_Warning(Module::Render, "Texture %d is currently bound for target %s", texID, GetTextureTargetName(_target));
+        }
+    }
+#endif // SANITY_CHECK
+
     glBindTexture(_target, _id);
 }
 /**
@@ -157,21 +216,19 @@ void Texture2D::unbind() const
 {
 #if defined(SANITY_CHECK)
     // Warning! This may spam your logs!
-    GLuint texID;
-    GLenum query;
-    if(_target == GL_TEXTURE_2D)
-    {
-        query = GL_TEXTURE_BINDING_2D;
-    }
-    else
-    {
-        query = GL_TEXTURE_BINDING_2D_ARRAY;
-    }
-    glGetIntegerv(query, (GLint*)&texID);
+    GLuint texID = GetCurrentTextureId(_target);
     if(texID != _id)
     {
-        Log_Error(Module::Render, "You are trying to unbind texture %d whereas the current bound texture is %d", _id, texID);
-        Log_Error(Module::Render, "If you really want to unbind currently bound textures use Texture2D::unbindAll() (static) instead.");
+        char const* targetName = GetTextureTargetName(_target);
+        if(texID)
+        {
+            Log_Warning(Module::Render, "You are trying to unbind texture %d whereas the current bound texture for target %s is %d", _id, texID, targetName);
+            Log_Warning(Module::Render, "If you really want to unbind currently bound textures use Texture2D::unbindAll() (static) instead.");
+        }
+        else
+        {
+            Log_Warning(Module::Render, "No texture was bound for target %s", targetName);
+        }
     }
 #endif // SANITY_CHECK
     glBindTexture(_target, 0);
@@ -183,6 +240,17 @@ void Texture2D::unbindAll()
 {
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+}
+/**
+ * Check if the texture is bound.
+ * @return true if the texture is bound.
+ */
+bool Texture2D::isBound() const
+{
+    GLuint texID;
+    GLenum query = QueryFromTextureTarget(_target);
+    glGetIntegerv(query, (GLint*)&texID);
+    return (texID == _id);
 }
 /**
  * Set texel magnification filter.

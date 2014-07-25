@@ -50,6 +50,11 @@ class Texture2D
          */
         void unbind() const;
         /**
+         * Check if the texture is bound.
+         * @return true if the texture is bound.
+         */
+        bool isBound() const;
+        /**
          * Unbind currently bound textures.
          */
         static void unbindAll();
@@ -97,6 +102,7 @@ class Texture2D
          * @return layer count.
          */
         int layerCount() const;
+        
     private:
         glm::ivec2 _size;               /**< Texture width and height. **/
         Texture::PixelFormat _format;   /**< Pixel format.             **/

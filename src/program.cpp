@@ -75,7 +75,14 @@ bool Program::link()
     }
     return true;
 }
-
+/**
+ * Check if the program is in use.
+ * @return true if the program is currently used.
+ */
+bool Program::isInUse() const
+{
+    return (Program::getCurrentProgramId() == _id);
+}
 /**
  * Use program.
  */
@@ -85,7 +92,14 @@ bool Program::begin() const
     {
         return false;
     }
-    
+#if defined(SANITY_CHECK)
+    GLuint progID = Program::getCurrentProgramId();
+    if(progID && (progID != _id))
+    {
+        Log_Warning(Module::Render, "Program %d is currently in use.");
+    }
+#endif // SANITY_CHECK
+
     glUseProgram(_id);
     
     return true;
@@ -99,12 +113,11 @@ void Program::end() const
 {
 #if defined(SANITY_CHECK)
     // Warning! This may spam your logs!
-    GLuint progID;
-    glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&progID);
+    GLuint progID =  Program::getCurrentProgramId();
     if(progID != _id)
     {
-        Log_Error(Module::Render, "You are trying to end using program %d whereas the current active program is %d", _id, progID);
-        Log_Error(Module::Render, "If you really want to end current program use Program::endAny() (static) instead.");
+        Log_Warning(Module::Render, "You are trying to end using program %d whereas the current active program is %d", _id, progID);
+        Log_Warning(Module::Render, "If you really want to end any program currently in use, call Program::endAny() (static) instead.");
     }
 #endif // SANITY_CHECK
     glUseProgram(0);
@@ -117,6 +130,16 @@ void Program::endAny()
     glUseProgram(0);
 }
 /**
+ * Retrieve the id of the program currently in use.
+ * @return Program id.
+ */
+GLuint Program::getCurrentProgramId()
+{
+    GLuint progID;
+    glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&progID);
+    return progID;
+}
+/**
  * Delete program and detach shaders.
  */
 void Program::destroy()
@@ -126,7 +149,10 @@ void Program::destroy()
         return;
     }
 
-    end();
+    if(isInUse())
+    {
+        end();
+    }
 
     // Delete program
     glDeleteProgram (_id);

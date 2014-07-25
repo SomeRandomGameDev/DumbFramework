@@ -81,7 +81,11 @@ class Program
          * @param [in] interleaved Indicates if the varyings are interleaved.
          */
         void transformFeedbackVaryings(const char** varyingNames, int varyingNameCount, bool interleaved);
-
+        /**
+         * Check if the program is in use.
+         * @return true if the program is currently used.
+         */
+        bool isInUse() const;
         /**
          * Use program.
          */
@@ -96,6 +100,11 @@ class Program
          */
         static void endAny();
         /**
+         * Retrieve the id of the program currently in use.
+         * @return Program id.
+         */
+        static GLuint getCurrentProgramId();
+        /**
          * Delete program and detach shaders.
          */
         void destroy();
@@ -104,7 +113,6 @@ class Program
          * Accessor.
          */
         GLuint getId () const { return _id; }
-
 
         /**
          * Use program (simple alias).
