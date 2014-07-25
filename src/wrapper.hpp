@@ -97,47 +97,64 @@ template <typename T> class Wrapper {
 
 // Implementation **********************************************
 
-template <typename T> bool Wrapper<T>::start() {
+template <typename T> bool Wrapper<T>::start()
+{
+    // Initialize glfw and set error callback.
     bool result = glfwInit();
-    if(result) {
-        glfwSetErrorCallback(Log_GLFWErrorCallback);
-        GLFWwindow *window = _delegate->createWindow();
-        if(0 == window) {
-            Log_Error(ModuleID::BASE, "Failed to create window.");
-            glfwTerminate();
-            result = false;
-        } else {
-            glfwSetWindowUserPoint(window, this);
-            GLenum glewError = glewInit();
-            if(GLEW_OK == glewError) {       
-                glfwSetKeyCallback(window, Wrapper<T>::handleKey);
-                glfwSetMouseButtonCallback(window, Wrapper<T>::handleMouseButton);
-                glfwSetCursorPosCallback(window, Wrapper<T>::handleMousePosition);
-                glfwSetScrollCallback(window, Wrapper<T>::handleMouseWheel);
-                glfwSetWindowSizeCallback(window, Wrapper<T>::handleWindowSize);
-                glfwSetWindowCloseCallback(window, Wrapper<T>::handleWindowClose);
-                glfwSetCharCallback(window, Wrapper<T>::handleChar);
-                glfwSetCursorEnterCallback(window, Wrapper<T>::handleCursorEnter);
-                _delegate->init();
-                while(!glfwWindowShouldClose(window)) {
-                    _delegate->render();
-                    glfwPollEvents();
-                    glfwSwapBuffers();
-                }
-                _delegate->destroyWindow(window);
-                glfwTerminate();
-                result = true;
-            } else {
-                Log_Error(ModuleID::BASE, "Failed to initialize OpenGL extensions: %s.", glewGetErrorString(glewError));
-                glfwTerminate();
-                result = false;
-            }
-        }
-    } else {
-        Log_Error(ModuleID::BASE, "Failed to initialize OpenGL extensions: %s.", glewGetErrorString(glewError));
+    if(!result)
+    {
+        Log_Error(ModuleID::Base, "Failed to initialize OpenGL extensions: %s.", glewGetErrorString(glewError));
+        return false;
+    }
+    glfwSetErrorCallback(Log_GLFWErrorCallback);
+    
+    // Query delegate to create window.
+    GLFWwindow *window = _delegate->createWindow();
+    if(0 == window)
+    {
+        Log_Error(ModuleID::Base, "Failed to create window.");
+        glfwTerminate();
+        return false;
     }
 
-    return result;
+    // Set window user data.
+    glfwSetWindowUserPoint(window, this);
+
+    // Initialize OpenGL extensions.
+    GLenum glewError = glewInit();
+    if(GLEW_OK != glewError)
+    {
+        Log_Error(ModuleID::BASE, "Failed to initialize OpenGL extensions: %s.", glewGetErrorString(glewError));
+        glfwTerminate();
+        return false;
+    }
+    
+    // Set window callbacks.
+    glfwSetKeyCallback(window, Wrapper<T>::handleKey);
+    glfwSetMouseButtonCallback(window, Wrapper<T>::handleMouseButton);
+    glfwSetCursorPosCallback(window, Wrapper<T>::handleMousePosition);
+    glfwSetScrollCallback(window, Wrapper<T>::handleMouseWheel);
+    glfwSetWindowSizeCallback(window, Wrapper<T>::handleWindowSize);
+    glfwSetWindowCloseCallback(window, Wrapper<T>::handleWindowClose);
+    glfwSetCharCallback(window, Wrapper<T>::handleChar);
+    glfwSetCursorEnterCallback(window, Wrapper<T>::handleCursorEnter);
+
+    // Delegate init.
+    _delegate->init();
+    
+    // This is the application loop.
+    while(!glfwWindowShouldClose(window))
+    {
+        _delegate->render();
+        glfwPollEvents();
+        glfwSwapBuffers();
+    }
+    
+    // Destroy window.
+    _delegate->destroyWindow(window);
+    glfwTerminate();
+    
+    return true;
 }
 
 template <typename T> void Wrapper<T>::handleKey(GLFWwindow* window, int key, int scancode, int action, int mods) {

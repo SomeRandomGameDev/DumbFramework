@@ -279,7 +279,7 @@ void GearScene::resume(GLFWwindow * /*window*/) {
 // Main routine.
 int main(void) {
   std::string title("GLXgears demo");
-  WindowHint hint(800,600,title);
+  Framework::WindowHint hint(800,600,title);
   Application application;
   GearScene scene;
   application.start(hint, &scene);

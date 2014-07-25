@@ -6,114 +6,132 @@
 
 #include <xml.hpp>
 
-#include <container.hpp>
+#include <vector>
 #include <program.hpp>
 
 #include <texture2d.hpp>
+#include <frame.hpp>
 
 namespace Sprite {
 
 /**
- * An animation frame consists in a texture quad coordinate, an offset,
- * a size and a timestamp.
- * It is a non-mutable object.
+ * An animation consists in an ordered list of frame.
  */
-class Frame {
+class Animation
+{
     public:
-       /**
-         * Constructor.
-         * @param time Time of appearance in seconds.
-         * @param offset Offset in pixels.
-         * @param size Size in pixels.
-         * @param top Top texture coordinates.
-         * @param bottom Bottom texture coordinates.
-         * @param layer Texture layer in the texture array.
-         */
-        Frame(double time,
-              const glm::ivec2& offset, const glm::ivec2& size,
-              const glm::dvec2& top, const glm::dvec2& bottom,
-              unsigned int layer);
-
-        // Accessors.
-
+        /** Default constructor. **/
+        Animation();
+        /** Destructor. **/
+        ~Animation();
+        
         /**
-         * Provides appearance time.
-         * @return Appearance time in seconds.
+         * Create animation.
+         * @param [in] id    Animation identifier.
+         * @param [in] count Frame count (optional) (default=0).
          */
-        inline double getTime() { return _time; }
-
+        void create(unsigned int id, size_t count=0);
+        
         /**
-         * Provides frame offset.
-         * @return A position in pixel (x and y).
+         * Get animation id.
+         * @return Animation identifier.
          */
-        inline const glm::ivec2& getOffset() const { return _offset; }
-
+        unsigned int id() const;
+        
         /**
-         * Provides the frame size.
-         * @return Frame size in pixel (width and height).
+         * Add frame to animation.
+         * Frames are sorted by increasing time.
+         * @param [in] frame  Frame to be added.
          */
-        inline const glm::ivec2& getSize() const { return _size; }
-
+        void add(Framework::Frame const& frame);
+        
         /**
-         * Provides upper left texture coordinates.
-         * @return Texture coordinates (u and v).
+         * Get frame count.
+         * @return Number of frames in animation.
          */
-        inline const glm::dvec2& getTop() const { return _top; }
-
+        size_t frameCount() const;
+        
         /**
-         * Provides lower right texture coordinates.
-         * @return Texture coordinates (u and v).
+         * Retrieve a given frame.
+         * @param [in] index  Frame number.
+         * @return A const pointer to the specified frame or NULL if the
+         *         index is out of bound.
          */
-        inline const glm::dvec2& getBottom() const { return _bottom; }
-
-        /**
-         * Provides texture layer index.
-         * @return Texture layer in the texture array.
-         */
-        inline unsigned int getLayer() const { return _layer; }
-
+        Framework::Frame const* getFrame(size_t offset) const;
+        
     private:
-        double       _time;    /**< Time of appearance in seconds. **/
-        glm::ivec2   _offset;  /**< Position offset. **/
-        glm::ivec2   _size;    /**< Size. **/
-        glm::dvec2   _top;     /**< Texture coordinate top (upper left). **/
-        glm::dvec2   _bottom;  /**< Texture coordinate bottom (lower right). **/
-        unsigned int _layer;   /**< Texture layer in the texture array. **/
+        unsigned int _id;  /** Animation id.   **/ 
+        std::vector<Framework::Frame> _frames; /** Frames sorted by increasing time. **/
 };
-
-/**
- * An animation consists in an ordered list of frame. It is not mutable.
- */
-typedef Framework::Container<Frame *> Animation;
 
 /**
  * Sprite definition.
  * Consist in a list of animation. All materials concerning a sprite
  * must be hosted in the same texture.
- * It is not mutable.
  */
-typedef Framework::Container<Animation *> Definition;
+class Definition
+{
+    public:
+        /** Default constructor. **/
+        Definition();
+        /** Destructor. **/
+        ~Definition();
+        
+        /**
+         * Create sprite definition.
+         * @param [in] id    Identifier.
+         * @param [in] count Animation count. 
+         */
+        void create(unsigned int id, size_t count);
+        
+        /**
+         * Get id.
+         * @return Identifier.
+         */
+        unsigned int id() const;
+        
+        /**
+         * Get animation count.
+         * @return Number of stored animations.
+         */
+        size_t animationCount() const;
+        
+        /**
+         * Retrieve a given animation.
+         * @param [in] index  Animation number.
+         * @return A const pointer to the specified animation or NULL if the
+         *         index is out of bound.
+         */
+        Animation const* getAnimation(size_t offset) const;
+        /**
+         * Retrieve a given animation.
+         * @param [in] index  Animation number.
+         * @warning Unsafe and non const.
+         * @return Reference to the specified animation.
+         */
+        Animation& getAnimation(size_t offset);
+        
+    private:
+        unsigned int _id; /** Sprite definition id. **/
+        std::vector<Animation> _animations; /** Animation list. **/
+};
 
 /**
  * Sprite Atlas. Maps all definitions to a texture.
  * It is not mutable.
  */
-class Atlas {
-
-    friend class XML::Parser<Atlas>;
-
+class Atlas
+{
     public:
-
-        /**
-         * Constructor.
-         * @param path Path to description file.
-         */
-        Atlas(const char *path);
-
-        /**
-         * Destructor.
-         */
+        /** Constructor. **/
+        Atlas();
+        /** Destructor. **/
         ~Atlas();
+
+        /**
+         * 
+         */
+        bool read(std::string const& filename);
 
         /**
          * Access texture.
@@ -134,11 +152,6 @@ class Atlas {
          */
         unsigned int count() const;
 
-    protected:
-
-        void startElement(const XML_Char *, const XML_Char **);
-        void endElement(const XML_Char *);
-
     private:
 
         /**
@@ -147,28 +160,10 @@ class Atlas {
          */
         void loadTextures(const char *filename);
 
-        /**
-         * Flush/Free the memory occupied by previously loaded textures,
-         * display an error message and set the parser to FAULTED.
-         * @param msg Error message to display.
-         * @param cnt Number of textures to free.
-         * @param textures Array of textures to free.
-         */
-        void setFaulted(const char *msg,
-            unsigned int cnt, unsigned char **textures);
-
     private:
-        Framework::Container<Definition *> *_definitions; /**< Definitions. **/
-        
+        std::vector<Definition> _definitions; /**< Sprite definitions. **/
         Framework::Texture2D _texture; /**< Texture. **/
-        
-        int _state; /**< State (Parsing, ready, etc...). **/
-        GLint _width;  /**< Atlas width in pixels.  **/
-        GLint _height; /**< Atlas height in pixels. **/
-
-        Definition  *_lastDefinition; /**< Last definition in use. **/
-        Animation   *_lastAnimation;  /**< Last animation in use. **/
-        unsigned int _lastFrameId;    /**< Last defined frame identifier. **/
+        glm::ivec2 _size; /**< Atlas size in pixels. **/
 };
 
 // []
@@ -181,32 +176,6 @@ class Atlas {
 // Each progression step seek to update sprite instance with correct frame.
 //
 
-class Entity
-{
-    public:
-        Entity();
-        Entity(const Entity& entity);
-        ~Entity();
+} // Sprite
 
-        Entity& operator=(const Entity& entity);
-
-        const glm::vec3& GetPosition() const;
-        void SetPosition(const glm::vec3& position);
-
-        const glm::quat& GetOrientation() const;
-        void SetOrientation(const glm::quat& orientation);
-
-        // void set/get program
-
-    private:
-        glm::vec3 m_position;
-        glm::quat m_orientation;
-        Framework::Program m_program;
-        // Materials
-        // Mesh
-        // Bones
-};
-
-}
-
-#endif
+#endif /* _DUMB_FW_SPRITE_ */

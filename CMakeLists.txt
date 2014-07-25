@@ -20,6 +20,7 @@ if(MSVC)
 endif(MSVC)
 
 find_package(EXPAT)
+find_package(tinyxml2)
 find_package(SOIL)
 find_package(Threads)
 find_package(OpenGL)
@@ -34,6 +35,7 @@ set(DUMB_FRAMEWORK_VERSION 0.1a)
 set(PROJECT_NAME DumbFramework)
 
 include_directories( ${EXPAT_INCLUDE_DIR} 
+                     ${TINYXML2_INCLUDE_DIR} 
                      ${PTHREADS_INCLUDE_DIR}
                      ${OPENGL_INCLUDE_DIRS}
                      ${GLFW_INCLUDE_DIR}
@@ -62,17 +64,18 @@ set(DUMB_FRAMEWORK_SOURCES
     src/shader.cpp
     src/program.cpp
     src/sprengine.cpp
+    src/frame.cpp
     src/sprite.cpp
     src/texture2d.cpp
     src/windowhint.cpp)
 
 add_library(DumbFramework STATIC ${DUMB_FRAMEWORK_SOURCES})
+target_link_libraries(DumbFramework ${TINYXML2_LIBRARY} )
 target_link_libraries(DumbFramework ${OPENGL_LIBRARIES} )
 target_link_libraries(DumbFramework ${GLFW_LIBRARIES} )
 target_link_libraries(DumbFramework ${GLEW_LIBRARY} )
 target_link_libraries(DumbFramework ${PTHREADS_LIBRARY} )
 target_link_libraries(DumbFramework ${SOIL_LIBRARIES} )
-target_link_libraries(DumbFramework ${EXPAT_LIBRARY} )
 target_link_libraries(DumbFramework ${THREAD_LIBRARY} )
 target_link_libraries(DumbFramework ${FREETYPE_GL_LIBRARY} )
 target_link_libraries(DumbFramework ${CMAKE_THREAD_LIBS_INIT})
@@ -99,6 +102,4 @@ endif()
 add_executable(flatengine src/demo/flatengine.cpp)
 target_link_libraries(flatengine DumbFramework)
 
-add_executable(vbo src/demo/vbo.cpp)
-target_link_libraries(vbo DumbFramework)
 

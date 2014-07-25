@@ -220,7 +220,7 @@ int main(void) {
     Camera camera;
     std::string title("Terrain Engine Test");
     TestTerrain testScene;
-    WindowHint hint(800, 600, title);
+    Framework::WindowHint hint(800, 600, title);
     Application application;
 
     application.start(hint, &testScene);

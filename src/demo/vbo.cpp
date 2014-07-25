@@ -357,7 +357,7 @@ int main(void) {
 
 	std::string title("Sprite Test");
 	TestScene testScene;
-	WindowHint hint(800, 600, title);
+	Framework::WindowHint hint(800, 600, title);
 	Application application;
 
 	application.start(hint, &testScene);

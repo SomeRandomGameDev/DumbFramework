@@ -151,7 +151,8 @@ void TestEngine::handleWindowSize(int width, int height) {
   _width = width;
   _height = height;
   if(0 == _atlas) {
-    _atlas = new Sprite::Atlas("test.xml");
+    _atlas = new Sprite::Atlas();
+    _atlas->read("test.xml");
     _engine = new Sprite::Engine(_atlas, 8);
     _init = true;
   }
@@ -161,7 +162,8 @@ void TestEngine::handleWindowSize(int width, int height) {
 
 void TestEngine::resume(GLFWwindow * /* window */) {
   if(0 == _atlas) {
-    _atlas = new Sprite::Atlas("test.xml");
+    _atlas = new Sprite::Atlas();
+    _atlas->read("test.xml");
     _engine = new Sprite::Engine(_atlas, 8);
     _init = true;
   }
@@ -200,7 +202,7 @@ int main(void) {
 
   std::string title("Sprite EngineTest");
   TestEngine testScene(640, 480);
-  WindowHint hint(640, 480, title);
+  Framework::WindowHint hint(640, 480, title);
   Application application;
 
   application.start(hint, &testScene);

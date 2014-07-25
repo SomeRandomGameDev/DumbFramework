@@ -31,7 +31,7 @@ void Application::clear() {
     _initialized = false;
 }
 
-bool Application::start(WindowHint hint, Scene *scene) {
+bool Application::start(Framework::WindowHint hint, Scene *scene) {
     glfwSetErrorCallback(SimpleErrorCallback);
     bool result = ((scene != 0) && glfwInit());
     _scene = scene;

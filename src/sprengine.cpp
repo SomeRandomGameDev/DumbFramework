@@ -9,6 +9,8 @@
 #include <iostream>
 #include <string>
 
+using namespace Framework; // temporary
+
 // Shaders
 
 const char *s_fragmentShader =
@@ -397,18 +399,22 @@ namespace Sprite {
         if((id < (int) _count) && (_table[id]._free != true)) {
             Identifier inside = _table[id]._target;
             Instance *instance = _instance + inside;
-            Animation *animation = 0;
-
-            if(0 != instance->_definition) {
+            Animation const* animation = 0;
+            
+            if(0 != instance->_definition)
+            {
                 instance->_animation = animId;
                 instance->_frame = 0;
                 instance->_elapsed = 0;
                 instance->_cycle = cycle;
                 instance->_layer = layer;
-                animation = instance->_definition->get(animId);
-                if(0 != animation) {
-                    instance->_still = animation->capacity()<2;
-                } else {
+                if(animId < instance->_definition->animationCount())
+                {
+                    animation = &instance->_definition->getAnimation(animId);
+                    instance->_still = (animation->frameCount() < 2);
+                } 
+                else
+                {
                     return false;
                 }
             } else {
@@ -417,7 +423,7 @@ namespace Sprite {
             // From here, we're safe.
             // 'animation' is not null anymore.
             // Get the first frame.
-            Frame *frame = animation->get(0);
+            Frame const* frame = animation->getFrame(0);
             // Check layer and swap to lower.
             while((inside > 0) &&
                   (_instance[inside]._layer > _instance[inside - 1]._layer)) {
@@ -449,26 +455,20 @@ namespace Sprite {
         _table[_instance[a]._reverse]._target = a;        
     }
 
-    void Engine::assignFrameToCell(Frame *frame, Cell *cell, double x, double y, float angle, float scale) {
-        glm::ivec2 offset = frame->getOffset();
-        glm::ivec2 size = frame->getSize();
-        glm::dvec2 top = frame->getTop();
-        glm::dvec2 bottom = frame->getBottom();
-        GLuint layer = frame->getLayer();
-
+    void Engine::assignFrameToCell(Frame const* frame, Cell *cell, double x, double y, float angle, float scale) {
         cell->_posX = x;
         cell->_posY = y;
-        cell->_offsetX = offset.x;
-        cell->_offsetY = offset.y;
-        cell->_sizeX = size.x;
-        cell->_sizeY = size.y;
-        cell->_topU = top.x;
-        cell->_topV = top.y;
-        cell->_bottomU = bottom.x;
-        cell->_bottomV = bottom.y;
+        cell->_offsetX = frame->offset.x;
+        cell->_offsetY = frame->offset.y;
+        cell->_sizeX = frame->size.x;
+        cell->_sizeY = frame->size.y;
+        cell->_topU = frame->top.x;
+        cell->_topV = frame->top.y;
+        cell->_bottomU = frame->bottom.x;
+        cell->_bottomV = frame->bottom.y;
         cell->_angle = angle;
         cell->_scale = scale;
-        cell->_layer = layer;
+        cell->_layer = frame->layer;
     }
 
     void Engine::viewport(float x, float y,
@@ -524,13 +524,13 @@ namespace Sprite {
             double elapsed = _instance[i]._elapsed + span;
             if(true != _instance[i]._still) {
                 // Look for next frame.
-                Animation *animation = _instance[i]._definition->get(_instance[i]._animation);
-                int capacity = animation->capacity();
+                Animation const* animation = &_instance[i]._definition->getAnimation(_instance[i]._animation);
+                int capacity = animation->frameCount();
                 int frameNum = _instance[i]._frame;
                 bool search = true;
                 while(search) {
-                    Frame *frame = animation->get(frameNum);
-                    double fTime = frame->getTime();
+                    Frame const* frame = animation->getFrame(frameNum);
+                    double fTime = frame->time;
                     if(elapsed > fTime) {
                         if(frameNum == (capacity - 1)) {
                             if(_instance[i]._cycle) {
@@ -550,7 +550,7 @@ namespace Sprite {
                 }
                 _instance[i]._frame = frameNum;
                 _instance[i]._elapsed = elapsed;
-                Frame *frame = animation->get(frameNum);
+                Frame const* frame = animation->getFrame(frameNum);
                 Cell *cell = _cell + i;
                 assignFrameToCell(frame, cell, cell->_posX, cell->_posY,
                                   cell->_angle, cell->_scale);

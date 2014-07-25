@@ -27,7 +27,7 @@ public:
    * @return <code>true</code> if the application has been
    * successfully started.
    */
-  bool start(WindowHint hint, Scene *scene);
+  bool start(Framework::WindowHint hint, Scene *scene);
 
   /**
    * Close the application.
@@ -60,7 +60,7 @@ private:
   /**
    * Copy of the initial window hints.
    */
-  WindowHint _hint;
+  Framework::WindowHint _hint;
 private:
 
   /**

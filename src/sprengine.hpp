@@ -274,7 +274,7 @@ private:
    * @param scale Sprite scaling factor.
    * @param layer Sprite layer.
    */
-  inline void assignFrameToCell(Frame *frame, Cell *cell,
+  inline void assignFrameToCell(Framework::Frame const* frame, Cell *cell,
                  double x, double y, float angle, float scale);
 
   /**

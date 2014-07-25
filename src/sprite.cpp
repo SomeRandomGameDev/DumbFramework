@@ -1,349 +1,433 @@
 #include <config.hpp>
-#include <sprite.hpp>
-#include <GLFW/glfw3.h>
 #include <SOIL/SOIL.h>
+#include <tinyxml2.h>
 #include <iostream>
 #include <string.h>
 #include <string>
 #include <sstream>
 
-#define MAX_LOADABLE_TEXTURES            32
-
-#define STATE_FAULTED                    -1
-#define STATE_NEW                         0
-#define STATE_PARSE_DEFINITION            1
-#define STATE_PARSE_ANIMATION             2
-#define STATE_PARSE_FRAME                 3
-#define STATE_READY                       4
+#include "sprite.hpp"
 
 namespace Sprite {
 
-    /**
-     * Constructor.
-     * @param time Time of appearance in seconds.
-     * @param offset Offset in pixels.
-     * @param size Size in pixels.
-     * @param top Top texture coordinates.
-     * @param bottom Bottom texture coordinates.
-     * @param layer Texture layer in the texture array.
-     */
-    Frame::Frame(double time, 
-            const glm::ivec2& offset, const glm::ivec2& size,
-            const glm::dvec2& top, const glm::dvec2& bottom,
-            unsigned int layer)
-        : _time(time)
-        , _offset(offset)
-        , _size(size)
-        , _top(top)
-        , _bottom(bottom)
-        , _layer(layer)
-    {}
-
-    /**
-     * Constructor.
-     * @param path Path to description file.
-     */
-    Atlas::Atlas(const char *path)
-        : _definitions(0)
-        , _texture()
-        , _state(STATE_NEW)
-        , _width(0)
-        , _height(0)
-        , _lastDefinition(0)
-        , _lastAnimation(0)
-        , _lastFrameId(0)
+/** Default constructor. **/
+Animation::Animation()
+    : _id(static_cast<unsigned int>(-1))
+    , _frames()
+{}
+/** Destructor. **/
+Animation::~Animation()
+{}
+/**
+ * Create animation.
+ * @param [in] id    Animation identifier.
+ * @param [in] count Frame count (optional) (default=0).
+ */
+void Animation::create(unsigned int id, size_t count)
+{
+    _id = id;
+    if(count)
     {
-        XML::Parser<Atlas>::parse(this, path);
+        _frames.reserve(count);
     }
-
-    /**
-     * Destructor.
-     */
-    Atlas::~Atlas() {
-        if(STATE_READY == _state) {
-            int defCount = _definitions->capacity();
-            for(int i = 0; i < defCount; ++i) {
-                Definition *def = _definitions->get(i);
-                int animCount = def->capacity();
-                for(int j = 0; j < animCount; ++j) {
-                    Animation *anim = def->get(j);
-                    int frameCount = anim->capacity();
-                    for(int k = 0; k < frameCount; ++k) {
-                        Frame *frame = anim->get(k);
-                        delete frame;
-                    }
-                    delete anim;
-                }
-                delete def;
-            }
-            delete _definitions;
-        }
-    }
-
-    /**
-     * Access texture.
-     * @return texture object.
-     */
-    Framework::Texture2D const& Atlas::texture() const
+}
+/**
+ * Get animation id.
+ * @return Animation identifier.
+ */
+unsigned int Animation::id() const
+{
+    return _id;
+}
+/**
+ * Add frame to animation.
+ * Frames are sorted by increasing time.
+ * @param [in] frame  Frame to be added.
+ */
+void Animation::add(Framework::Frame const& frame)
+{
+    if(_frames.empty())
     {
-        return _texture;
+        _frames.push_back(frame);
     }
-
-    /**
-     * Access to definitions.
-     * @param index Definition number.
-     * @return Definition.
-     */
-    Definition *Atlas::get(unsigned int index)
+    else
     {
-        return (STATE_READY == _state)?_definitions->get(index):0;
-    }
-
-    /**
-     * Provide the number of definitions.
-     * @return Number of definitions.
-     */
-    unsigned int Atlas::count() const
-    { 
-        return _definitions->capacity();
-    }
-
-    void Atlas::startElement(const XML_Char *tag, const XML_Char **attr) {
-        // Ugly code ahead !
-        if((STATE_NEW == _state) && (strcasecmp(tag, "atlas") == 0)) {
-            const char *filename = 0;
-            int size = 0;
-            for(int i = 0; attr[i] != 0; i += 2) {
-                if(strcasecmp(attr[i], "path") == 0) {
-                    filename = reinterpret_cast<const char*>(attr[i+1]);
-                }
-                if(strcasecmp(attr[i], "size") == 0) {
-                    size = atoi(attr[i+1]);
-                }
-            }
-            if(size <= 0) {
-                _state = STATE_FAULTED;
-                Log_Error(Framework::Module::Render, "Invalid number of definition.");
-            } else {
-                Log_Info(Framework::Module::Render, "Prepare to read %d sprite definition(s).", size);
-                _definitions = new Framework::Container<Definition *>(size);
-                for(int i = 0; i < size; ++i) {
-                    *(_definitions->data(i)) = 0;
-                }
-                if(0 != filename) {
-                    loadTextures(filename);
-                } else {
-                    _state = STATE_FAULTED;
-                    Log_Error(Framework::Module::Render, "Invalid path to texture");
-                }
-            }
-        }
-
-        if((STATE_PARSE_DEFINITION == _state) && (strcasecmp(tag, "definition") == 0)) {
-            int size = -1;
-            int id = -1;
-            for(int i = 0; attr[i] != 0; i+= 2) {
-                if(strcasecmp(attr[i], "id") == 0) {
-                    id = atoi(attr[i + 1]);
-                }
-                if(strcasecmp(attr[i], "size") == 0) {
-                    size = atoi(attr[i + 1]);
-                }
-            }
-            if((id < 0) || (size <= 0)) {
-                _state = STATE_FAULTED;
-                Log_Error(Framework::Module::Render, "Invalid number of animations (%d) in def", size);
-            } else {
-                Definition *definition = new Definition((unsigned int) size);
-                *(_definitions->data(id)) = definition;
-                _lastDefinition = definition;
-                for(int i = 0; i < size; ++i) {
-                    *(definition->data(i)) = 0;
-                }
-                _state = STATE_PARSE_ANIMATION;
-            }
-        }
-
-        if((STATE_PARSE_ANIMATION == _state) && (strcasecmp(tag, "animation") == 0)) {
-            // Same as for definition. (bweee)
-            int size = 0;
-            int id = -1;
-            for(int i = 0; attr[i] != 0; i+= 2) {
-                if(strcasecmp(attr[i], "id") == 0) {
-                    id = atoi(attr[i + 1]);
-                }
-                if(strcasecmp(attr[i], "size") == 0) {
-                    size = atoi(attr[i + 1]);
-                }
-            }
-            if((id < 0) || (size <= 0)) {
-                _state = STATE_FAULTED;
-                Log_Error(Framework::Module::Render, "Invalid number of frames");
-            } else {
-                Animation *animation = new Animation((unsigned int) size);
-                *(_lastDefinition->data(id)) = animation;
-                _lastAnimation = animation;
-                _lastFrameId = 0;
-                for(int i = 0; i < size; ++i) {
-                    *(animation->data(i)) = 0;
-                }
-                _state = STATE_PARSE_FRAME;
-            }
-        }
-
-        if((STATE_PARSE_FRAME == _state) && (strcasecmp(tag, "frame") == 0)) {
-            if(_lastFrameId < _lastAnimation->capacity()) {
-                double time = 0;
-                int offsetx = 0, offsety = 0, width = 0, height = 0;
-                int topu = 0, topv = 0, bottomu = 0, bottomv = 0;
-                unsigned int index = 0;
-                for(int i = 0; attr[i] != 0; i += 2) {
-                    if(strcasecmp(attr[i], "time") == 0) {
-                        time = atof(attr[i+1])/1000.0;
-                    } else if(strcasecmp(attr[i], "offsetx") == 0) {
-                        offsetx = atoi(attr[i+1]);
-                    } else if(strcasecmp(attr[i], "offsety") == 0) {
-                        offsety = atoi(attr[i+1]);
-                    } else if(strcasecmp(attr[i], "width") == 0) {
-                        width = atoi(attr[i+1]);
-                    } else if(strcasecmp(attr[i], "height") == 0) {
-                        height = atoi(attr[i+1]);
-                    } else if(strcasecmp(attr[i], "topu") == 0) {
-                        topu = atoi(attr[i+1]);
-                    } else if(strcasecmp(attr[i], "topv") == 0) {
-                        topv = atoi(attr[i+1]);
-                    } else if(strcasecmp(attr[i], "bottomu") == 0) {
-                        bottomu = atoi(attr[i+1]);
-                    } else if(strcasecmp(attr[i], "bottomv") == 0) {
-                        bottomv = atoi(attr[i+1]);
-                    } else if(strcasecmp(attr[i], "texture") == 0) {
-                        index = (unsigned int) atoi(attr[i+1]);
-                    }
-                    // TODO Add Length.
-                }
-                Frame *frame = new Frame(
-                        time, glm::ivec2(offsetx, offsety),
-                        glm::ivec2(width, height),
-                        glm::dvec2(topu/(double)_width, topv/(double)_height),
-                        glm::dvec2(bottomu/(double)_width, bottomv/(double)_height),
-                        index);
-                *(_lastAnimation->data(_lastFrameId ++)) = frame;
-            }
-        }
-
-    }
-
-    void Atlas::endElement(const XML_Char *tag) {
-        if((STATE_PARSE_FRAME == _state) && (strcasecmp(tag, "animation") == 0)) {
-            _state = STATE_PARSE_ANIMATION;
-        }
-
-        if((STATE_PARSE_ANIMATION == _state) && (strcasecmp(tag, "definition") == 0)) {
-            _state = STATE_PARSE_DEFINITION;
-        }
-
-        if((STATE_PARSE_DEFINITION == _state) && (strcasecmp(tag, "atlas") == 0)) {
-            _state = STATE_READY;
-        }
-    }
-
-    void Atlas::setFaulted(const char *msg,
-        unsigned int cnt,
-        unsigned char **textures) {
-        Log_Error(Framework::Module::Render, msg);
-        _state = STATE_FAULTED;
-        for(unsigned int i = 0; i < cnt; ++i) {
-            SOIL_free_image_data(textures[i]);
-        }
-    }
-
-    void Atlas::loadTextures(const char *filename) {
-        // Parse all texture path.
-        // The paths are separated by a semi-colon ';'.
-        std::stringstream ss(filename);
-        std::string item;
-        int width = -1;
-        int currentWidth;
-        int height = -1;
-        int currentHeight;
-        int channels; // Should be 4. Else, rejects.
-        unsigned char *loadedTextures[MAX_LOADABLE_TEXTURES];
-        unsigned int count = 0;
-        while (std::getline(ss, item, ';')) {
-            Log_Info(Framework::Module::Render, "Loading %s", item.c_str());
-            loadedTextures[count] = SOIL_load_image(
-                item.c_str(),
-                &currentWidth, &currentHeight, &channels,
-                SOIL_LOAD_AUTO);
-            if(channels != 4) {
-                Log_Error(Framework::Module::Render, "Channel = %d", channels);
-                setFaulted("Incorrect channel size !", count,
-                    loadedTextures);
-                return;
-            }
-            if(width == -1) {
-                width = currentWidth;
-                height = currentHeight;
-            } else {
-                if((width != currentWidth) || (height != currentHeight)) {
-                    setFaulted("Textures are not of the same size !",
-                        count,
-                        loadedTextures);
-                    return;
-                }
-            }
-            ++count;
-        }
-        // Make GL Textures.
-        bool ret = _texture.create(glm::ivec2(width, height), Framework::Texture::PixelFormat::RGBA_8, count);
-        if(!ret)
+        // Find the right spot and insert it.
+        // We will search backwards as the array is already sorted.
+        std::vector<Framework::Frame>::iterator target = _frames.end();
+        for(off_t offset=_frames.size()-1; offset>=0; offset--)
         {
-            // [todo] ?!
+            if(_frames[offset].time < frame.time)
+            {
+                break;
+            }
+            target = _frames.begin() + offset;
         }
+        _frames.insert(target, frame);
+    }
+}
+/**
+ * Get frame count.
+ * @return Number of frames in animation.
+ */
+size_t Animation::frameCount() const
+{
+    return _frames.size();
+}
+/**
+ * Retrieve a given frame.
+ * @param [in] index  Frame number.
+ * @return A const pointer to the specified frame or NULL if the
+ *         index is out of bound.
+ */
+Framework::Frame const* Animation::getFrame(size_t offset) const
+{
+    if(offset >= _frames.size())
+    {
+        return NULL;
+    }
+    return &_frames[offset];
+}
 
-        for(size_t i=0; i<count; i++)
+/** Default constructor. **/
+Definition::Definition()
+    : _id(static_cast<unsigned int>(-1))
+    , _animations()
+{}
+/** Destructor. **/
+Definition::~Definition()
+{}
+/**
+ * Create sprite definition.
+ * @param [in] id    Identifier.
+ * @param [in] count Animation count. 
+ */
+void Definition::create(unsigned int id, size_t count)
+{
+    _id = id;
+    _animations.resize(count);
+}
+/**
+ * Get id.
+ * @return Identifier.
+ */
+unsigned int Definition::id() const
+{
+    return _id;
+}
+/**
+ * Get animation count.
+ * @return Number of stored animations.
+ */
+size_t Definition::animationCount() const
+{
+    return _animations.size();
+}
+/**
+ * Retrieve a given animation.
+ * @param [in] index  Animation number.
+ * @return A const pointer to the specified animation or NULL if the
+ *         index is out of bound.
+ */
+Animation const* Definition::getAnimation(size_t offset) const
+{
+    if(offset >= _animations.size())
+    { return NULL; }
+    return &_animations[offset];
+}
+/**
+ * Retrieve a given animation.
+ * @param [in] index  Animation number.
+ * @warning Unsafe and non const.
+ * @return Reference to the specified animation.
+ */
+Animation& Definition::getAnimation(size_t offset)
+{
+    return _animations[offset];
+}
+/**
+ * Constructor.
+ * @param path Path to description file.
+ */
+Atlas::Atlas()
+    : _definitions()
+    , _texture()
+    , _size(0)
+{}
+
+/**
+ * Destructor.
+ */
+Atlas::~Atlas()
+{}
+
+/**
+ * Access texture.
+ * @return texture object.
+ */
+Framework::Texture2D const& Atlas::texture() const
+{
+    return _texture;
+}
+/**
+ * Access to definitions.
+ * @param index Definition number.
+ * @return Definition.
+ */
+Definition *Atlas::get(unsigned int index)
+{
+    if(index >= _definitions.size()) { return NULL; }
+    return &_definitions[index];
+}
+/**
+ * Provide the number of definitions.
+ * @return Number of definitions.
+ */
+unsigned int Atlas::count() const
+{ 
+    return _definitions.size();
+}
+
+// [todo] make FrameReader, AnimationReader, DefinitionReader classes?
+
+// Read a single frame from XML file.
+static bool readFrame(tinyxml2::XMLElement* element, Framework::Frame& frame)
+{
+    float time = 0;
+    int offsetx = 0, offsety = 0, width = 0, height = 0;
+    int topu = 0, topv = 0, bottomu = 0, bottomv = 0;
+    unsigned int index = 0;
+    
+    element->QueryFloatAttribute("time", &time);
+    element->QueryIntAttribute("offsetX", &offsetx);
+    element->QueryIntAttribute("offsetY", &offsety);
+    element->QueryIntAttribute("width", &width);
+    element->QueryIntAttribute("height", &height);
+    element->QueryIntAttribute("topU", &topu);
+    element->QueryIntAttribute("topV", &topv);
+    element->QueryIntAttribute("bottomU", &bottomu);
+    element->QueryIntAttribute("bottomV", &bottomv);
+    element->QueryUnsignedAttribute("texture", &index);
+    
+    frame.time   = time / 1000.0;
+    frame.offset = glm::ivec2(offsetx, offsety);
+    frame.size   = glm::ivec2(width, height);
+    frame.top    = glm::dvec2(topu, topv) /1024.0; // [todo] divide by _size
+    frame.bottom = glm::dvec2(bottomu, bottomv)/1024.0; // [todo] divide by _size
+    frame.layer  = index;
+    return true;
+}
+// Read a single animation from XML.
+static bool readAnimation(tinyxml2::XMLElement* element, Animation &animation)
+{
+    unsigned int id, size;
+    int err;
+    
+    err = element->QueryUnsignedAttribute("id", &id);
+    if(tinyxml2::XML_NO_ERROR != err) { return false; }
+    
+    err = element->QueryUnsignedAttribute("size", &size);
+    if(tinyxml2::XML_NO_ERROR != err) { return false; }
+
+    animation.create(id, size);
+
+    // Read frames
+    bool ret = true;
+    tinyxml2::XMLElement* frameElement = element->FirstChildElement("frame");
+    for(unsigned int i=0; ret && (i<size) && frameElement; ++i)
+    {
+        Framework::Frame frame;
+        ret = readFrame(frameElement, frame);
+        if(ret)
         {
-            _texture.setData(loadedTextures[i], i);
+            animation.add(frame);
+            frameElement = frameElement->NextSiblingElement("frame");
+        }
+    }
+    
+    return ret;
+}
+// Read sprite definition from XML.
+static bool readDefinition(tinyxml2::XMLElement* element, Definition &definition)
+{
+    unsigned int id, size;
+    int err;
+    
+    err = element->QueryUnsignedAttribute("id", &id);
+    if(tinyxml2::XML_NO_ERROR != err) { return false; }
+    
+    err = element->QueryUnsignedAttribute("size", &size);
+    if(tinyxml2::XML_NO_ERROR != err) { return false; }
+    
+    definition.create(id, size);
+    
+    // Animation
+    bool ret = true;
+    tinyxml2::XMLElement *animElement = element->FirstChildElement("animation");
+    for(unsigned int i=0; ret && (i<size) && animElement; i++)
+    {
+        ret = readAnimation(animElement, definition.getAnimation(i));
+        animElement = animElement->NextSiblingElement("animation");
+    }
+    
+    return ret;
+}
+
+bool Atlas::read(std::string const& filename)
+{
+    tinyxml2::XMLDocument xml;
+    int err;
+
+    // Load xml file.
+    err = xml.LoadFile(filename.c_str());
+    if(tinyxml2::XML_NO_ERROR != err)
+    {
+        Log_Error(Framework::Module::Render, "An error occured while parsing %s: %s (%s)", filename.c_str(), xml.GetErrorStr1(), xml.GetErrorStr2());
+        return false; 
+    }
+    
+    // Atlas
+    tinyxml2::XMLElement *root = xml.FirstChildElement("atlas");
+    if(NULL == root)
+    {
+        Log_Error(Framework::Module::Render, "Missing atlas element!");
+        return false;
+    }
+    
+    // -- Image filnames
+    char const* imageFilenames = root->Attribute("path");
+    if(NULL == imageFilenames)
+    {
+        Log_Error(Framework::Module::Render, "Invalid path to texture");
+        return false;
+    }
+
+    loadTextures(imageFilenames); // [todo]
+    
+    // -- Definition count
+    unsigned int size;
+    err = root->QueryUnsignedAttribute("size", &size);
+    if(tinyxml2::XML_NO_ERROR != err)
+    {
+        Log_Error(Framework::Module::Render, "An error occured while parsing %s: %s (%s)", filename.c_str(), xml.GetErrorStr1(), xml.GetErrorStr2());
+        return false;
+    }
+    
+    Log_Info(Framework::Module::Render, "Prepare to process %d sprite definition(s).", size);
+    _definitions.resize(size);
+    
+    // Definitions
+    bool ret = true;
+    tinyxml2::XMLElement *defElement = root->FirstChildElement("definition");
+    for(unsigned int i=0; ret && (i<size) && defElement; i++)
+    {
+        ret = readDefinition(defElement, _definitions[i]);
+        defElement = defElement->NextSiblingElement("definition");
+    }
+    
+    if(!ret)
+    {
+        Log_Error(Framework::Module::Render, "An error occured while parsing %s: %s (%s)", filename.c_str(), xml.GetErrorStr1(), xml.GetErrorStr2());
+        return false;
+    }
+    
+    return true;
+}
+
+void Atlas::loadTextures(const char *filename)
+{
+    // Parse all texture path.
+    // The paths are separated by a semi-colon ';'.
+    std::stringstream ss(filename);
+    std::vector<std::string> items;
+
+    int width = -1;
+    int height = -1;
+    int currentWidth;
+    int currentHeight;
+    int channels; // Should be 4. Else, rejects.
+    
+    std::string item;
+    while (std::getline(ss, item, ';'))
+    {
+        items.push_back(item);
+    }
+
+    bool ret = true;
+    unsigned int count = items.size();            
+    for(size_t i=0; ret && (i<items.size()); i++)
+    {
+        unsigned char* data;
+        
+        Log_Info(Framework::Module::Render, "Loading %s", items[i].c_str());
+        
+        data = SOIL_load_image(items[i].c_str(), &currentWidth, &currentHeight, &channels, SOIL_LOAD_AUTO);
+        if(NULL == data)
+        {
+            Log_Error(Framework::Module::Render, "Unable to load image %s!", items[i].c_str());
+            ret = false;
+            break;
+        }
+        
+        if(channels != 4)
+        {
+            Log_Error(Framework::Module::Render, "Incorrect channel size = %d", channels);
+            ret = false;
+        }
+    
+        if(width == -1)
+        {
+            width  = currentWidth;
+            height = currentHeight;
+            ret = _texture.create(glm::ivec2(width, height), Framework::Texture::PixelFormat::RGBA_8, count);
+        }
+        else if((width != currentWidth) || (height != currentHeight))
+        {
+            Log_Error(Framework::Module::Render, "Textures are not of the same size !");
+            ret = false;
         }
 
+        if(ret)
+        {
+            _texture.setData(data, i);
+        }
+
+        SOIL_free_image_data(data);
+    }
+
+    if(ret)
+    {
         _texture.bind();
             _texture.setMinFilter(Framework::Texture::MinFilter::LINEAR_TEXEL);
             _texture.setMagFilter(Framework::Texture::MagFilter::LINEAR_TEXEL);
             _texture.setWrap(Framework::Texture::Wrap::CLAMP_TO_EDGE, Framework::Texture::Wrap::CLAMP_TO_EDGE);
         _texture.unbind();
-
-        for(unsigned int i = 0; i < count; ++i) {
-            SOIL_free_image_data(loadedTextures[i]);            
-        }
         
-        _width = width;
-        _height = height;
+        _size.x = width;
+        _size.y = height;
 
-        Log_Info(Framework::Module::Render, "Atlas Size : %d x %d", _width, _height);
-        _state = STATE_PARSE_DEFINITION;
+        Log_Info(Framework::Module::Render, "Atlas Size : %d x %d", width, height);
     }
 }
+
+} // Sprite
 
 /*
    <atlas file="/path/to/imagefile.png;/path/to/otherfile.png;/path/to/layerfile.png" size="...">
    <!-- List of definitions -->
 
    <definition id="4" size="2">
-   <!-- List of animations -->
-   <animation id="0" size="1">
-   <!-- List of frames -->
-   <frame time="0"
-   offsetX="0" offsetY="0"
-   width="32" height="16"
-   topU="64" topV="32"
-   bottomU="96" bottomV="48"/>
-
+       <!-- List of animations -->
+       <animation id="0" size="1">
+           <!-- List of frames -->
+           <frame time="0"
+                  offsetX="0" offsetY="0"
+                  width="22" height="16"
+                  topU="64" topV="32"
+                  bottomU="96" bottomV="48"/>
+           <!-- ... -->
+       </animation>
    <!-- ... -->
-
-   </animation>
-
-   <!-- ... -->
-
    </definition>
 
    <!-- ... -->
