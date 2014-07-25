@@ -80,14 +80,14 @@ namespace Sprite {
         }
     }
 
-	/**
-	 * Access texture.
-	 * @return texture object.
-	 */
-	Framework::Texture2D const& Atlas::texture() const
-	{
-		return _texture;
-	}
+    /**
+     * Access texture.
+     * @return texture object.
+     */
+    Framework::Texture2D const& Atlas::texture() const
+    {
+        return _texture;
+    }
 
     /**
      * Access to definitions.
@@ -125,7 +125,7 @@ namespace Sprite {
                 _state = STATE_FAULTED;
                 Log_Error(Framework::Module::Render, "Invalid number of definition.");
             } else {
-				Log_Info(Framework::Module::Render, "Prepare to read %d sprite definition(s).", size);
+                Log_Info(Framework::Module::Render, "Prepare to read %d sprite definition(s).", size);
                 _definitions = new Framework::Container<Definition *>(size);
                 for(int i = 0; i < size; ++i) {
                     *(_definitions->data(i)) = 0;
@@ -134,7 +134,7 @@ namespace Sprite {
                     loadTextures(filename);
                 } else {
                     _state = STATE_FAULTED;
-					Log_Error(Framework::Module::Render, "Invalid path to texture");
+                    Log_Error(Framework::Module::Render, "Invalid path to texture");
                 }
             }
         }
@@ -250,7 +250,7 @@ namespace Sprite {
     void Atlas::setFaulted(const char *msg,
         unsigned int cnt,
         unsigned char **textures) {
-		Log_Error(Framework::Module::Render, msg);
+        Log_Error(Framework::Module::Render, msg);
         _state = STATE_FAULTED;
         for(unsigned int i = 0; i < cnt; ++i) {
             SOIL_free_image_data(textures[i]);
@@ -276,7 +276,7 @@ namespace Sprite {
                 &currentWidth, &currentHeight, &channels,
                 SOIL_LOAD_AUTO);
             if(channels != 4) {
-				Log_Error(Framework::Module::Render, "Channel = %d", channels);
+                Log_Error(Framework::Module::Render, "Channel = %d", channels);
                 setFaulted("Incorrect channel size !", count,
                     loadedTextures);
                 return;
@@ -294,26 +294,23 @@ namespace Sprite {
             }
             ++count;
         }
-
-        std::cout << std::dec;
-
         // Make GL Textures.
         bool ret = _texture.create(glm::ivec2(width, height), Framework::Texture::PixelFormat::RGBA_8, count);
         if(!ret)
         {
-			// [todo] ?!
-		}
+            // [todo] ?!
+        }
 
-		for(size_t i=0; i<count; i++)
-		{
-			_texture.setData(loadedTextures[i], i);
-		}
+        for(size_t i=0; i<count; i++)
+        {
+            _texture.setData(loadedTextures[i], i);
+        }
 
-		_texture.bind();
-			_texture.setMinFilter(Framework::Texture::MinFilter::LINEAR_TEXEL);
-			_texture.setMagFilter(Framework::Texture::MagFilter::LINEAR_TEXEL);
-			_texture.setWrap(Framework::Texture::Wrap::CLAMP_TO_EDGE, Framework::Texture::Wrap::CLAMP_TO_EDGE);
-		_texture.unbind();
+        _texture.bind();
+            _texture.setMinFilter(Framework::Texture::MinFilter::LINEAR_TEXEL);
+            _texture.setMagFilter(Framework::Texture::MagFilter::LINEAR_TEXEL);
+            _texture.setWrap(Framework::Texture::Wrap::CLAMP_TO_EDGE, Framework::Texture::Wrap::CLAMP_TO_EDGE);
+        _texture.unbind();
 
         for(unsigned int i = 0; i < count; ++i) {
             SOIL_free_image_data(loadedTextures[i]);            
@@ -322,7 +319,7 @@ namespace Sprite {
         _width = width;
         _height = height;
 
-		Log_Info(Framework::Module::Render, "Atlas Size : %d x %d", _width, _height);
+        Log_Info(Framework::Module::Render, "Atlas Size : %d x %d", _width, _height);
         _state = STATE_PARSE_DEFINITION;
     }
 }

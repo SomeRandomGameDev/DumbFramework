@@ -114,7 +114,7 @@ namespace Sprite {
         _vao(0),
         _buffer(),
         _program(),
-		_texture(&atlas->texture()),
+        _texture(&atlas->texture()),
         _uniformTexture(0),
         _uniformMatrix(0),
         _matrix(glm::mat4(1.0)),
@@ -337,7 +337,7 @@ namespace Sprite {
         Instance *instance = _instance + inside;
         instance->_definition = _atlas->get(definitionId);
         if(0 == instance->_definition) {
-			Log_Error(Framework::Module::Render, "No Definition in Atlas for identifier (%d)", definitionId);
+            Log_Error(Framework::Module::Render, "No Definition in Atlas for identifier (%d)", definitionId);
         }
 
         // Add an entry in the lookup table.

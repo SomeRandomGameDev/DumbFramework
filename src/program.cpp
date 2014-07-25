@@ -7,7 +7,7 @@ namespace Framework {
  * Constructor.
  */
 Program::Program() :
-	_id (0)
+    _id (0)
 {}
 
 /**
@@ -21,14 +21,14 @@ Program::~Program()
  */
 bool Program::create()
 {
-	_id = glCreateProgram();
+    _id = glCreateProgram();
 
-	if(_id == 0)
-	{
-		return false;
-	}
+    if(_id == 0)
+    {
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 /**
@@ -37,21 +37,21 @@ bool Program::create()
  */
 bool Program::attach(const Shader& shader)
 { 
-	if(_id == 0)
-	{
-		Log_Error(Framework::Module::Render, "Can't attach shader to an uninitialized program!");
-		return false;
-	}
+    if(_id == 0)
+    {
+        Log_Error(Framework::Module::Render, "Can't attach shader to an uninitialized program!");
+        return false;
+    }
 
-	glAttachShader(_id, shader.getId());
-	GLenum err = glGetError();
-	if(err != GL_NO_ERROR)
-	{
-		Log_Error(Framework::Module::Render, "Can't attach shader (%x) to program (%x) : %s", shader.getId(), _id, gluErrorString(err));
-		return false;
-	}
-	
-	return true;
+    glAttachShader(_id, shader.getId());
+    GLenum err = glGetError();
+    if(err != GL_NO_ERROR)
+    {
+        Log_Error(Framework::Module::Render, "Can't attach shader (%x) to program (%x) : %s", shader.getId(), _id, gluErrorString(err));
+        return false;
+    }
+    
+    return true;
 }
 
 /**
@@ -59,67 +59,78 @@ bool Program::attach(const Shader& shader)
  */
 bool Program::link()
 {
-	if(_id == 0)
-	{
-		return false;
-	}
-	
-	glLinkProgram(_id);
+    if(_id == 0)
+    {
+        return false;
+    }
+    
+    glLinkProgram(_id);
 
-	GLint result;
-	glGetProgramiv(_id, GL_LINK_STATUS, &result);
-	if (result == GL_FALSE)
-	{
-		infoLog();
-		return false;
-	}
-	return true;
+    GLint result;
+    glGetProgramiv(_id, GL_LINK_STATUS, &result);
+    if (result == GL_FALSE)
+    {
+        infoLog();
+        return false;
+    }
+    return true;
 }
 
 /**
  * Use program.
  */
-bool Program::begin()
+bool Program::begin() const
 {
-	if(!_id)
-	{
-		return false;
-	}
-	
-	glUseProgram(_id);
-	
-	return true;
+    if(!_id)
+    {
+        return false;
+    }
+    
+    glUseProgram(_id);
+    
+    return true;
 }
 
 /**
  * Stop using program.
+ * When the SANITY_CHECK flag is enable, it checks if the program is currently bound.
  */
-void Program::end()
+void Program::end() const
 {
-	GLuint progID;
-	glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&progID);
-	
-	if(progID == _id)
-	{
-		glUseProgram(0);
-	}
+#if defined(SANITY_CHECK)
+    // Warning! This may spam your logs!
+    GLuint progID;
+    glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&progID);
+    if(progID != _id)
+    {
+        Log_Error(Module::Render, "You are trying to end using program %d whereas the current active program is %d", _id, progID);
+        Log_Error(Module::Render, "If you really want to end current program use Program::endAny() (static) instead.");
+    }
+#endif // SANITY_CHECK
+    glUseProgram(0);
 }
-
+/**
+ * Any active program will be stopped.
+ */
+void Program::endAny()
+{
+    glUseProgram(0);
+}
 /**
  * Delete program and detach shaders.
  */
 void Program::destroy()
 {
-	if(_id <= 0)
-	{
-		return;
-	}
+    if(_id <= 0)
+    {
+        return;
+    }
 
-	end();
+    end();
 
-	// Delete program
-	glDeleteProgram (_id);
-	_id = 0;
+    // Delete program
+    glDeleteProgram (_id);
+    _id = 0;
 }
 
 /**
@@ -127,24 +138,24 @@ void Program::destroy()
  */
 void Program::infoLog(Framework::Severity severity) const
 {
-	GLsizei maxLogLength, logLength;
-	GLchar *log;
+    GLsizei maxLogLength, logLength;
+    GLchar *log;
 
-	glGetProgramiv(_id, GL_INFO_LOG_LENGTH, (GLint*)&maxLogLength);
-	if(!maxLogLength)
-		return;
-	
-	log = new GLchar[maxLogLength];
-	if(log == NULL)
-	{
-		Log_Error(Framework::Module::Render, "Not enough memory");
-		return;
-	}
+    glGetProgramiv(_id, GL_INFO_LOG_LENGTH, (GLint*)&maxLogLength);
+    if(!maxLogLength)
+        return;
+    
+    log = new GLchar[maxLogLength];
+    if(log == NULL)
+    {
+        Log_Error(Framework::Module::Render, "Not enough memory");
+        return;
+    }
 
-	glGetProgramInfoLog(_id, maxLogLength, &logLength, log);
-	Log_Ex(Framework::Module::Render, severity, log);
+    glGetProgramInfoLog(_id, maxLogLength, &logLength, log);
+    Log_Ex(Framework::Module::Render, severity, log);
 
-	delete [] log;
+    delete [] log;
 }
 
 /**
@@ -155,7 +166,7 @@ void Program::infoLog(Framework::Severity severity) const
  */
 void Program::bindAttribLocation(GLuint index, const GLchar* name)
 {
-	glBindAttribLocation(_id, index, name);
+    glBindAttribLocation(_id, index, name);
 }
 
 /**
@@ -166,7 +177,7 @@ void Program::bindAttribLocation(GLuint index, const GLchar* name)
  */
 void Program::bindFragDataLocation(GLuint index, const GLchar* name)
 {
-	glBindFragDataLocation(_id, index, name);
+    glBindFragDataLocation(_id, index, name);
 }
 
 /**
@@ -180,20 +191,20 @@ void Program::bindFragDataLocation(GLuint index, const GLchar* name)
  */
 void Program::bindParameters(ParameterInfo const * input, size_t inputCount, ParameterInfo const * output, size_t outputCount)
 {
-	if(NULL != input)
-	{
-		for(size_t i=0; i<inputCount; i++)
-		{
-			glBindAttribLocation(_id, input[i].id, input[i].name);
-		}
-	}
-	if(NULL != output)
-	{
-		for(size_t i=0; i<outputCount; i++)
-		{
-			glBindFragDataLocation(_id, output[i].id, output[i].name);
-		}
-	}
+    if(NULL != input)
+    {
+        for(size_t i=0; i<inputCount; i++)
+        {
+            glBindAttribLocation(_id, input[i].id, input[i].name);
+        }
+    }
+    if(NULL != output)
+    {
+        for(size_t i=0; i<outputCount; i++)
+        {
+            glBindFragDataLocation(_id, output[i].id, output[i].name);
+        }
+    }
 }
 
 /**
@@ -204,7 +215,7 @@ void Program::bindParameters(ParameterInfo const * input, size_t inputCount, Par
  */
 void Program::transformFeedbackVaryings(const char** varyingNames, int varyingNameCount, bool interleaved)
 {
-	glTransformFeedbackVaryings(_id, varyingNameCount, varyingNames, (interleaved ? GL_INTERLEAVED_ATTRIBS : GL_SEPARATE_ATTRIBS));
+    glTransformFeedbackVaryings(_id, varyingNameCount, varyingNames, (interleaved ? GL_INTERLEAVED_ATTRIBS : GL_SEPARATE_ATTRIBS));
 }
 
 /**

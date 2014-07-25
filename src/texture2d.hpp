@@ -25,7 +25,7 @@ class Texture2D
          * @return true if the texture was succesfully created.
          */
         bool create(const glm::ivec2& size, Texture::PixelFormat format, int layers=-1);
-		/**
+        /**
          * Destroy texture.
          */
         void destroy();
@@ -40,7 +40,7 @@ class Texture2D
          * @param [in] layer Texture layer in which the data will be copied (default=-1).
          *                   Initialize all possible layers if the layer value is negative.
          */        
-        void setData(void* data, int layer=-1);
+        bool setData(void* data, int layer=-1);
         /**
          * Bind texture.
          */
@@ -49,6 +49,10 @@ class Texture2D
          * Unbind texture.
          */
         void unbind() const;
+        /**
+         * Unbind currently bound textures.
+         */
+        static void unbindAll();
         /**
          * Set texel magnification filter.
          * @param [in] filter Magnification filter.
@@ -97,13 +101,13 @@ class Texture2D
         glm::ivec2 _size;               /**< Texture width and height. **/
         Texture::PixelFormat _format;   /**< Pixel format.             **/
         GLuint _id;                     /**< Resource id.              **/
-		GLenum _target;                 /**< Texture binding target.   **/
+        GLenum _target;                 /**< Texture binding target.   **/
         int    _layers;                 /**< Number of layers.         **/
         
         /** OpenGL texture informations. **/
         struct OpenGLTextureInfos
         {
-			GLint  internalFormat; /**< Internal format.   **/
+            GLint  internalFormat; /**< Internal format.   **/
             GLenum format;         /**< Pixel data format. **/
             GLenum type;           /**< Pixel data type.   **/
             
