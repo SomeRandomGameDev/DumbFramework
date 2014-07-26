@@ -141,7 +141,9 @@ class Atlas
         ~Atlas();
 
         /**
-         * 
+         * Read atlas from a XML file.
+         * @param [in] filename  XML filename.
+         * @return true if the atlas was succesfully read.
          */
         bool read(std::string const& filename);
 

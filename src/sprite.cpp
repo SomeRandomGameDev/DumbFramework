@@ -307,7 +307,11 @@ bool XMLDefinitionReader::read(tinyxml2::XMLElement* element, Definition &defini
     }
     return ret;
 }
-
+/**
+ * Read atlas from a XML file.
+ * @param [in] filename  XML filename.
+ * @return true if the atlas was succesfully read.
+ */
 bool Atlas::read(std::string const& filename)
 {
     tinyxml2::XMLDocument xml;
