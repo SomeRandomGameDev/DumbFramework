@@ -44,7 +44,7 @@ unsigned int Animation::id() const
  * Frames are sorted by increasing time.
  * @param [in] frame  Frame to be added.
  */
-void Animation::add(Framework::Frame const& frame)
+void Animation::add(Frame const& frame)
 {
     if(_frames.empty())
     {
@@ -54,7 +54,7 @@ void Animation::add(Framework::Frame const& frame)
     {
         // Find the right spot and insert it.
         // We will search backwards as the array is already sorted.
-        std::vector<Framework::Frame>::iterator target = _frames.end();
+        std::vector<Frame>::iterator target = _frames.end();
         for(off_t offset=_frames.size()-1; offset>=0; offset--)
         {
             if(_frames[offset].time < frame.time)
@@ -80,7 +80,7 @@ size_t Animation::frameCount() const
  * @return A const pointer to the specified frame or NULL if the
  *         index is out of bound.
  */
-Framework::Frame const* Animation::getFrame(size_t offset) const
+Frame const* Animation::getFrame(size_t offset) const
 {
     if(offset >= _frames.size())
     {
@@ -188,37 +188,61 @@ unsigned int Atlas::count() const
     return _definitions.size();
 }
 
-// [todo] make FrameReader, AnimationReader, DefinitionReader classes?
-
-// Read a single frame from XML file.
-static bool readFrame(tinyxml2::XMLElement* element, Framework::Frame& frame)
+// XML Frame Reader.
+// Read a single frame from a tinyxml2::XMLElement.
+struct XMLFrameReader
+{
+    // Read a frame from a tinyxml2::XMLElement.
+    // @param [in]  element  XML Element containing the frame to read.
+    // @param [out] frame    Frame read from the XML element.
+    // @return true if the frame was successfully read.
+    bool read(tinyxml2::XMLElement* element, Frame& frame);
+    // Atlas image size used to normalize frame coordinates.
+    glm::ivec2 imageSize;
+};
+bool XMLFrameReader::read(tinyxml2::XMLElement* element, Frame& frame)
 {
     float time = 0;
-    int offsetx = 0, offsety = 0, width = 0, height = 0;
-    int topu = 0, topv = 0, bottomu = 0, bottomv = 0;
+    glm::ivec2 offset(0);
+    glm::ivec2 size(0);
+    glm::ivec2 top(0);
+    glm::ivec2 bottom(0);
     unsigned int index = 0;
     
     element->QueryFloatAttribute("time", &time);
-    element->QueryIntAttribute("offsetX", &offsetx);
-    element->QueryIntAttribute("offsetY", &offsety);
-    element->QueryIntAttribute("width", &width);
-    element->QueryIntAttribute("height", &height);
-    element->QueryIntAttribute("topU", &topu);
-    element->QueryIntAttribute("topV", &topv);
-    element->QueryIntAttribute("bottomU", &bottomu);
-    element->QueryIntAttribute("bottomV", &bottomv);
+    element->QueryIntAttribute("offsetX", &offset.x);
+    element->QueryIntAttribute("offsetY", &offset.y);
+    element->QueryIntAttribute("width",  &size.x);
+    element->QueryIntAttribute("height", &size.y);
+    element->QueryIntAttribute("topU", &top.x);
+    element->QueryIntAttribute("topV", &top.y);
+    element->QueryIntAttribute("bottomU", &bottom.x);
+    element->QueryIntAttribute("bottomV", &bottom.y);
     element->QueryUnsignedAttribute("texture", &index);
     
     frame.time   = time / 1000.0;
-    frame.offset = glm::ivec2(offsetx, offsety);
-    frame.size   = glm::ivec2(width, height);
-    frame.top    = glm::dvec2(topu, topv) /1024.0; // [todo] divide by _size
-    frame.bottom = glm::dvec2(bottomu, bottomv)/1024.0; // [todo] divide by _size
+    frame.offset = offset;
+    frame.size   = size;
+    frame.top    = glm::dvec2(top) / glm::dvec2(imageSize);
+    frame.bottom = glm::dvec2(bottom) / glm::dvec2(imageSize);
     frame.layer  = index;
     return true;
 }
-// Read a single animation from XML.
-static bool readAnimation(tinyxml2::XMLElement* element, Animation &animation)
+// XML Animation Reader.
+// Read a single animation from a tinyxml2::XMLElement.
+struct XMLAnimationReader
+{
+    // Read an animation from a tinyxml2::XMLElement.
+    // @param [in]  element    XML Element containing the animation to read.
+    // @param [out] animation  Animation read from the XML element.
+    // @return true if the animation was successfully read.
+    bool read(tinyxml2::XMLElement* element, Animation& animation);
+    // Frame reader.
+    // As an animation contains a list of frames, it will be used to read
+    // them.
+    XMLFrameReader frameReader;
+};
+bool XMLAnimationReader::read(tinyxml2::XMLElement* element, Animation &animation)
 {
     unsigned int id, size;
     int err;
@@ -236,19 +260,31 @@ static bool readAnimation(tinyxml2::XMLElement* element, Animation &animation)
     tinyxml2::XMLElement* frameElement = element->FirstChildElement("frame");
     for(unsigned int i=0; ret && (i<size) && frameElement; ++i)
     {
-        Framework::Frame frame;
-        ret = readFrame(frameElement, frame);
+        Frame frame;
+        ret = frameReader.read(frameElement, frame);
         if(ret)
         {
             animation.add(frame);
             frameElement = frameElement->NextSiblingElement("frame");
         }
     }
-    
     return ret;
 }
-// Read sprite definition from XML.
-static bool readDefinition(tinyxml2::XMLElement* element, Definition &definition)
+// XML Definition Reader.
+// Read a single definition from a tinyxml2::XMLElement.
+struct XMLDefinitionReader
+{
+    // Read a definition (animation list) from a tinyxml2::XMLElement.
+    // @param [in]  element     XML Element containing the definition to read.
+    // @param [out] definition  Definition read from the XML element.
+    // @return true if the definition was successfully read.
+    bool read(tinyxml2::XMLElement* element, Definition& definition);
+    // Animation reader.
+    // As a definition contains a list of animations, it will be used to read
+    // them.
+    XMLAnimationReader animationReader;
+};
+bool XMLDefinitionReader::read(tinyxml2::XMLElement* element, Definition &definition)
 {
     unsigned int id, size;
     int err;
@@ -266,10 +302,9 @@ static bool readDefinition(tinyxml2::XMLElement* element, Definition &definition
     tinyxml2::XMLElement *animElement = element->FirstChildElement("animation");
     for(unsigned int i=0; ret && (i<size) && animElement; i++)
     {
-        ret = readAnimation(animElement, definition.getAnimation(i));
+        ret = animationReader.read(animElement, definition.getAnimation(i));
         animElement = animElement->NextSiblingElement("animation");
     }
-    
     return ret;
 }
 
@@ -294,7 +329,7 @@ bool Atlas::read(std::string const& filename)
         return false;
     }
     
-    // -- Image filnames
+    // -- Image filenames
     char const* imageFilenames = root->Attribute("path");
     if(NULL == imageFilenames)
     {
@@ -302,7 +337,18 @@ bool Atlas::read(std::string const& filename)
         return false;
     }
 
-    loadTextures(imageFilenames); // [todo]
+    // Load images and create texture.
+    // This must be done before parsing anything else because we are
+    // using its size to normalize sprite coordinates.
+    err = loadTextures(imageFilenames);
+    if(!err)
+    {
+        return false;
+    }
+    
+    // -- Initialize XML readers.
+    XMLDefinitionReader definitionReader;
+    definitionReader.animationReader.frameReader.imageSize = _texture.size();
     
     // -- Definition count
     unsigned int size;
@@ -321,7 +367,7 @@ bool Atlas::read(std::string const& filename)
     tinyxml2::XMLElement *defElement = root->FirstChildElement("definition");
     for(unsigned int i=0; ret && (i<size) && defElement; i++)
     {
-        ret = readDefinition(defElement, _definitions[i]);
+        ret = definitionReader.read(defElement, _definitions[i]);
         defElement = defElement->NextSiblingElement("definition");
     }
     
@@ -333,8 +379,12 @@ bool Atlas::read(std::string const& filename)
     
     return true;
 }
-
-void Atlas::loadTextures(const char *filename)
+/**
+ * Load images from files and create a multiple layered texture out of them.
+ * @param [in] filename  Image filenames list. Filenames are separated by a semi-colon.
+ * @return true if the texture was succesfully created.
+ */
+bool Atlas::loadTextures(const char *filename)
 {
     // Parse all texture path.
     // The paths are separated by a semi-colon ';'.
@@ -408,17 +458,24 @@ void Atlas::loadTextures(const char *filename)
 
         Log_Info(Framework::Module::Render, "Atlas Size : %d x %d", width, height);
     }
+    return ret;
 }
 
 } // Sprite
 
-/*
-   <atlas file="/path/to/imagefile.png;/path/to/otherfile.png;/path/to/layerfile.png" size="...">
+/* Enhancement proposal!
+   <atlas layers="4">
+   <images>
+      <image layer="0" path="/path/to/imagefile.png"/>
+      <image layer="1" path="/path/to/otherfile.png"/>
+      <image layer="2" path="/path/to/layerfile.png"/>
+   </images>
+   * 
    <!-- List of definitions -->
 
-   <definition id="4" size="2">
+   <definition id="4">
        <!-- List of animations -->
-       <animation id="0" size="1">
+       <animation id="0">
            <!-- List of frames -->
            <frame time="0"
                   offsetX="0" offsetY="0"
@@ -432,7 +489,7 @@ void Atlas::loadTextures(const char *filename)
 
    <!-- ... -->
 
-   <definition id="6" size="5">
+   <definition id="6">
    <!-- Animation identifier incremented by default -->
 
    <!-- Uniform distribution over time -->

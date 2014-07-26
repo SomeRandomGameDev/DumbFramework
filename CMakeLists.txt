@@ -64,7 +64,6 @@ set(DUMB_FRAMEWORK_SOURCES
     src/shader.cpp
     src/program.cpp
     src/sprengine.cpp
-    src/frame.cpp
     src/sprite.cpp
     src/texture2d.cpp
     src/windowhint.cpp)

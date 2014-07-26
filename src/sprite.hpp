@@ -4,15 +4,27 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include <xml.hpp>
-
 #include <vector>
-#include <program.hpp>
 
+#include <program.hpp>
 #include <texture2d.hpp>
-#include <frame.hpp>
 
 namespace Sprite {
+
+/**
+ * An animation frame consists in a texture quad coordinate, an offset,
+ * a size and a timestamp.
+ * It is a non-mutable object.
+ */
+struct Frame
+{
+        double       time;    /**< Time of appearance in seconds. **/
+        glm::ivec2   offset;  /**< Position offset. **/
+        glm::ivec2   size;    /**< Size. **/
+        glm::dvec2   top;     /**< Texture coordinate top (upper left). **/
+        glm::dvec2   bottom;  /**< Texture coordinate bottom (lower right). **/
+        unsigned int layer;   /**< Texture layer in the texture array. **/
+};
 
 /**
  * An animation consists in an ordered list of frame.
@@ -43,7 +55,7 @@ class Animation
          * Frames are sorted by increasing time.
          * @param [in] frame  Frame to be added.
          */
-        void add(Framework::Frame const& frame);
+        void add(Frame const& frame);
         
         /**
          * Get frame count.
@@ -57,11 +69,11 @@ class Animation
          * @return A const pointer to the specified frame or NULL if the
          *         index is out of bound.
          */
-        Framework::Frame const* getFrame(size_t offset) const;
+        Frame const* getFrame(size_t offset) const;
         
     private:
         unsigned int _id;  /** Animation id.   **/ 
-        std::vector<Framework::Frame> _frames; /** Frames sorted by increasing time. **/
+        std::vector<Frame> _frames; /** Frames sorted by increasing time. **/
 };
 
 /**
@@ -155,10 +167,11 @@ class Atlas
     private:
 
         /**
-         * Load textures into a texture array.
-         * @param filename Paths to the textures. It is filenames separated by a semi-colon.
+         * Load images from files and create a multiple layered texture out of them.
+         * @param [in] filename  Image filenames list. Filenames are separated by a semi-colon.
+         * @return true if the texture was succesfully created.
          */
-        void loadTextures(const char *filename);
+        bool loadTextures(const char *filename);
 
     private:
         std::vector<Definition> _definitions; /**< Sprite definitions. **/
