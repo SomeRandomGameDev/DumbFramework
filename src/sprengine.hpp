@@ -118,9 +118,9 @@ typedef struct {
   GLfloat _scale;
 
   /**
-   * Texture in which the sprite actually resides in the array.
+   * Texture layer in which the sprite actually resides in the array.
    */
-  GLuint _texture;
+  GLuint _layer;
 } Cell;
 
 /**
@@ -310,12 +310,12 @@ private:
   /**
    * GLSL Program identifier.
    */
-  Render::Program _program;
+  Framework::Program _program;
 
   /**
-   * Sprite Atlas identifier.
+   * Sprite Atlas texture.
    */
-  GLuint _texture;
+  Framework::Texture2D const* _texture;
 
   /**
    * Sprite Atlas uniform binding.

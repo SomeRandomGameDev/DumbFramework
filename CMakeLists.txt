@@ -3,12 +3,17 @@ cmake_minimum_required (VERSION 2.6)
 project(DumbFramework)
 
 option(BUILD_TESTS "Build unit tests." OFF)
+option(SANITY_CHECK "Enable sanity checks. WARNING: performance loss + large logs." OFF)
 
 set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+
+if(SANITY_CHECK)
+    add_definitions(-DSANITY_CHECK)
+endif(SANITY_CHECK)
 
 if(MSVC)
     add_definitions (/D "_CRT_SECURE_NO_WARNINGS")

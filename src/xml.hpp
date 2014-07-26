@@ -25,11 +25,11 @@ public:
   static void parse(T *target, const char *filename) {
     char buffer[PARSER_HANDLER_BUFFER_SIZE];
     
-    File input;
+    Framework::File input;
     bool ret;
     size_t rdLen;
     
-    ret = input.open(filename, File::READ_ONLY);
+    ret = input.open(filename, Framework::File::READ_ONLY);
     if(!ret) {
       std::cerr << "Can't read " << filename << "!" << std::endl;
       return;

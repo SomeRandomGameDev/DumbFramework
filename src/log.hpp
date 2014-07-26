@@ -1,15 +1,15 @@
 #ifndef _DUMB_FW_LOG_
 #define _DUMB_FW_LOG_
 
-#include "config.hpp"
+#include <config.hpp>
 #include <string>
 #include <list>
 #include <stdarg.h>
 #include <pthread.h>
 
-#include "module.hpp"
-#include "severity.hpp"
-#include "file.hpp"
+#include <module.hpp>
+#include <severity.hpp>
+#include <file.hpp>
 
 namespace Framework {
 namespace Log {
@@ -250,8 +250,10 @@ namespace Log {
 } // Log
 } // Framework
 
-#define Log_Trace(module, format, ...)   do { Framework::Log::LogProcessor::instance().write(module, Framework::Severity::Trace,   Framework::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
+#define Log_Info(module, format, ...)    do { Framework::Log::LogProcessor::instance().write(module, Framework::Severity::Info,   Framework::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
 #define Log_Warning(module, format, ...) do { Framework::Log::LogProcessor::instance().write(module, Framework::Severity::Warning, Framework::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
 #define Log_Error(module, format, ...)   do { Framework::Log::LogProcessor::instance().write(module, Framework::Severity::Error,   Framework::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
+
+#define Log_Ex(module, severity, format, ...) do { Framework::Log::LogProcessor::instance().write(module, severity,   Framework::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
 
 #endif /* _DUMB_FW_LOG_ */

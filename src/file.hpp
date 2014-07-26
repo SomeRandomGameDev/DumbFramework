@@ -5,6 +5,8 @@
 #include <sys/types.h>
 #include <string>
 
+namespace Framework {
+
 /**
  * File wrapper.
  */
@@ -119,6 +121,12 @@ class File
 		 */
 		bool seek(off_t offset, File::Origin origin);
 
+		/**
+		 * Check if the file stream is positioned at the end of the file.
+		 * @return true if we reached the end of the file.
+		 */
+		bool eof();
+		
 	protected:
 		FILE *_handle;         /**< Handle. */
 		File::OpenMode _mode;  /**< Open mode. */
@@ -164,5 +172,7 @@ bool File::open(const T& name, File::OpenMode mode)
 	}
 	return true;
 }
+
+} // Framework
 
 #endif /* _DUMB_FW_FILE_ */

@@ -1,5 +1,7 @@
 #include <file.hpp>
 
+namespace Framework {
+	
 /** Constructor. */
 File::File()
 	: _handle(NULL)
@@ -236,3 +238,18 @@ bool File::seek(off_t offset, File::Origin origin)
 	}
 	return true;
 }
+
+/**
+ * Check if the file stream is positioned at the end of the file.
+ * @return true if we reached the end of the file.
+ */
+bool File::eof()
+{
+	if(NULL == _handle)
+	{
+		return true;
+	}
+	return (0 != feof(_handle));
+}
+
+} // Framework

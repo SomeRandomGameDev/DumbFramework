@@ -1,7 +1,7 @@
 #include "shader.hpp"
 #include <iostream>
 
-namespace Render {
+namespace Framework {
 
 /** Constructor. */
 Shader::Shader()
@@ -127,7 +127,7 @@ bool Shader::getSource(char* out, size_t outSize, size_t& length) const
 }
 
 /** Retrieve internal shader info logs. */
-void Shader::infoLog() const
+void Shader::infoLog(Framework::Severity severity) const
 {
     GLsizei maxLogLength, loglength;
     GLchar* log;
@@ -145,9 +145,8 @@ void Shader::infoLog() const
     }
 
     glGetShaderInfoLog(_id, maxLogLength, &loglength, log);
-    Log_Error(Framework::Module::Render, "%s", log);
-
+	Log_Ex(Framework::Module::Render, severity, log);
     delete [] log;
 }
 
-} /* Render */
+} // Framework

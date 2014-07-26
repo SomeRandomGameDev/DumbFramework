@@ -1,10 +1,19 @@
 #include <unittest++/UnitTest++.h>
 #include <vector>
 #include <glm/gtc/random.hpp>
-#include <glm/gtx/io.hpp>
 #include "boundingobjects.hpp"
 
 using namespace Framework;
+
+namespace glm    {
+namespace detail {
+	// [todo] remove this.
+	std::ostream& operator<< (std::ostream& out, const glm::vec3& v)
+	{
+		return (out << v.x << ',' << v.y << ',' << v.z);
+	}
+}
+}
 
 SUITE(BoundingBox)
 {

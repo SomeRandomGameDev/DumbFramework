@@ -45,11 +45,11 @@ SUITE(Log)
         
         int i = 0;
         output.index = 0;
-        output.expected[0] = "[Trace][Base] RunImpl trace   0!";
+        output.expected[0] = "[Info][Base] RunImpl info    0!";
         output.expected[1] = "[Warning][Base] RunImpl warn    1!";
         output.expected[2] = "[Error][Base] RunImpl error   2!";
 
-        Log_Trace(Framework::Module::Base,   "trace   %d!", i++);
+        Log_Info(Framework::Module::Base,    "info    %d!", i++);
         Log_Warning(Framework::Module::Base, "warn    %d!", i++);
         Log_Error(Framework::Module::Base,   "error   %d!", i++);
         
@@ -73,7 +73,7 @@ SUITE(Log)
         StringListOutputPolicy output;
         std::string expected[3];
         
-        expected[0] = "[Trace][Base] RunImpl trace   0!";
+        expected[0] = "[Info][Base] RunImpl info    0!";
         expected[1] = "[Warning][Base] RunImpl warn    1!";
         expected[2] = "[Error][Base] RunImpl error   2!";
 
@@ -82,7 +82,7 @@ SUITE(Log)
         
         int i = 0;
                 
-        Log_Trace(Framework::Module::Base,   "trace   %d!", i++);
+        Log_Info(Framework::Module::Base,    "info    %d!", i++);
         Log_Warning(Framework::Module::Base, "warn    %d!", i++);
         Log_Error(Framework::Module::Base,   "error   %d!", i++);
 

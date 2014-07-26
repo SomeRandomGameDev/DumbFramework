@@ -74,7 +74,7 @@ void Game::loop() {
        _balls.end() != i; ++i) {
     std::cout << "(" << i->_position.x << ", " << i->_position.y << ")" << std::endl;
 
-	Log_Trace(1, ">> balls (%f,%f)", i->_position.x, i->_position.y);
+	Log_Info(1, ">> balls (%f,%f)", i->_position.x, i->_position.y);
 
 
     /*
@@ -120,7 +120,7 @@ int main(void) {
   Log::FileOutputPolicy fileOutput;
   logManager.start(&logBuilder, &fileOutput);
 
-  Log_Trace(1, "Start");
+  Log_Info(1, "Start");
 
   game->init();
   game->loop();

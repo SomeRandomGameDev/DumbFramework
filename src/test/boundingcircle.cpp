@@ -1,7 +1,6 @@
 #include <unittest++/UnitTest++.h>
 #include <vector>
 #include <glm/gtc/random.hpp>
-#include <glm/gtx/io.hpp>
 #include "boundingobjects.hpp"
 
 using namespace Framework;

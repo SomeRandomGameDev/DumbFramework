@@ -9,6 +9,8 @@
 #include <container.hpp>
 #include <program.hpp>
 
+#include <texture2d.hpp>
+
 namespace Sprite {
 
 /**
@@ -18,19 +20,19 @@ namespace Sprite {
  */
 class Frame {
     public:
-        /**
+       /**
          * Constructor.
          * @param time Time of appearance in seconds.
          * @param offset Offset in pixels.
          * @param size Size in pixels.
          * @param top Top texture coordinates.
          * @param bottom Bottom texture coordinates.
-         * @param ind Texture index.
+         * @param layer Texture layer in the texture array.
          */
         Frame(double time,
               const glm::ivec2& offset, const glm::ivec2& size,
               const glm::dvec2& top, const glm::dvec2& bottom,
-              unsigned int ind);
+              unsigned int layer);
 
         // Accessors.
 
@@ -65,10 +67,10 @@ class Frame {
         inline const glm::dvec2& getBottom() const { return _bottom; }
 
         /**
-         * Provides texture index.
-         * @return Texture index in the texture array.
+         * Provides texture layer index.
+         * @return Texture layer in the texture array.
          */
-        inline GLuint getTexture() const { return static_cast<GLuint>(_texture); }
+        inline unsigned int getLayer() const { return _layer; }
 
     private:
         double       _time;    /**< Time of appearance in seconds. **/
@@ -76,7 +78,7 @@ class Frame {
         glm::ivec2   _size;    /**< Size. **/
         glm::dvec2   _top;     /**< Texture coordinate top (upper left). **/
         glm::dvec2   _bottom;  /**< Texture coordinate bottom (lower right). **/
-        unsigned int _texture; /**< Texture layer in the texture array. **/
+        unsigned int _layer;   /**< Texture layer in the texture array. **/
 };
 
 /**
@@ -114,10 +116,10 @@ class Atlas {
         ~Atlas();
 
         /**
-         * Access texture identifier.
-         * @return OGL-wise texture identifier.
+         * Access texture.
+         * @return texture object.
          */
-        GLuint texture() const;
+        Framework::Texture2D const& texture() const;
 
         /**
          * Access to definitions.
@@ -158,7 +160,7 @@ class Atlas {
     private:
         Framework::Container<Definition *> *_definitions; /**< Definitions. **/
         
-        GLuint _texture; /**< Identifier to texture. **/
+        Framework::Texture2D _texture; /**< Texture. **/
         
         int _state; /**< State (Parsing, ready, etc...). **/
         GLint _width;  /**< Atlas width in pixels.  **/
@@ -197,9 +199,9 @@ class Entity
         // void set/get program
 
     private:
-        glm::vec3         m_position;
-        glm::quat         m_orientation;
-        Render::Program   m_program;
+        glm::vec3 m_position;
+        glm::quat m_orientation;
+        Framework::Program m_program;
         // Materials
         // Mesh
         // Bones
