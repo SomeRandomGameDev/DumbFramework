@@ -410,7 +410,7 @@ namespace Sprite {
                 instance->_layer = layer;
                 if(animId < instance->_definition->animationCount())
                 {
-                    animation = &instance->_definition->getAnimation(animId);
+                    animation = instance->_definition->getAnimation(animId);
                     instance->_still = (animation->frameCount() < 2);
                 } 
                 else
@@ -524,7 +524,7 @@ namespace Sprite {
             double elapsed = _instance[i]._elapsed + span;
             if(true != _instance[i]._still) {
                 // Look for next frame.
-                Animation const* animation = &_instance[i]._definition->getAnimation(_instance[i]._animation);
+                Animation const* animation = _instance[i]._definition->getAnimation(_instance[i]._animation);
                 int capacity = animation->frameCount();
                 int frameNum = _instance[i]._frame;
                 bool search = true;

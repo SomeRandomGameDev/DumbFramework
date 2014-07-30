@@ -12,7 +12,7 @@ namespace Sprite {
 
 /** Default constructor. **/
 Animation::Animation()
-    : _id(static_cast<unsigned int>(-1))
+    : _name("")
     , _frames()
 {}
 /** Destructor. **/
@@ -20,24 +20,20 @@ Animation::~Animation()
 {}
 /**
  * Create animation.
- * @param [in] id    Animation identifier.
- * @param [in] count Frame count (optional) (default=0).
+ * @param [in] name  Animation name.
  */
-void Animation::create(unsigned int id, size_t count)
+void Animation::create(std::string const& name)
 {
-    _id = id;
-    if(count)
-    {
-        _frames.reserve(count);
-    }
+    _name = name;
+    _frames.clear();
 }
 /**
- * Get animation id.
- * @return Animation identifier.
+ * Get animation name.
+ * @return Animation name.
  */
-unsigned int Animation::id() const
+std::string const& Animation::name() const
 {
-    return _id;
+    return _name;
 }
 /**
  * Add frame to animation.
@@ -91,7 +87,7 @@ Frame const* Animation::getFrame(size_t offset) const
 
 /** Default constructor. **/
 Definition::Definition()
-    : _id(static_cast<unsigned int>(-1))
+    : _name("")
     , _animations()
 {}
 /** Destructor. **/
@@ -99,21 +95,21 @@ Definition::~Definition()
 {}
 /**
  * Create sprite definition.
- * @param [in] id    Identifier.
+ * @param [in] name  Identifier.
  * @param [in] count Animation count. 
  */
-void Definition::create(unsigned int id, size_t count)
+void Definition::create(std::string const& name, size_t count)
 {
-    _id = id;
+    _name = name;
     _animations.resize(count);
 }
 /**
- * Get id.
- * @return Identifier.
+ * Get name.
+ * @return name.
  */
-unsigned int Definition::id() const
+std::string const& Definition::name() const
 {
-    return _id;
+    return _name;
 }
 /**
  * Get animation count.
@@ -123,8 +119,28 @@ size_t Definition::animationCount() const
 {
     return _animations.size();
 }
+#if 0
 /**
- * Retrieve a given animation.
+ * Add animation provided the definition does not already an
+ * animation with the same name.
+ * @param [in] animation  Animation to add.
+ * @return true if the animation was added, or false an animation
+ *         with the same name is already present.
+ */
+bool Definition::add(Animation const& animation)
+{
+    if(_dict.end() != _dict.find(animation.name()))
+    {
+        Log_Error(Framework::Module::Render, "The definition \"%s\" already contains an animation called \"%s\"", _name.c_str(), animation.name().c_str());
+        return false;
+    }
+    _animations.push_back(animation); // <- performance issue
+    _dict[animation.name()] = _animations.size() - 1;
+    return true;
+}
+#endif
+/**
+ * Retrieve a given animation by its offset..
  * @param [in] index  Animation number.
  * @return A const pointer to the specified animation or NULL if the
  *         index is out of bound.
@@ -136,14 +152,42 @@ Animation const* Definition::getAnimation(size_t offset) const
     return &_animations[offset];
 }
 /**
- * Retrieve a given animation.
+ * Retrieve a given animation by its offset..
  * @param [in] index  Animation number.
- * @warning Unsafe and non const.
- * @return Reference to the specified animation.
+ * @return A pointer to the specified animation or NULL if the
+ *         index is out of bound.
  */
-Animation& Definition::getAnimation(size_t offset)
+Animation* Definition::getAnimation(size_t offset)
 {
-    return _animations[offset];
+    if(offset >= _animations.size())
+    { return NULL; }
+    return &_animations[offset];
+}
+/**
+ * Retrieve a given animation by its name.
+ * @param [in] name  Animation name.
+ * @return A const pointer to the animation with the corresponding
+ *         name, or NULL if no matching animation was found.
+ */
+Animation const* Definition::getAnimation(std::string const& name) const
+{
+    std::unordered_map<std::string, unsigned int>::const_iterator it = _dict.find(name);
+    if(it == _dict.cend()) { return NULL; }
+    if(it->second >= _animations.size()) { return NULL; }
+    return &_animations[it->second];
+}
+/**
+ * Retrieve a given animation by its name.
+ * @param [in] name  Animation name.
+ * @return A pointer to the animation with the corresponding
+ *         name, or NULL if no matching animation was found.
+ */
+Animation* Definition::getAnimation(std::string const& name)
+{
+    std::unordered_map<std::string, unsigned int>::iterator it = _dict.find(name);
+    if(it == _dict.end()) { return NULL; }
+    if(it->second >= _animations.size()) { return NULL; }
+    return &_animations[it->second];
 }
 /**
  * Constructor.
@@ -151,6 +195,7 @@ Animation& Definition::getAnimation(size_t offset)
  */
 Atlas::Atlas()
     : _definitions()
+    , _dict()
     , _texture()
     , _size(0)
 {}
@@ -170,14 +215,56 @@ Framework::Texture2D const& Atlas::texture() const
     return _texture;
 }
 /**
- * Access to definitions.
+ * @brief Access to definitions.
+ * Return a pointer to the definition stored at @a index, or
+ * NULL if the index is out of storage bound.
  * @param index Definition number.
- * @return Definition.
+ * @return Definition pointer or NULL if the index is out of
+ *         storage bound..
  */
-Definition *Atlas::get(unsigned int index)
+Definition* Atlas::get(unsigned int index)
 {
     if(index >= _definitions.size()) { return NULL; }
     return &_definitions[index];
+}
+/**
+ * @brief Access to definitions (const version).
+ * Return a pointer to the definition stored at @a index, or
+ * NULL if the index is out of storage bound.
+ * @param index Definition number.
+ * @return Definition pointer or NULL if the index is out of
+ *         storage bound..
+ */
+Definition const* Atlas::get(unsigned int index) const
+{
+    if(index >= _definitions.size()) { return NULL; }
+    return &_definitions[index];
+}
+/**
+ * Retrieve a given definition by its name.
+ * @param [in] name  Definition name.
+ * @return A pointer to the definition with the corresponding
+ *         name, or NULL if no matching definition was found.
+ */
+Definition* Atlas::get(std::string const& name)
+{
+    std::unordered_map<std::string, unsigned int>::iterator it = _dict.find(name);
+    if(it == _dict.end()) { return NULL; }
+    if(it->second >= _definitions.size()) { return NULL; }
+    return &_definitions[it->second];
+}
+/**
+ * Retrieve a given definition by its name.
+ * @param [in] name  Definition name.
+ * @return A const pointer to the definition with the corresponding
+ *         name, or NULL if no matching definition was found.
+ */
+Definition const* Atlas::get(std::string const& name) const
+{
+    std::unordered_map<std::string, unsigned int>::const_iterator it = _dict.find(name);
+    if(it == _dict.cend()) { return NULL; }
+    if(it->second >= _definitions.size()) { return NULL; }
+    return &_definitions[it->second];
 }
 /**
  * Provide the number of definitions.
@@ -230,34 +317,39 @@ bool XMLFrameReader::read(tinyxml2::XMLElement* element, Frame& frame)
 }
 // XML Animation Reader.
 // Read a single animation from a tinyxml2::XMLElement.
-struct XMLAnimationReader
+class XMLAnimationReader
 {
-    // Read an animation from a tinyxml2::XMLElement.
-    // @param [in]  element    XML Element containing the animation to read.
-    // @param [out] animation  Animation read from the XML element.
-    // @return true if the animation was successfully read.
-    bool read(tinyxml2::XMLElement* element, Animation& animation);
-    // Frame reader.
-    // As an animation contains a list of frames, it will be used to read
-    // them.
-    XMLFrameReader frameReader;
+    public:
+        // Read an animation from a tinyxml2::XMLElement.
+        // @param [in]  element    XML Element containing the animation to read.
+        // @param [out] animation  Animation read from the XML element.
+        // @return true if the animation was successfully read.
+        bool read(tinyxml2::XMLElement* element, Animation& animation);
+        // Frame reader.
+        // As an animation contains a list of frames, it will be used to read
+        // them.
+        XMLFrameReader frameReader;
 };
 bool XMLAnimationReader::read(tinyxml2::XMLElement* element, Animation &animation)
 {
-    unsigned int id, size;
+    unsigned int size;
     int err;
-    
-    err = element->QueryUnsignedAttribute("id", &id);
-    if(tinyxml2::XML_NO_ERROR != err) { return false; }
+    tinyxml2::XMLElement* frameElement;
     
     err = element->QueryUnsignedAttribute("size", &size);
-    if(tinyxml2::XML_NO_ERROR != err) { return false; }
-
-    animation.create(id, size);
-
+    if(tinyxml2::XML_NO_ERROR != err)
+    {
+        // Count frames.
+        frameElement = element->FirstChildElement("frame");
+        for(size=0; frameElement; size++, frameElement=frameElement->NextSiblingElement("frame"))
+        {}
+    }
+    
+    animation._frames.reserve(size);
+    
     // Read frames
     bool ret = true;
-    tinyxml2::XMLElement* frameElement = element->FirstChildElement("frame");
+    frameElement = element->FirstChildElement("frame");
     for(unsigned int i=0; ret && (i<size) && frameElement; ++i)
     {
         Frame frame;
@@ -272,37 +364,69 @@ bool XMLAnimationReader::read(tinyxml2::XMLElement* element, Animation &animatio
 }
 // XML Definition Reader.
 // Read a single definition from a tinyxml2::XMLElement.
-struct XMLDefinitionReader
+class XMLDefinitionReader
 {
-    // Read a definition (animation list) from a tinyxml2::XMLElement.
-    // @param [in]  element     XML Element containing the definition to read.
-    // @param [out] definition  Definition read from the XML element.
-    // @return true if the definition was successfully read.
-    bool read(tinyxml2::XMLElement* element, Definition& definition);
-    // Animation reader.
-    // As a definition contains a list of animations, it will be used to read
-    // them.
-    XMLAnimationReader animationReader;
+    public:
+        // Read a definition (animation list) from a tinyxml2::XMLElement.
+        // @param [in]  element     XML Element containing the definition to read.
+        // @param [out] definition  Definition read from the XML element.
+        // @return true if the definition was successfully read.
+        bool read(tinyxml2::XMLElement* element, Definition& definition);
+        // Animation reader.
+        // As a definition contains a list of animations, it will be used to read
+        // them.
+        XMLAnimationReader animationReader;
 };
 bool XMLDefinitionReader::read(tinyxml2::XMLElement* element, Definition &definition)
 {
-    unsigned int id, size;
+    char const* name;
     int err;
+    unsigned int size;
+    tinyxml2::XMLElement *animElement;
     
-    err = element->QueryUnsignedAttribute("id", &id);
-    if(tinyxml2::XML_NO_ERROR != err) { return false; }
+    name = element->Attribute("name");
+    if(NULL == name) { return false; }
     
     err = element->QueryUnsignedAttribute("size", &size);
-    if(tinyxml2::XML_NO_ERROR != err) { return false; }
+    if(tinyxml2::XML_NO_ERROR != err)
+    {
+        // Count frames.
+        animElement = element->FirstChildElement("animation");
+        for(size=0; animElement; size++, animElement=animElement->NextSiblingElement("animation"))
+        {}        
+    }
     
-    definition.create(id, size);
+    if(0 == size)
+    {
+        Log_Error(Framework::Module::Render, "Missing animation for definition %s", name);
+        return false;
+    }
+    
+    definition.create(name, size);
     
     // Animation
     bool ret = true;
-    tinyxml2::XMLElement *animElement = element->FirstChildElement("animation");
+    animElement = element->FirstChildElement("animation");
     for(unsigned int i=0; ret && (i<size) && animElement; i++)
     {
-        ret = animationReader.read(animElement, definition.getAnimation(i));
+        char const* animName;
+        animName = animElement->Attribute("name");
+        if(NULL == animName)
+        {
+            Log_Error(Framework::Module::Render, "Missing animation name!"); 
+            return false;
+        }
+        // Check if there is not already an animation with the same name.
+        if(definition._dict.end() != definition._dict.find(animName))
+        {
+            Log_Error(Framework::Module::Render, "Duplication animation \"%s\"", animName);
+            return false;
+        }
+        
+        definition._dict[animName] = i;
+        definition._animations[i].create(name);
+        
+        ret = animationReader.read(animElement, definition._animations[i]);
         animElement = animElement->NextSiblingElement("animation");
     }
     return ret;
@@ -354,23 +478,46 @@ bool Atlas::read(std::string const& filename)
     XMLDefinitionReader definitionReader;
     definitionReader.animationReader.frameReader.imageSize = _texture.size();
     
-    // -- Definition count
     unsigned int size;
+    tinyxml2::XMLElement *defElement;
+    
     err = root->QueryUnsignedAttribute("size", &size);
     if(tinyxml2::XML_NO_ERROR != err)
     {
-        Log_Error(Framework::Module::Render, "An error occured while parsing %s: %s (%s)", filename.c_str(), xml.GetErrorStr1(), xml.GetErrorStr2());
-        return false;
+        // Count definitions
+        defElement = root->FirstChildElement("definition");
+        for(size=0; defElement; size++, defElement=defElement->NextSiblingElement("definition"))
+        {}
     }
     
+    if(0 == size)
+    {
+        Log_Error(Framework::Module::Render, "Missing definition for atlas");
+        return false;
+    }
+
     Log_Info(Framework::Module::Render, "Prepare to process %d sprite definition(s).", size);
     _definitions.resize(size);
     
     // Definitions
     bool ret = true;
-    tinyxml2::XMLElement *defElement = root->FirstChildElement("definition");
+    defElement = root->FirstChildElement("definition");
     for(unsigned int i=0; ret && (i<size) && defElement; i++)
     {
+        const char *defName = defElement->Attribute("name");
+        if(NULL == defName)
+        {
+            Log_Error(Framework::Module::Render, "Missing definition name!"); 
+            return false;
+        }
+        // Check if there is not already an animation with the same name.
+        if(_dict.end() != _dict.find(defName))
+        {
+            Log_Error(Framework::Module::Render, "Duplication definition \"%s\"", defName);
+            return false;
+        }
+        _dict[defName] = i;
+        
         ret = definitionReader.read(defElement, _definitions[i]);
         defElement = defElement->NextSiblingElement("definition");
     }
@@ -477,9 +624,9 @@ bool Atlas::loadTextures(const char *filename)
    * 
    <!-- List of definitions -->
 
-   <definition id="4">
+   <definition name="little guy">
        <!-- List of animations -->
-       <animation id="0">
+       <animation name="walking">
            <!-- List of frames -->
            <frame time="0"
                   offsetX="0" offsetY="0"
