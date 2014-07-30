@@ -14,35 +14,102 @@
 namespace Framework {
 namespace Log {
     /**
-     * Log source.
+     * @defgroup DUMB_FW_LOG Log management.
+     * @todo
+     */
+    
+    /**
+     * @brief Log source informations.
+     * @ingroup DUMB_FW_LOG
+     * 
+     * This structure provides various informations about the current log
+     * message. It contains the name of the file, the line number and the
+     * function name where the log message was emitted.
      */
     struct SourceInfos
     {
+        /**
+         * @brief Default constructor.
+         *
+         * Initialize the @a filename, @a line and @a function with
+         * dummy values. The file name is the empty string. The line 
+         * number is 0 and the function name is also an empty string.
+         */
         SourceInfos();
-        SourceInfos(char const * name, size_t num, char const * fnctl);
+        /**
+         * @brief Constructor.
+         * 
+         * Constructs the source infos.
+         * @param [in] name  File name.
+         * @param [in] num   Line number.
+         * @param [in] fnctl Function name.
+         */
+        SourceInfos(char const* name, size_t num, char const* fnctl);
+        /**
+         * @brief Copy constructor.
+         * 
+         * Constructs the source infos from anothed one.
+         * @param [in] infos Source infos.
+         */
         SourceInfos(SourceInfos const & infos);
 
+        /**
+         * @brief Copy operator.
+         * 
+         * Copy the data contained in @a infos.
+         * @param [in] infos Source infos.
+         * @return Reference to the calling instance.
+         */
         SourceInfos& operator= (SourceInfos const & infos);
 
-        char const* filename; /**< Filename. */
-        size_t      line;     /**< Line number. */
-        char const* function; /**< Function name. */
+        /** Source filename where the log message was emitted. */
+        char const* filename;
+        /** Number of the line where the log message was emitted. */
+        size_t      line;
+        /** Name of the function/method where the log message was emitted. */
+        char const* function;
         // more?
     };
 
     /**
-     * Log output policy.
+     * @brief Log output policy.
+     * @ingroup DUMB_FW_LOG
+     * 
+     * Defines the way log messages are output.
      */
     struct OutputPolicyBase
     {
+        /**
+         * @brief Destructor.
+         *
+         * Destructs any allocated resources used to output log messages.
+         */
         virtual ~OutputPolicyBase() {}
+        /**
+         * @brief Setup output.
+         * 
+         * Initialize, setup or create resources necessary for log output.
+         * @return false if an error occured.
+         */
         virtual bool setup()    { return true; }
+        /**
+         * @brief Release resources.
+         */
         virtual void teardown() {}
+        /**
+         * @brief Output log message.
+         * @param [in] msg Log message.
+         * @return false if an error occured.
+         */
         virtual bool write(std::string & msg) = 0;
     };
 
     /**
-     * Log builder
+     * @brief Base log builder interface.
+     * @ingroup DUMB_FW_LOG
+     * 
+     * Build log message based on the issuing module, severity, source
+     * infos and format data.
      */
     class BaseLogBuilder
     {
@@ -55,16 +122,37 @@ namespace Log {
              * Build log message.
              * @param [out] out      Output string.
              * @param [in]  module   Module ID. 
-             * @param [in]  severity Log severity (warning, trace, error, ...).
+             * @param [in]  severity Log severity (warning, info, error, ...).
              * @param [in]  infos    Source information (file, line number, ...).
              * @param [in]  format   Format string.
              * @param [in]  args     Format string arguments.
+             * @return false if an error occured.
              */
             virtual bool build(std::string & out, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args) = 0;
     };
 
     /**
-     * Log builder.
+     * @brief Log builder.
+     * @ingroup DUMB_FW_LOG
+     * 
+     * Build log message based on the filter and format policy.
+     *
+     * The @a FilterPolicy must implement an @c eval method. This method
+     * is used to filter log entries based on the module id and the
+     * severity. It may return false if the current log entry does not
+     * match the filter criterias. The log builder will dismiss every
+     * log entry that failed filter evaluation.
+     * @code
+     * bool eval(Framework::Module const & module, Framework::Severity const & severity);
+     * @endcode
+     * 
+     * The @a FormatPolicy must implement a @c build method. This method
+     * creates a string based on the module id, severy, source infos and
+     * format data.
+     * @code
+     * void build(std::string & buffer, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args);
+     * @endcode
+     * 
      */
     template <class FilterPolicy, class FormatPolicy>
         class LogBuilder : public BaseLogBuilder
@@ -76,13 +164,14 @@ namespace Log {
             virtual ~LogBuilder();
 
             /**
-             * Output log message.
+             * Build log message.
              * @param [out] out      Output string.
              * @param [in]  module   Module ID. 
-             * @param [in]  severity Log severity (warning, trace, error, ...).
+             * @param [in]  severity Log severity (warning, info, error, ...).
              * @param [in]  infos    Source information (file, line number, ...).
              * @param [in]  format   Format string.
              * @param [in]  args     Format string arguments.
+             * @return false if an error occured.
              */
             virtual bool build(std::string & out, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args);
 
@@ -92,7 +181,10 @@ namespace Log {
     };
 
     /**
-     * Log message builder/manager.
+     * @brief Log processor.
+     * @ingroup DUMB_FW_LOG
+     * 
+     * [todo] write a complete description (with examples)
      */
     class LogProcessor
     {
@@ -102,6 +194,14 @@ namespace Log {
             /** Get log processor instance. */
             static LogProcessor& instance();
 
+            /**
+             * Emit log message.
+             * @param [in]  module   Module ID. 
+             * @param [in]  severity Log severity (warning, info, error, ...).
+             * @param [in]  infos    Source information (file, line number, ...).
+             * @param [in]  format   Format string.
+             * @param [in]  ...      Format string arguments.
+             */
             void write(Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, ...);
             /**
              * Start logging task.
@@ -170,6 +270,7 @@ namespace Log {
 
     /**
      * Build log message.
+     *
      * @param [out] out      Output string.
      * @param [in]  module   Module ID. 
      * @param [in]  severity Log severity (warning, trace, error, ...).
@@ -190,7 +291,10 @@ namespace Log {
             return false;
         }
 
-    /** No filter. */
+    /** 
+     * @brief No filter.
+     * @ingroup DUMB_FW_LOG
+     */
     struct AllPassFilter
     {
         /**
@@ -201,7 +305,10 @@ namespace Log {
         bool eval(Framework::Module const & module, Framework::Severity const & severity);
     };
 
-    /** Simple message format. */
+    /** 
+     * @brief Simple message format.
+     * @ingroup DUMB_FW_LOG
+     */
     struct SimpleMessageFormat
     {
         /** Maximum buffer length. **/
@@ -218,29 +325,53 @@ namespace Log {
         void build(std::string & buffer, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args);
     };
 
-    /** Write log to console. **/
+    /** 
+     * @brief Write log to console. 
+     * @ingroup DUMB_FW_LOG
+     *
+     * All log messages will be written to the standard output. 
+     */
     struct ConsoleOutputPolicy : public OutputPolicyBase
     {
         /**
          * Write to standard output.
          * @param [in] msg Log message.
+         * @return Allways true.
          */
         bool write(std::string & msg);
     };
 
-    /** Write log to file. **/
+    /** 
+     * @brief Write log to file.
+     * @ingroup DUMB_FW_LOG
+     *
+     * Write log messages to a file. A new file is created at each
+     * invocation of FileOutputPolicy::setup. The name of the newly
+     * created file is @b log_HHMMSS_ddmmYYYY.txt with
+     *      - @b HH   hour between 00 and 23.
+     *      - @b MM   minute between 00 and 59
+     *      - @b SS   second between 00 and 59
+     *      - @b dd   day of the month between 01 and 31
+     *      - @b mm   month of the year between 01 and 12
+     *      - @b YYYY year
+     */
     class FileOutputPolicy : public OutputPolicyBase
     {
         public:
-            /** Contructor. **/
+            /** Default contructor. **/
             FileOutputPolicy();
             /** Destructor. **/
             ~FileOutputPolicy();
-            /** Build log filename using current datetime. **/
+            /** 
+             * Build log filename using current datetime.
+             * @return Allways true
+             */
             bool setup();
             /**
              * Write to log file.
              * @param [in] msg Log message.
+             * @return true if the message was succesfully written to
+             *         the file.
              */
             bool write(std::string & msg);
         private:

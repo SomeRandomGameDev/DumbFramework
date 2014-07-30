@@ -161,6 +161,14 @@ namespace Log {
         return ret;
     }
 
+    /**
+     * Emit log message.
+     * @param [in]  module   Module ID. 
+     * @param [in]  severity Log severity (warning, info, error, ...).
+     * @param [in]  infos    Source information (file, line number, ...).
+     * @param [in]  format   Format string.
+     * @param [in]  ...      Format string arguments.
+     */
     void LogProcessor::write(Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, ...)
     {
         if(NULL == _builder)
@@ -177,11 +185,11 @@ namespace Log {
         }
         va_end(args);
     }
-
+    
     SourceInfos::SourceInfos()
-        : filename(__FILE__)
-        , line(__LINE__)
-        , function(__FUNCTION__)
+        : filename("")
+        , line(0)
+        , function("")
     {}
 
     SourceInfos::SourceInfos(char const * name, size_t num, char const * fnctl)
@@ -244,10 +252,10 @@ namespace Log {
     bool ConsoleOutputPolicy::write(std::string & msg)
     {
         std::cout << msg;
-		if(msg[msg.size()-1] != '\n')
-		{
-			std::cout << std::endl;
-		}
+        if(msg[msg.size()-1] != '\n')
+        {
+            std::cout << std::endl;
+        }
         return true;
     }
 
@@ -258,7 +266,10 @@ namespace Log {
     /** Destructor. **/
     FileOutputPolicy::~FileOutputPolicy()
     {}
-    /** Build log filename using current datetime. **/
+    /** 
+     * Build log filename using current datetime.
+     * @return Allways true
+     */
     bool FileOutputPolicy::setup()
     {
         std::time_t  t  = std::time(NULL);
@@ -273,6 +284,8 @@ namespace Log {
     /**
      * Write to log file.
      * @param [in] msg Log message.
+     * @return true if the message was succesfully written to
+     *         the file.
      */
     bool FileOutputPolicy::write(std::string & msg)
     {
