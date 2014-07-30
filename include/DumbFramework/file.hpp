@@ -8,170 +8,222 @@
 namespace Framework {
 
 /**
- * File wrapper.
+ * @brief File wrapper.
+ * 
+ * This is mainly a wrapper around the POSIX stream functions.
  */
 class File
 {
-	public:
-		/**
- 		 * File open mode.
- 		 */
-		enum OpenMode
-		{
-			INVALID    = 0x00,
-			READ_ONLY  = 0x01,
-			WRITE_ONLY = 0x02,
-			READ_WRITE = READ_ONLY | WRITE_ONLY,
-			APPEND     = 0x04,
-			TRUNCATE   = 0x08,
-			TEXT       = 0x10
-		};
+    public:
+        /**
+         * @brief File open modes.
+         * 
+         * This modes are similar to the one defined in the libc fopen function.
+         * They can be combined using a bitwise or. Note that some
+         * combinations are invalid.
+         */
+        enum OpenMode
+        {
+            /**
+             * Invalid mode.
+             * This mode is used for internal sanity checks.
+             */
+            INVALID    = 0x00,
+            /** 
+             * Opened the file for reading.
+             * The file offset is positioned at the beginning of the file.
+             */
+            READ_ONLY  = 0x01,
+            /** 
+             * Open the file for writing. The file is truncated to zero
+             * if it exists, otherwise it is created.
+             * The file offset is positioned at the beginning of the file.
+             */
+            WRITE_ONLY = 0x02,
+            /**
+             * Open the file for reading and writing. The file is created
+             * if it does not exists.
+             * The file offset is positioned at the beginning of the file.
+             * @note If @a TRUNCATE is also specified, the file will be
+             * truncated if it exists.
+             */ 
+            READ_WRITE = READ_ONLY | WRITE_ONLY,
+            /**
+             * Open the file for appending. The file is created is created
+             * if it does not exists.
+             * The file offset is positioned at the end of the file.
+             * @note If the @a READ_ONLY mode is also specified, 
+             * the file will also be opened for reading. Read will start 
+             * at the beginning of the file, and output at the end of the file. 
+             */
+            APPEND     = 0x04,
+            /**
+             * This mode is only valid if it is used in conjonction with
+             * @a READ_WRITE. @see READ_WRITE
+             */
+            TRUNCATE   = 0x08,
+        };
 
-		/**
- 		 * File offset origin.
- 		 */
-		enum Origin
-		{
-			CURRENT,
-			START,
-			END
-		};
+        /**
+         * File offset origin.
+         */
+        enum Origin
+        {
+            /** Offsets will be relative to the current file position. **/
+            CURRENT,
+            /** Offsets will be relative to the beginning of the file. **/
+            START,
+            /** Offsets will be relative to the end of the file. **/
+            END
+        };
 
-	public:
-		/** Constructor. */
-		File();
-		/** Destructor. */
-		~File();
+    public:
+        /** 
+         * @brief Default constructor. 
+         *
+         * Set file attributes to default values.
+         * The current file mode is set to @a INVALID. Read, write, seek
+         * will fail.
+         */
+        File();
+        /** 
+         * @brief Destructor. 
+         *
+         * Close the file if it is opened and release resources. 
+         */
+        ~File();
 
-		/**
- 		 * Set filename.
-		 * The file is closed if it was previously opened.
-		 * @param [in] name Filename.
-		 */
-		template <typename T>
-		void setFilename(const T& name);
+        /**
+         * @brief Set filename.
+         * 
+         * @note The file is closed if it was previously opened.
+         * @param [in] name Filename.
+         */
+        void setFilename(std::string const& name);
 
-		/** 
- 		 * Set opening mode.
-		 * The file is closed if it was previously opened.
-		 * @param [in] mode File opening mode.
-		 * @return true if the mode was valid and successfully set.
-		 */
-		bool setOpenMode(File::OpenMode mode);
-		
-		/**
-		 * Open file.
-		 * filename and opening mode must have been previously set.
-		 * @return true if the file was successfully opened. Check errno if it failed.
-		 */
-		bool open();
+        /** 
+         * @brief Set opening mode.
+         * 
+         * @note The file is closed if it was previously opened.
+         * @param [in] mode File opening mode.
+         * @return true if the mode was valid and successfully set.
+         */
+        bool setOpenMode(File::OpenMode mode);
+        
+        /**
+         * @brief Open file.
+         * 
+         * Open the file whose name was set by File::setFilename using
+         * the mode specified by File::setOpenMode.
+         * This method will fail if both filename and opening mode were
+         * not previously set.
+         * @return 
+         *     - true if the file was successfully opened.
+         *     - false otherwise (check @c errno for more informations).
+         */
+        bool open();
 
-		/**
- 		 * Open file.
-		 * The filename must have been previously set.
-		 * @param [in] mode File mode. 
-		 * @return true if the file was successfully opened. Check errno if it failed.
-		 */
-		bool open(File::OpenMode mode);
+        /**
+         * @brief Open file.
+         * 
+         * Open the file whose name was set by File::setFilename using 
+         * the mode given as argument.
+         * This method will fail if the filename was not previously set.
+         * @param [in] mode File opening mode. 
+         * @return
+         *     - true if the file was successfully opened.
+         *     - false otherwise (check @c errno for more informations).
+         */
+        bool open(File::OpenMode mode);
 
-		/** 
-		 * Open file.
-		 * @param [in] mode name Filename.
-		 * @param [in] mode File mode. 
-		 * @return true if the file was successfully opened. Check errno if it failed.
-		 */
-		template <typename T>
-		bool open(const T& name, File::OpenMode mode);
-		
-		/** Close file. */
-		void close();
+        /** 
+         * @brief Open file.
+         * 
+         * Open the file name whose name and opening are set by the 
+         * method arguments.
+         * This method is an alias to the successive calls of 
+         * File::SetFilename, File::SetOpenMode and File::open.
+         * @param [in] name Filename.
+         * @param [in] mode File opening mode. 
+         * @return
+         *     - true if the file was successfully opened.
+         *     - false otherwise (check @c errno for more informations).
+         */
+        bool open(std::string const& name, File::OpenMode mode);
+        
+        /** 
+         * @brief Close file. 
+         *
+         * Close the file.
+         * File name and opening mode are not reset. 
+         * If File::open is called, the same file will be reopened using
+         * the same mode. 
+         */
+        void close();
 
-		/** Check if the file is opened. */
-		bool isOpened() const;
+        /** @brief Check if the file is opened. */
+        bool isOpened() const;
 
-		/** @return filename. */
-		const char* name() const;
-		/** @return file size in bytes. */
-		size_t size() const;
-		/** @return current file offset in bytes. */
-		off_t offset() const;
-		/** @return current open mode. */
-		File::OpenMode mode() const;
-		
-		/** Read data from file.
-		 * @param [in] buffer Destination buffer.
-		 * @param [in] len Number of bytes to read.
-		 * @return Number of bytes read.
-		 */
-		size_t read (void* buffer, size_t len);
+        /** @brief Get filename. */
+        std::string const& name  () const;
+        /** @brief Get file size in bytes. */
+        size_t             size  () const;
+        /** @brief Get current file offset in bytes. */
+        off_t              offset() const;
+        /** @brief Get current opening mode. */
+        File::OpenMode     mode  () const;
+        
+        /** 
+         * @brief Read data from file.
+         * 
+         * Read @a len bytes from file and store them at the location
+         * pointed by @a buffer. 
+         * @param [in] buffer Destination buffer.
+         * @param [in] len Number of bytes to read.
+         * @return Number of bytes read. A value less than @a len means
+         * that an error occured or the end-of-file is reached. Check
+         * the value or @c errno of File::eof to determine which occured.
+         */
+        size_t read (void* buffer, size_t len);
 
-		/**
-		 * Write data to file.
-		 * @param [out] buffer Source buffer.
-		 * @param [in] len Number of bytes to be written.
-		 * @return Number of bytes effectively written.
-		 */
-		size_t write(void* buffer, size_t len);
+        /**
+         * @brief Write data to file.
+         * 
+         * Write @a len bytes to file frome the location pointer by 
+         * @a buffer.
+         * @param [out] buffer Source buffer.
+         * @param [in] len Number of bytes to be written.
+         * @return Number of bytes effectively written. A value less 
+         * than @a len means that an error occured or the end-of-file is
+         * reached. Check the value of @c errno or File::eof to determine
+         * which occured.
+         */
+        size_t write(void* buffer, size_t len);
 
-		/**
-		 * Move file offset.
-		 * @param [in] offset Offset in bytes from the starting point.
-		 * @param [in] origin Offset displacement starting point.
-		 * @return true if the file offset was successfully moved.
-		 */
-		bool seek(off_t offset, File::Origin origin);
+        /**
+         * @brief Move file offset.
+         *
+         * Move file offset relatively to the @a origin.
+         * @param [in] offset Offset in bytes from the starting point.
+         * @param [in] origin Offset displacement starting point.
+         * @return true if the file offset was successfully moved.
+         */
+        bool seek(off_t offset, File::Origin origin);
 
-		/**
-		 * Check if the file stream is positioned at the end of the file.
-		 * @return true if we reached the end of the file.
-		 */
-		bool eof();
-		
-	protected:
-		FILE *_handle;         /**< Handle. */
-		File::OpenMode _mode;  /**< Open mode. */
-		char _modeString[4];   /**< Open mode string. */
-		std::string _filename; /**< Filename. */
+        /**
+         * @brief Check if the end-of-file is reached.
+         * 
+         * Check if the file offset is positioned at the end of the file.
+         * @return true if we reached the end of the file.
+         */
+        bool eof();
+        
+    protected:
+        FILE *_handle;         /**< Handle. */
+        File::OpenMode _mode;  /**< Open mode. */
+        char _modeString[4];   /**< Open mode string. */
+        std::string _filename; /**< Filename. */
 };
-
-/**
- * Set filename.
- * The file is closed if it was previously opened.
- * @param [in] name Filename.
- */
-template <typename T>
-void File::setFilename(const T& name)
-{
-	close();
-	_filename = name;
-}
-
-/** 
- * Open file.
- * @param [in] mode name Filename.
- * @param [in] mode File mode. 
- * @return true if the file was successfully opened. Check errno if it failed.
- */
-template <typename T>
-bool File::open(const T& name, File::OpenMode mode)
-{
-	// Set filename
-	setFilename(name);
-	
-	// Validate mode.
-	if(!setOpenMode(mode))
-	{
-		return false;
-	}
-	
-	// Open file.
-	_handle = fopen(_filename.c_str(), _modeString);
-	if(NULL == _handle)
-	{
-		return false;
-	}
-	return true;
-}
 
 } // Framework
 
