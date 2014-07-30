@@ -5,7 +5,8 @@
 #include <stdlib.h>
 
 #include <expat.h>
-#include <file.hpp>
+
+#include <DumbFramework/file.hpp>
 
 #define PARSER_HANDLER_BUFFER_SIZE 65536
 

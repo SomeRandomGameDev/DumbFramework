@@ -1,5 +1,5 @@
-#include <application.hpp>
-#include <demo/gears.hpp>
+#include <DumbFramework/application.hpp>
+#include "demo/gears.hpp"
 #include <math.h>
 #include <string>
 #include <iostream>

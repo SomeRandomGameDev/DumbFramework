@@ -1,5 +1,4 @@
-#include <program.hpp>
-#include <stdarg.h>
+#include <DumbFramework/program.hpp>
 
 namespace Framework {
 

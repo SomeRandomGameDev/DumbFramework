@@ -1,4 +1,4 @@
-#include <windowhint.hpp>
+#include <DumbFramework/windowhint.hpp>
 #include <GLFW/glfw3.h>
 
 namespace Framework {

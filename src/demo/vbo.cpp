@@ -8,8 +8,8 @@
 #include <iostream>
 #include <math.h>
 
-#include <log.hpp>
-#include <texture2d.hpp>
+#include <DumbFramework/log.hpp>
+#include <DumbFramework/texture2d.hpp>
 
 // Shaders
 

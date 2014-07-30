@@ -1,7 +1,7 @@
 #include <unittest++/UnitTest++.h>
 #include <vector>
 #include <glm/gtc/random.hpp>
-#include "boundingobjects.hpp"
+#include <DumbFramework/boundingobjects.hpp>
 
 using namespace Framework;
 

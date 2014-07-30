@@ -1,6 +1,6 @@
 #include <glm/gtc/type_ptr.hpp>
-#include <log.hpp>
-#include "texture2d.hpp"
+#include <DumbFramework/log.hpp>
+#include <DumbFramework/texture2d.hpp>
 
 namespace Framework {
 

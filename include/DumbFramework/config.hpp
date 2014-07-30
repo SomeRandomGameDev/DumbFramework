@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #if defined(_MSC_VER)
-#include "platform/msvc/config.hpp"
+#include <DumbFramework/platform/msvc/config.hpp>
 #else
 	// nothing atm
 #endif

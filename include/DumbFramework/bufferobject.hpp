@@ -4,8 +4,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <config.hpp>
-#include <log.hpp>
+#include <DumbFramework/config.hpp>
 
 namespace Render {
 

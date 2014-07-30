@@ -2,7 +2,7 @@
 #define _DUMB_FW_TEXTURE_2D_
 
 #include <glm/glm.hpp>
-#include <texture.hpp>
+#include <DumbFramework/texture.hpp>
 
 namespace Framework {
 

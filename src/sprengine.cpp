@@ -3,11 +3,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <sprengine.hpp>
 
 #include <array>
 #include <iostream>
 #include <string>
+
+#include <DumbFramework/sprengine.hpp>
 
 using namespace Framework; // temporary
 

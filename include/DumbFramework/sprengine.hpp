@@ -1,9 +1,9 @@
 #ifndef _DUMB_FW_SPRENGINE_
 #define _DUMB_FW_SPRENGINE_
 
-#include <sprite.hpp>
-#include <bufferobject.hpp>
-#include <program.hpp>
+#include <DumbFramework/sprite.hpp>
+#include <DumbFramework/bufferobject.hpp>
+#include <DumbFramework/program.hpp>
 
 namespace Sprite {
 

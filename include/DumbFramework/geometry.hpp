@@ -4,8 +4,8 @@
 #include <memory>
 #include <vector>
 
-#include "bufferobject.hpp"
-#include "program.hpp"
+#include <DumbFramework/bufferobject.hpp>
+#include <DumbFramework/program.hpp>
 
 namespace Render {
 

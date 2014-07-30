@@ -1,7 +1,7 @@
 #ifndef _DUMB_FW_DEMO_GEARS_
 #define _DUMB_FW_DEMO_GEARS_
 
-#include <scene.hpp>
+#include <DumbFramework/scene.hpp>
 #include <GLFW/glfw3.h>
 
 class GearScene : public Scene {

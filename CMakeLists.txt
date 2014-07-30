@@ -44,7 +44,7 @@ include_directories( ${EXPAT_INCLUDE_DIR}
                      ${SOIL_INCLUDE_DIRS}
                      ${FREETYPE_GL_INCLUDE_DIRS}
                      ${CMAKE_CURRENT_SOURCE_DIR} 
-                     src/)
+                     include/)
 
 set(DUMB_FRAMEWORK_SOURCES
     src/application.cpp

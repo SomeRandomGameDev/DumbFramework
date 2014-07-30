@@ -1,7 +1,7 @@
 #ifndef _DUMB_FW_BOUNDING_CIRCLE_
 #define _DUMB_FW_BOUNDING_CIRCLE_
 
-#include "boundingobjects.hpp"
+#include <DumbFramework/boundingobjects.hpp>
 
 namespace Framework {
 

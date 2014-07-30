@@ -3,7 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <ctime>
-#include <log.hpp>
+#include <DumbFramework/log.hpp>
 
 namespace Framework {
 namespace Log {

@@ -1,6 +1,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <application.hpp>
+#include <DumbFramework/application.hpp>
 
 #include <iostream>
 

@@ -2,8 +2,8 @@
 #define _DUMB_FW_LINE_2D_
 
 #include <glm/glm.hpp>
-#include "ray.hpp"
-#include "side.hpp"
+#include <DumbFramework/ray.hpp>
+#include <DumbFramework/side.hpp>
 
 namespace Framework {
 

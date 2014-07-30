@@ -1,12 +1,12 @@
 // You'll never see an uglyiest test executable !
 
 #include <GL/glew.h> // Hot fix : There's a big issue in the includes management.
-
-#include <log.hpp>
-#include <application.hpp>
-#include <scene.hpp>
-#include <sprengine.hpp>
 #include <iostream>
+
+#include <DumbFramework/log.hpp>
+#include <DumbFramework/application.hpp>
+#include <DumbFramework/scene.hpp>
+#include <DumbFramework/sprengine.hpp>
 
 class TestEngine : public Scene {
 public:

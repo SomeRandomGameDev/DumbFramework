@@ -1,8 +1,8 @@
 #ifndef _DUMB_FW_PROGRAM_
 #define _DUMB_FW_PROGRAM_
 
-#include <shader.hpp>
-#include <log.hpp>
+#include <DumbFramework/log.hpp>
+#include <DumbFramework/shader.hpp>
 
 namespace Framework {
 

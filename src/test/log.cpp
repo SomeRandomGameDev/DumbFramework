@@ -1,7 +1,7 @@
 #include <unittest++/UnitTest++.h>
 #include <iostream>
 #include <vector>
-#include "log.hpp"
+#include <DumbFramework/log.hpp>
 
 using namespace Framework;
 

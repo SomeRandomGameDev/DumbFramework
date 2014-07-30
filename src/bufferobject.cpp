@@ -1,5 +1,5 @@
-#include "log.hpp"
-#include "bufferobject.hpp"
+#include <DumbFramework/log.hpp>
+#include <DumbFramework/bufferobject.hpp>
 
 namespace Render {
 

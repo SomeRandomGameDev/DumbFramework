@@ -2,7 +2,7 @@
 #define _DUMB_FW_TEXTURE_
 
 #include <GL/glew.h>
-#include <config.hpp>
+#include <DumbFramework/config.hpp>
 
 #ifndef GL_MIRROR_CLAMP_TO_EDGE
 #define GL_MIRROR_CLAMP_TO_EDGE GL_MIRROR_CLAMP_TO_EDGE_EXT

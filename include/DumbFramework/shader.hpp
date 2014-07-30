@@ -2,8 +2,8 @@
 #define _DUMB_FW_SHADER_
 
 #include <GL/glew.h>
-#include <config.hpp>
-#include <log.hpp>
+#include <DumbFramework/log.hpp>
+#include <DumbFramework/config.hpp>
 
 namespace Framework {
 

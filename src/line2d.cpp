@@ -1,4 +1,4 @@
-#include "line2d.hpp"
+#include <DumbFramework/line2d.hpp>
 
 namespace Framework {
 

@@ -1,5 +1,6 @@
-#include "shader.hpp"
 #include <iostream>
+
+#include <DumbFramework/shader.hpp>
 
 namespace Framework {
 

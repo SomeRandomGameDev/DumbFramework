@@ -1,6 +1,6 @@
 #include <cstddef>
 #include <functional>
-#include "geometry.hpp"
+#include <DumbFramework/geometry.hpp>
 
 #define GEOMETRY_VALIDATE_STATE(expected) \
     do \
@@ -134,7 +134,7 @@ namespace Render {
             return false;
         }
 
-        return true;	
+        return true;
     }
 
     void Geometry::Destroy()

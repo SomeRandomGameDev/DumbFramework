@@ -1,7 +1,7 @@
 #ifndef _DUMB_FW_MODULE_
 #define _DUMB_FW_MODULE_
 
-#include "enum.hpp"
+#include <DumbFramework/enum.hpp>
 
 namespace Framework {
 
