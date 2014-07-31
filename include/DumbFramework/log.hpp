@@ -15,7 +15,10 @@ namespace Framework {
 namespace Log {
     /**
      * @defgroup DUMB_FW_LOG Log management.
-     * @todo
+     * Application log management system.
+     * 
+     * @todo policies example
+     * @todo macro description
      */
     
     /**
@@ -184,7 +187,13 @@ namespace Log {
      * @brief Log processor.
      * @ingroup DUMB_FW_LOG
      * 
-     * [todo] write a complete description (with examples)
+     * This module is in charge of building and writting log messages
+     * based on the log builder and output policy.
+     * Log messages are written asynchronously. More precisely, the log
+     * message string is first built using the log builder and then
+     * pushed into a message queue. An asynchronous task (typically a 
+     * thread) reads this message queue and outputs the message string
+     * using the output policy.
      */
     class LogProcessor
     {
@@ -211,7 +220,11 @@ namespace Log {
             bool start(BaseLogBuilder* builder, OutputPolicyBase* outputPolicy);
             /** Stop logging task. **/
             bool stop();
-            /** Flush message queue. **/
+            /** 
+             * @brief Flush log output.
+             *
+             * Wait until all emitted log messages have been processed.
+             */
             void flush();
             
         protected:
@@ -292,8 +305,10 @@ namespace Log {
         }
 
     /** 
-     * @brief No filter.
+     * @brief All pass filter.
      * @ingroup DUMB_FW_LOG
+     * 
+     * This filter policy will allow any log message to be emitted.
      */
     struct AllPassFilter
     {
@@ -301,13 +316,19 @@ namespace Log {
          * Evaluate filter.
          * @param [in] module Module id.
          * @param [in] severity Severity.
+         * @return Allways true.
          */
         bool eval(Framework::Module const & module, Framework::Severity const & severity);
     };
 
     /** 
-     * @brief Simple message format.
+     * @brief Simple message string builder.
      * @ingroup DUMB_FW_LOG
+     * 
+     * This format policy builds log message string by simply appending
+     * module id, severity, function name and format string. A typical
+     * log message formatted by this class will look like:
+     * @verbatim [Info][Render][LoadTextures]Loading brick0001.png @endverbatim
      */
     struct SimpleMessageFormat
     {

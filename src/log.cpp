@@ -107,7 +107,11 @@ namespace Log {
         if(_output) { _output->teardown(); }
         return (ret == 0);
     }
-    /** Flush message queue. **/
+    /** 
+     * @brief Flush log output.
+     *
+     * Wait until all emitted log messages have been processed.
+     */
     void LogProcessor::flush()
     {
         pthread_mutex_lock(&_lock);
