@@ -11,16 +11,128 @@
 #include <DumbFramework/severity.hpp>
 #include <DumbFramework/file.hpp>
 
+/**
+ * @defgroup DUMB_FW_LOG Logging system.
+ * Application logging system.
+ * 
+ * In order to use the logging system in your application, you must 
+ * provide an object that implements Framework::Log::BaseLogBuilder
+ * interface and an output policy to the Framework::Log::LogProcessor
+ * instance.
+ * Here is an example using the convenience classes provided:
+ * @code
+ * #include <DumbFramework/log.hpp>
+ * 
+ * using namespace Framework;
+ * 
+ * int main()
+ * {
+ *     Log::LogBuilder<Log::AllPassFilter, Log::SimpleMessageFormat> msgBuilder;
+ *     Log::FileOutputPolicy output;
+ *     
+ *     Log::LogProcessor& processor = Log::LogProcessor::instance();
+ *     processor.start(&msgBuilder, &output);
+ *     
+ *     // [...]
+ *     
+ *     processor.stop();
+ *     
+ *     return 0;
+ * }
+ * @endcode
+ * 
+ * Now that the log processor is initialized and started, you can emit
+ * log messages using one of the 4 macro provided.
+ *      - Log_Info (module, format, ...)
+ *      - Log_Warning (module, format, ...)
+ *      - Log_Error (module, format, ...)
+ *      - Log_Ex (module, severity, format, ...)
+ */
+
+/**
+ * @def  Log_Info(module, format, ...)
+ * @hideinitializer
+ * @ingroup DUMB_FW_LOG
+ * Emit log with the severity set to Framework::Severity::Info.
+ * 
+ * @a module is one of the module defined in Framework::Module. \n
+ * @a format is similar is similar to @c printf. \n
+ *
+ * The source information (file, line number, function name) is
+ * automatically set. 
+ */
+
+/**
+ * @def  Log_Warning(module, format, ...)
+ * @hideinitializer
+ * @ingroup DUMB_FW_LOG
+ * Emit log with the severity set to Framework::Severity::Warning.
+ * 
+ * @a module is one of the module defined in Framework::Module. \n
+ * @a format is similar to @c printf. \n
+ *
+ * The source information (file, line number, function name) is
+ * automatically set. 
+ */
+
+/**
+ * @def  Log_Error(module, format, ...)
+ * @hideinitializer
+ * @ingroup DUMB_FW_LOG
+ * Emit log with the severity set to Framework::Severity::Error.
+ * 
+ * @a module is one of the module defined in Framework::Module. \n
+ * @a format is similar to @c printf. \n
+ * 
+ * The source information (file, line number, function name) is
+ * automatically set. 
+ */
+
+/**
+ * @def Log_Ex(module, severity, format, ...)
+ * @hideinitializer
+ * @ingroup DUMB_FW_LOG
+ * Emit log.
+ * This macro may be used in case where the severity is determined by
+ * the outcome of some computations.
+ * 
+ * For example, we get the result of a system via @b errno and the
+ * associated message with @b strerror. Depending on the value of
+ * @b errno, we can decide that this is an error, or warning, or just
+ * an information.
+ * @code
+ * Framework::Severity severity;
+ * int ret;
+ * 
+ * ret = some_system_function();
+ * 
+ * if(0 == ret)
+ * {
+ *    severity = Framework::Severity::Infos;
+ * }
+ * else if((EINPROGRESS == errno) || (EALREADY == errno))
+ * {
+ *    severity = Framework::Severity::Warning;
+ * }
+ * else
+ * {
+ *     severity = Framework::Severity::Error;
+ * }
+ * 
+ * Log_Ex(Framework::Module::App, severity, "some_system_function result: %s", strerror(errno));
+ * 
+ * @endcode
+ * 
+ * @a module is one of the module defined in DumbFramework::Module. \n
+ * @a severity is one of the module defined in DumbFramework::Severity. \n
+ * @a format is similar to @c printf. \n
+ * 
+ * The source information (file, line number, function name) is
+ * automatically set. 
+ */
+
 namespace Framework {
 namespace Log {
-    /**
-     * @defgroup DUMB_FW_LOG Log management.
-     * Application log management system.
-     * 
-     * @todo policies example
-     * @todo macro description
-     */
-    
     /**
      * @brief Log source informations.
      * @ingroup DUMB_FW_LOG
@@ -194,6 +306,9 @@ namespace Log {
      * pushed into a message queue. An asynchronous task (typically a 
      * thread) reads this message queue and outputs the message string
      * using the output policy.
+     * 
+     * @note This is a singleton. You can only have instance of this
+     * object.
      */
     class LogProcessor
     {
@@ -265,46 +380,6 @@ namespace Log {
     };
 
     /** 
-     * Constructor.
-     */
-    template <class FilterPolicy, class FormatPolicy>
-        LogBuilder<FilterPolicy, FormatPolicy>::LogBuilder()
-        : BaseLogBuilder()
-          , _filter()
-          , _format()
-    {}
-
-    /** 
-     * Destructor.
-     */
-    template <class FilterPolicy, class FormatPolicy>
-        LogBuilder<FilterPolicy, FormatPolicy>::~LogBuilder()
-        {}
-
-    /**
-     * Build log message.
-     *
-     * @param [out] out      Output string.
-     * @param [in]  module   Module ID. 
-     * @param [in]  severity Log severity (warning, trace, error, ...).
-     * @param [in]  infos    Source information (file, line number, ...).
-     * @param [in]  format   Format string.
-     * @param [in]  args     Format string arguments.
-     */
-    template <class FilterPolicy, class FormatPolicy>
-        bool LogBuilder<FilterPolicy, FormatPolicy>::build(std::string & out, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args)
-        {
-            if(_filter.eval(module, severity))
-            {
-                LogProcessor& processor = LogProcessor::instance();
-                (void)processor;
-                _format.build(out, module, severity, infos, format, args);
-                return true;
-            }
-            return false;
-        }
-
-    /** 
      * @brief All pass filter.
      * @ingroup DUMB_FW_LOG
      * 
@@ -328,7 +403,7 @@ namespace Log {
      * This format policy builds log message string by simply appending
      * module id, severity, function name and format string. A typical
      * log message formatted by this class will look like:
-     * @verbatim [Info][Render][LoadTextures]Loading brick0001.png @endverbatim
+     * @verbatim [info][Render][LoadTextures]Loading brick0001.png @endverbatim
      */
     struct SimpleMessageFormat
     {
@@ -407,5 +482,7 @@ namespace Log {
 #define Log_Error(module, format, ...)   do { Framework::Log::LogProcessor::instance().write(module, Framework::Severity::Error,   Framework::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
 
 #define Log_Ex(module, severity, format, ...) do { Framework::Log::LogProcessor::instance().write(module, severity,   Framework::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
+
+#include "log.inl"
 
 #endif /* _DUMB_FW_LOG_ */

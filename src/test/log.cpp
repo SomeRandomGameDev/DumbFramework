@@ -45,9 +45,9 @@ SUITE(Log)
         
         int i = 0;
         output.index = 0;
-        output.expected[0] = "[Info][Base] RunImpl info    0!";
-        output.expected[1] = "[Warning][Base] RunImpl warn    1!";
-        output.expected[2] = "[Error][Base] RunImpl error   2!";
+        output.expected[0] = "[info][Base] RunImpl info    0!";
+        output.expected[1] = "[warning][Base] RunImpl warn    1!";
+        output.expected[2] = "[error][Base] RunImpl error   2!";
 
         Log_Info(Framework::Module::Base,    "info    %d!", i++);
         Log_Warning(Framework::Module::Base, "warn    %d!", i++);
@@ -73,9 +73,9 @@ SUITE(Log)
         StringListOutputPolicy output;
         std::string expected[3];
         
-        expected[0] = "[Info][Base] RunImpl info    0!";
-        expected[1] = "[Warning][Base] RunImpl warn    1!";
-        expected[2] = "[Error][Base] RunImpl error   2!";
+        expected[0] = "[info][Base] RunImpl info    0!";
+        expected[1] = "[warning][Base] RunImpl warn    1!";
+        expected[2] = "[error][Base] RunImpl error   2!";
 
         Log::LogProcessor& processor = Log::LogProcessor::instance();
         processor.start(&msgBuilder, &output);

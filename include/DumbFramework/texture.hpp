@@ -10,7 +10,7 @@
 
 namespace Framework {
     /**
-     * @defgroup DUMB_FW_TEXTURE GPU texture module.
+     * @defgroup DUMB_FW_TEXTURE Texture management.
      * @todo
      */
 namespace Texture   {
@@ -98,7 +98,7 @@ namespace Texture   {
          */
         inline MinFilter(Value v) : value(v) {}
         inline operator Value() { return value; }
-        /** Convert minification filter value to OpenGL compliant value. **/
+        /** Convert to OpenGL compliant value. **/
         inline operator GLint();
     };
     /** 
@@ -111,11 +111,22 @@ namespace Texture   {
         {
             NEAREST_TEXEL,
             LINEAR_TEXEL
-        } value;
+        };
+        Value value; /**< Magnification filter value. **/
+        /**
+         * @brief Default constructor.
+         * By default the magnification filter is set to the nearest 
+         * texel.
+         */
         inline MagFilter() : value(NEAREST_TEXEL) {}
+        /**
+         * @brief Constructor.
+         * Constructs magnification filter from value.
+         */
         inline MagFilter(Value v) : value(v) {}
         inline operator Value() { return value; }
         inline operator const Value() const { return value; }
+        /** Convert to OpenGL compliant value. **/
         inline operator GLint();
     };
     /** 
@@ -131,84 +142,27 @@ namespace Texture   {
             CLAMP_TO_BORDER,
             MIRRORED_REPEAT,
             MIRROR_CLAMP_TO_EDGE
-        } value;
+        };
+        Value value; /**< Texture wrap value. **/
+        /** 
+         * @brief Default constructor.
+         * By default the texture wrap mode is set to @c REPEAT.
+         */ 
         inline Wrap() : value(REPEAT) {}
+        /**
+         * @brief Constructor.
+         * Constructs texture wrap mode from value.
+         */
         inline Wrap(Value v) : value(v) {}
         inline operator Value() { return value; }
         inline operator const Value() const { return value; }
+        /** Convert to OpenGL compliant value. **/
         inline operator GLint();
     };
 
-    inline size_t PixelFormat::bytesPerPixel() const
-    {
-        switch(value)
-        {
-            case UNKNOWN:
-                return 0;
-            case RGB_8:
-                return 3;
-            case RGBA_8:
-                return 4;
-            case LUMINANCE_8:
-                return 1;
-            case LUMINANCE_16:
-                return 2;
-        };
-    }
-
-    inline size_t PixelFormat::componentCount() const
-    {
-        switch(value)
-        {
-            case UNKNOWN:
-                return 0;
-            case RGB_8:
-                return 3;
-            case RGBA_8:
-                return 4;
-            case LUMINANCE_8:
-            case LUMINANCE_16:
-                return 1;
-        };
-    }
-    
-    MinFilter::operator GLint()
-    {
-        static const GLenum glMinFilter[] =
-        { 
-            GL_NEAREST,
-            GL_LINEAR,
-            GL_NEAREST_MIPMAP_NEAREST,
-            GL_NEAREST_MIPMAP_LINEAR,
-            GL_LINEAR_MIPMAP_NEAREST,
-            GL_LINEAR_MIPMAP_LINEAR
-        };
-        return glMinFilter[value];
-    }
-    
-    MagFilter::operator GLint()
-    {
-        static const GLenum glMagFilter[] =
-        {
-            GL_NEAREST,
-            GL_LINEAR
-        };
-        return glMagFilter[value];
-    }
-    
-    Wrap::operator GLint()
-    {   
-        static const GLenum glWrapMode[] =
-        {
-            GL_REPEAT,
-            GL_CLAMP_TO_EDGE,
-            GL_CLAMP_TO_BORDER,
-            GL_MIRRORED_REPEAT,
-            GL_MIRROR_CLAMP_TO_EDGE
-        };
-        return glWrapMode[value];
-    }
 } // Texture
 } // Framework
+
+#include "texture.inl"
 
 #endif /* _DUMB_FW_TEXTURE_ */
