@@ -8,6 +8,7 @@ namespace Framework {
 
 /**
  * Texture 2D Wrapper.
+ * @ingroup DUMB_FW_TEXTURE
  */
 class Texture2D
 {

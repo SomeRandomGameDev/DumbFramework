@@ -9,13 +9,14 @@ namespace Framework {
  */
 struct Module
 {
+    /** Module ids. **/
     enum Value
     {
         Base,       /**< Base module (low level or system). **/
         Render,     /**< Rendering module. **/
         App,        /**< User application. **/
     };
-    Value value;
+    Value value; /**< Module identifier. **/
     /** Default constructor. **/
     inline Module() {}
     /** 

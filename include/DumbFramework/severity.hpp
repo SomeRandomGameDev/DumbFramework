@@ -8,13 +8,14 @@ namespace Framework {
  */
 struct Severity
 {
+    /** Severity values. **/
     enum Value
     {
         Info,       /**< Purely informative. **/
         Warning,    /**< Something wrong or unexpected happened but nothing irremediable. **/
         Error       /**< Something failed. **/
     };
-    Value value;
+    Value value; /**< Severity value. **/
     /** Default constructor. **/
     inline Severity() {}
     /** 

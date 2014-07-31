@@ -20,13 +20,19 @@ namespace Texture   {
      */
     struct PixelFormat
     {
+        /** Pixel formats. **/
         enum Value
         {
-            UNKNOWN,        /**< Unknown pixel format. **/
-            RGB_8,          /**< Red, Green, Blue with 8 bits per component. **/
-            RGBA_8,         /**< Red, Green, Blue, Alpha with 8 bits per component. **/
-            LUMINANCE_8,    /**< Luminance 8 bits (1 component). **/
-            LUMINANCE_16    /**< Luminance 16 bits (1 component). **/
+            /** Unknown pixel format. **/
+            UNKNOWN,
+            /** Red, Green, Blue with 8 bits per component. **/
+            RGB_8,
+            /** Red, Green, Blue, Alpha with 8 bits per component. **/
+            RGBA_8,
+            /** Luminance 8 bits (1 component). **/
+            LUMINANCE_8,
+            /** Luminance 16 bits (1 component). **/
+            LUMINANCE_16
         };
         Value value; /**< Pixel format value. **/
         /** 
@@ -76,13 +82,49 @@ namespace Texture   {
      */
     struct MinFilter
     {
+        /** Minification filter values. **/
         enum Value
         {
+            /**
+             * Return the texture element that is the nearest to the 
+             * specified texture coordinate.
+             */
             NEAREST_TEXEL,
+            /**
+             * Return the weighted average of the four texture elements
+             * that are closest to the specified texture coordinate.
+             */
             LINEAR_TEXEL,
+            /**
+             * Chooses the mipmap that most closely matches the size of 
+             * the pixel being textured, and returns the texture element
+             * in that mipmap that is the nearest to the specified
+             * texture coordinate.
+             */
             NEAREST_TEXEL_NEAREST_MIPMAP,
+            /**
+             * Chooses the two mipmaps that most closely match the size 
+             * of the pixel being textured and extract the texture
+             * element in those two mipmaps that is the nearest to the
+             * specified texture coordinate. The final result is the
+             * weighted average of those two values.
+             */
             NEAREST_TEXEL_LINEAR_MIPMAP,
+            /**
+             * Chooses the mipmap that most closely matches the size of 
+             * the pixel being textured, and returns the weighted 
+             * average of the four texture element that are closest to
+             * the specified texture coordinate.
+             */
             LINEAR_TEXEL_NEAREST_MIPMAP,
+            /**
+             * Chooses the two mipmaps that most closely match the size 
+             * of the pixel being textured and compute in each mipmap
+             * the weighted average of the four texture elements that
+             * are closest to the specified texture coordinate. The 
+             * final result is the the weighted average of those two
+             * values.
+             */
             LINEAR_TEXEL_LINEAR_MIPMAP
         };
         Value value; /**< Minification filter value. **/
@@ -107,9 +149,18 @@ namespace Texture   {
      */
     struct MagFilter
     {
+        /** Magnification filter values. **/
         enum Value
         {
+            /**
+             * Return the texture element that is the nearest to the 
+             * specified texture coordinate.
+             */
             NEAREST_TEXEL,
+            /**
+             * Return the weighted average of the four texture elements
+             * that are closest to the specified texture coordinate.
+             */
             LINEAR_TEXEL
         };
         Value value; /**< Magnification filter value. **/
@@ -135,12 +186,41 @@ namespace Texture   {
      */
     struct Wrap
     {
+        /** Texture wrap values. **/
         enum Value
         {
+            /**
+             * The integer part of the texture coodinate is ignored.
+             * Therefore the texture coordinate loops between 0 and 1
+             * creating a repeating pattern.
+             */
             REPEAT,
+            /**
+             * If the texture coordinate is clamped between 
+             * \f$ \left[ \frac{1}{2N}, 1 - \frac{1}{2N} \right] \f$ .
+             * @c N being the size of the texture in the direction of 
+             * interest.
+             */
             CLAMP_TO_EDGE,
+            /**
+             * If the texture coordinate is outside the texture size,
+             * the texel fetched is replaced by the border color.
+             */
             CLAMP_TO_BORDER,
+            /**
+             * If the integer part of the texture coordinate is even,
+             * the fractional part is used. Otherwise, if the integer
+             * part is odd, the texture coordinate is set to 
+             * \f$ 1 - fractional(s) \f$ . Where \f$ fractional \f$ is
+             * the function returning the fractional part of a floating
+             * point number.
+             */
             MIRRORED_REPEAT,
+            /**
+             * The texture coordinate is repeated just like 
+             * MIRRORED_REPEAT for one repetition and then clamped as in
+             * CLAMP_TO_EDGE.
+             */
             MIRROR_CLAMP_TO_EDGE
         };
         Value value; /**< Texture wrap value. **/
