@@ -28,15 +28,6 @@ static GLenum translateType(Shader::Type const & type)
             return GL_GEOMETRY_SHADER;
         case Shader::FRAGMENT_SHADER:
             return GL_FRAGMENT_SHADER;
-#if defined(GL4_SUPPORT)
-        case Shader::TESSELATION_CONTROL_SHADER:
-            return GL_TESS_CONTROL_SHADER;
-        case Shader::TESSELATION_EVALUATION_SHADER:
-            return GL_TESS_EVALUATION_SHADER;
-#else
-        case Shader::TESSELATION_CONTROL_SHADER:
-        case Shader::TESSELATION_EVALUATION_SHADER:
-#endif /* GL4_SUPPORT */
         default:
             return GL_INVALID_ENUM;
     };
@@ -146,7 +137,7 @@ void Shader::infoLog(Framework::Severity severity) const
     }
 
     glGetShaderInfoLog(_id, maxLogLength, &loglength, log);
-	Log_Ex(Framework::Module::Render, severity, log);
+    Log_Ex(Framework::Module::Render, severity, log);
     delete [] log;
 }
 

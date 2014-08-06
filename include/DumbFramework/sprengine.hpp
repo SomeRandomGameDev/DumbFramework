@@ -2,7 +2,7 @@
 #define _DUMB_FW_SPRENGINE_
 
 #include <DumbFramework/sprite.hpp>
-#include <DumbFramework/bufferobject.hpp>
+#include <DumbFramework/vertexbuffer.hpp>
 #include <DumbFramework/program.hpp>
 
 namespace Sprite {
@@ -303,9 +303,9 @@ private:
   GLuint _vao;
 
   /**
-   * Vertex Buffer Object identifier.
+   * Vertex Buffer Object.
    */
-  Render::BufferObject _buffer;
+  Framework::VertexBuffer _buffer;
 
   /**
    * GLSL Program identifier.

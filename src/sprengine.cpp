@@ -146,7 +146,7 @@ namespace Sprite {
             _table[capacity-1]._next = -1;
 
             // VAO+VBO init.
-            _buffer.create(GL_ARRAY_BUFFER, VBO_STRIDE*capacity, GL_STREAM_DRAW);
+            _buffer.create(VBO_STRIDE*capacity);
 
             glGenVertexArrays(1, &_vao);
             glBindVertexArray(_vao);
@@ -562,16 +562,16 @@ namespace Sprite {
     void Engine::render() {
         // Animate the sprites
         animate();
-
         // Retrieve buffer and memcpy.
         glDepthMask(GL_FALSE);
-        glEnable(GL_TEXTURE_2D_ARRAY);
+        
         _program.begin();
             glUniformMatrix4fv(_uniformMatrix, 1, GL_FALSE, glm::value_ptr(_matrix));
             glUniform1i(_uniformTexture, 0);
             glActiveTexture(GL_TEXTURE0);
             _texture->bind();
-            GLfloat *ptr = (GLfloat *) _buffer.map(Render::BufferObject::BUFFER_WRITE);
+
+            GLfloat *ptr = (GLfloat *) _buffer.map(BufferObject::Access::WRITE_ONLY);
             memcpy(ptr, _cell, VBO_STRIDE * _count);
             _buffer.unmap();
 

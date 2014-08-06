@@ -2,143 +2,175 @@
 #define _DUMB_FW_BUFFER_OBJECT_
 
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
-
 #include <DumbFramework/config.hpp>
+#include <DumbFramework/log.hpp>
 
-namespace Render {
-
+namespace Framework    {
 /**
- * Buffer object.
+ * @defgroup DUMB_FW_BUFFER_OBJECT Buffer object management.
+ * GPU buffer (vertex, index, pixel, ...) management.
  */
-class BufferObject
+namespace BufferObject {
+/**
+ * @brief Buffer object access.
+ * This structure specifies the access policy to mapped buffer 
+ * object storage.
+ *      - Access::READ_ONLY : it is only possible to @b read @b from
+ *                            the mapped buffer object data.
+ *      - Access::WRITE_ONLY : it is only possible to @b write @b to
+ *                             the mapped buffer object data.
+ *      - Access::READ_WRITE : it is possible to both @b read @b from 
+ *                             and @b write @b to the mapped buffer
+ *                             object data.
+ * @ingroup DUMB_FW_BUFFER_OBJECT
+ */
+struct Access
 {
-	public:
-		/**
-		 * Constructor.
-		 */
-		BufferObject();
-		/**
-		 * Destructor.
-		 */
-		~BufferObject();
-
-		/**
-		 * Create buffer object.
-		 * @param [in] target Target buffer type.
-		 * @param [in] size   Size in bytes of the buffer object.
-		 * @param [in] usage  Expected usage of the buffer object data
-		 * @param [in] data   Pointer to the data that will be copied. (Optional. Default value is NULL). 
-		 * @return true if the buffer object was succesfully created.
-		 */
-		bool create( GLint target, GLsizei size, GLenum usage, const GLvoid *data = NULL );
-		/**
-		 * Destroy buffer object.
-		 */
-		void destroy();
-		
-		/**
-		 * Bind buffer.
-		 */
-		void bind() const;
-		/**
-		 * Bind buffer to an indexed buffer object.
-		 * This can be used to bind a buffer to a uniform block or for transform feedback.
-		 * @param [in] target Target buffer type (GL_TRANSFORM_FEEDBACK_BUFFER or GL_UNIFORM_BUFFER).
-		 * @param [in] index  Binding point index (uniform id or transform feedback).
-		 */
-		void bindBase( GLenum bindTarget, GLuint index ) const;
-		/**
-		 * Bind buffer to an indexed buffer object.
-		 * This can be used to bind a buffer to a uniform block or for transform feedback.
-		 * @param [in] target Target buffer type (GL_TRANSFORM_FEEDBACK_BUFFER or GL_UNIFORM_BUFFER).
-		 * @param [in] index  Binding point index (uniform id or transform feedback).
-		 * @param [in] offset Offset in the buffer object.
-		 * @param [in] size   Size of the buffer area to be read.
-		 */
-		void bindRange( GLenum bindTarget, GLuint index, GLintptr offset, GLsizeiptr size ) const;
-		/**
-		 * Unbind bufer object.
-		 */
-		void unbind() const;
-		/**
-		 * Utility function to transate offset into pointer.
-		 */
-		static inline const GLvoid* offset(GLint off);
-		/**
-		 * Set buffer data.
-		 * @param [in]  offset Offset where the data will be copied in the buffser object.
-		 * @param [in]  size   Size of the data to be copied.
-		 * @param [in]  data   Pointer to the data to be copied.
-		 * @param [out] true if the data was succesfully copied.
-		 */
-		bool data( GLintptr offset, GLsizeiptr size, const GLvoid* data );
-
-		enum MappingMode
-		{
-			BUFFER_READ,
-			BUFFER_WRITE
-		};
-		/**
-		 * Map buffer area.
-		 * @param [in] mode   Mapping mode (read or write).
-		 */
-		GLvoid* map(MappingMode mode);
-		/**
-		 * Map buffer area.
-		 * @param [in] mode   Mapping mode (read or write).
-		 * @param [in] offset Offset of the area to be mapped.
-		 * @param [in] size   Size of the area to be mapped.
-		 */
-		GLvoid* mapRange(MappingMode mode, GLintptr offset, GLsizei size);
-		/**
-		 * Unmap buffer.
-		 */
-		void unmap();
-
-		GLuint id    () const { return _id;     }
-		GLint  target() const { return _target; }
-		GLint  size  () const { return _size;   }
-	protected:
-		/**
-		 * Buffer id.
-		 */
-		GLuint  _id;
-		/**
-		 * Buffer target. Supported values are :
-		 *		GL_ARRAY_BUFFER
-		 *		GL_COPY_READ_BUFFER
-		 *		GL_COPY_WRITE_BUFFER
-		 *		GL_ELEMENT_ARRAY_BUFFER
-		 *		GL_PIXEL_PACK_BUFFER
-		 *		GL_PIXEL_UNPACK_BUFFER
-		 *		GL_TEXTURE_BUFFER
-		 *		GL_TRANSFORM_FEEDBACK_BUFFER
-		 *		GL_UNIFORM_BUFFER
-		 */
-		GLint   _target;
-		/**
-		 * Size in bytes of the buffer object.
-		 */
-		GLint   _size;
-		/**
-		 * Expected usage of the buffer object data.
-		 * Supported values are:
-		 *		GL_STREAM_DRAW,  GL_STREAM_READ,  GL_STREAM_COPY 
-		 *		GL_STATIC_DRAW,  GL_STATIC_READ,  GL_STATIC_COPY 
-		 *		GL_DYNAMIC_DRAW, GL_DYNAMIC_READ, GL_DYNAMIC_COP
-		 */
-		GLenum  _usage;
+    /** Buffer object access. **/
+    enum Value
+    {
+        /** The buffer object data access is @b read-only. **/
+        READ_ONLY,
+        /** The buffer object data access is @b write-only. **/
+        WRITE_ONLY,
+        /** The buffer object data access is @b read/write. **/
+        READ_WRITE
+    };
+    Value value; /**< Buffer object access value. **/
+    /** 
+     * @brief Default constructor.
+     * By default the buffer object access is @c Access::READ_ONLY.
+     */
+    inline Access() : value(Access::READ_ONLY) {}
+    /**
+     * @brief Constructor.
+     * @param [in] v  Buffer object access value.
+     */
+    inline Access(Value v) : value(v) {}
+    inline operator Value() { return value; }
+    /** Convert to OpenGL compliant value. **/
+    inline operator GLenum();
 };
 
 /**
-	* Utility function to transate offset into pointer.
-	*/
-inline const GLvoid* BufferObject::offset(GLint off)
+ * @brief Buffer object type.
+ */
+enum Type
 {
-	return (char*)NULL + off;
-}
+    /** Vertex buffer. **/
+    VERTEX_BUFFER,
+    /** Index buffer. **/
+    INDEX_BUFFER
+};
 
-}
+/**
+ * Template for buffer object.
+ * @ingroup DUMB_FW_BUFFER_OBJECT 
+ */
+template<Type t>
+class Detail
+{
+        public:
+        /** Constructor. **/
+        Detail();
+        /**Destructor. **/
+        ~Detail();
+        /**
+         * Create a buffer.
+         * @param [in] size  Size in bytes of the buffer data storage.
+         * @param [in] data  Pointer to the data that will be copied to
+         *                   buffer data storage (default = NULL).
+         * @return true if the buffer was successfully created.
+         */
+        bool create(size_t size, void* data = NULL);
+        /**
+         * Destroy buffer.
+         */
+        void destroy();
+        /**
+         * Copy data to buffer.
+         * @param [in] offset Offset in the buffer data storage where
+         *                    the data will be copied.
+         * @param [in] size   Number of bytes to copy.
+         * @param [in] data   Pointer to the data to be copied.
+         * @return true if the data was successfully copied. It may fail
+         *         if the buffer is in an invalid state or if the
+         *         offset and size are out of bound.
+         */
+        bool set(off_t offset, size_t size, void* data);
+        /**
+         * Bind buffer.
+         */
+        void bind() const;
+        /**
+         * Unbind buffer.
+         */
+        void unbind() const;
+        /**
+         * Check if the buffer is bound.
+         * @return true if the buffer is bound.
+         */
+        bool isBound() const;
+        /**
+         * Unbind currently bound buffers.
+         */
+        static void unbindAll();
+        /**
+         * Map buffer data storage.
+         * @param [in] access  Data storage access policy.
+         * @return Pointer to the buffer data storage or NULL if an
+         *         error occured.
+         */ 
+        void* map(BufferObject::Access access);
+        /**
+         * Map only a given area of the buffer data storage.
+         * @param [in] access  Data storage access policy.
+         * @param [in] offset  Starting offset in the buffer data
+         *                     storage.
+         * @param [in] length  Number of bytes to be mapped.
+         * @return Pointer to the buffer data storage or NULL if an
+         *         error occured.
+         */
+        void* map(BufferObject::Access access, off_t offset, size_t length);
+        /**
+         * Unmap buffer.
+         * The pointer previously returned by Detail::map will become 
+         * invalid.
+         * @return true if the buffer was successfully unmapped.
+         */
+        bool unmap();
+        /**
+         * Tells if the buffer is currently mapped.
+         * @return true if the buffer is mapped.
+         */
+        bool isMapped() const;
+        /**
+         * Tell if the buffer is valid.
+         * @return true if the buffer is valid.
+         */
+        bool isValid() const;
+        /**
+         * Get buffer size.
+         * @return size in bytes.
+         */
+        size_t size() const;
+    
+    private:
+        struct Infos
+        {
+            char const* name;   /**< Type name. **/
+            GLenum      target; /**< Target. **/
+            GLenum      query;  /**< Binding query. **/
+        };
+        static const Infos _infos; /** Buffer type info. **/
+        
+        GLuint _id;   /**< Buffer id. **/
+        size_t _size; /**< Buffer size in bytes. **/
+};
+
+} // BufferObject
+} // Framework
+
+#include "bufferobject.inl"
 
 #endif /* _DUMB_FW_BUFFER_OBJECT_ */
