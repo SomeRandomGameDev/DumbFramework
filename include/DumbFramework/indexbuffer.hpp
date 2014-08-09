@@ -14,9 +14,8 @@ namespace Framework {
  * indices. This indices may be used to fetch data from vertex buffers
  * in order to construct geometric primitives.
  */
-typedef BufferObject::Detail<BufferObject::INDEX_BUFFER> IndexBufer;
+typedef BufferObject::Detail<BufferObject::INDEX_BUFFER> IndexBuffer;
 
-#endif
 } // Framework
 
 #endif /* _DUMB_FW_INDEX_BUFFER_ */

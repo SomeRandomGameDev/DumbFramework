@@ -11,6 +11,7 @@
 namespace Framework {
 /**
  * @defgroup DUMB_FW_TEXTURE Texture management.
+ * @ingroup DUMB_FW_RENDERING
  * GPU Texture management.
  */
 namespace Texture   {

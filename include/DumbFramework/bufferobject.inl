@@ -138,7 +138,7 @@ void Detail<t>::unbind() const
         if(_id)
         {
             Log_Warning(Module::Render, "You are trying to unbind buffer %d whereas the current bound %s buffer is %d", _id, _infos.name, bufferId);
-            Log_Warning(Module::Render, "If you really want to unbind currently bound buffer use the unbindAll() (static) method instead.");
+            Log_Warning(Module::Render, "If you really want to unbind the currently bound buffer use the unbindAll() (static) method instead.");
         }
         else
         {

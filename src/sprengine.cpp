@@ -114,7 +114,7 @@ namespace Sprite {
 
     Engine::Engine(Atlas *atlas, unsigned int capacity) :
         _atlas(atlas),
-        _vao(0),
+        _stream(),
         _buffer(),
         _program(),
         _texture(&atlas->texture()),
@@ -145,62 +145,44 @@ namespace Sprite {
             }
             _table[capacity-1]._next = -1;
 
-            // VAO+VBO init.
+            // vertex buffer + stream init.
             _buffer.create(VBO_STRIDE*capacity);
 
-            glGenVertexArrays(1, &_vao);
-            glBindVertexArray(_vao);
-            glEnableVertexAttribArray(VERTEX_INDEX);
-            glEnableVertexAttribArray(OFFSET_INDEX);
-            glEnableVertexAttribArray(SIZE_INDEX);
-            glEnableVertexAttribArray(TOP_TEX_INDEX);
-            glEnableVertexAttribArray(DOWN_TEX_INDEX);
-            glEnableVertexAttribArray(ROTATE_INDEX);
-            glEnableVertexAttribArray(SCALE_INDEX);
-            _buffer.bind();
-            glVertexAttribPointer(VERTEX_INDEX,
-                    2, GL_FLOAT,
-                    GL_FALSE,
+            _stream.create(&_buffer);
+            _stream.set(VERTEX_INDEX,
+                    Framework::Geometry::ComponentType::FLOAT, 2,
                     VBO_STRIDE,
-                    (GLvoid *) 0);
-            glVertexAttribPointer(OFFSET_INDEX,
-                    2, GL_FLOAT,
-                    GL_FALSE,
+                    0);
+            _stream.set(OFFSET_INDEX,
+                    Framework::Geometry::ComponentType::FLOAT, 2,
                     VBO_STRIDE,
-                    (GLvoid *) (sizeof(float) * 2));
-            glVertexAttribPointer(SIZE_INDEX,
-                    2, GL_FLOAT,
-                    GL_FALSE,
+                    sizeof(float) * 2);
+            _stream.set(SIZE_INDEX,
+                    Framework::Geometry::ComponentType::FLOAT, 2,
                     VBO_STRIDE,
-                    (GLvoid *) (sizeof(float) * 4));
-            glVertexAttribPointer(TOP_TEX_INDEX,
-                    2, GL_FLOAT,
-                    GL_FALSE,
+                    sizeof(float) * 4);
+            _stream.set(TOP_TEX_INDEX,
+                    Framework::Geometry::ComponentType::FLOAT, 2,
                     VBO_STRIDE,
-                    (GLvoid *) (sizeof(float) * 6));
-            glVertexAttribPointer(DOWN_TEX_INDEX,
-                    2, GL_FLOAT,
-                    GL_FALSE,
+                    sizeof(float) * 6);
+            _stream.set(DOWN_TEX_INDEX,
+                    Framework::Geometry::ComponentType::FLOAT, 2,
                     VBO_STRIDE,
-                    (GLvoid *) (sizeof(float) * 8));
-            glVertexAttribPointer(ROTATE_INDEX,
-                    1, GL_FLOAT,
-                    GL_FALSE,
+                    sizeof(float) * 8);
+            _stream.set(ROTATE_INDEX,
+                    Framework::Geometry::ComponentType::FLOAT, 1,
                     VBO_STRIDE,
-                    (GLvoid *) (sizeof(float) * 10));
-            glVertexAttribPointer(SCALE_INDEX,
-                    1, GL_FLOAT,
-                    GL_FALSE,
+                    sizeof(float) * 10);
+            _stream.set(SCALE_INDEX,
+                    Framework::Geometry::ComponentType::FLOAT, 1,
                     VBO_STRIDE,
-                    (GLvoid *) (sizeof(float) * 11));
-            glVertexAttribPointer(TEXTURE_INDEX,
-                    1, GL_UNSIGNED_INT,
-                    GL_FALSE,
+                    sizeof(float) * 11);
+            _stream.set(TEXTURE_INDEX,
+                    Framework::Geometry::ComponentType::UNSIGNED_INT, 1,
                     VBO_STRIDE,
-                    (GLvoid *) (sizeof(float) * 12));
-            _buffer.unbind();
-            glBindVertexArray(0);
-
+                    sizeof(float) * 12);
+            _stream.compile();
+            
             _time = glfwGetTime();
 
             // Create program.
@@ -240,11 +222,9 @@ namespace Sprite {
         _program.destroyShaders();
         _program.destroy();
         
-        // VBO/VAO deletion.
-        if(_vao != 0) {
-            glDeleteVertexArrays(1, &_vao);
-            _buffer.destroy();
-        }
+        // Vertex buffer and stream deletion.
+        _stream.destroy();
+        _buffer.destroy();
     }
 
     void Engine::displayTable() {
@@ -576,9 +556,9 @@ namespace Sprite {
             _buffer.unmap();
 
             // Send VAO.
-            glBindVertexArray(_vao);
-            glDrawArrays(GL_POINTS, 0, _count);
-            glBindVertexArray(0);
+            _stream.bind();
+                _stream.draw(Framework::Geometry::Primitive::POINTS, 0, _count);
+            _stream.unbind();
         _program.end();
         glDepthMask(GL_TRUE);
     }

@@ -8,6 +8,7 @@
 namespace Framework    {
 /**
  * @defgroup DUMB_FW_BUFFER_OBJECT Buffer object management.
+ * @ingroup DUMB_FW_RENDERING
  * GPU buffer (vertex, index, pixel, ...) management.
  */
 namespace BufferObject {

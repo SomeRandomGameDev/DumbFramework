@@ -57,6 +57,8 @@ set(DUMB_FRAMEWORK_SOURCES
     src/plane.cpp
     src/ray.cpp
     src/bufferobject.cpp
+    src/geometry.cpp
+    src/vertexstream.cpp
     src/file.cpp
     src/module.cpp
     src/severity.cpp
