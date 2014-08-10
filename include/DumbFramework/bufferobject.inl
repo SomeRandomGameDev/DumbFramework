@@ -213,9 +213,9 @@ void* Detail<t>::map(BufferObject::Access access, off_t offset, size_t length)
         Log_Warning(Framework::Module::Render, "The buffer is alread mapped. Current mapping operation will fail!");
     }
 #endif // SANITY_CHECK
-
-    GLvoid* ptr;
     bind();
+    
+    GLvoid* ptr;
     ptr = glMapBufferRange(_infos.target, offset, size, access);
     if(NULL == ptr)
     {
@@ -239,6 +239,7 @@ bool Detail<t>::unmap()
     {
         Log_Warning(Framework::Module::Render, "The buffer was not mapped. Unmapping will fail!");
     }
+    bind();
 #endif // SANITY_CHECK
 
     GLboolean ret;
@@ -250,6 +251,7 @@ bool Detail<t>::unmap()
         Log_Error(Framework::Module::Render, "An error occured while unmapping buffer %d: %s", _id, gluErrorString(err));
         return false;
     }
+    unbind();
     return true;
 }
 /**
@@ -259,9 +261,10 @@ bool Detail<t>::unmap()
 template <Type t>
 bool Detail<t>::isMapped() const
 {
-    GLboolean ret;
+    GLint ret;
     bind();
-    glGetBufferParameteriv(_infos.target, GL_BUFFER_MAPPED, (GLint*)&ret);
+        glGetBufferParameteriv(_infos.target, GL_BUFFER_MAPPED, &ret);
+    unbind();
     return (GL_TRUE == ret);
 }
 /**

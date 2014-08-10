@@ -141,6 +141,10 @@ struct ComponentType
 struct Attribute
 {
     /**
+     * Attribute index.
+     */
+    unsigned int index;
+    /**
      * Type of the attribute components.
      */
     ComponentType type;
@@ -163,12 +167,13 @@ struct Attribute
     Attribute();
     /** 
      * Constructor 
+     * @param [in] i   Index.
      * @param [in] t   Components type.
      * @param [in] sz  Number of components.
      * @param [in] st  Stride.
      * @param [in] off Offset.  
      */
-    Attribute(ComponentType t, size_t sz, size_t st, size_t off); 
+    Attribute(unsigned int index, ComponentType t, size_t sz, size_t st, size_t off); 
     /**
      * Copy constructor.
      * @param [in] attr Input attribute.

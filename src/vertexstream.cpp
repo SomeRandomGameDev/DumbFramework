@@ -1,3 +1,5 @@
+#include <cstdarg>
+
 #include <DumbFramework/log.hpp>
 #include <DumbFramework/vertexstream.hpp>
 
@@ -76,17 +78,16 @@ bool VertexStream::set(unsigned int index, Geometry::ComponentType type, size_t 
 }
 /**
  * Add attribute to vertex stream.
- * @param [in] index  Attribute index (starts at 0).
  * @param [in] attr   Attribute.
  * @return true if the attribute was successfully set.
  */
-bool VertexStream::set(unsigned int index, Geometry::Attribute const& attr)
+bool VertexStream::set(Geometry::Attribute const& attr)
 {
-    if(index >= _attributes.size())
+    if(attr.index >= _attributes.size())
     {
         _attributes.resize(index+1);
     }
-    _attributes[index] = attr;
+    _attributes[attr.index] = attr;
     return true;
 }
 /**
@@ -111,6 +112,16 @@ bool VertexStream::compile()
         return false;
     }
 
+    // Validate attributes.
+    for(size_t i=0; i<_attributes.size(); i++)
+    {
+        if(0 == _attributes[i].size)
+        {
+            Log_Error(Framework::Module::Render, "Attributes %d is not set.", i);
+            return false;
+        }
+    }
+
     bind();
     for(size_t i=0; i<_attributes.size(); i++)
     {
@@ -131,6 +142,36 @@ bool VertexStream::compile()
         return false;
     }
     return true;
+}
+/**
+ * Build vertex stream.
+ * This method is a combination of VertexStream::create,
+ * VertexStream::set and VertexStream::compile.
+ * @param [in] vertexBuffer Vertex buffer that will be associated
+ *                          with the current vertex stream.
+ * @param [in] attr         A list of vertex attributes.
+ * @return true if the vertex stream was successfully built.
+ */
+bool VertexStream::build(VertexBuffer* vertexBuffer, std::initializer_list<Geometry::Attribute> const& attr)
+{
+    bool ret;
+    
+    if(false == _attributes.empty())
+    {
+        Log_Warning(Framework::Module::Render, "Flusing attributes.");
+        _attributes.clear();
+    }
+    
+    ret = create(vertexBuffer);
+    if(false == ret)
+    {
+        Log_Error(Framework::Module::Render, "Vertex stream creation failed.");
+        return false;
+    }
+    
+    _attributes.insert(_attributes.end(), attr);
+    
+    return compile();
 }
 /**
  * Bind vertex stream.
@@ -196,8 +237,12 @@ bool VertexStream::isBound() const
     glGetIntegerv(GL_VERTEX_ARRAY_BINDING, (GLint*)&current);
     return (current == _vao);
 }
-/**
- * 
+/** 
+ * Draw primitives.
+ * @note The vertex stream must have been bound.
+ * @param [in] primitive Primitive type to be drawn.
+ * @param [in] offset    Start offset in the vertex buffer.
+ * @param [in] count     Number of primitives to draw.
  */
 void VertexStream::draw(Geometry::Primitive primitive, size_t offset, size_t count) const
 {
@@ -245,12 +290,18 @@ bool VertexStream::isAttributeSet(unsigned int index) const
     }
     return true;
 }
-
+/**
+ * Get the vertex buffer.
+ * @return Pointer to the vertex buffer.
+ */
 VertexBuffer* VertexStream::getVertexBuffer()
 {
     return _vertexBuffer;
 }
-
+/**
+ * Get the vertex buffer.
+ * @return Constant pointer to the vertex buffer.
+ */
 VertexBuffer const* VertexStream::getVertexBuffer() const
 {
     return _vertexBuffer;

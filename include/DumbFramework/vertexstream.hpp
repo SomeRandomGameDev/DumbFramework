@@ -2,6 +2,7 @@
 #define _DUMB_FW_VERTEX_STREAM_
 
 #include <vector>
+#include <initializer_list>
 
 #include <DumbFramework/vertexbuffer.hpp>
 #include <DumbFramework/indexbuffer.hpp>
@@ -47,16 +48,25 @@ class VertexStream
         bool set(unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset);
         /**
          * Add attribute to vertex stream.
-         * @param [in] index  Attribute index (starts at 0).
          * @param [in] attr   Attribute.
          * @return true if the attribute was successfully set.
          */
-        bool set(unsigned int index, Geometry::Attribute const& attr);
+        bool set(Geometry::Attribute const& attr);
         /**
          * @todo
          * @return
          */
         bool compile();
+        /**
+         * Build vertex stream.
+         * This method is a combination of VertexStream::create,
+         * VertexStream::set and VertexStream::compile.
+         * @param [in] vertexBuffer Vertex buffer that will be associated
+         *                          with the current vertex stream.
+         * @param [in] attr         A list of vertex attributes.
+         * @return true if the vertex stream was successfully built.
+         */
+        bool build(VertexBuffer* vertexBuffer, std::initializer_list<Geometry::Attribute> const& attr);
         /**
          * Bind vertex stream.
          */
@@ -75,10 +85,11 @@ class VertexStream
          */
         bool isBound() const;
         /** 
-         * @todo 
-         * @param [in] primitive
-         * @param [in] offset
-         * @param [in] count
+         * Draw primitives.
+         * @note The vertex stream must have been bound.
+         * @param [in] primitive Primitive type to be drawn.
+         * @param [in] offset    Start offset in the vertex buffer.
+         * @param [in] count     Number of primitives to draw.
          */
         void draw(Geometry::Primitive primitive, size_t offset, size_t count) const;
         /**
@@ -88,11 +99,13 @@ class VertexStream
          */
         bool isAttributeSet(unsigned int index) const;
         /**
-         * @todo
+         * Get the vertex buffer.
+         * @return Pointer to the vertex buffer.
          */
         VertexBuffer* getVertexBuffer();
         /**
-         * @todo
+         * Get the vertex buffer.
+         * @return Constant pointer to the vertex buffer.
          */
         VertexBuffer const* getVertexBuffer() const;
 
