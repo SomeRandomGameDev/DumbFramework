@@ -16,13 +16,9 @@ class Shader
         /** Shader types. */
         enum Type
         {
-            VERTEX_SHADER = 0,              /**< Vertex shader. **/
-            GEOMETRY_SHADER,                /**< Geometry shader. **/
-            FRAGMENT_SHADER,                /**< Fragment shader. **/
-#if defined(GL4_SUPPORT)
-            TESSELATION_CONTROL_SHADER,
-            TESSELATION_EVALUATION_SHADER,
-#endif // GL4_SUPPORT
+            VERTEX_SHADER = 0,  /**< Vertex shader. **/
+            GEOMETRY_SHADER,    /**< Geometry shader. **/
+            FRAGMENT_SHADER,    /**< Fragment shader. **/
             UNKNOWN_SHADER
         };
 

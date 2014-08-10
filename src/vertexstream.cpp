@@ -74,7 +74,7 @@ void VertexStream::destroy()
  */
 bool VertexStream::set(unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset)
 {
-    return set(index, Geometry::Attribute(type, size, stride, offset));
+    return set(Geometry::Attribute(index, type, size, stride, offset));
 }
 /**
  * Add attribute to vertex stream.
@@ -85,7 +85,7 @@ bool VertexStream::set(Geometry::Attribute const& attr)
 {
     if(attr.index >= _attributes.size())
     {
-        _attributes.resize(index+1);
+        _attributes.resize(attr.index+1);
     }
     _attributes[attr.index] = attr;
     return true;
