@@ -12,6 +12,8 @@ namespace Framework {
  */
 class Shader
 {
+    friend class Program;
+    
     public:
         /** Shader types. */
         enum Type
@@ -39,14 +41,11 @@ class Shader
          *  The shader will not be physically deleted until it is attached to a program. */
         void destroy();
 
-        /** Get shader id. */
-        GLuint getId() const;
-
         /** Get shader type. */
         Shader::Type getType() const;
 
         /** Retrieve shader source length. */
-        GLint getSourceLength() const;
+        size_t getSourceLength() const;
 
         /** Retrieve shader source.
          *  @param [out] out Character buffer where the source code will be stored.

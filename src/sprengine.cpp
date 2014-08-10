@@ -176,14 +176,16 @@ namespace Sprite {
                 _program.attach(shaders[i]);
             }
 
-            _program.bindAttribLocation(VERTEX_INDEX,   "vs_position" );
-            _program.bindAttribLocation(OFFSET_INDEX,   "vs_offset"   );
-            _program.bindAttribLocation(SIZE_INDEX,     "vs_dimension");
-            _program.bindAttribLocation(TOP_TEX_INDEX,  "vs_toptex"   );
-            _program.bindAttribLocation(DOWN_TEX_INDEX, "vs_bottomtex");
-            _program.bindAttribLocation(ROTATE_INDEX,   "vs_angle"    );
-            _program.bindAttribLocation(SCALE_INDEX,    "vs_scale"    );
-            _program.bindAttribLocation(TEXTURE_INDEX,  "vs_index"    );
+            _program.bindAttribLocation
+                ({ {VERTEX_INDEX,   "vs_position" },
+                   {OFFSET_INDEX,   "vs_offset"   },
+                   {SIZE_INDEX,     "vs_dimension"},
+                   {TOP_TEX_INDEX,  "vs_toptex"   },
+                   {DOWN_TEX_INDEX, "vs_bottomtex"},
+                   {ROTATE_INDEX,   "vs_angle"    },
+                   {SCALE_INDEX,    "vs_scale"    },
+                   {TEXTURE_INDEX,  "vs_index"    }
+                });
 
             _program.link();
             _program.infoLog(Severity::Info);

@@ -79,12 +79,6 @@ void Shader::destroy()
     glDeleteShader(_id);
 }
 
-/** Get shader id. */
-GLuint Shader::getId() const
-{
-    return _id;
-}
-
 /** Get shader type. */
 Shader::Type Shader::getType() const
 {
@@ -92,11 +86,11 @@ Shader::Type Shader::getType() const
 }
 
 /** Retrieve shader source length. */
-GLint Shader::getSourceLength() const
+size_t Shader::getSourceLength() const
 {
     GLint len;
     glGetShaderiv(_id, GL_SHADER_SOURCE_LENGTH, &len);
-    return len;
+    return static_cast<size_t>(len);
 }
 
 

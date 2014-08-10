@@ -1,6 +1,8 @@
 #ifndef _DUMB_FW_PROGRAM_
 #define _DUMB_FW_PROGRAM_
 
+#include <initializer_list>
+
 #include <DumbFramework/log.hpp>
 #include <DumbFramework/shader.hpp>
 
@@ -12,17 +14,6 @@ namespace Framework {
 class Program
 {
     public:
-        /**
-         * Program parameter info.
-         * This simple structure is used to specify attribute or fragement output location.
-         */
-        struct ParameterInfo
-        {
-            GLint id;           /**< Parameter id. */
-            GLchar const* name; /**< Parameter name. */
-        };
-
-    public:
         /** 
          * Constructor. 
          */
@@ -31,56 +22,51 @@ class Program
          * Destructor.
          */
         ~Program();
-            
         /** 
          * Create program.
          */
         bool create();
-            
         /**
          * Attach a shader to current program.
          * @param [in] shader Shader to attach.
          */
-        bool attach(const Shader& shader);
-            
+        bool attach(Shader const& shader);
         /**
          * Link program.
          */
         bool link();
-
         /**
          * Bind attribute location.
          * @note This must be done before link.
          * @param [in] index Attribute index.
          * @param [in] name Attribute name.
          */
-        void bindAttribLocation(GLuint index, const GLchar* name);
-        
+        void bindAttribLocation(unsigned index, char const* name);
+        /**
+         * Bind multiple attribute locations.
+         * @note This must be done before link.
+         * @param [in] attr  A list of index, name tuples.
+         */
+        void bindAttribLocation(std::initializer_list<std::pair<unsigned int, char const*>> const& attr);
         /**
          * Bind fragment output location.
          * \note This must be done before link.
          * \param [in] index Fragment output index.
          * \param [in] name Fragment output name.
          */
-        void bindFragDataLocation(GLuint index, const GLchar* name);
-
+        void bindFragDataLocation(unsigned int index, char const* name);        
         /**
-         * Bind program input (attribute) and output (fragment output) parameters.
-         * This can be viewed as a batch version of bindAttribLocation and bindFragDataLocation.
-         * @param [in] input Attribute location array.
-         * @param [in] inputCount Number of elements in attribute location array.
-         * @param [in] output Fragment output location array.
-         * @param [in] outputCount Number of elements in fragment output location array.
+         * Bind multiple fragment output locations.
+         * @note This must be done before link.
+         * @param [in] fragData  A list of index, name tuples.
          */
-        void bindParameters(ParameterInfo const * input, size_t inputCount, ParameterInfo const * output, size_t outputCount);
-        
+        void bindFragDataLocation(std::initializer_list<std::pair<unsigned int, char const*>> const& fragData);
         /**
          * Specify varying outputs for transform feedback
-         * @param [in] varyingNames Varying name array.
-         * @param [in] varyingNameCount Varying name count.
          * @param [in] interleaved Indicates if the varyings are interleaved.
+         * @param [in] names       List of varying outputs.
          */
-        void transformFeedbackVaryings(const char** varyingNames, int varyingNameCount, bool interleaved);
+        void transformFeedbackVaryings(bool interleaved, std::initializer_list<char const*> names);
         /**
          * Check if the program is in use.
          * @return true if the program is currently used.
@@ -100,78 +86,85 @@ class Program
          */
         static void endAny();
         /**
-         * Retrieve the id of the program currently in use.
-         * @return Program id.
-         */
-        static GLuint getCurrentProgramId();
-        /**
          * Delete program and detach shaders.
          */
         void destroy();
-            
-        /**
-         * Accessor.
-         */
-        GLuint getId () const { return _id; }
-
-        /**
-         * Use program (simple alias).
-         */
-        inline void use() { glUseProgram(_id); }
-
         /** 
          * Get uniform variable location.
          * @param [in] name Uniform variable name.
          * @return Uniform variable index.
          */
-        inline GLint getUniformLocation(const GLchar* name);
+        int getUniformLocation(char const* name);
         /**
          * Get attribute location.
          * @param [in] name Attribute name.
          * @return Attribute index.
          */
-        inline GLint getAttribLocation(const GLchar* name);
-        
+        int getAttribLocation(char const* name);
         /**
          * Output link status. 
          */
         void infoLog(Framework::Severity severity = Framework::Severity::Error) const;
-
         /**
          * Delete attached shaders.
          */
         void destroyShaders();
-        
+/*
+[todo]
+glUniform1i
+glUniform1iv
+glUniform2i
+glUniform2iv
+glUniform3i
+glUniform3iv
+glUniform4i
+glUniform4iv
+glUniform1ui
+glUniform1uiv
+glUniform2ui
+glUniform2uiv
+glUniform3ui
+glUniform3uiv
+glUniform4ui
+glUniform4uiv
+glUniform1f
+glUniform1fv
+glUniform2f
+glUniform2fv
+glUniform3f
+glUniform3fv
+glUniform4f
+glUniform4fv
+glUniform1d
+glUniform1dv
+glUniform2d
+glUniform2dv
+glUniform3d
+glUniform3dv
+glUniform4d
+glUniform4dv
+glUniformMatrix2fv
+glUniformMatrix2dv
+glUniformMatrix2x3fv
+glUniformMatrix2x3dv
+glUniformMatrix2x4fv
+glUniformMatrix2x4dv
+glUniformMatrix3fv
+glUniformMatrix3dv
+glUniformMatrix3x2fv
+glUniformMatrix3x2dv
+glUniformMatrix3x4fv
+glUniformMatrix3x4dv
+glUniformMatrix4fv
+glUniformMatrix4dv
+glUniformMatrix4x2fv
+glUniformMatrix4x2dv
+glUniformMatrix4x3fv
+glUniformMatrix4x3dv
+*/
     private:
         GLuint _id; /**< Program id */
 };
-
-/**
- * Get uniform variable location.
- * @param [in] name Uniform variable name.
- * @return Uniform variable index.
- */
-GLint Program::getUniformLocation(const GLchar* name)
-{
-    GLint uid = glGetUniformLocation(_id, name);
-        
-    GLenum err = glGetError();
-    if(err != GL_NO_ERROR)
-    {
-        Log_Error(Framework::Module::Render, "Can't get id for uniform var %s : %s", name, gluErrorString(err));
-    }
-    return uid;
-}
-
-/**
- * Get attribute location.
- * @param [in] name Attribute name.
- * @return Attribute index.
- */
-GLint Program::getAttribLocation(const GLchar* name)
-{
-    return glGetAttribLocation(_id, name);
-}
 
 } // Framework
 
