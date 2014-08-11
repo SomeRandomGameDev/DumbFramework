@@ -53,8 +53,9 @@ class VertexStream
          */
         bool set(Geometry::Attribute const& attr);
         /**
-         * @todo
-         * @return
+         * Check vertex attributes and build internal structures for
+         * future rendering.
+         * @return true if everything went right.
          */
         bool compile();
         /**

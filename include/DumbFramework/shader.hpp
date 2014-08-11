@@ -9,6 +9,7 @@ namespace Framework {
 
 /**
  * GLSL Shader wrapper.
+ * @ingroup DUMB_FW_RENDERING
  */
 class Shader
 {

@@ -3,6 +3,9 @@
 
 #include <initializer_list>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <DumbFramework/log.hpp>
 #include <DumbFramework/shader.hpp>
 
@@ -10,6 +13,7 @@ namespace Framework {
 
 /**
  * GLSL program wrapper.
+ * @ingroup DUMB_FW_RENDERING
  */
 class Program
 {
@@ -109,59 +113,32 @@ class Program
          * Delete attached shaders.
          */
         void destroyShaders();
-/*
-[todo]
-glUniform1i
-glUniform1iv
-glUniform2i
-glUniform2iv
-glUniform3i
-glUniform3iv
-glUniform4i
-glUniform4iv
-glUniform1ui
-glUniform1uiv
-glUniform2ui
-glUniform2uiv
-glUniform3ui
-glUniform3uiv
-glUniform4ui
-glUniform4uiv
-glUniform1f
-glUniform1fv
-glUniform2f
-glUniform2fv
-glUniform3f
-glUniform3fv
-glUniform4f
-glUniform4fv
-glUniform1d
-glUniform1dv
-glUniform2d
-glUniform2dv
-glUniform3d
-glUniform3dv
-glUniform4d
-glUniform4dv
-glUniformMatrix2fv
-glUniformMatrix2dv
-glUniformMatrix2x3fv
-glUniformMatrix2x3dv
-glUniformMatrix2x4fv
-glUniformMatrix2x4dv
-glUniformMatrix3fv
-glUniformMatrix3dv
-glUniformMatrix3x2fv
-glUniformMatrix3x2dv
-glUniformMatrix3x4fv
-glUniformMatrix3x4dv
-glUniformMatrix4fv
-glUniformMatrix4dv
-glUniformMatrix4x2fv
-glUniformMatrix4x2dv
-glUniformMatrix4x3fv
-glUniformMatrix4x3dv
-*/
+        /**
+         * Set uniform variable.
+         * @param [in] id  Uniform identifier.
+         * @param [in] t   Data. Supported types are int, unsigned int
+         *                 float, double, glm::vec2, glm::vec3, 
+         *                 glm::vec4, glm::dvec2, glm::dvec3, 
+         *                 glm::dvec4, glm::ivec2, glm::ivec3, 
+         *                 glm::ivec4, glm::uvec2, glm::uvec3 and
+         *                 glm::uvec4.
+         */
+        template <typename T>
+        void uniform(int id, T const& t) const;
+        /**
+         * Set uniform matrix.
+         * @param [in] id        Uniform identifier.
+         * @param [in] transpose Does the matrix need to be transposed?
+         * @param [in] t         Matrix. Supported types are glm::mat2,
+         *             glm::mat2x3, glm::mat2x4, glm::mat3, glm::mat3x2,
+         *             glm::mat3x4, glm::mat4, glm::mat4x2, glm::mat4x3,
+         *             glm::dmat2, glm::dmat2x3, glm::dmat2x4,
+         *             glm::dmat3, glm::dmat3x2, glm::dmat3x4,
+         *             glm::dmat4, glm::dmat4x2 and glm::dmat4x3.
+         */
+        template <typename T>
+        void uniform(int id, bool transpose, T const& mat) const;
+
     private:
         GLuint _id; /**< Program id */
 };

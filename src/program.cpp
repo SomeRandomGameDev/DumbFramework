@@ -279,4 +279,147 @@ int Program::getAttribLocation(char const* name)
     return static_cast<int>(uid);
 }
 
+#if defined(SANITY_CHECK)
+#define CHECK_GL_ERRORS do { GLenum err = glGetError(); if(GL_NO_ERROR != err) {Log_Error(Framework::Module::Render, (const char*)gluErrorString(err)); } } while(0); \
+
+#else
+#define CHECK_GL_ERRORS
+#endif // SANITY_CHECK
+
+template<>
+void Program::uniform<int>(int id, int const& i) const
+{ glUniform1i(id, i); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<unsigned int>(int id, unsigned int const& u) const
+{ glUniform1ui(id, u); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<float>(int id, float const& f) const
+{ glUniform1f(id, f); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<double>(int id, double const& d) const
+{ glUniform1d(id, d); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::vec2>(int id, glm::vec2 const& v) const
+{ glUniform2fv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::vec3>(int id, glm::vec3 const& v) const
+{ glUniform3fv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::vec4>(int id, glm::vec4 const& v) const
+{ glUniform4fv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::dvec2>(int id, glm::dvec2 const& v) const
+{ glUniform2dv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::dvec3>(int id, glm::dvec3 const& v) const
+{ glUniform3dv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::dvec4>(int id, glm::dvec4 const& v) const
+{ glUniform4dv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::ivec2>(int id, glm::ivec2 const& v) const
+{ glUniform2iv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::ivec3>(int id, glm::ivec3 const& v) const
+{ glUniform3iv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::ivec4>(int id, glm::ivec4 const& v) const
+{ glUniform4iv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::uvec2>(int id, glm::uvec2 const& v) const
+{ glUniform2uiv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::uvec3>(int id, glm::uvec3 const& v) const
+{ glUniform3uiv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::uvec4>(int id, glm::uvec4 const& v) const
+{ glUniform4uiv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::mat4>(int id, bool transpose, glm::mat4 const& mat) const
+{ glUniformMatrix4fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::mat4x2>(int id, bool transpose, glm::mat4x2 const& mat) const
+{ glUniformMatrix4x2fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::mat4x3>(int id, bool transpose, glm::mat4x3 const& mat) const
+{ glUniformMatrix4x3fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::mat3>(int id, bool transpose, glm::mat3 const& mat) const
+{ glUniformMatrix3fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+        
+template <>
+void Program::uniform<glm::mat3x2>(int id, bool transpose, glm::mat3x2 const& mat) const
+{ glUniformMatrix3x2fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::mat3x4>(int id, bool transpose, glm::mat3x4 const& mat) const
+{ glUniformMatrix3x4fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::mat2>(int id, bool transpose, glm::mat2 const& mat) const
+{ glUniformMatrix2fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+        
+template <>
+void Program::uniform<glm::mat2x3>(int id, bool transpose, glm::mat2x3 const& mat) const
+{ glUniformMatrix2x3fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::mat2x4>(int id, bool transpose, glm::mat2x4 const& mat) const
+{ glUniformMatrix2x4fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::dmat4>(int id, bool transpose, glm::dmat4 const& mat) const
+{ glUniformMatrix4dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::dmat4x2>(int id, bool transpose, glm::dmat4x2 const& mat) const
+{ glUniformMatrix4x2dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::dmat4x3>(int id, bool transpose, glm::dmat4x3 const& mat) const
+{ glUniformMatrix4x3dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::dmat3>(int id, bool transpose, glm::dmat3 const& mat) const
+{ glUniformMatrix3dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+        
+template <>
+void Program::uniform<glm::dmat3x2>(int id, bool transpose, glm::dmat3x2 const& mat) const
+{ glUniformMatrix3x2dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::dmat3x4>(int id, bool transpose, glm::dmat3x4 const& mat) const
+{ glUniformMatrix3x4dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::dmat2>(int id, bool transpose, glm::dmat2 const& mat) const
+{ glUniformMatrix2dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+        
+template <>
+void Program::uniform<glm::dmat2x3>(int id, bool transpose, glm::dmat2x3 const& mat) const
+{ glUniformMatrix2x3dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::dmat2x4>(int id, bool transpose, glm::dmat2x4 const& mat) const
+{ glUniformMatrix2x4dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
 } // Framework

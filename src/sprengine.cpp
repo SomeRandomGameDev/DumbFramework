@@ -526,8 +526,8 @@ namespace Sprite {
         glDepthMask(GL_FALSE);
         
         _program.begin();
-            glUniformMatrix4fv(_uniformMatrix, 1, GL_FALSE, glm::value_ptr(_matrix));
-            glUniform1i(_uniformTexture, 0);
+            _program.uniform(_uniformMatrix, false, _matrix);
+            _program.uniform(_uniformTexture, 0);
             glActiveTexture(GL_TEXTURE0);
             _texture->bind();
 
