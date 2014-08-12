@@ -9,6 +9,7 @@
 #include <string>
 
 #include <DumbFramework/sprengine.hpp>
+#include <DumbFramework/renderer.hpp>
 
 using namespace Framework; // temporary
 
@@ -520,15 +521,18 @@ namespace Sprite {
     }
 
     void Engine::render() {
+        Renderer& renderer = Renderer::instance();
+        
         // Animate the sprites
         animate();
         // Retrieve buffer and memcpy.
-        glDepthMask(GL_FALSE);
+        renderer.depthBufferWrite(false);
         
         _program.begin();
             _program.uniform(_uniformMatrix, false, _matrix);
             _program.uniform(_uniformTexture, 0);
-            glActiveTexture(GL_TEXTURE0);
+            
+            renderer.activeTextureUnit(0);
             _texture->bind();
 
             GLfloat *ptr = (GLfloat *) _buffer.map(BufferObject::Access::WRITE_ONLY);
@@ -540,7 +544,7 @@ namespace Sprite {
                 _stream.draw(Geometry::Primitive::POINTS, 0, _count);
             _stream.unbind();
         _program.end();
-        glDepthMask(GL_TRUE);
+        renderer.depthBufferWrite(true);
     }
 
 }

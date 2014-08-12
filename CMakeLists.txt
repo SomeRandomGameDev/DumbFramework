@@ -56,13 +56,14 @@ set(DUMB_FRAMEWORK_SOURCES
     src/line2d.cpp
     src/plane.cpp
     src/ray.cpp
-    src/bufferobject.cpp
-    src/geometry.cpp
-    src/vertexstream.cpp
     src/file.cpp
     src/module.cpp
     src/severity.cpp
     src/log.cpp
+    src/renderer.cpp
+    src/bufferobject.cpp
+    src/geometry.cpp
+    src/vertexstream.cpp
     src/shader.cpp
     src/program.cpp
     src/sprengine.cpp

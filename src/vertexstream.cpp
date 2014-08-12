@@ -1,5 +1,3 @@
-#include <cstdarg>
-
 #include <DumbFramework/log.hpp>
 #include <DumbFramework/vertexstream.hpp>
 
