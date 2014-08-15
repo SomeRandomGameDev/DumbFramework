@@ -63,16 +63,17 @@ void VertexStream::destroy()
 }
 /**
  * Add attribute to vertex stream.
- * @param [in] index  Attribute index (starts at 0).
- * @param [in] type   Type of the attribute components.
- * @param [in] size   Number of components.
- * @param [in] stride Number of bytes between 2 consecutives attributes.
- * @param [in] offset Offset of the first attribute of the first vertex.
+ * @param [in] index   Attribute index (starts at 0).
+ * @param [in] type    Type of the attribute components.
+ * @param [in] size    Number of components.
+ * @param [in] stride  Number of bytes between 2 consecutives attributes.
+ * @param [in] offset  Offset of the first attribute of the first vertex.
+ * @param [in] divisor (default=0).
  * @return true if the attribute was successfully set.
  */
-bool VertexStream::set(unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset)
+bool VertexStream::set(unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset, unsigned int divisor)
 {
-    return set(Geometry::Attribute(index, type, size, stride, offset));
+    return set(Geometry::Attribute(index, type, size, stride, offset, divisor));
 }
 /**
  * Add attribute to vertex stream.
@@ -129,6 +130,7 @@ bool VertexStream::compile()
     for(size_t i=0; i<_attributes.size(); i++)
     {
         glVertexAttribPointer(i, _attributes[i].size, _attributes[i].type, GL_FALSE, _attributes[i].stride, (GLvoid*)_attributes[i].offset);
+        glVertexAttribDivisor(i, _attributes[i].divisor);
     }
     _vertexBuffer->unbind();
     unbind();

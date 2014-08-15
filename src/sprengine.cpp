@@ -43,7 +43,7 @@ const char *s_vertexShader =
 "out float gs_scale;"
 "flat out int gs_index;"
 "void main() {"
-"gl_Position = vec4(vs_position.x, vs_position.y, 0.0, 1.0);"
+"gl_Position = vec4(vs_position, 0.0, 1.0);"
 "gs_dimension = vs_dimension;"
 "gs_toptex = vs_toptex;"
 "gs_bottomtex = vs_bottomtex;"
@@ -94,6 +94,36 @@ const char *s_geometryShader =
 "EndPrimitive();"
 "}"
 ;
+
+const char *s_vertexShaderInstanced =
+"#version 150\n"
+"uniform mat4 pMatrix;"
+"in vec2 vs_position;"
+"in vec2 vs_offset;"
+"in vec2 vs_dimension;"
+"in vec2 vs_toptex;"
+"in vec2 vs_bottomtex;"
+"in float vs_angle;"
+"in float vs_scale;"
+"in int vs_index;"
+"flat out int fs_index;"
+"out vec2 fs_tex;"
+"const vec2 quad[4] = { vec2(-0.5, 0.5),"
+"                       vec2( 0.5, 0.5),"
+"                       vec2(-0.5,-0.5),"
+"                       vec2( 0.5,-0.5) };"
+"void main() {"
+"vec2 point = quad[gl_VertexID];"
+"vec2 dimPt = vs_dimension * point + vec2(gl_InstanceID,0.0)*0.1;"
+"float cs = cos(vs_angle);"
+"float sn = sin(vs_angle);"
+"vec3 rot = vec3(cs, sn, -sn);"
+"fs_index = vs_index;"
+"fs_tex = mix(vs_toptex, vs_bottomtex, point + vec2(0.5));"
+"vec2 tpos = vec2(dot(dimPt, rot.xy), dot(dimPt, rot.zx)) * vs_scale;"
+"gl_Position = pMatrix * vec4(vs_position + vs_offset + tpos, 0.0, 1.0);"
+"}";
+
 
 // Program's index.
 #define VERTEX_INDEX   0
@@ -152,24 +182,29 @@ namespace Sprite {
             _buffer.create(VBO_STRIDE*capacity);
             _stream.build(&_buffer,
             {
-                Geometry::Attribute(  VERTEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, 0),
-                Geometry::Attribute(  OFFSET_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  2),
-                Geometry::Attribute(    SIZE_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  4),
-                Geometry::Attribute( TOP_TEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  6),
-                Geometry::Attribute(DOWN_TEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  8),
-                Geometry::Attribute(  ROTATE_INDEX, Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 10),
-                Geometry::Attribute(   SCALE_INDEX, Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 11),
-                Geometry::Attribute( TEXTURE_INDEX, Geometry::ComponentType::UNSIGNED_INT, 1, VBO_STRIDE, sizeof(float) * 12)
+                Geometry::Attribute(  VERTEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, 0,                  512),
+                Geometry::Attribute(  OFFSET_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  2, 512),
+                Geometry::Attribute(    SIZE_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  4, 512),
+                Geometry::Attribute( TOP_TEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  6, 512),
+                Geometry::Attribute(DOWN_TEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  8, 512),
+                Geometry::Attribute(  ROTATE_INDEX, Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 10, 512),
+                Geometry::Attribute(   SCALE_INDEX, Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 11, 512),
+                Geometry::Attribute( TEXTURE_INDEX, Geometry::ComponentType::UNSIGNED_INT, 1, VBO_STRIDE, sizeof(float) * 12, 512)
             });
             
             _time = glfwGetTime();
 
             // Create program.
+#if 0
             std::array<Shader, 3> shaders;
             shaders[0].create(Shader::VERTEX_SHADER,   s_vertexShader  );
             shaders[1].create(Shader::FRAGMENT_SHADER, s_fragmentShader);
             shaders[2].create(Shader::GEOMETRY_SHADER, s_geometryShader);
-
+#else
+            std::array<Shader, 2> shaders;
+            shaders[0].create(Shader::VERTEX_SHADER,   s_vertexShaderInstanced);
+            shaders[1].create(Shader::FRAGMENT_SHADER, s_fragmentShader);
+#endif
             _program.create();
             for(unsigned long i=0; i<shaders.size(); i++)
             {
@@ -436,11 +471,6 @@ namespace Sprite {
     void Engine::viewport(float x, float y,
             unsigned int width, unsigned int height,
             float scale) {
-      //  glMatrixMode(GL_PROJECTION);
-      //  glLoadIdentity();
-      //  glOrtho(0, width, height, 0, 0, 256.0);
-      //  glMatrixMode(GL_MODELVIEW);
-      //  glLoadIdentity();
         float dw = (width / 2.0f) * scale;
         float dh = (height / 2.0f) * scale;;
 
@@ -532,7 +562,7 @@ namespace Sprite {
             _program.uniform(_uniformMatrix, false, _matrix);
             _program.uniform(_uniformTexture, 0);
             
-            renderer.activeTextureUnit(0);
+            renderer.setActiveTextureUnit(0);
             _texture->bind();
 
             GLfloat *ptr = (GLfloat *) _buffer.map(BufferObject::Access::WRITE_ONLY);
@@ -541,7 +571,9 @@ namespace Sprite {
 
             // Send VAO.
             _stream.bind();
-                _stream.draw(Geometry::Primitive::POINTS, 0, _count);
+//                _stream.draw(Geometry::Primitive::POINTS, 0, _count);
+//                glDrawArraysInstanced (GL_POINTS, 0, 1, _count);
+                glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, 1024);
             _stream.unbind();
         _program.end();
         renderer.depthBufferWrite(true);

@@ -38,14 +38,15 @@ class VertexStream
         void destroy();
         /**
          * Add attribute to vertex stream.
-         * @param [in] index  Attribute index (starts at 0).
-         * @param [in] type   Type of the attribute components.
-         * @param [in] size   Number of components.
-         * @param [in] stride Number of bytes between 2 consecutives attributes.
-         * @param [in] offset Offset of the first attribute of the first vertex.
+         * @param [in] index   Attribute index (starts at 0).
+         * @param [in] type    Type of the attribute components.
+         * @param [in] size    Number of components.
+         * @param [in] stride  Number of bytes between 2 consecutives attributes.
+         * @param [in] offset  Offset of the first attribute of the first vertex.
+         * @param [in] divisor (default=0). 
          * @return true if the attribute was successfully set.
          */
-        bool set(unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset);
+        bool set(unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset, unsigned int divisor=0);
         /**
          * Add attribute to vertex stream.
          * @param [in] attr   Attribute.

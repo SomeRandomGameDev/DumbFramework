@@ -11,6 +11,7 @@ Attribute::Attribute()
     , size(0)
     , stride(0)
     , offset(0)
+    , divisor(0)
 {}
 /** 
  * Constructor
@@ -19,13 +20,15 @@ Attribute::Attribute()
  * @param [in] sz  Number of components.
  * @param [in] st  Stride.
  * @param [in] off Offset.  
+ * @param [in] d   Divisor (default=0).
  */
-Attribute::Attribute(unsigned int i, ComponentType t, size_t sz, size_t st, size_t off)
+Attribute::Attribute(unsigned int i, ComponentType t, size_t sz, size_t st, size_t off, unsigned int d)
     : index(i)
     , type(t)
     , size(sz)
     , stride(st)
     , offset(off)
+    , divisor(d)
 {}
 /**
  * Copy constructor.
@@ -37,6 +40,7 @@ Attribute::Attribute(Attribute const& attr)
     , size(attr.size)
     , stride(attr.stride)
     , offset(attr.offset)
+    , divisor(attr.divisor)
 {}
 /** 
  * Copy operator.
@@ -44,11 +48,12 @@ Attribute::Attribute(Attribute const& attr)
  */
 Attribute& Attribute::operator=(Attribute const& attr)
 {
-    index  = attr.index;
-    type   = attr.type;
-    size   = attr.size;
-    stride = attr.stride;
-    offset = attr.offset;
+    index   = attr.index;
+    type    = attr.type;
+    size    = attr.size;
+    stride  = attr.stride;
+    offset  = attr.offset;
+    divisor = attr.divisor;
     return *this;
 }
 

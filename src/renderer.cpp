@@ -32,7 +32,7 @@ Renderer& Renderer::instance()
 * the sampler uniforms.
 * @param [in] unit  Texture unit number.
 */
-void Renderer::activeTextureUnit(unsigned int unit)
+void Renderer::setActiveTextureUnit(unsigned int unit)
 {
 #if defined(SANITY_CHECK)
     // Warning! This may spam your logs!
@@ -59,7 +59,7 @@ void Renderer::activeTextureUnit(unsigned int unit)
 * Retrieve the currently active texture unit.
 * @return Active texture unit.
 */
-unsigned int Renderer::currentActiveTextureUnit()
+unsigned int Renderer::getActiveTextureUnit()
 {
     unsigned int unit;
     glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint*)&unit);
@@ -71,7 +71,7 @@ unsigned int Renderer::currentActiveTextureUnit()
         Log_Error(Module::Render, "An error occured while retrieving currently active texture unit: %s.", unit, gluErrorString(err));
     }
 #endif
-    return unit;
+    return (unit - GL_TEXTURE0);
 }
 
 /**
@@ -82,6 +82,113 @@ unsigned int Renderer::currentActiveTextureUnit()
 void Renderer::depthBufferWrite(bool enable)
 {
     glDepthMask(static_cast<GLboolean>(enable));
+}
+
+/**
+ * Check if depth buffer writing is enabled.
+ * @return true is writing to the depth buffer is enabled.
+ */
+bool Renderer::isDepthBufferWriteEnabled()
+{
+    GLboolean write;
+    glGetBooleanv(GL_DEPTH_WRITEMASK, &write);
+    return (GL_TRUE == write); 
+}
+
+/**
+ * Set depth test comparaison function.
+ * @param [in] test Depth test comparaison function.
+ */
+void Renderer::setDepthFunc(DepthFunc test)
+{
+    GLenum func;
+    
+    switch(test.value)
+    {
+        case DepthFunc::NEVER:
+            func = GL_NEVER;
+            break;
+        case DepthFunc::LESS:
+            func = GL_LESS;
+            break;
+        case DepthFunc::EQUAL:
+            func = GL_EQUAL;
+            break;
+        case DepthFunc::LESS_EQUAL: 
+            func = GL_LEQUAL;
+            break;
+        case DepthFunc::GREATER:
+            func = GL_GREATER;
+            break;
+        case DepthFunc::NOT_EQUAL:
+            func = GL_NOTEQUAL;
+            break;
+        case DepthFunc::GREATER_EQUAL:
+            func = GL_GEQUAL;
+            break;
+        case DepthFunc::ALWAYS:
+            func = GL_ALWAYS;
+            break;
+    }
+    
+    glDepthFunc(func);
+}
+
+/**
+ * Retrieve current depth test comparaison function.
+ * @return Depth test comparaison function currently used.
+ */
+DepthFunc Renderer::getDepthFunc()
+{
+    GLenum func;
+    
+    glGetIntegerv(GL_DEPTH_FUNC, (GLint*)&func);
+    
+    switch(func)
+    {
+        case GL_NEVER:
+            return DepthFunc::NEVER;
+        case GL_LESS:
+            return DepthFunc::LESS;
+        case GL_EQUAL:
+            return DepthFunc::EQUAL;
+        case GL_LEQUAL:
+            return DepthFunc::LESS_EQUAL;
+        case GL_GREATER:
+            return DepthFunc::GREATER;
+        case GL_NOTEQUAL:
+            return DepthFunc::NOT_EQUAL;
+        case GL_GEQUAL:
+            return DepthFunc::GREATER_EQUAL;
+        case GL_ALWAYS:
+            return DepthFunc::ALWAYS;
+    }
+    return DepthFunc::ALWAYS;
+}
+
+/**
+ * Enable of disable depth testing.
+ * @param [in] enable If true, enable depth testing is enabled.
+ */
+void Renderer::depthTest(bool enable)
+{
+    if(enable)
+    {
+        glEnable(GL_DEPTH_TEST);
+    }
+    else
+    {
+        glDisable(GL_DEPTH_TEST);
+    }
+}
+
+/**
+ * Check if depth test is enabled.
+ * @return true if depth testing is enabled.
+ */
+bool Renderer::isDepthTestEnabled()
+{
+    return (GL_TRUE == glIsEnabled(GL_DEPTH_TEST));
 }
 
 } // Framework

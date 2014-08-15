@@ -160,8 +160,10 @@ struct Attribute
      * Offset of the first attribute of the first vertex.
      */
     size_t offset;
-    
-    // unsigned int divisor;
+    /**
+     * Divisior...
+     */
+    unsigned int divisor;
     
     /** Default constructor. **/
     Attribute();
@@ -171,9 +173,10 @@ struct Attribute
      * @param [in] t   Components type.
      * @param [in] sz  Number of components.
      * @param [in] st  Stride.
-     * @param [in] off Offset.  
+     * @param [in] off Offset.
+     * @param [in] d   Divisor (default=0).  
      */
-    Attribute(unsigned int index, ComponentType t, size_t sz, size_t st, size_t off); 
+    Attribute(unsigned int index, ComponentType t, size_t sz, size_t st, size_t off, unsigned int d=0); 
     /**
      * Copy constructor.
      * @param [in] attr Input attribute.
