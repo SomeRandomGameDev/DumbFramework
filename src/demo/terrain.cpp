@@ -1,7 +1,7 @@
 // ## Should fix the GL/glew.h inclusion !
 #include <GL/glew.h>
-#include <application.hpp>
-#include <scene.hpp>
+#include <DumbFramework/application.hpp>
+#include <DumbFramework/scene.hpp>
 
 #include <iostream>
 

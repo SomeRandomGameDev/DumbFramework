@@ -1,12 +1,13 @@
 // You'll never see an uglyiest test executable !
 
 #include <GL/glew.h> // Hot fix : There's a big issue in the includes management.
-
-#include <log.hpp>
-#include <application.hpp>
-#include <scene.hpp>
-#include <sprengine.hpp>
 #include <iostream>
+
+#include <DumbFramework/log.hpp>
+#include <DumbFramework/application.hpp>
+#include <DumbFramework/scene.hpp>
+#include <DumbFramework/sprengine.hpp>
+#include <DumbFramework/renderer.hpp>
 
 class TestEngine : public Scene {
 public:
@@ -176,7 +177,10 @@ void TestEngine::resume(GLFWwindow * /* window */) {
   // Layer 1 is behind
   _start = glfwGetTime();
   _elapsed = 0;
-  glEnable(GL_DEPTH_TEST);
+  
+  Framework::Renderer& renderer = Framework::Renderer::instance();
+  renderer.depthTest(true);
+  
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

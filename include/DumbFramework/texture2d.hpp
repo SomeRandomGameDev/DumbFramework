@@ -2,12 +2,13 @@
 #define _DUMB_FW_TEXTURE_2D_
 
 #include <glm/glm.hpp>
-#include <texture.hpp>
+#include <DumbFramework/texture.hpp>
 
 namespace Framework {
 
 /**
  * Texture 2D Wrapper.
+ * @ingroup DUMB_FW_TEXTURE
  */
 class Texture2D
 {

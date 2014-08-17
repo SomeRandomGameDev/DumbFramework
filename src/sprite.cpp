@@ -1,4 +1,4 @@
-#include <config.hpp>
+#include <DumbFramework/config.hpp>
 #include <SOIL/SOIL.h>
 #include <tinyxml2.h>
 #include <iostream>
@@ -6,7 +6,7 @@
 #include <string>
 #include <sstream>
 
-#include "sprite.hpp"
+#include <DumbFramework/sprite.hpp>
 
 namespace Sprite {
 

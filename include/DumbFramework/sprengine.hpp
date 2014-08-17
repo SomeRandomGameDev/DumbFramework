@@ -1,9 +1,10 @@
 #ifndef _DUMB_FW_SPRENGINE_
 #define _DUMB_FW_SPRENGINE_
 
-#include <sprite.hpp>
-#include <bufferobject.hpp>
-#include <program.hpp>
+#include <DumbFramework/sprite.hpp>
+#include <DumbFramework/vertexbuffer.hpp>
+#include <DumbFramework/vertexstream.hpp>
+#include <DumbFramework/program.hpp>
 
 namespace Sprite {
 
@@ -298,14 +299,14 @@ private:
   Atlas *_atlas;
 
   /**
-   * Vertex Array Object identifier.
+   * Vertex Stream.
    */
-  GLuint _vao;
+  Framework::VertexStream _stream;
 
   /**
-   * Vertex Buffer Object identifier.
+   * Vertex Buffer Object.
    */
-  Render::BufferObject _buffer;
+  Framework::VertexBuffer _buffer;
 
   /**
    * GLSL Program identifier.

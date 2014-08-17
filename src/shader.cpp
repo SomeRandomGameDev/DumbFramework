@@ -1,5 +1,6 @@
-#include "shader.hpp"
 #include <iostream>
+
+#include <DumbFramework/shader.hpp>
 
 namespace Framework {
 
@@ -27,15 +28,6 @@ static GLenum translateType(Shader::Type const & type)
             return GL_GEOMETRY_SHADER;
         case Shader::FRAGMENT_SHADER:
             return GL_FRAGMENT_SHADER;
-#if defined(GL4_SUPPORT)
-        case Shader::TESSELATION_CONTROL_SHADER:
-            return GL_TESS_CONTROL_SHADER;
-        case Shader::TESSELATION_EVALUATION_SHADER:
-            return GL_TESS_EVALUATION_SHADER;
-#else
-        case Shader::TESSELATION_CONTROL_SHADER:
-        case Shader::TESSELATION_EVALUATION_SHADER:
-#endif /* GL4_SUPPORT */
         default:
             return GL_INVALID_ENUM;
     };
@@ -87,12 +79,6 @@ void Shader::destroy()
     glDeleteShader(_id);
 }
 
-/** Get shader id. */
-GLuint Shader::getId() const
-{
-    return _id;
-}
-
 /** Get shader type. */
 Shader::Type Shader::getType() const
 {
@@ -100,11 +86,11 @@ Shader::Type Shader::getType() const
 }
 
 /** Retrieve shader source length. */
-GLint Shader::getSourceLength() const
+size_t Shader::getSourceLength() const
 {
     GLint len;
     glGetShaderiv(_id, GL_SHADER_SOURCE_LENGTH, &len);
-    return len;
+    return static_cast<size_t>(len);
 }
 
 
@@ -145,7 +131,7 @@ void Shader::infoLog(Framework::Severity severity) const
     }
 
     glGetShaderInfoLog(_id, maxLogLength, &loglength, log);
-	Log_Ex(Framework::Module::Render, severity, log);
+    Log_Ex(Framework::Module::Render, severity, log);
     delete [] log;
 }
 

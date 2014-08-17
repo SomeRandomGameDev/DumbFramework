@@ -7,8 +7,8 @@
 #include <vector>
 #include <unordered_map>
 
-#include <program.hpp>
-#include <texture2d.hpp>
+#include <DumbFramework/program.hpp>
+#include <DumbFramework/texture2d.hpp>
 
 namespace Sprite {
 

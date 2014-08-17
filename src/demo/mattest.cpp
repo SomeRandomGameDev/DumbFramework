@@ -5,10 +5,10 @@
 #include <glm/gtc/type_ptr.hpp> 
 #include <glm/gtx/transform.hpp>
 
-#include <file.hpp>
-#include <program.hpp>
-#include <material.hpp>
-#include <bufferobject.hpp>
+#include <DumbFramework/file.hpp>
+#include <DumbFramework/program.hpp>
+#include <DumbFramework/material.hpp>
+#include <DumbFramework/bufferobject.hpp>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600

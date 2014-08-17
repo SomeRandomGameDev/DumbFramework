@@ -2,25 +2,26 @@
 #define _DUMB_FW_SHADER_
 
 #include <GL/glew.h>
-#include <config.hpp>
-#include <log.hpp>
+#include <DumbFramework/log.hpp>
+#include <DumbFramework/config.hpp>
 
 namespace Framework {
 
 /**
  * GLSL Shader wrapper.
+ * @ingroup DUMB_FW_RENDERING
  */
 class Shader
 {
+    friend class Program;
+    
     public:
         /** Shader types. */
         enum Type
         {
-            VERTEX_SHADER = 0,
-            GEOMETRY_SHADER,
-            FRAGMENT_SHADER,
-            TESSELATION_CONTROL_SHADER,
-            TESSELATION_EVALUATION_SHADER,
+            VERTEX_SHADER = 0,  /**< Vertex shader. **/
+            GEOMETRY_SHADER,    /**< Geometry shader. **/
+            FRAGMENT_SHADER,    /**< Fragment shader. **/
             UNKNOWN_SHADER
         };
 
@@ -41,14 +42,11 @@ class Shader
          *  The shader will not be physically deleted until it is attached to a program. */
         void destroy();
 
-        /** Get shader id. */
-        GLuint getId() const;
-
         /** Get shader type. */
         Shader::Type getType() const;
 
         /** Retrieve shader source length. */
-        GLint getSourceLength() const;
+        size_t getSourceLength() const;
 
         /** Retrieve shader source.
          *  @param [out] out Character buffer where the source code will be stored.

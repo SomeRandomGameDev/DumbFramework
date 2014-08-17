@@ -1,9 +1,9 @@
 #include <sys/types.h>
 #include <glm/glm.hpp>
-#include "line2d.hpp"
-#include "ray.hpp"
-#include "containment.hpp"
-#include "plane.hpp"
+#include <DumbFramework/line2d.hpp>
+#include <DumbFramework/ray.hpp>
+#include <DumbFramework/containment.hpp>
+#include <DumbFramework/plane.hpp>
 
 #if defined(_DUMB_FW_BOUNDING_BOX_)     \
  or defined(_DUMB_FW_BOUNDING_SPHERE_)  \
@@ -27,13 +27,13 @@ class BoundingFrustum;
 #else
 
 /* 2D */
-#include "boundingcircle.hpp"
-#include "boundingquad.hpp"
+#include <DumbFramework/boundingcircle.hpp>
+#include <DumbFramework/boundingquad.hpp>
 
 /* 3D */
-#include "boundingbox.hpp"
-#include "boundingsphere.hpp"
-#include "boundingfrustum.hpp"
+#include <DumbFramework/boundingbox.hpp>
+#include <DumbFramework/boundingsphere.hpp>
+#include <DumbFramework/boundingfrustum.hpp>
 
 #endif /*    defined(_DUMB_FW_BOUNDING_BOX_) 
         * or defined(_DUMB_FW_BOUNDING_SPHERE_)

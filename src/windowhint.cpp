@@ -1,10 +1,10 @@
-#include <windowhint.hpp>
+#include <DumbFramework/windowhint.hpp>
 #include <GLFW/glfw3.h>
 
 namespace Framework {
 
 static const glm::ivec2 g_defaultWindowSize   = glm::ivec2(640, 480);
-static const char const* g_defaultWindowTitle = "DumbFramework";
+static char const* g_defaultWindowTitle = "DumbFramework";
 
 /**
  * Default constructor.

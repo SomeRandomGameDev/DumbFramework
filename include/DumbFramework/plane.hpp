@@ -2,8 +2,8 @@
 #define _DUMB_FW_PLANE_
 
 #include <glm/glm.hpp>
-#include "side.hpp"
-#include "ray.hpp"
+#include <DumbFramework/side.hpp>
+#include <DumbFramework/ray.hpp>
 
 namespace Framework {
 

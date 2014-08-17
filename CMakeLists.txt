@@ -44,7 +44,7 @@ include_directories( ${EXPAT_INCLUDE_DIR}
                      ${SOIL_INCLUDE_DIRS}
                      ${FREETYPE_GL_INCLUDE_DIRS}
                      ${CMAKE_CURRENT_SOURCE_DIR} 
-                     src/)
+                     include/)
 
 set(DUMB_FRAMEWORK_SOURCES
     src/application.cpp
@@ -56,11 +56,14 @@ set(DUMB_FRAMEWORK_SOURCES
     src/line2d.cpp
     src/plane.cpp
     src/ray.cpp
-    src/bufferobject.cpp
     src/file.cpp
     src/module.cpp
     src/severity.cpp
     src/log.cpp
+    src/renderer.cpp
+    src/bufferobject.cpp
+    src/geometry.cpp
+    src/vertexstream.cpp
     src/shader.cpp
     src/program.cpp
     src/sprengine.cpp

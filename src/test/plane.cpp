@@ -1,6 +1,6 @@
 #include <unittest++/UnitTest++.h>
 #include <glm/gtc/random.hpp>
-#include "plane.hpp"
+#include <DumbFramework/plane.hpp>
 
 using namespace Framework;
 

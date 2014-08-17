@@ -1,8 +1,8 @@
 #ifndef _DUMB_FW_APPLICATION_
 #define _DUMB_FW_APPLICATION_
 
-#include <scene.hpp>
-#include <windowhint.hpp>
+#include <DumbFramework/scene.hpp>
+#include <DumbFramework/windowhint.hpp>
 
 /**
  * Application base.
