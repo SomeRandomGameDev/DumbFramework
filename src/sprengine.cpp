@@ -13,8 +13,17 @@
 
 using namespace Framework; // temporary
 
-// Shaders
+// Program's index.
+#define VERTEX_INDEX   0
+#define OFFSET_INDEX   1
+#define SIZE_INDEX     2
+#define TOP_TEX_INDEX  3
+#define DOWN_TEX_INDEX 4
+#define ROTATE_INDEX   5
+#define SCALE_INDEX    6
+#define TEXTURE_INDEX  7
 
+// Shaders
 const char *s_fragmentShader =
 "#version 410 core\n"
 "layout (binding=0) uniform sampler2DArray un_texture;"
@@ -25,87 +34,17 @@ const char *s_fragmentShader =
 "out_Color = texture(un_texture, vec3(fs_tex, fs_index));"
 " }";
 
-const char *s_vertexShader =
-"#version 150\n"
-"in vec2 vs_position;"
-"in vec2 vs_offset;"
-"in vec2 vs_dimension;"
-"in vec2 vs_toptex;"
-"in vec2 vs_bottomtex;"
-"in float vs_angle;"
-"in float vs_scale;"
-"in int vs_index;"
-"noperspective centroid out vec2 gs_dimension;"
-"out vec2 gs_toptex;"
-"out vec2 gs_bottomtex;"
-"out vec2 gs_offset;"
-"out float gs_angle;"
-"out float gs_scale;"
-"flat out int gs_index;"
-"void main() {"
-"gl_Position = vec4(vs_position, 0.0, 1.0);"
-"gs_dimension = vs_dimension;"
-"gs_toptex = vs_toptex;"
-"gs_bottomtex = vs_bottomtex;"
-"gs_offset = vs_offset;"
-"gs_angle = vs_angle;"
-"gs_scale = vs_scale;"
-"gs_index = vs_index;"
-"}";
-
-// 205, 26 -> 0.20019 , 0,02539
-const char *s_geometryShader =
-"#version 150\n"
-"layout (points) in;"
-"layout (triangle_strip, max_vertices = 4) out;"
-"noperspective centroid in vec2 gs_dimension[1];"
-"in vec2 gs_toptex[1];"
-"in vec2 gs_bottomtex[1];"
-"in vec2 gs_offset[1];"
-"in float gs_angle[1];"
-"in float gs_scale[1];"
-"flat in int gs_index[1];"
-"uniform mat4 pMatrix;"
-"out vec2 fs_tex;"
-"flat out int fs_index;"
-"void main() {"
-"vec2 dim = gs_dimension[0] / 2.0;"
-"float ca = cos(gs_angle[0]);"
-"float sa = sin(gs_angle[0]);"
-"float sc = gs_scale[0];"
-"fs_index = gs_index[0];"
-"vec2 tpos = vec2(-dim.x * ca + dim.y * sa, -dim.y * ca - dim.x * sa) * sc;"
-"vec4 pos = gl_in[0].gl_Position + vec4(gs_offset[0].x, gs_offset[0].y, 0, 0);"
-"gl_Position = pMatrix * vec4(pos.x + tpos.x, pos.y + tpos.y, 0.0, 1.0);"
-"fs_tex = gs_toptex[0];"
-"EmitVertex();"
-"tpos = vec2(dim.x * ca + dim.y * sa, -dim.y * ca + dim.x * sa) * sc;"
-"gl_Position = pMatrix * vec4(pos.x + tpos.x, pos.y + tpos.y, 0.0, 1.0);"
-"fs_tex = vec2(gs_bottomtex[0].x, gs_toptex[0].y);"
-"EmitVertex();"
-"tpos = vec2(-dim.x * ca - dim.y * sa, dim.y * ca - dim.x * sa) * sc;"
-"gl_Position = pMatrix * vec4(pos.x + tpos.x, pos.y + tpos.y, 0.0, 1.0);"
-"fs_tex = vec2(gs_toptex[0].x, gs_bottomtex[0].y);"
-"EmitVertex();"
-"tpos = vec2(dim.x * ca - dim.y * sa, dim.y * ca + dim.x * sa) * sc;"
-"gl_Position = pMatrix * vec4(pos.x + tpos.x, pos.y + tpos.y, 0.0, 1.0);"
-"fs_tex = gs_bottomtex[0];"
-"EmitVertex();"
-"EndPrimitive();"
-"}"
-;
-
 const char *s_vertexShaderInstanced =
-"#version 150\n"
+"#version 410 core\n"
 "uniform mat4 pMatrix;"
-"in vec2 vs_position;"
-"in vec2 vs_offset;"
-"in vec2 vs_dimension;"
-"in vec2 vs_toptex;"
-"in vec2 vs_bottomtex;"
-"in float vs_angle;"
-"in float vs_scale;"
-"in int vs_index;"
+"layout (location=0) in vec2 vs_position;"
+"layout (location=1) in vec2 vs_offset;"
+"layout (location=2) in vec2 vs_dimension;"
+"layout (location=3) in vec2 vs_toptex;"
+"layout (location=4) in vec2 vs_bottomtex;"
+"layout (location=5) in float vs_angle;"
+"layout (location=6) in float vs_scale;"
+"layout (location=7) in int vs_index;"
 "flat out int fs_index;"
 "out vec2 fs_tex;"
 "const vec2 quad[4] = { vec2(-0.5, 0.5),"
@@ -114,7 +53,7 @@ const char *s_vertexShaderInstanced =
 "                       vec2( 0.5,-0.5) };"
 "void main() {"
 "vec2 point = quad[gl_VertexID];"
-"vec2 dimPt = vs_dimension * point + vec2(gl_InstanceID,0.0)*0.1;"
+"vec2 dimPt = vs_dimension * point;"
 "float cs = cos(vs_angle);"
 "float sn = sin(vs_angle);"
 "vec3 rot = vec3(cs, sn, -sn);"
@@ -123,17 +62,6 @@ const char *s_vertexShaderInstanced =
 "vec2 tpos = vec2(dot(dimPt, rot.xy), dot(dimPt, rot.zx)) * vs_scale;"
 "gl_Position = pMatrix * vec4(vs_position + vs_offset + tpos, 0.0, 1.0);"
 "}";
-
-
-// Program's index.
-#define VERTEX_INDEX   0
-#define OFFSET_INDEX   1
-#define SIZE_INDEX     2
-#define TOP_TEX_INDEX  3
-#define DOWN_TEX_INDEX 4
-#define ROTATE_INDEX   5
-#define SCALE_INDEX    6
-#define TEXTURE_INDEX  7
 
 using namespace Framework;
 
@@ -182,46 +110,29 @@ namespace Sprite {
             _buffer.create(VBO_STRIDE*capacity);
             _stream.build(&_buffer,
             {
-                Geometry::Attribute(  VERTEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, 0,                  512),
-                Geometry::Attribute(  OFFSET_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  2, 512),
-                Geometry::Attribute(    SIZE_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  4, 512),
-                Geometry::Attribute( TOP_TEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  6, 512),
-                Geometry::Attribute(DOWN_TEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  8, 512),
-                Geometry::Attribute(  ROTATE_INDEX, Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 10, 512),
-                Geometry::Attribute(   SCALE_INDEX, Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 11, 512),
-                Geometry::Attribute( TEXTURE_INDEX, Geometry::ComponentType::UNSIGNED_INT, 1, VBO_STRIDE, sizeof(float) * 12, 512)
+                Geometry::Attribute(  VERTEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, 0,                  1),
+                Geometry::Attribute(  OFFSET_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  2, 1),
+                Geometry::Attribute(    SIZE_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  4, 1),
+                Geometry::Attribute( TOP_TEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  6, 1),
+                Geometry::Attribute(DOWN_TEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  8, 1),
+                Geometry::Attribute(  ROTATE_INDEX, Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 10, 1),
+                Geometry::Attribute(   SCALE_INDEX, Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 11, 1),
+                Geometry::Attribute( TEXTURE_INDEX, Geometry::ComponentType::UNSIGNED_INT, 1, VBO_STRIDE, sizeof(float) * 12, 1)
             });
             
             _time = glfwGetTime();
 
             // Create program.
-#if 0
-            std::array<Shader, 3> shaders;
-            shaders[0].create(Shader::VERTEX_SHADER,   s_vertexShader  );
-            shaders[1].create(Shader::FRAGMENT_SHADER, s_fragmentShader);
-            shaders[2].create(Shader::GEOMETRY_SHADER, s_geometryShader);
-#else
             std::array<Shader, 2> shaders;
             shaders[0].create(Shader::VERTEX_SHADER,   s_vertexShaderInstanced);
             shaders[1].create(Shader::FRAGMENT_SHADER, s_fragmentShader);
-#endif
+
             _program.create();
             for(unsigned long i=0; i<shaders.size(); i++)
             {
                 shaders[i].infoLog(Severity::Info);
                 _program.attach(shaders[i]);
             }
-
-            _program.bindAttribLocation
-                ({ {VERTEX_INDEX,   "vs_position" },
-                   {OFFSET_INDEX,   "vs_offset"   },
-                   {SIZE_INDEX,     "vs_dimension"},
-                   {TOP_TEX_INDEX,  "vs_toptex"   },
-                   {DOWN_TEX_INDEX, "vs_bottomtex"},
-                   {ROTATE_INDEX,   "vs_angle"    },
-                   {SCALE_INDEX,    "vs_scale"    },
-                   {TEXTURE_INDEX,  "vs_index"    }
-                });
 
             _program.link();
             _program.infoLog(Severity::Info);
@@ -573,7 +484,7 @@ namespace Sprite {
             _stream.bind();
 //                _stream.draw(Geometry::Primitive::POINTS, 0, _count);
 //                glDrawArraysInstanced (GL_POINTS, 0, 1, _count);
-                glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, 1024);
+                glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, 2);
             _stream.unbind();
         _program.end();
         renderer.depthBufferWrite(true);

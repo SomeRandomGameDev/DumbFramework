@@ -183,8 +183,7 @@ void TestEngine::resume(GLFWwindow * /* window */) {
   
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_ALPHA_TEST);
+  renderer.blendFunc(Framework::BlendFunc::SRC_ALPHA, Framework::BlendFunc::ONE_MINUS_SRC_ALPHA);
 }
 
 void TestEngine::pause() {
