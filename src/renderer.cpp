@@ -25,6 +25,14 @@ Renderer& Renderer::instance()
     return renderer;
 }
 /**
+ * Enable or disable 2D texture mapping.
+ * @param [in] enable If true enable 2D texture mapping.
+ */
+void Renderer::texture2D(bool enable)
+{
+    (enable ? glEnable : glDisable)(GL_TEXTURE_2D);
+}
+/**
 * Specify the texture unit to make active.
 * All textures related operations will be bound to this unit.
 * The texture bound to this unit will be accessible from the
@@ -133,7 +141,6 @@ void Renderer::setDepthFunc(DepthFunc test)
     
     glDepthFunc(func);
 }
-
 /**
  * Retrieve current depth test comparaison function.
  * @return Depth test comparaison function currently used.
@@ -165,23 +172,14 @@ DepthFunc Renderer::getDepthFunc()
     }
     return DepthFunc::ALWAYS;
 }
-
 /**
  * Enable of disable depth testing.
  * @param [in] enable If true, enable depth testing is enabled.
  */
 void Renderer::depthTest(bool enable)
 {
-    if(enable)
-    {
-        glEnable(GL_DEPTH_TEST);
-    }
-    else
-    {
-        glDisable(GL_DEPTH_TEST);
-    }
+    (enable ? glEnable : glDisable)(GL_DEPTH_TEST);
 }
-
 /**
  * Check if depth test is enabled.
  * @return true if depth testing is enabled.
@@ -190,7 +188,14 @@ bool Renderer::isDepthTestEnabled()
 {
     return (GL_TRUE == glIsEnabled(GL_DEPTH_TEST));
 }
-
+/**
+ * Enable or disable blending.
+ * @param [in] enable If true, enable blending.
+ */
+void Renderer::blend(bool enable)
+{
+    (enable ? glEnable : glDisable)(GL_BLEND);
+}
 /**
  * Convert blend function to OpenGL enum.
  */
@@ -231,7 +236,6 @@ GLenum convert(BlendFunc func)
     }
     return GL_ONE;
 }
-
 /**
  * Set blending functions.
  * @param [in] src Source blending function.

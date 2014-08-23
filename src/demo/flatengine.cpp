@@ -181,8 +181,8 @@ void TestEngine::resume(GLFWwindow * /* window */) {
   Framework::Renderer& renderer = Framework::Renderer::instance();
   renderer.depthTest(true);
   
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
+  renderer.texture2D(true);
+  renderer.blend(true);
   renderer.blendFunc(Framework::BlendFunc::SRC_ALPHA, Framework::BlendFunc::ONE_MINUS_SRC_ALPHA);
 }
 

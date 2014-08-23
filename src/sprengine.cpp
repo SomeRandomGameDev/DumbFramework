@@ -482,9 +482,7 @@ namespace Sprite {
 
             // Send VAO.
             _stream.bind();
-//                _stream.draw(Geometry::Primitive::POINTS, 0, _count);
-//                glDrawArraysInstanced (GL_POINTS, 0, 1, _count);
-                glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, 2);
+                glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, _count);
             _stream.unbind();
         _program.end();
         renderer.depthBufferWrite(true);

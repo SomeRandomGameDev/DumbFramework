@@ -210,6 +210,12 @@ class Renderer
         static Renderer& instance();
         
         /**
+         * Enable or disable 2D texture mapping.
+         * @param [in] enable If true enable 2D texture mapping.
+         */
+        void texture2D(bool enable);
+        
+        /**
          * Specify the texture unit to make active.
          * All textures related operations will be bound to this unit.
          * The texture bound to this unit will be accessible from the
@@ -250,7 +256,7 @@ class Renderer
         DepthFunc getDepthFunc();
         
         /**
-         * Enable of disable depth testing.
+         * Enable or disable depth testing.
          * @param [in] enable If true, enable depth testing is enabled.
          */
         void depthTest(bool enable);
@@ -262,13 +268,21 @@ class Renderer
         bool isDepthTestEnabled();
         
         /**
+         * Enable or disable blending.
+         * @param [in] enable If true, enable blending.
+         */
+        void blend(bool enable);
+        
+        // [todo] isBlendingEnabled();
+        
+        /**
          * Set blending functions.
          * @param [in] src Source blending function.
          * @param [in] dst Destination blending function.
          */
         void blendFunc(BlendFunc src, BlendFunc dst);
         
-        // depth range
+
         // blend mode
         // clear
         // more ...
