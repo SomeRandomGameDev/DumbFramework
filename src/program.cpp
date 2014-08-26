@@ -1,5 +1,4 @@
-#include <program.hpp>
-#include <stdarg.h>
+#include <DumbFramework/program.hpp>
 
 namespace Framework {
 
@@ -9,57 +8,56 @@ namespace Framework {
 Program::Program() :
     _id (0)
 {}
-
 /**
  * Destructor.
  */
 Program::~Program()
 {}
-
 /**
  * Create program.
  */
 bool Program::create()
 {
+    if(_id)
+    {
+        destroy();
+    }
+    
     _id = glCreateProgram();
-
-    if(_id == 0)
+    if(0 == _id)
     {
         return false;
     }
 
     return true;
 }
-
 /**
  * Attach a shader to current program.
  * @param [in] shader Shader to attach.
  */
-bool Program::attach(const Shader& shader)
+bool Program::attach(Shader const& shader)
 { 
-    if(_id == 0)
+    if(0 == _id)
     {
         Log_Error(Framework::Module::Render, "Can't attach shader to an uninitialized program!");
         return false;
     }
-
-    glAttachShader(_id, shader.getId());
+    glAttachShader(_id, shader._id);
     GLenum err = glGetError();
-    if(err != GL_NO_ERROR)
+    if(GL_NO_ERROR != err)
     {
-        Log_Error(Framework::Module::Render, "Can't attach shader (%x) to program (%x) : %s", shader.getId(), _id, gluErrorString(err));
+        Log_Error(Framework::Module::Render, "Can't attach shader (%x) to program (%x) : %s", shader._id, _id, gluErrorString(err));
         return false;
     }
     
     return true;
 }
-
 /**
  * Link program.
  */
 bool Program::link()
 {
-    if(_id == 0)
+    if(0 == _id)
     {
         return false;
     }
@@ -68,7 +66,7 @@ bool Program::link()
 
     GLint result;
     glGetProgramiv(_id, GL_LINK_STATUS, &result);
-    if (result == GL_FALSE)
+    if(GL_FALSE == result)
     {
         infoLog();
         return false;
@@ -81,7 +79,9 @@ bool Program::link()
  */
 bool Program::isInUse() const
 {
-    return (Program::getCurrentProgramId() == _id);
+    GLuint current;
+    glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&current);
+    return (current == _id);
 }
 /**
  * Use program.
@@ -93,15 +93,15 @@ bool Program::begin() const
         return false;
     }
 #if defined(SANITY_CHECK)
-    GLuint progID = Program::getCurrentProgramId();
-    if(progID && (progID != _id))
+    // Warning! This may spam your logs!
+    GLuint current;
+    glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&current);
+    if(current && (current != _id))
     {
-        Log_Warning(Module::Render, "Program %d is currently in use.");
+        Log_Warning(Module::Render, "Program %d is currently in use.", current);
     }
 #endif // SANITY_CHECK
-
     glUseProgram(_id);
-    
     return true;
 }
 
@@ -113,10 +113,11 @@ void Program::end() const
 {
 #if defined(SANITY_CHECK)
     // Warning! This may spam your logs!
-    GLuint progID =  Program::getCurrentProgramId();
-    if(progID != _id)
+    GLuint current;
+    glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&current);
+    if(current != _id)
     {
-        Log_Warning(Module::Render, "You are trying to end using program %d whereas the current active program is %d", _id, progID);
+        Log_Warning(Module::Render, "You are trying to end using program %d whereas the current active program is %d", _id, current);
         Log_Warning(Module::Render, "If you really want to end any program currently in use, call Program::endAny() (static) instead.");
     }
 #endif // SANITY_CHECK
@@ -130,35 +131,22 @@ void Program::endAny()
     glUseProgram(0);
 }
 /**
- * Retrieve the id of the program currently in use.
- * @return Program id.
- */
-GLuint Program::getCurrentProgramId()
-{
-    GLuint progID;
-    glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&progID);
-    return progID;
-}
-/**
  * Delete program and detach shaders.
  */
 void Program::destroy()
 {
-    if(_id <= 0)
+    if(_id)
     {
-        return;
+        // Stop program.
+        if(isInUse())
+        {
+            end();
+        }
+        // Delete program.
+        glDeleteProgram (_id);
+        _id = 0;
     }
-
-    if(isInUse())
-    {
-        end();
-    }
-
-    // Delete program
-    glDeleteProgram (_id);
-    _id = 0;
 }
-
 /**
  * Output link status. 
  */
@@ -183,7 +171,6 @@ void Program::infoLog(Framework::Severity severity) const
 
     delete [] log;
 }
-
 /**
  * Bind attribute location.
  * @note This must be done before link.
@@ -194,7 +181,19 @@ void Program::bindAttribLocation(GLuint index, const GLchar* name)
 {
     glBindAttribLocation(_id, index, name);
 }
-
+/**
+ * Bind multiple attribute locations.
+ * @note This must be done before link.
+ * @param [in] attr  A list of index, name tuples.
+ */
+void Program::bindAttribLocation(std::initializer_list<std::pair<unsigned int, char const*>> const& attr)
+{
+    std::pair<unsigned int, char const*> const* it;
+    for(it=attr.begin(); it!=attr.end(); ++it)
+    {
+        glBindAttribLocation(_id, it->first, it->second);
+    }
+}
 /**
  * Bind fragment output location.
  * \note This must be done before link.
@@ -205,45 +204,29 @@ void Program::bindFragDataLocation(GLuint index, const GLchar* name)
 {
     glBindFragDataLocation(_id, index, name);
 }
-
 /**
- * Bind program input (attribute) and output (fragment output) parameters.
- * This can be viewed as a batch version of bindAttribLocation and bindFragDataLocation.
- * @param [in] input Attribute location array.
- * @param [in] inputCount Number of elements in attribute location array.
- * @param [in] output Fragment output location array.
- * @param [in] outputCount Number of elements in fragment output location array.
- * @todo add transform feedback output?
+ * Bind multiple fragment output locations.
+ * @note This must be done before link.
+ * @param [in] attr  A list of index, name tuples.
  */
-void Program::bindParameters(ParameterInfo const * input, size_t inputCount, ParameterInfo const * output, size_t outputCount)
+void Program::bindFragDataLocation(std::initializer_list<std::pair<unsigned int, char const*>> const& fragData)
 {
-    if(NULL != input)
+    std::pair<unsigned int, char const*> const* it;
+    for(it=fragData.begin(); it!=fragData.end(); ++it)
     {
-        for(size_t i=0; i<inputCount; i++)
-        {
-            glBindAttribLocation(_id, input[i].id, input[i].name);
-        }
-    }
-    if(NULL != output)
-    {
-        for(size_t i=0; i<outputCount; i++)
-        {
-            glBindFragDataLocation(_id, output[i].id, output[i].name);
-        }
+        glBindFragDataLocation(_id, it->first, it->second);
     }
 }
-
 /**
  * Specify varying outputs for transform feedback
- * @param [in] varyingNames Varying name array.
- * @param [in] varyingNameCount Varying name count.
  * @param [in] interleaved Indicates if the varyings are interleaved.
+ * @param [in] names       List of varying outputs.
  */
-void Program::transformFeedbackVaryings(const char** varyingNames, int varyingNameCount, bool interleaved)
+void Program::transformFeedbackVaryings(bool interleaved, std::initializer_list<char const*> names)
 {
-    glTransformFeedbackVaryings(_id, varyingNameCount, varyingNames, (interleaved ? GL_INTERLEAVED_ATTRIBS : GL_SEPARATE_ATTRIBS));
+    const char** ptr = const_cast<const char**>(names.begin());
+    glTransformFeedbackVaryings(_id, names.size(), ptr, (interleaved ? GL_INTERLEAVED_ATTRIBS : GL_SEPARATE_ATTRIBS));
 }
-
 /**
  * Delete attached shaders.
  */
@@ -265,5 +248,178 @@ void Program::destroyShaders()
         }
     }
 }
+/**
+ * Get uniform variable location.
+ * @param [in] name Uniform variable name.
+ * @return Uniform variable index.
+ */
+int Program::getUniformLocation(char const* name)
+{
+    GLint uid = glGetUniformLocation(_id, name);
+    GLenum err = glGetError();
+    if(err != GL_NO_ERROR)
+    {
+        Log_Error(Framework::Module::Render, "Unable to retrieve uniform %s id: %s", name, gluErrorString(err));
+    }
+    return static_cast<int>(uid);
+}
+/**
+ * Get attribute location.
+ * @param [in] name Attribute name.
+ * @return Attribute index.
+ */
+int Program::getAttribLocation(char const* name)
+{
+    GLint uid = glGetAttribLocation(_id, name);
+    GLenum err = glGetError();
+    if(err != GL_NO_ERROR)
+    {
+        Log_Error(Framework::Module::Render, "Unable to retrieve attribute %s id: %s", name, gluErrorString(err));
+    }
+    return static_cast<int>(uid);
+}
+
+#if defined(SANITY_CHECK)
+#define CHECK_GL_ERRORS do { GLenum err = glGetError(); if(GL_NO_ERROR != err) {Log_Error(Framework::Module::Render, (const char*)gluErrorString(err)); } } while(0); \
+
+#else
+#define CHECK_GL_ERRORS
+#endif // SANITY_CHECK
+
+template<>
+void Program::uniform<int>(int id, int const& i) const
+{ glUniform1i(id, i); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<unsigned int>(int id, unsigned int const& u) const
+{ glUniform1ui(id, u); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<float>(int id, float const& f) const
+{ glUniform1f(id, f); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<double>(int id, double const& d) const
+{ glUniform1d(id, d); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::vec2>(int id, glm::vec2 const& v) const
+{ glUniform2fv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::vec3>(int id, glm::vec3 const& v) const
+{ glUniform3fv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::vec4>(int id, glm::vec4 const& v) const
+{ glUniform4fv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::dvec2>(int id, glm::dvec2 const& v) const
+{ glUniform2dv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::dvec3>(int id, glm::dvec3 const& v) const
+{ glUniform3dv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::dvec4>(int id, glm::dvec4 const& v) const
+{ glUniform4dv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::ivec2>(int id, glm::ivec2 const& v) const
+{ glUniform2iv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::ivec3>(int id, glm::ivec3 const& v) const
+{ glUniform3iv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::ivec4>(int id, glm::ivec4 const& v) const
+{ glUniform4iv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::uvec2>(int id, glm::uvec2 const& v) const
+{ glUniform2uiv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::uvec3>(int id, glm::uvec3 const& v) const
+{ glUniform3uiv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template<>
+void Program::uniform<glm::uvec4>(int id, glm::uvec4 const& v) const
+{ glUniform4uiv(id, 1, glm::value_ptr(v)); CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::mat4>(int id, bool transpose, glm::mat4 const& mat) const
+{ glUniformMatrix4fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::mat4x2>(int id, bool transpose, glm::mat4x2 const& mat) const
+{ glUniformMatrix4x2fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::mat4x3>(int id, bool transpose, glm::mat4x3 const& mat) const
+{ glUniformMatrix4x3fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::mat3>(int id, bool transpose, glm::mat3 const& mat) const
+{ glUniformMatrix3fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+        
+template <>
+void Program::uniform<glm::mat3x2>(int id, bool transpose, glm::mat3x2 const& mat) const
+{ glUniformMatrix3x2fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::mat3x4>(int id, bool transpose, glm::mat3x4 const& mat) const
+{ glUniformMatrix3x4fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::mat2>(int id, bool transpose, glm::mat2 const& mat) const
+{ glUniformMatrix2fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+        
+template <>
+void Program::uniform<glm::mat2x3>(int id, bool transpose, glm::mat2x3 const& mat) const
+{ glUniformMatrix2x3fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::mat2x4>(int id, bool transpose, glm::mat2x4 const& mat) const
+{ glUniformMatrix2x4fv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::dmat4>(int id, bool transpose, glm::dmat4 const& mat) const
+{ glUniformMatrix4dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::dmat4x2>(int id, bool transpose, glm::dmat4x2 const& mat) const
+{ glUniformMatrix4x2dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::dmat4x3>(int id, bool transpose, glm::dmat4x3 const& mat) const
+{ glUniformMatrix4x3dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::dmat3>(int id, bool transpose, glm::dmat3 const& mat) const
+{ glUniformMatrix3dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+        
+template <>
+void Program::uniform<glm::dmat3x2>(int id, bool transpose, glm::dmat3x2 const& mat) const
+{ glUniformMatrix3x2dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::dmat3x4>(int id, bool transpose, glm::dmat3x4 const& mat) const
+{ glUniformMatrix3x4dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::dmat2>(int id, bool transpose, glm::dmat2 const& mat) const
+{ glUniformMatrix2dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+        
+template <>
+void Program::uniform<glm::dmat2x3>(int id, bool transpose, glm::dmat2x3 const& mat) const
+{ glUniformMatrix2x3dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
+
+template <>
+void Program::uniform<glm::dmat2x4>(int id, bool transpose, glm::dmat2x4 const& mat) const
+{ glUniformMatrix2x4dv(id, 1, transpose, glm::value_ptr(mat)) ; CHECK_GL_ERRORS }
 
 } // Framework

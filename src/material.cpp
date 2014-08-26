@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "material.hpp"
+#include <DumbFramework/material.hpp>
 
 namespace Render {
 

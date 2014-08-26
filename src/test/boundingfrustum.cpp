@@ -2,7 +2,7 @@
 #include <vector>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/random.hpp>
-#include "boundingobjects.hpp"
+#include <DumbFramework/boundingobjects.hpp>
 
 using namespace Framework;
 

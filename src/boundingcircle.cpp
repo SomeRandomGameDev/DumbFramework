@@ -1,5 +1,4 @@
-#include <iostream>
-#include "boundingobjects.hpp"
+#include <DumbFramework/boundingobjects.hpp>
 
 namespace Framework {
     

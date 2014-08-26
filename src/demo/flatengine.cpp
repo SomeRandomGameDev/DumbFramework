@@ -1,12 +1,13 @@
 // You'll never see an uglyiest test executable !
 
 #include <GL/glew.h> // Hot fix : There's a big issue in the includes management.
-
-#include <log.hpp>
-#include <application.hpp>
-#include <scene.hpp>
-#include <sprengine.hpp>
 #include <iostream>
+
+#include <DumbFramework/log.hpp>
+#include <DumbFramework/application.hpp>
+#include <DumbFramework/scene.hpp>
+#include <DumbFramework/sprengine.hpp>
+#include <DumbFramework/renderer.hpp>
 
 class TestEngine : public Scene {
 public:
@@ -151,7 +152,8 @@ void TestEngine::handleWindowSize(int width, int height) {
   _width = width;
   _height = height;
   if(0 == _atlas) {
-    _atlas = new Sprite::Atlas("test.xml");
+    _atlas = new Sprite::Atlas();
+    _atlas->read("test.xml");
     _engine = new Sprite::Engine(_atlas, 8);
     _init = true;
   }
@@ -161,7 +163,8 @@ void TestEngine::handleWindowSize(int width, int height) {
 
 void TestEngine::resume(GLFWwindow * /* window */) {
   if(0 == _atlas) {
-    _atlas = new Sprite::Atlas("test.xml");
+    _atlas = new Sprite::Atlas();
+    _atlas->read("test.xml");
     _engine = new Sprite::Engine(_atlas, 8);
     _init = true;
   }
@@ -174,11 +177,13 @@ void TestEngine::resume(GLFWwindow * /* window */) {
   // Layer 1 is behind
   _start = glfwGetTime();
   _elapsed = 0;
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_ALPHA_TEST);
+  
+  Framework::Renderer& renderer = Framework::Renderer::instance();
+  renderer.depthTest(true);
+  
+  renderer.texture2D(true);
+  renderer.blend(true);
+  renderer.blendFunc(Framework::BlendFunc::SRC_ALPHA, Framework::BlendFunc::ONE_MINUS_SRC_ALPHA);
 }
 
 void TestEngine::pause() {
@@ -200,7 +205,7 @@ int main(void) {
 
   std::string title("Sprite EngineTest");
   TestEngine testScene(640, 480);
-  WindowHint hint(640, 480, title);
+  Framework::WindowHint hint(640, 480, title);
   Application application;
 
   application.start(hint, &testScene);

@@ -20,6 +20,7 @@ if(MSVC)
 endif(MSVC)
 
 find_package(EXPAT)
+find_package(tinyxml2)
 find_package(SOIL)
 find_package(Threads)
 find_package(OpenGL)
@@ -34,6 +35,7 @@ set(DUMB_FRAMEWORK_VERSION 0.1a)
 set(PROJECT_NAME DumbFramework)
 
 include_directories( ${EXPAT_INCLUDE_DIR} 
+                     ${TINYXML2_INCLUDE_DIR} 
                      ${PTHREADS_INCLUDE_DIR}
                      ${OPENGL_INCLUDE_DIRS}
                      ${GLFW_INCLUDE_DIR}
@@ -42,7 +44,7 @@ include_directories( ${EXPAT_INCLUDE_DIR}
                      ${SOIL_INCLUDE_DIRS}
                      ${FREETYPE_GL_INCLUDE_DIRS}
                      ${CMAKE_CURRENT_SOURCE_DIR} 
-                     src/)
+                     include/)
 
 set(DUMB_FRAMEWORK_SOURCES
     src/application.cpp
@@ -54,25 +56,29 @@ set(DUMB_FRAMEWORK_SOURCES
     src/line2d.cpp
     src/plane.cpp
     src/ray.cpp
-    src/bufferobject.cpp
     src/file.cpp
     src/module.cpp
     src/severity.cpp
     src/log.cpp
+    src/renderer.cpp
+    src/bufferobject.cpp
+    src/geometry.cpp
+    src/vertexstream.cpp
     src/shader.cpp
     src/program.cpp
     src/sprengine.cpp
     src/sprite.cpp
     src/texture2d.cpp
-    src/windowhint.cpp)
+    src/windowhint.cpp
+    src/joystick.cpp)
 
 add_library(DumbFramework STATIC ${DUMB_FRAMEWORK_SOURCES})
+target_link_libraries(DumbFramework ${TINYXML2_LIBRARY} )
 target_link_libraries(DumbFramework ${OPENGL_LIBRARIES} )
 target_link_libraries(DumbFramework ${GLFW_LIBRARIES} )
 target_link_libraries(DumbFramework ${GLEW_LIBRARY} )
 target_link_libraries(DumbFramework ${PTHREADS_LIBRARY} )
 target_link_libraries(DumbFramework ${SOIL_LIBRARIES} )
-target_link_libraries(DumbFramework ${EXPAT_LIBRARY} )
 target_link_libraries(DumbFramework ${THREAD_LIBRARY} )
 target_link_libraries(DumbFramework ${FREETYPE_GL_LIBRARY} )
 target_link_libraries(DumbFramework ${CMAKE_THREAD_LIBS_INIT})
@@ -99,8 +105,6 @@ endif()
 add_executable(flatengine src/demo/flatengine.cpp)
 target_link_libraries(flatengine DumbFramework)
 
-add_executable(vbo src/demo/vbo.cpp)
-target_link_libraries(vbo DumbFramework)
 
 # Add Atlas make executable
 SET(wxWidgets_USE_LIBS)

@@ -5,7 +5,7 @@
 #include <vector>
 #include <iostream>
 
-#include <log.hpp>
+#include <DumbFramework/log.hpp>
 
 // Wanna see some speedcoding ?
 // Last version was so bad that we won't talk about it, AT ALL.

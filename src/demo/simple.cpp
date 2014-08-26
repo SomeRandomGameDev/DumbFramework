@@ -1,4 +1,4 @@
-#include <application.hpp>
+#include <DumbFramework/application.hpp>
 #include <iostream>
 #include <string.h>
 #include <GLFW/glfw3.h>
@@ -61,7 +61,7 @@ Scene *MyScene::output() {
  */
 int main(void) {
   std::string title("A simple example");
-  WindowHint hint(800, 600, title);
+  Framework::WindowHint hint(800, 600, title);
   Application application;
   MyScene myScene;
 

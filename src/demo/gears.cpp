@@ -1,5 +1,5 @@
-#include <application.hpp>
-#include <demo/gears.hpp>
+#include <DumbFramework/application.hpp>
+#include "demo/gears.hpp"
 #include <math.h>
 #include <string>
 #include <iostream>
@@ -279,7 +279,7 @@ void GearScene::resume(GLFWwindow * /*window*/) {
 // Main routine.
 int main(void) {
   std::string title("GLXgears demo");
-  WindowHint hint(800,600,title);
+  Framework::WindowHint hint(800,600,title);
   Application application;
   GearScene scene;
   application.start(hint, &scene);

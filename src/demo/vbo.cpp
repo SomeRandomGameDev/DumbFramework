@@ -8,8 +8,8 @@
 #include <iostream>
 #include <math.h>
 
-#include <log.hpp>
-#include <texture2d.hpp>
+#include <DumbFramework/log.hpp>
+#include <DumbFramework/texture2d.hpp>
 
 // Shaders
 
@@ -357,7 +357,7 @@ int main(void) {
 
 	std::string title("Sprite Test");
 	TestScene testScene;
-	WindowHint hint(800, 600, title);
+	Framework::WindowHint hint(800, 600, title);
 	Application application;
 
 	application.start(hint, &testScene);

@@ -3,93 +3,15 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <sprengine.hpp>
 
 #include <array>
 #include <iostream>
 #include <string>
 
-// Shaders
+#include <DumbFramework/sprengine.hpp>
+#include <DumbFramework/renderer.hpp>
 
-const char *s_fragmentShader =
-"#version 410 core\n"
-"layout (binding=0) uniform sampler2DArray un_texture;"
-"flat in int fs_index;"
-"in vec2 fs_tex;"
-"out vec4 out_Color;"
-"void main() {"
-"out_Color = texture(un_texture, vec3(fs_tex, fs_index));"
-" }";
-
-const char *s_vertexShader =
-"#version 150\n"
-"in vec2 vs_position;"
-"in vec2 vs_offset;"
-"in vec2 vs_dimension;"
-"in vec2 vs_toptex;"
-"in vec2 vs_bottomtex;"
-"in float vs_angle;"
-"in float vs_scale;"
-"in int vs_index;"
-"noperspective centroid out vec2 gs_dimension;"
-"out vec2 gs_toptex;"
-"out vec2 gs_bottomtex;"
-"out vec2 gs_offset;"
-"out float gs_angle;"
-"out float gs_scale;"
-"flat out int gs_index;"
-"void main() {"
-"gl_Position = vec4(vs_position.x, vs_position.y, 0.0, 1.0);"
-"gs_dimension = vs_dimension;"
-"gs_toptex = vs_toptex;"
-"gs_bottomtex = vs_bottomtex;"
-"gs_offset = vs_offset;"
-"gs_angle = vs_angle;"
-"gs_scale = vs_scale;"
-"gs_index = vs_index;"
-"}";
-
-// 205, 26 -> 0.20019 , 0,02539
-const char *s_geometryShader =
-"#version 150\n"
-"layout (points) in;"
-"layout (triangle_strip, max_vertices = 4) out;"
-"noperspective centroid in vec2 gs_dimension[1];"
-"in vec2 gs_toptex[1];"
-"in vec2 gs_bottomtex[1];"
-"in vec2 gs_offset[1];"
-"in float gs_angle[1];"
-"in float gs_scale[1];"
-"flat in int gs_index[1];"
-"uniform mat4 pMatrix;"
-"out vec2 fs_tex;"
-"flat out int fs_index;"
-"void main() {"
-"vec2 dim = gs_dimension[0] / 2.0;"
-"float ca = cos(gs_angle[0]);"
-"float sa = sin(gs_angle[0]);"
-"float sc = gs_scale[0];"
-"fs_index = gs_index[0];"
-"vec2 tpos = vec2(-dim.x * ca + dim.y * sa, -dim.y * ca - dim.x * sa) * sc;"
-"vec4 pos = gl_in[0].gl_Position + vec4(gs_offset[0].x, gs_offset[0].y, 0, 0);"
-"gl_Position = pMatrix * vec4(pos.x + tpos.x, pos.y + tpos.y, 0.0, 1.0);"
-"fs_tex = gs_toptex[0];"
-"EmitVertex();"
-"tpos = vec2(dim.x * ca + dim.y * sa, -dim.y * ca + dim.x * sa) * sc;"
-"gl_Position = pMatrix * vec4(pos.x + tpos.x, pos.y + tpos.y, 0.0, 1.0);"
-"fs_tex = vec2(gs_bottomtex[0].x, gs_toptex[0].y);"
-"EmitVertex();"
-"tpos = vec2(-dim.x * ca - dim.y * sa, dim.y * ca - dim.x * sa) * sc;"
-"gl_Position = pMatrix * vec4(pos.x + tpos.x, pos.y + tpos.y, 0.0, 1.0);"
-"fs_tex = vec2(gs_toptex[0].x, gs_bottomtex[0].y);"
-"EmitVertex();"
-"tpos = vec2(dim.x * ca - dim.y * sa, dim.y * ca + dim.x * sa) * sc;"
-"gl_Position = pMatrix * vec4(pos.x + tpos.x, pos.y + tpos.y, 0.0, 1.0);"
-"fs_tex = gs_bottomtex[0];"
-"EmitVertex();"
-"EndPrimitive();"
-"}"
-;
+using namespace Framework; // temporary
 
 // Program's index.
 #define VERTEX_INDEX   0
@@ -101,9 +23,51 @@ const char *s_geometryShader =
 #define SCALE_INDEX    6
 #define TEXTURE_INDEX  7
 
+// Shaders
+const char *s_fragmentShader =
+"#version 410 core\n"
+"layout (binding=0) uniform sampler2DArray un_texture;"
+"flat in int fs_index;"
+"in vec2 fs_tex;"
+"out vec4 out_Color;"
+"void main() {"
+"out_Color = texture(un_texture, vec3(fs_tex, fs_index));"
+" }";
+
+const char *s_vertexShaderInstanced =
+"#version 410 core\n"
+"uniform mat4 pMatrix;"
+"layout (location=0) in vec2 vs_position;"
+"layout (location=1) in vec2 vs_offset;"
+"layout (location=2) in vec2 vs_dimension;"
+"layout (location=3) in vec2 vs_toptex;"
+"layout (location=4) in vec2 vs_bottomtex;"
+"layout (location=5) in float vs_angle;"
+"layout (location=6) in float vs_scale;"
+"layout (location=7) in int vs_index;"
+"flat out int fs_index;"
+"out vec2 fs_tex;"
+"const vec2 quad[4] = { vec2(-0.5, 0.5),"
+"                       vec2( 0.5, 0.5),"
+"                       vec2(-0.5,-0.5),"
+"                       vec2( 0.5,-0.5) };"
+"void main() {"
+"vec2 point = quad[gl_VertexID];"
+"vec2 dimPt = vs_dimension * point;"
+"float cs = cos(vs_angle);"
+"float sn = sin(vs_angle);"
+"vec3 rot = vec3(cs, sn, -sn);"
+"fs_index = vs_index;"
+"fs_tex = mix(vs_toptex, vs_bottomtex, point + vec2(0.5));"
+"vec2 tpos = vec2(dot(dimPt, rot.xy), dot(dimPt, rot.zx)) * vs_scale;"
+"gl_Position = pMatrix * vec4(vs_position + vs_offset + tpos, 0.0, 1.0);"
+"}";
+
+using namespace Framework;
+
 // vec2 (pos) + vec2(offset) + vec2 (dim) +
 // vec2 (top-tex) + vec2 (bottom-tex) + rotate + scale + texture
-#define VBO_STRIDE (sizeof(GLfloat) * 12 + sizeof(GLuint))
+#define VBO_STRIDE (sizeof(float) * 12 + sizeof(unsigned int))
 
 namespace Sprite {
 
@@ -111,7 +75,7 @@ namespace Sprite {
 
     Engine::Engine(Atlas *atlas, unsigned int capacity) :
         _atlas(atlas),
-        _vao(0),
+        _stream(),
         _buffer(),
         _program(),
         _texture(&atlas->texture()),
@@ -142,88 +106,36 @@ namespace Sprite {
             }
             _table[capacity-1]._next = -1;
 
-            // VAO+VBO init.
-            _buffer.create(GL_ARRAY_BUFFER, VBO_STRIDE*capacity, GL_STREAM_DRAW);
-
-            glGenVertexArrays(1, &_vao);
-            glBindVertexArray(_vao);
-            glEnableVertexAttribArray(VERTEX_INDEX);
-            glEnableVertexAttribArray(OFFSET_INDEX);
-            glEnableVertexAttribArray(SIZE_INDEX);
-            glEnableVertexAttribArray(TOP_TEX_INDEX);
-            glEnableVertexAttribArray(DOWN_TEX_INDEX);
-            glEnableVertexAttribArray(ROTATE_INDEX);
-            glEnableVertexAttribArray(SCALE_INDEX);
-            _buffer.bind();
-            glVertexAttribPointer(VERTEX_INDEX,
-                    2, GL_FLOAT,
-                    GL_FALSE,
-                    VBO_STRIDE,
-                    (GLvoid *) 0);
-            glVertexAttribPointer(OFFSET_INDEX,
-                    2, GL_FLOAT,
-                    GL_FALSE,
-                    VBO_STRIDE,
-                    (GLvoid *) (sizeof(float) * 2));
-            glVertexAttribPointer(SIZE_INDEX,
-                    2, GL_FLOAT,
-                    GL_FALSE,
-                    VBO_STRIDE,
-                    (GLvoid *) (sizeof(float) * 4));
-            glVertexAttribPointer(TOP_TEX_INDEX,
-                    2, GL_FLOAT,
-                    GL_FALSE,
-                    VBO_STRIDE,
-                    (GLvoid *) (sizeof(float) * 6));
-            glVertexAttribPointer(DOWN_TEX_INDEX,
-                    2, GL_FLOAT,
-                    GL_FALSE,
-                    VBO_STRIDE,
-                    (GLvoid *) (sizeof(float) * 8));
-            glVertexAttribPointer(ROTATE_INDEX,
-                    1, GL_FLOAT,
-                    GL_FALSE,
-                    VBO_STRIDE,
-                    (GLvoid *) (sizeof(float) * 10));
-            glVertexAttribPointer(SCALE_INDEX,
-                    1, GL_FLOAT,
-                    GL_FALSE,
-                    VBO_STRIDE,
-                    (GLvoid *) (sizeof(float) * 11));
-            glVertexAttribPointer(TEXTURE_INDEX,
-                    1, GL_UNSIGNED_INT,
-                    GL_FALSE,
-                    VBO_STRIDE,
-                    (GLvoid *) (sizeof(float) * 12));
-            _buffer.unbind();
-            glBindVertexArray(0);
-
+            // vertex buffer + stream init.
+            _buffer.create(VBO_STRIDE*capacity);
+            _stream.build(&_buffer,
+            {
+                Geometry::Attribute(  VERTEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, 0,                  1),
+                Geometry::Attribute(  OFFSET_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  2, 1),
+                Geometry::Attribute(    SIZE_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  4, 1),
+                Geometry::Attribute( TOP_TEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  6, 1),
+                Geometry::Attribute(DOWN_TEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  8, 1),
+                Geometry::Attribute(  ROTATE_INDEX, Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 10, 1),
+                Geometry::Attribute(   SCALE_INDEX, Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 11, 1),
+                Geometry::Attribute( TEXTURE_INDEX, Geometry::ComponentType::UNSIGNED_INT, 1, VBO_STRIDE, sizeof(float) * 12, 1)
+            });
+            
             _time = glfwGetTime();
 
             // Create program.
-            std::array<Framework::Shader, 3> shaders;
-            shaders[0].create(Framework::Shader::VERTEX_SHADER,   s_vertexShader  );
-            shaders[1].create(Framework::Shader::FRAGMENT_SHADER, s_fragmentShader);
-            shaders[2].create(Framework::Shader::GEOMETRY_SHADER, s_geometryShader);
+            std::array<Shader, 2> shaders;
+            shaders[0].create(Shader::VERTEX_SHADER,   s_vertexShaderInstanced);
+            shaders[1].create(Shader::FRAGMENT_SHADER, s_fragmentShader);
 
             _program.create();
             for(unsigned long i=0; i<shaders.size(); i++)
             {
-                shaders[i].infoLog(Framework::Severity::Info);
+                shaders[i].infoLog(Severity::Info);
                 _program.attach(shaders[i]);
             }
 
-            _program.bindAttribLocation(VERTEX_INDEX,   "vs_position" );
-            _program.bindAttribLocation(OFFSET_INDEX,   "vs_offset"   );
-            _program.bindAttribLocation(SIZE_INDEX,     "vs_dimension");
-            _program.bindAttribLocation(TOP_TEX_INDEX,  "vs_toptex"   );
-            _program.bindAttribLocation(DOWN_TEX_INDEX, "vs_bottomtex");
-            _program.bindAttribLocation(ROTATE_INDEX,   "vs_angle"    );
-            _program.bindAttribLocation(SCALE_INDEX,    "vs_scale"    );
-            _program.bindAttribLocation(TEXTURE_INDEX,  "vs_index"    );
-
             _program.link();
-            _program.infoLog(Framework::Severity::Info);
+            _program.infoLog(Severity::Info);
             _uniformMatrix  = _program.getUniformLocation("pMatrix");
             _uniformTexture = _program.getUniformLocation("un_texture");
         }
@@ -237,11 +149,9 @@ namespace Sprite {
         _program.destroyShaders();
         _program.destroy();
         
-        // VBO/VAO deletion.
-        if(_vao != 0) {
-            glDeleteVertexArrays(1, &_vao);
-            _buffer.destroy();
-        }
+        // Vertex buffer and stream deletion.
+        _stream.destroy();
+        _buffer.destroy();
     }
 
     void Engine::displayTable() {
@@ -337,7 +247,7 @@ namespace Sprite {
         Instance *instance = _instance + inside;
         instance->_definition = _atlas->get(definitionId);
         if(0 == instance->_definition) {
-            Log_Error(Framework::Module::Render, "No Definition in Atlas for identifier (%d)", definitionId);
+            Log_Error(Module::Render, "No Definition in Atlas for identifier (%d)", definitionId);
         }
 
         // Add an entry in the lookup table.
@@ -397,18 +307,22 @@ namespace Sprite {
         if((id < (int) _count) && (_table[id]._free != true)) {
             Identifier inside = _table[id]._target;
             Instance *instance = _instance + inside;
-            Animation *animation = 0;
-
-            if(0 != instance->_definition) {
+            Animation const* animation = 0;
+            
+            if(0 != instance->_definition)
+            {
                 instance->_animation = animId;
                 instance->_frame = 0;
                 instance->_elapsed = 0;
                 instance->_cycle = cycle;
                 instance->_layer = layer;
-                animation = instance->_definition->get(animId);
-                if(0 != animation) {
-                    instance->_still = animation->capacity()<2;
-                } else {
+                if(animId < instance->_definition->animationCount())
+                {
+                    animation = instance->_definition->getAnimation(animId);
+                    instance->_still = (animation->frameCount() < 2);
+                } 
+                else
+                {
                     return false;
                 }
             } else {
@@ -417,7 +331,7 @@ namespace Sprite {
             // From here, we're safe.
             // 'animation' is not null anymore.
             // Get the first frame.
-            Frame *frame = animation->get(0);
+            Frame const* frame = animation->getFrame(0);
             // Check layer and swap to lower.
             while((inside > 0) &&
                   (_instance[inside]._layer > _instance[inside - 1]._layer)) {
@@ -449,36 +363,25 @@ namespace Sprite {
         _table[_instance[a]._reverse]._target = a;        
     }
 
-    void Engine::assignFrameToCell(Frame *frame, Cell *cell, double x, double y, float angle, float scale) {
-        glm::ivec2 offset = frame->getOffset();
-        glm::ivec2 size = frame->getSize();
-        glm::dvec2 top = frame->getTop();
-        glm::dvec2 bottom = frame->getBottom();
-        GLuint layer = frame->getLayer();
-
+    void Engine::assignFrameToCell(Frame const* frame, Cell *cell, double x, double y, float angle, float scale) {
         cell->_posX = x;
         cell->_posY = y;
-        cell->_offsetX = offset.x;
-        cell->_offsetY = offset.y;
-        cell->_sizeX = size.x;
-        cell->_sizeY = size.y;
-        cell->_topU = top.x;
-        cell->_topV = top.y;
-        cell->_bottomU = bottom.x;
-        cell->_bottomV = bottom.y;
+        cell->_offsetX = frame->offset.x;
+        cell->_offsetY = frame->offset.y;
+        cell->_sizeX = frame->size.x;
+        cell->_sizeY = frame->size.y;
+        cell->_topU = frame->top.x;
+        cell->_topV = frame->top.y;
+        cell->_bottomU = frame->bottom.x;
+        cell->_bottomV = frame->bottom.y;
         cell->_angle = angle;
         cell->_scale = scale;
-        cell->_layer = layer;
+        cell->_layer = frame->layer;
     }
 
     void Engine::viewport(float x, float y,
             unsigned int width, unsigned int height,
             float scale) {
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(0, width, height, 0, 0, 256.0);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
         float dw = (width / 2.0f) * scale;
         float dh = (height / 2.0f) * scale;;
 
@@ -524,13 +427,13 @@ namespace Sprite {
             double elapsed = _instance[i]._elapsed + span;
             if(true != _instance[i]._still) {
                 // Look for next frame.
-                Animation *animation = _instance[i]._definition->get(_instance[i]._animation);
-                int capacity = animation->capacity();
+                Animation const* animation = _instance[i]._definition->getAnimation(_instance[i]._animation);
+                int capacity = animation->frameCount();
                 int frameNum = _instance[i]._frame;
                 bool search = true;
                 while(search) {
-                    Frame *frame = animation->get(frameNum);
-                    double fTime = frame->getTime();
+                    Frame const* frame = animation->getFrame(frameNum);
+                    double fTime = frame->time;
                     if(elapsed > fTime) {
                         if(frameNum == (capacity - 1)) {
                             if(_instance[i]._cycle) {
@@ -550,7 +453,7 @@ namespace Sprite {
                 }
                 _instance[i]._frame = frameNum;
                 _instance[i]._elapsed = elapsed;
-                Frame *frame = animation->get(frameNum);
+                Frame const* frame = animation->getFrame(frameNum);
                 Cell *cell = _cell + i;
                 assignFrameToCell(frame, cell, cell->_posX, cell->_posY,
                                   cell->_angle, cell->_scale);
@@ -559,27 +462,30 @@ namespace Sprite {
     }
 
     void Engine::render() {
+        Renderer& renderer = Renderer::instance();
+        
         // Animate the sprites
         animate();
-
         // Retrieve buffer and memcpy.
-        glDepthMask(GL_FALSE);
-        glEnable(GL_TEXTURE_2D_ARRAY);
+        renderer.depthBufferWrite(false);
+        
         _program.begin();
-            glUniformMatrix4fv(_uniformMatrix, 1, GL_FALSE, glm::value_ptr(_matrix));
-            glUniform1i(_uniformTexture, 0);
-            glActiveTexture(GL_TEXTURE0);
+            _program.uniform(_uniformMatrix, false, _matrix);
+            _program.uniform(_uniformTexture, 0);
+            
+            renderer.setActiveTextureUnit(0);
             _texture->bind();
-            GLfloat *ptr = (GLfloat *) _buffer.map(Render::BufferObject::BUFFER_WRITE);
+
+            GLfloat *ptr = (GLfloat *) _buffer.map(BufferObject::Access::WRITE_ONLY);
             memcpy(ptr, _cell, VBO_STRIDE * _count);
             _buffer.unmap();
 
             // Send VAO.
-            glBindVertexArray(_vao);
-            glDrawArrays(GL_POINTS, 0, _count);
-            glBindVertexArray(0);
+            _stream.bind();
+                glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, _count);
+            _stream.unbind();
         _program.end();
-        glDepthMask(GL_TRUE);
+        renderer.depthBufferWrite(true);
     }
 
 }
