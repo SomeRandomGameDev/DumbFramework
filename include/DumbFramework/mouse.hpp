@@ -42,6 +42,43 @@ class Mouse
             inline Button(Value v) : value(v) {}
             inline operator Value() { return value; }
         };
+        /**
+         * Mouse event listener base class.
+         */
+        class Listener
+        {
+            public:
+                /**
+                 * Constructor.
+                 */
+                Listener();
+                /**
+                 * Destructor.
+                 */
+                virtual ~Listener();
+                /**
+                 * Button pressed callback.
+                 * @param [in] button   Button id.
+                 * @param [in] modifier Key modifier [todo]
+                 */
+                virtual void onMouseButtonPressed(Button button, int modifier);
+                /**
+                 * Button released callback.
+                 * @param [in] button   Button id.
+                 * @param [in] modifier Key modifier [todo]
+                 */
+                virtual void onMouseButtonReleased(Button button, int modifier);
+                /**
+                 * Cursor movement callback.
+                 * @param [in] cursor Current cursor position.
+                 */
+                virtual void onMousePositionChanged(glm::dvec2 const& cursor);
+                /**
+                 * Mouse wheel, touchpad scrolling callback.
+                 * @param [in] offset Scroll offset.
+                 */
+                virtual void onMouseScroll(glm::dvec2 const& offset);
+        };
         
     public:
         /** 
@@ -92,102 +129,45 @@ class Mouse
          */
         bool isGrabbed() const;
         /**
-         * Add mouse movement listener. It will be called when the mouse
-         * pointer is moved. The pointer coordinate is relative to the 
-         * upper left corner of the window.
-         * @param [in] instance Object instance.
-         * @param [in] method   A pointer to the method that will be
-         *                      called when the mouse pointer position
-         *                      changed.
-         * @return false if an error occured.
+         * Add mouse evnt listener.
+         * @param [in] listener Mouse listener to add.
          */
-        template<class T>
-        bool addPositionListener(T* instance, bool (T::*method)(glm::dvec2 const& cursor));
-        /**
-         * Add mouse button listener. It will be called when a mouse
-         * button is pressed or released. Mouse button release events
-         * will be generated for all pressed buttons when the window 
-         * loses focus.
-         * @param [in] instance Object instance.
-         * @param [in] method   A pointer to the method that will be
-         *                      called when a mouse button state changed.
-         * @return false if an error occured.
-         */
-        template<class T>
-        bool addButtonListener(T* instance, bool (T::*method)(Button button, bool pressed, int modifier));
-        /**
-         * Add mouse wheel, touchpad scrolling listener.
-         * @param [in] instance Object instance.
-         * @param [in] method   A pointer to the method that will be
-         *                      called when the scrolling device is used.
-         * @return false if an error occured.
-         */
-        template<class T>
-        bool addScrollListener(T* instance, bool (T::*method)(glm::dvec2 const& offset));
-    
-    private:
-        /** Mouse position listener. **/
-        class PositionListener;
-        /** Mouse button listener. **/
-        class ButtonListener;
-        /** Scroll listener. **/
-        class ScrollListener;
-        /**
-         * Add mouse movement listener. It will be called when the mouse
-         * pointer is moved. The pointer coordinate is relative to the 
-         * upper left corner of the window.
-         * @param [in] listener Position listener.
-         * @return false if an error occured.
-         */
-        bool addPositionListener(PositionListener* listener);
-        /**
-         * [todo]
-         * @param [in] cursor Current cursor position.
-         * @return [todo]
-         */
-        bool processPositionListeners(glm::dvec2 const& cursor);
-        /**
-         * Add mouse button listener. It will be called when a mouse
-         * button is pressed or released. Mouse button release events
-         * will be generated for all pressed buttons when the window 
-         * loses focus.
-         * @param [in] listener Button listener.
-         * @return false if an error occured.
-         */
-        bool addButtonListener(ButtonListener* listener);
-        /**
-         * [todo]
-         * @param [in] button   Button id.
-         * @param [in] pressed  Button state (true: pressed, false: released).
-         * @param [in] modifier Key modifier [todo]
-         * @return [todo]
-         */
-        bool processButtonListeners(Button button, bool pressed, int modifier);
-        /**
-         * Add mouse wheel, touchpad scrolling listener.
-         * @param [in] listener Scrolling listener.
-         * @return false if an error occured.
-         */
-        bool addScrollListener(ScrollListener* listener);
-        /**
-         * [todo]
-         * @param [in] offset [todo]
-         * @return [todo]
-         */
-        bool processScrollListners(glm::dvec2 const& offset);
+        void addListener(Listener* listener);
         
+    protected:
+        /**
+         * Call the OnMousePositionChanged method of each registered
+         * listeners when the mouse pointer is moved.
+         * The pointer coordinate is relative to the upper left corner
+         * of the window.
+         * @param [in] cursor Current cursor position.
+         * @return false if an error occured.
+         */
+        void processPositionListeners(glm::dvec2 const& cursor);
+        /**
+         * Call the OnMouseButtonPressed or OnMouseButtonReleased 
+         * methods of each registered listeners wether the mouse button 
+         * is pressed or released. Mouse button release events
+         * will be generated for all pressed buttons when the window 
+         * loses focus.
+         * @param [in] button   Button id.
+         * @param [in] pressed  Button state.
+         * @param [in] modifier Key modifier [todo]
+         */
+        void processButtonListeners(Button button, bool pressed, int modifier);
+        /**
+         * Call the onMouseScroll method of each registered listeners
+         * when the mouse wheel moves or the touchpad scrolling is used.
+         * @param [in] offset Scroll offset.
+         */
+        void processScrollListeners(glm::dvec2 const& offset);
         
     private:
         /** Mouse parent window. **/
         WindowHint* _hint;
-        /** [todo] **/
-        bool _enable;
-        /** Position listener list. **/
-        std::vector<PositionListener*> _positionListeners;
-        /** Button listener list. **/
-        std::vector<ButtonListener*>   _buttonListeners;
-        /** Scroll listener list. **/
-        std::vector<ScrollListener*>   _scrollListeners;
+        /** Mouse listeners list. **/
+        std::vector<Listener*> _listeners;
+        // [todo] ...
 };
 
 } // Input
