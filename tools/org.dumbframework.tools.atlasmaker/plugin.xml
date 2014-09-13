@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         id="application"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="org.dumbframework.tools.atlasmaker.Application">
+         </run>
+      </application>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="org.dumbframework.tools.atlasmaker.MainPerspective"
+            fixed="false"
+            icon="icons/application_form.png"
+            id="org.dumbframework.tools.atlasmaker.perspective"
+            name="Main">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            class="org.dumbframework.tools.atlasmaker.SpriteView"
+            icon="icons/image.png"
+            id="org.dumbframework.tools.atlasmaker.SpriteView"
+            name="Sprite Viewer">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="org.dumbframework.tools.atlasmaker.Application"
+            description="Tools for making Atlas for the Dumb Framework"
+            name="AtlasMaker">
+      </product>
+   </extension>
+
+</plugin>
