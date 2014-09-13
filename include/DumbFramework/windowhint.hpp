@@ -52,7 +52,7 @@ class WindowHint
          * Retrieve window context.
          * @return Window context.
          */
-        inline GLFWwindow* getWindow() { return _window; }
+        inline GLFWwindow* getWindow() { return _window; } // [todo] remove
         /**
          * Retrieve window title.
          * @return Window title.

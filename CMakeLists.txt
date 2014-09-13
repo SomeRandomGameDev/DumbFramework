@@ -70,7 +70,8 @@ set(DUMB_FRAMEWORK_SOURCES
     src/sprite.cpp
     src/texture2d.cpp
     src/windowhint.cpp
-    src/joystick.cpp)
+    src/joystick.cpp
+    src/mouse.cpp)
 
 add_library(DumbFramework STATIC ${DUMB_FRAMEWORK_SOURCES})
 target_link_libraries(DumbFramework ${TINYXML2_LIBRARY} )
