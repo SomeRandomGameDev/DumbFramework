@@ -4,6 +4,10 @@
 #include <cstdlib>
 #include <cstdint>
 
+#include <vector>
+
+#include "board.hpp"
+
 namespace Merlin {
 
 /**
@@ -32,7 +36,13 @@ class Solver
          * Destroy solver.
          */
         void destroy();
-        
+        /**
+         * Check if the board is solvable.
+         * @param [in] board Input board.
+         * @return true if the board is solvable.
+         */
+        bool isSolvable(Board const& input) const;
+         
     private:
         /**
          * Perform Gauss-Jordan reduction of the matrix of change
@@ -49,11 +59,11 @@ class Solver
         void gaussJordan();
         
     private:
-        size_t   _size;     /**< Board size. **/
-        size_t   _rank;     /**< Rank of the reduce-row echelon form matrix. **/
-        uint8_t *_inverse;  /**< Inverse of the matrix of change vectors. **/
-        uint8_t *_basis[2]; /**< Basis vectors.**/
-        uint8_t *_hint;     /**< Cached hints for a given board. **/
+        size_t   _size;    /**< Board size. **/
+        size_t   _rank;    /**< Rank of the reduce-row echelon form matrix. **/
+        uint8_t *_inverse; /**< Inverse of the matrix of change vectors. **/
+        uint8_t *_hint;    /**< Cached hints for a given board. **/
+        std::vector<uint8_t*> _basis; /**< Basis vectors.**/
 };
 
 } // Merlin

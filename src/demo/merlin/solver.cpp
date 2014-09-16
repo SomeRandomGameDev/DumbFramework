@@ -13,9 +13,8 @@ Solver::Solver()
     , _rank(0)
     , _inverse(NULL)
     , _hint(NULL)
-{
-    _basis[0] = _basis[1] = NULL;
-}
+    , _basis()
+{}
 /**
  * Destructor.
  */
@@ -41,7 +40,7 @@ bool Solver::create(size_t n)
     
     gaussJordan();
     
-    if((NULL == _basis) || (NULL == _inverse))
+    if(_basis.empty() || (NULL == _inverse))
     {
         return false;
     }
@@ -59,7 +58,7 @@ void Solver::destroy()
         delete [] _inverse;
         _inverse = NULL;
     }
-    for(size_t i=0; i<2; i++)
+    for(size_t i=0; i<_basis.size(); i++)
     {
         if(NULL != _basis[i])
         {
@@ -72,6 +71,15 @@ void Solver::destroy()
         delete [] _hint;
         _hint = NULL;
     }
+    for(size_t i=0; i<_basis.size(); i++)
+    {
+        if(NULL != _basis[i])
+        {
+            delete [] _basis[i];
+            _basis[i] = NULL;
+        }
+    }
+    _basis.clear();
 }
 /**
  * Perform Gauss-Jordan reduction of the matrix of change
@@ -91,9 +99,7 @@ void Solver::gaussJordan()
     uint8_t *a = new uint8_t[s2*s2];
     
     _inverse = new uint8_t[s2*s2];
-    _basis[0] = new uint8_t[s2];
-    _basis[1] = new uint8_t[s2];
-
+   
     size_t i, j, k;
     
     // Initialize to identity.
@@ -150,7 +156,6 @@ void Solver::gaussJordan()
         // Empty sub-column.
         if(j >= s2)
         {
-            _rank = k;
             break;
         }
         // Swap rows if needed.
@@ -196,15 +201,49 @@ void Solver::gaussJordan()
             a[k+(j*s2)] = 0;
         }
     }
+    _rank = k;
     
     // Save the last 2 columns of a.
-    for(j=0; j<s2; j++)
+    if(_rank < s2)
     {
-        _basis[0][j] = a[s2-2 + (j*s2)];
-        _basis[1][j] = a[s2-1 + (j*s2)];
+        size_t l = s2 - _rank;
+        _basis.resize(l);
+        for(k=0; k<l; k++)
+        {
+            _basis[k] = new uint8_t[s2];
+            memset(&_basis[k][0], 0, s2);
+            for(j=0; j<_rank; j++)
+            {
+                _basis[k][j] = a[_rank+k + (j*s2)];
+            }
+            _basis[k][k+_rank] = 1;
+        }
     }
-
+    
     delete [] a;
+}
+/**
+ * Check if the board is solvable.
+ * @param [in] input Input board.
+ * @return true if the board is solvable.
+ */
+bool Solver::isSolvable(Board const& input) const
+{
+    if(_size != input._size)
+    {
+        return false;
+    }
+    
+    for(size_t j=0; j<_basis.size(); j++)
+    {
+        uint8_t dot = 0;
+        for(size_t i=0; i<_size; i++)
+        {
+            dot ^= _basis[j][i] & input._data[i];
+        }
+        if(dot) return false;
+    }
+    return true;
 }
 
 } // Merlin

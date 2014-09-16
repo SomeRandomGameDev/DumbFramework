@@ -2,6 +2,7 @@
 #define _MERLIN_BOARD_
 
 #include <stdint.h>
+#include <glm/glm.hpp>
 
 namespace Merlin {
 
@@ -11,6 +12,8 @@ namespace Merlin {
  */
 class Board
 {
+    friend class Solver;
+    
     public:
         /**
          * Default constructor.
@@ -34,7 +37,7 @@ class Board
         /**
          * Get board size.
          */
-        size_t size() const
+        size_t size() const;
         /**
          * Get board value at a given coordinate.
          * @param [in] pos Cell coordinate.
@@ -58,4 +61,4 @@ class Board
 
 }; // Merlin
 
-#endif _MERLIN_BOARD_
+#endif // _MERLIN_BOARD_
