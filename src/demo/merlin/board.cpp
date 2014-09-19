@@ -1,5 +1,7 @@
 #include "board.hpp"
 
+#include <cstring>
+
 namespace Merlin {
 
 /**
@@ -19,10 +21,11 @@ Board::~Board()
 
 /**
  * Create n*n board.
- * @param [in] n Board dimension.
+ * @param [in] n  Board dimension.
+ * @param [in] in Board data.
  * @return true upon success.
  */
-bool Board::create(size_t n)
+bool Board::create(size_t n, uint8_t const* in)
 {
     // Sanity check.
     if(0 == n)
@@ -42,7 +45,14 @@ bool Board::create(size_t n)
         _size = n;
     }
     
-    memset(_data, 0, _size*_size*sizeof(uint8_t));
+    if(NULL != in)
+    {
+        memcpy(_data, in, _size*_size*sizeof(uint8_t));
+    }
+    else
+    {
+        memset(_data, 0, _size*_size*sizeof(uint8_t));
+    }
     return true;
 }
 /**
@@ -72,7 +82,7 @@ size_t Board::size() const
  */
 uint8_t Board::get(glm::ivec2 const& pos) const
 {
-    if((pos.x >= _size) || (pos.y >= _size))
+    if((static_cast<size_t>(pos.x) >= _size) || (static_cast<size_t>(pos.y) >= _size))
     {
         return 0xff;
     }
@@ -87,19 +97,20 @@ uint8_t Board::get(glm::ivec2 const& pos) const
  */
 bool Board::press(glm::ivec2 const& pos)
 {
+    int n = static_cast<int>(_size);
     // Sanity check.
-    if((pos.x >= _size) || (pos.y >= _size))
+    if((pos.x >= n) || (pos.y >= n))
     {
         return false;
     }
-    size_t offset = pos.x + (_size * pos.y);
+    size_t offset = pos.x + (n * pos.y);
     
     // Update cell and its neighbours.
-    board[offset] ^= 1;
+    _data[offset] ^= 1;
     if(pos.x > 0) _data[offset - 1] ^= 1;
-    if(pos.y > 0) _data[offset - _size] ^= 1;
-    if(pos.x < (_size-1)) _data[offset + 1] ^= 1;
-    if(pos.y < (_size-1)) _data[offset + _size] ^= 1;
+    if(pos.y > 0) _data[offset - n] ^= 1;
+    if(pos.x < (n-1)) _data[offset + 1] ^= 1;
+    if(pos.y < (n-1)) _data[offset + n] ^= 1;
     
     // Check if the board is completely off.
     size_t len = _size*_size;
@@ -112,6 +123,18 @@ bool Board::press(glm::ivec2 const& pos)
     }
     
     return true;
+}
+/**
+ * Return the number of lit cells.
+ */
+unsigned int Board::litCount() const
+{
+    unsigned int count = 0;
+    for(size_t i=0; i<_size; i++)
+    {
+        count += _data[i];
+    }
+    return count;
 }
 
 } // Merlin

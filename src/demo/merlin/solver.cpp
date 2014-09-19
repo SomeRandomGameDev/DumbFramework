@@ -1,8 +1,6 @@
 #include "solver.hpp"
 #include <cstring>
 
-#include <stdio.h>
-
 namespace Merlin {
 
 /**
@@ -12,7 +10,6 @@ Solver::Solver()
     : _size(0)
     , _rank(0)
     , _inverse(NULL)
-    , _hint(NULL)
     , _basis()
 {}
 /**
@@ -32,11 +29,6 @@ bool Solver::create(size_t n)
     destroy();
     
     _size = n;
-    _hint = new uint8_t[_size*_size];
-    if(NULL == _hint)
-    {
-        return false;
-    }
     
     gaussJordan();
     
@@ -66,11 +58,6 @@ void Solver::destroy()
             _basis[i] = NULL;
         }
     }
-    if(NULL != _hint)
-    {
-        delete [] _hint;
-        _hint = NULL;
-    }
     for(size_t i=0; i<_basis.size(); i++)
     {
         if(NULL != _basis[i])
@@ -96,11 +83,11 @@ void Solver::destroy()
 void Solver::gaussJordan()
 {
     size_t s2 = _size * _size;
-    uint8_t *a = new uint8_t[s2*s2];
+    uint8_t *toggle = new uint8_t[s2*s2];
     
     _inverse = new uint8_t[s2*s2];
    
-    size_t i, j, k;
+    size_t i, j, k, offset;
     
     // Initialize to identity.
     memset(_inverse, 0, sizeof(uint8_t) * s2 * s2);
@@ -110,100 +97,83 @@ void Solver::gaussJordan()
     }
     
     // Initialize matrix of change vectors.
-    memset(a, 0, sizeof(uint8_t) * s2 * s2);
-    for(k=0; k<_size; k++)
+    memset(toggle, 0, sizeof(uint8_t) * s2 * s2);
+    for(j=0; j<_size; j++)
     {
-        uint8_t *m = a + (k*_size) + ((k*_size) * s2);
-        for(j=0; j<_size; j++)
+        for(i=0; i<_size; i++)
         {
-            if(j > 0)
-                m[(j-1) + (j*s2)] = 1;
-            if(j < (_size-1))
-                m[(j+1) + (j*s2)] = 1;
-            m[(j ) + (j*s2)] = 1;
-        }
+            k = i + (j*_size);
+            offset = k + (k*s2);
+            
+            toggle[offset] = 1;
 
-        if(k > 0)
-        {
-            m = a + ((k-1)*_size) + ((k*_size) * s2); 
-            for(j=0; j<_size; j++)
-            {
-                m[j + (j*s2)] = 1;
-            }
-        }
-        
-        if(k < (_size-1))
-        {
-            m = a + ((k+1)*_size) + ((k*_size) * s2); 
-            for(size_t j=0; j<_size; j++)
-            {
-                m[j + (j*s2)] = 1;
-            }
+            if(i > 0) { toggle[offset-1] = 1; }
+            if(j > 0) { toggle[offset-_size] = 1; }
+            if((i+1) < _size) { toggle[offset+1] = 1; }
+            if((j+1) < _size) { toggle[offset+_size] = 1; }
         }
     }
-    
+
     // Gauss-Jordan elimination.
+    size_t pivot;
     for(k=0; k<s2; k++)
     {
         // First first non null element in current column.
-        for(j=k; j<s2; j++)
+        for(pivot=k; pivot<s2; pivot++)
         {
-            if(a[k+(j*s2)] != 0)
-            {
-                break;
-            }
+            if(toggle[k+(pivot*s2)]) break;
         }
         // Empty sub-column.
-        if(j >= s2)
-        {
-            break;
-        }
+        if(pivot >= s2) break;
+        
         // Swap rows if needed.
-        if(j != k)
+        if(pivot != k)
         {
             for(i=k; i<s2; i++)
             {
-                uint8_t v = a[i+(k*s2)];
-                a[i+(k*s2)] = a[i+(j*s2)]; 
-                a[i+(j*s2)] = v;
+                uint8_t v = toggle[i+(k*s2)];
+                toggle[i+(k*s2)] = toggle[i+(pivot*s2)]; 
+                toggle[i+(pivot*s2)] = v;
             }
             // Don't forget to do the same for the inverse.
             for(i=0; i<s2; i++)
             {
                 uint8_t v = _inverse[i+(k*s2)];
-                _inverse[i+(k*s2)] = _inverse[i+(j*s2)]; 
-                _inverse[i+(j*s2)] = v;
+                _inverse[i+(k*s2)] = _inverse[i+(pivot*s2)]; 
+                _inverse[i+(pivot*s2)] = v;
             }
         }
         // Perform elimination
         for(j=0; j<k; j++)
         {
+            offset = k+(j*s2);
             for(i=0; i<s2; i++)
             {
-                _inverse[i+(j*s2)] ^= _inverse[i+(k*s2)] & a[k+(j*s2)];
+                _inverse[i+(j*s2)] ^= _inverse[i+(k*s2)] & toggle[offset];
             }
             for(i=k+1; i<s2; i++)
             {
-                a[i+(j*s2)] ^= a[i+(k*s2)] & a[k+(j*s2)];
+                toggle[i+(j*s2)] ^= toggle[i+(k*s2)] & toggle[offset];
             }
-            a[k+(j*s2)] = 0;
+            toggle[offset] = 0;
         }
         for(j=k+1; j<s2; j++)
         {
+            offset = k+(j*s2);
             for(i=0; i<s2; i++)
             {
-                _inverse[i+(j*s2)] ^= _inverse[i+(k*s2)] & a[k+(j*s2)];
+                _inverse[i+(j*s2)] ^= _inverse[i+(k*s2)] & toggle[offset];
             }
             for(i=k+1; i<s2; i++)
             {
-                a[i+(j*s2)] ^= a[i+(k*s2)] & a[k+(j*s2)];
+                toggle[i+(j*s2)] ^= toggle[i+(k*s2)] & toggle[offset];
             }
-            a[k+(j*s2)] = 0;
+            toggle[offset] = 0;
         }
     }
     _rank = k;
     
-    // Save the last 2 columns of a.
+    // Save the last 2 columns of the toggle matrix.
     if(_rank < s2)
     {
         size_t l = s2 - _rank;
@@ -214,13 +184,13 @@ void Solver::gaussJordan()
             memset(&_basis[k][0], 0, s2);
             for(j=0; j<_rank; j++)
             {
-                _basis[k][j] = a[_rank+k + (j*s2)];
+                _basis[k][j] = toggle[_rank+k + (j*s2)];
             }
             _basis[k][k+_rank] = 1;
         }
     }
     
-    delete [] a;
+    delete [] toggle;
 }
 /**
  * Check if the board is solvable.

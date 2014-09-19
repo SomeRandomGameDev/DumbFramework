@@ -26,10 +26,11 @@ class Board
         
         /**
          * Create n*n board.
-         * @param [in] n Board dimension.
+         * @param [in] n  Board dimension.
+         * @param [in] in Board data.
          * @return true upon success.
          */
-        bool create(size_t n);
+        bool create(size_t n, uint8_t const* in=NULL);
         /**
          * Destroy board.
          */
@@ -53,7 +54,11 @@ class Board
          * @return true if all the cells are off.
          */
         bool press(glm::ivec2 const& pos);
-                
+        /**
+         * Return the number of lit cells.
+         */
+        unsigned int litCount() const;
+        
     private:
         uint8_t *_data; /**< Cells. **/
         size_t   _size; /**< Size.  **/

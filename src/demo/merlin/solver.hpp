@@ -62,7 +62,6 @@ class Solver
         size_t   _size;    /**< Board size. **/
         size_t   _rank;    /**< Rank of the reduce-row echelon form matrix. **/
         uint8_t *_inverse; /**< Inverse of the matrix of change vectors. **/
-        uint8_t *_hint;    /**< Cached hints for a given board. **/
         std::vector<uint8_t*> _basis; /**< Basis vectors.**/
 };
 
