@@ -45,7 +45,7 @@ template <typename T> class Wrapper {
          * Constructor.
          * @param dlg Delegate class.
          */
-        Wrapper(T *dlg) : delegate(dlg) {}
+        Wrapper(T *dlg) : _delegate(dlg) {}
 
         /**
          * Start the wrapper.
