@@ -105,29 +105,3 @@ endif()
 
 add_executable(flatengine src/demo/flatengine.cpp)
 target_link_libraries(flatengine DumbFramework)
-
-
-# Add Atlas make executable
-SET(wxWidgets_USE_LIBS)
-FIND_PACKAGE(wxWidgets)
-IF(wxWidgets_FOUND)
-  INCLUDE("${wxWidgets_USE_FILE}")
-  set(ATLASMAKER_SOURCES
-         src/tools/atlasmaker/main.cpp)
-  add_executable(atlasmaker ${ATLASMAKER_SOURCES})
-  # and for each of your dependant executable/library targets:
-  TARGET_LINK_LIBRARIES(atlasmaker ${wxWidgets_LIBRARIES})
-ELSE(wxWidgets_FOUND)
-  # For convenience. When we cannot continue, inform the user
-  MESSAGE("wxWidgets not found!")
-ENDIF(wxWidgets_FOUND)
-
-#find_package(GTK2 2.6 REQUIRED gtk)
-#if(GTK2_FOUND)
-#    include_directories(${GTK2_INCLUDE_DIRS})
-#    set(ATLASMAKER_SOURCES
-#         src/tools/atlasmaker/main.cpp)
-#    add_executable(atlasmaker ${ATLASMAKER_SOURCES})
-#    target_link_libraries(atlasmaker ${GTK2_LIBRARIES})
-#endif()
-
