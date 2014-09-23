@@ -4,6 +4,18 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#ifndef Log_Error
+#include <stdio.h>
+namespace ModuleID {
+    int Base = 0;
+}
+
+#define Log_Info(module, format, ...) printf("[INFO] <%s:%d in %s> " format "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__);
+#define Log_Warning(module, format, ...) fprintf(stderr, "[WARN] <%s:%d in %s> " format "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__);
+#define Log_Error(module, format, ...) fprintf(stderr, "[FAIL] <%s:%d in %s> " format "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__);
+
+#endif
+
 /**
  * GLFW error callback
  * @param [in] errorCode      Error code.
@@ -45,7 +57,7 @@ template <typename T> class Wrapper {
          * Constructor.
          * @param dlg Delegate class.
          */
-        Wrapper(T *dlg) : delegate(dlg) {}
+        Wrapper(T *dlg) : _delegate(dlg) {}
 
         /**
          * Start the wrapper.
@@ -100,14 +112,12 @@ template <typename T> class Wrapper {
 template <typename T> bool Wrapper<T>::start()
 {
     // Initialize glfw and set error callback.
+    glfwSetErrorCallback(Log_GLFWErrorCallback);
     bool result = glfwInit();
     if(!result)
     {
-        Log_Error(ModuleID::Base, "Failed to initialize OpenGL extensions: %s.", glewGetErrorString(glewError));
         return false;
     }
-    glfwSetErrorCallback(Log_GLFWErrorCallback);
-    
     // Query delegate to create window.
     GLFWwindow *window = _delegate->createWindow();
     if(0 == window)
@@ -117,14 +127,16 @@ template <typename T> bool Wrapper<T>::start()
         return false;
     }
 
+    glfwMakeContextCurrent(window);
     // Set window user data.
-    glfwSetWindowUserPoint(window, this);
+    glfwSetWindowUserPointer(window, this);
 
     // Initialize OpenGL extensions.
+    glewExperimental = GL_TRUE;
     GLenum glewError = glewInit();
     if(GLEW_OK != glewError)
     {
-        Log_Error(ModuleID::BASE, "Failed to initialize OpenGL extensions: %s.", glewGetErrorString(glewError));
+        Log_Error(ModuleID::Base, "Failed to initialize OpenGL extensions: %s.", glewGetErrorString(glewError));
         glfwTerminate();
         return false;
     }
@@ -147,7 +159,7 @@ template <typename T> bool Wrapper<T>::start()
     {
         _delegate->render();
         glfwPollEvents();
-        glfwSwapBuffers();
+        glfwSwapBuffers(window);
     }
     
     // Destroy window.
