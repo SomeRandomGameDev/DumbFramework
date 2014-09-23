@@ -58,6 +58,10 @@ class Board
          * Return the number of lit cells.
          */
         unsigned int litCount() const;
+        /**
+         * Randomize board.
+         */
+        void randomize() const;
         
     private:
         uint8_t *_data; /**< Cells. **/

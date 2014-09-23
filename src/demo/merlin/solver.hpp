@@ -42,7 +42,7 @@ class Solver
          * @return true if the board is solvable.
          */
         bool isSolvable(Board const& input) const;
-         
+        
     private:
         /**
          * Perform Gauss-Jordan reduction of the matrix of change

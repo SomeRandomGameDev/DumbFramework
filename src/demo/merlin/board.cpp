@@ -1,6 +1,8 @@
 #include "board.hpp"
 
 #include <cstring>
+#include <random>
+#include <limits>
 
 namespace Merlin {
 
@@ -135,6 +137,24 @@ unsigned int Board::litCount() const
         count += _data[i];
     }
     return count;
+}
+/**
+ * Randomize board.
+ */
+void Board::randomize() const
+{
+    std::random_device device;
+    std::default_random_engine engine(device());
+    double minProba = 1.0 / double(_size);
+    std::uniform_real_distribution<> uniformDistribution(minProba, 1.0-minProba);
+    
+    double trueProbability = uniformDistribution(engine);
+    std::bernoulli_distribution bernoulliDistribution(trueProbability);
+    
+    for(size_t i=0; i<_size*_size; i++)
+    {
+        _data[_size] = static_cast<uint8_t>(bernoulliDistribution(engine));
+    }
 }
 
 } // Merlin
