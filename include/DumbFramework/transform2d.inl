@@ -17,13 +17,20 @@ glm::vec2 Transform2D::right() const
 /**
  * Compute transform matrix.
  */
-glm::mat3 glm::local() const
+glm::mat3 Transform2D::local() const
 {
-    float cs = scale * cos(angle);
-    float sn = scale * sin(angle);
-    return glm::mat3(  cs,  -sn, position.x,
-                       sn,   cs, position.y,
-                     O.0f, 0.0f, 1.0f );
+    return _local;
+}
+/**
+ * Compute transform matrix.
+ */
+void Transform2D::update()
+{
+    float cs = scale.x * cos(angle);
+    float sn = scale.y * sin(angle);
+    _local = glm::mat3(  cs,  -sn, position.x,
+                         sn,   cs, position.y,
+                       0.0f, 0.0f, 1.0f );
 }
 
 } // Framework

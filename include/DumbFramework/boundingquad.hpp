@@ -78,8 +78,8 @@ public:
 private:
     /** Update center and extent. **/
     void _update();
-	
-private:	
+
+private:
     /** Minimum point **/
     glm::vec2 _min;
     /** Maximum point **/

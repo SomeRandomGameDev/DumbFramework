@@ -48,6 +48,8 @@ include_directories( ${EXPAT_INCLUDE_DIR}
 
 set(DUMB_FRAMEWORK_SOURCES
     src/application.cpp
+    src/entity.cpp
+    src/rect.cpp
     src/boundingbox.cpp
     src/boundingsphere.cpp
     src/boundingfrustum.cpp
@@ -96,6 +98,7 @@ if(BUILD_TESTS)
         src/test/boundingcircle.cpp
         src/test/plane.cpp
         src/test/log.cpp
+        src/test/entity.cpp
         src/test/runtests.cpp)
     
     add_executable(RunTests ${DUMB_FRAMEWORK_TEST_SOURCES})
