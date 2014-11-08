@@ -24,51 +24,60 @@
  */
 package org.dumbframework.tools.atlasmaker;
 
-import org.eclipse.ui.IWorkbenchPreferenceConstants;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.application.IWorkbenchConfigurer;
-import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
-import org.eclipse.ui.application.WorkbenchAdvisor;
-import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import org.dumbframework.tools.atlasmaker.model.Atlas;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.ui.part.ViewPart;
 
 /**
- * Application Workbench Advisor.
+ * Atlas Builder.
  * @author Stoned Xander
  */
-public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
+public class AtlasBuilder extends ViewPart {
 
     /**
-     * Perspective Identifier.
+     * Identifier.
      */
-    private static final String PERSPECTIVE_ID = "org.dumbframework.tools.atlasmaker.perspective"; //$NON-NLS-1$
+    public static final String ID = "org.dumbframework.tools.atlasmaker.AtlasBuilder"; //$NON-NLS-1$
 
     /**
-     * {@inheritDoc}
+     * Folder containing the layers of the Atlas.
      */
-    @Override
-    public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
-        return new ApplicationWorkbenchWindowAdvisor(configurer);
+    private TabFolder folder;
+
+    /**
+     * Constructor.
+     */
+    public AtlasBuilder() {
+        // Nothing to do.
     }
 
     /**
-     * {@inheritDoc}
+     * @{inherit-doc
      */
     @Override
-    public String getInitialWindowPerspectiveId() {
-        return PERSPECTIVE_ID;
+    public void createPartControl(Composite parent) {
+        final Composite container = new Composite(parent, SWT.NONE);
+        container.setLayout(new FillLayout());
+        folder = new TabFolder(container, SWT.BOTTOM);
+        
     }
 
     /**
-     * {@inheritDoc}
+     * @{inherit-doc
      */
     @Override
-    public void initialize(IWorkbenchConfigurer configurer) {
-        super.initialize(configurer);
-
-        PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_TRADITIONAL_STYLE_TABS,
-                false);
-        PlatformUI.getPreferenceStore()
-                .setValue(IWorkbenchPreferenceConstants.SHOW_PROGRESS_ON_STARTUP, true);
+    public void setFocus() {
+        // Nothing to do.
     }
 
+    /**
+     * Query to rebuild the Atlas.
+     */
+    public void rebuildAtlas() {
+        Atlas.getDefault().rebuild(); // This operation is synchronous.
+        // TODO Redraw.
+    }
 }

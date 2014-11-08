@@ -24,10 +24,20 @@
    <extension
          point="org.eclipse.ui.views">
       <view
+            allowMultiple="false"
             class="org.dumbframework.tools.atlasmaker.SpriteView"
             icon="icons/image.png"
             id="org.dumbframework.tools.atlasmaker.SpriteView"
-            name="Sprite Viewer">
+            name="Sprite Viewer"
+            restorable="true">
+      </view>
+      <view
+            allowMultiple="false"
+            class="org.dumbframework.tools.atlasmaker.AtlasBuilder"
+            icon="icons/layers.png"
+            id="org.dumbframework.tools.atlasmaker.AtlasBuilder"
+            name="Atlas Builder"
+            restorable="true">
       </view>
    </extension>
    <extension
@@ -37,6 +47,22 @@
             description="Tools for making Atlas for the Dumb Framework"
             name="AtlasMaker">
       </product>
+   </extension>
+   <extension
+         point="org.eclipse.ui.viewActions">
+      <viewContribution
+            id="atlasBuilder.contribution"
+            targetID="org.dumbframework.tools.atlasmaker.AtlasBuilder">
+         <action
+               class="org.dumbframework.tools.atlasmaker.AtlasRebuildAction"
+               icon="icons/overlays.png"
+               id="atlasbuilder.rebuildAtlas"
+               label="Rebuild Atlas"
+               state="true"
+               style="push"
+               toolbarPath="atlasBuilder.main">
+         </action>
+      </viewContribution>
    </extension>
 
 </plugin>

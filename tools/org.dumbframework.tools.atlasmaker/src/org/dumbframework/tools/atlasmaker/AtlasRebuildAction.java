@@ -22,53 +22,58 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package org.dumbframework.tools.atlasmaker;
 
-import org.eclipse.ui.IWorkbenchPreferenceConstants;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.application.IWorkbenchConfigurer;
-import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
-import org.eclipse.ui.application.WorkbenchAdvisor;
-import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.ui.IViewActionDelegate;
+import org.eclipse.ui.IViewPart;
 
 /**
- * Application Workbench Advisor.
+ * Atlas Rebuild Action trigger.
  * @author Stoned Xander
  */
-public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
+public class AtlasRebuildAction implements IViewActionDelegate {
 
     /**
-     * Perspective Identifier.
+     * Target view.
      */
-    private static final String PERSPECTIVE_ID = "org.dumbframework.tools.atlasmaker.perspective"; //$NON-NLS-1$
+    private AtlasBuilder target;
 
     /**
-     * {@inheritDoc}
+     * Constructor.
      */
-    @Override
-    public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
-        return new ApplicationWorkbenchWindowAdvisor(configurer);
+    public AtlasRebuildAction() {
+        // Nothing special to do.
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String getInitialWindowPerspectiveId() {
-        return PERSPECTIVE_ID;
+    public void run(IAction action) {
+        if (null != target) {
+            target.rebuildAtlas();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void initialize(IWorkbenchConfigurer configurer) {
-        super.initialize(configurer);
+    public void selectionChanged(IAction action, ISelection selection) {
+        // Nothing to do with selection change.
+    }
 
-        PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_TRADITIONAL_STYLE_TABS,
-                false);
-        PlatformUI.getPreferenceStore()
-                .setValue(IWorkbenchPreferenceConstants.SHOW_PROGRESS_ON_STARTUP, true);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void init(IViewPart view) {
+        if (view instanceof AtlasBuilder) {
+            target = (AtlasBuilder) view;
+        }
     }
 
 }
