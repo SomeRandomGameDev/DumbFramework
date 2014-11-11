@@ -249,6 +249,11 @@ public class Atlas {
             if (null == success) {
                 currentRoot = new Node(new Rectangle(0, 0, DEFAULT_SIZE, DEFAULT_SIZE));
                 roots.add(currentRoot);
+                success = currentRoot.insert(i);
+                if(null == success) {
+                    // We can't do more.
+                    throw new IllegalStateException();
+                }
             }
         }
 
