@@ -25,12 +25,16 @@
 
 package org.dumbframework.tools.atlasmaker.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 
 /**
  * Atlas.
@@ -41,7 +45,7 @@ public class Atlas {
     /**
      * Default Atlas size (in pixels).
      */
-    private static final int DEFAULT_SIZE = 2048;
+    public static final int DEFAULT_SIZE = 2048;
 
     /**
      * Atlas Layer.
@@ -79,6 +83,112 @@ public class Atlas {
             composition.clear();
             composition = null;
         }
+
+        /**
+         * Fill the layer composition with nodes in root.
+         * @param root Node root.
+         */
+        protected void fillWithNodes(Node root) {
+            composition.clear();
+            root.fillResult(composition);
+        }
+    }
+
+    /**
+     * Node. Temporary structure for Atlas Building.
+     * @author Stoned Xander.
+     */
+    private static class Node {
+        /**
+         * Sub-nodes.
+         */
+        private Node[] subs = new Node[2];
+        /**
+         * Concerned sprite.
+         */
+        private Sprite sprite;
+        /**
+         * Actual placeholder.
+         */
+        private Rectangle placeholder;
+
+        /**
+         * Constructor.
+         * @param pholder Place holder.
+         */
+        public Node(Rectangle pholder) {
+            placeholder = pholder;
+        }
+
+        /**
+         * Insert the sprite in the sub-tree.
+         * @param spr Sprite to insert.
+         * @return The actual node used for sprite insertion.
+         */
+        public Node insert(Sprite spr) {
+            Node result = null;
+            if ((null != subs[0]) && (null != subs[1])) {
+                // We're not in a leaf.
+                Node newNode = subs[0].insert(spr);
+                if (null == newNode) {
+                    newNode = subs[1].insert(spr);
+                }
+                result = newNode;
+            } else {
+                if (null == sprite) {
+                    // Let's check the actual space.
+                    Rectangle rect = spr.getBounds();
+                    int rw = rect.width - rect.x;
+                    int rh = rect.height - rect.y;
+                    if ((placeholder.width < rw) || (placeholder.height < rh)) {
+                        // Too small.
+                        result = null;
+                    } else if ((rw == placeholder.width) && (rh == placeholder.height)) {
+                        sprite = spr;
+                        result = this;
+                    } else {
+                        // There's too much room. We must split.
+                        int dw = placeholder.width - rw;
+                        int dh = placeholder.height - rh;
+
+                        if (dw > dh) { // Some KD-tree like decision.
+                            subs[0] = new Node(new Rectangle(placeholder.x, placeholder.y, rw,
+                                    placeholder.height));
+                            subs[1] = new Node(new Rectangle(placeholder.x + rw + 1, placeholder.y,
+                                    placeholder.width - rw - 1, placeholder.height));
+                        } else {
+                            subs[0] = new Node(new Rectangle(placeholder.x, placeholder.y, placeholder.width,
+                                    rh));
+                            subs[1] = new Node(new Rectangle(placeholder.x, placeholder.y + rh + 1,
+                                    placeholder.width, placeholder.height - rh - 1));
+                        }
+                        result = subs[0].insert(spr);
+                    }
+                } else {
+                    // There's no room here.
+                    // We're in a leaf.
+                    result = null;
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Fill the result map with the stored sprites in the sub-tree.
+         * @param result Result map to fill.
+         */
+        public void fillResult(Map<Sprite, Point> result) {
+            if (sprite != null) {
+                result.put(sprite, new Point(placeholder.x, placeholder.y));
+            } else {
+                if (subs[0] != null) {
+                    subs[0].fillResult(result);
+                }
+                if (subs[1] != null) {
+                    subs[1].fillResult(result);
+                }
+            }
+        }
     }
 
     /**
@@ -114,7 +224,40 @@ public class Atlas {
      * Rebuild the atlas from the stored sprites.
      */
     public void rebuild() {
-        // TODO
+        clear();
+        // First, get sprites and sort them by "size".
+        Map<String, Sprite> sprites = SpriteManager.getDefault().getSprites();
+        List<Sprite> sortedSprites = new ArrayList<Sprite>(sprites.values());
+        Collections.sort(sortedSprites, new Comparator<Sprite>() {
+            @Override
+            public int compare(Sprite o1, Sprite o2) {
+                Rectangle rect = o1.getBounds();
+                long size1 = rect.x * rect.y;
+                rect = o2.getBounds();
+                long size2 = rect.x * rect.y;
+                int result = Long.compare(size1, size2);
+                return result;
+            }
+        });
+        List<Node> roots = new LinkedList<Node>();
+        Node currentRoot = null;
+        for (Sprite i : sortedSprites) {
+            Node success = null;
+            if (null != currentRoot) {
+                success = currentRoot.insert(i);
+            }
+            if (null == success) {
+                currentRoot = new Node(new Rectangle(0, 0, DEFAULT_SIZE, DEFAULT_SIZE));
+                roots.add(currentRoot);
+            }
+        }
+
+        // For every root, create a layer.
+        for (Node i : roots) {
+            Layer layer = new Layer();
+            layer.fillWithNodes(i);
+            layers.add(layer);
+        }
     }
 
     /**

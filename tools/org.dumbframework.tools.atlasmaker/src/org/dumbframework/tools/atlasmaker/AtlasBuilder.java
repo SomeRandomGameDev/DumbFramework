@@ -24,11 +24,29 @@
  */
 package org.dumbframework.tools.atlasmaker;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.dumbframework.tools.atlasmaker.model.Atlas;
+import org.dumbframework.tools.atlasmaker.model.Sprite;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.part.ViewPart;
 
 /**
@@ -41,6 +59,11 @@ public class AtlasBuilder extends ViewPart {
      * Identifier.
      */
     public static final String ID = "org.dumbframework.tools.atlasmaker.AtlasBuilder"; //$NON-NLS-1$
+
+    /**
+     * Background color.
+     */
+    public static final Color BACKGROUND = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 
     /**
      * Folder containing the layers of the Atlas.
@@ -62,7 +85,7 @@ public class AtlasBuilder extends ViewPart {
         final Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(new FillLayout());
         folder = new TabFolder(container, SWT.BOTTOM);
-        
+        folder.setLayout(new FillLayout());
     }
 
     /**
@@ -77,7 +100,81 @@ public class AtlasBuilder extends ViewPart {
      * Query to rebuild the Atlas.
      */
     public void rebuildAtlas() {
-        Atlas.getDefault().rebuild(); // This operation is synchronous.
-        // TODO Redraw.
+        Atlas atlas = Atlas.getDefault();
+        atlas.rebuild(); // This operation is synchronous.
+        final List<Atlas.Layer> layers = new LinkedList<Atlas.Layer>();
+        atlas.fetchLayers(layers);
+        getViewSite().getShell().getDisplay().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                refreshTabs(layers);
+            }
+        });
+    }
+
+    /**
+     * Refresh tabs with Atlas Layers.
+     * @param layers Layer of the Atlas.
+     */
+    protected void refreshTabs(final List<Atlas.Layer> layers) {
+        TabItem[] tabs = folder.getItems();
+        // Kill/Dispose former tabs.
+        for (TabItem i : tabs) {
+            i.dispose();
+        }
+
+        // Create a tab per layer.
+        int size = layers.size();
+        final Map<Sprite, Point> sprites = new HashMap<Sprite, Point>();
+        for (int i = 0; i < size; ++i) {
+            final Atlas.Layer layer = layers.get(i);
+            final TabItem item = new TabItem(folder, SWT.NONE);
+            item.setText(String.format("Layer %d", Integer.valueOf(i))); //$NON-NLS-1$
+            final Canvas canvas = new Canvas(folder, SWT.V_SCROLL | SWT.H_SCROLL | SWT.NO_BACKGROUND);
+            canvas.setSize(Atlas.DEFAULT_SIZE, Atlas.DEFAULT_SIZE);
+            item.setControl(canvas);
+            canvas.addPaintListener(new PaintListener() {
+                @Override
+                public void paintControl(PaintEvent e) {
+                    layer.fetchComposition(sprites);
+                    GC gc = e.gc;
+                    int oX = canvas.getHorizontalBar().getSelection();
+                    int oY = canvas.getVerticalBar().getSelection();
+                    gc.setForeground(BACKGROUND);
+                    gc.fillRectangle(0, 0, e.width, e.height);
+                    for (Map.Entry<Sprite, Point> i : sprites.entrySet()) {
+                        Sprite sprite = i.getKey();
+                        Point position = i.getValue();
+                        Rectangle bds = sprite.getBounds();
+                        gc.drawImage(sprite.getImage(), bds.x, bds.y, bds.width, bds.height, position.x - oX,
+                                position.y - oY, bds.width, bds.height);
+                    }
+                }
+            });
+            ScrollBar scrollbar = canvas.getVerticalBar();
+            scrollbar.setMinimum(0);
+            scrollbar.setMaximum(Atlas.DEFAULT_SIZE);
+            scrollbar.addListener(SWT.Selection, new Listener() {
+                @Override
+                public void handleEvent(Event event) {
+                    canvas.redraw();
+                }
+            });
+            scrollbar = canvas.getHorizontalBar();
+            scrollbar.setMinimum(0);
+            scrollbar.setMaximum(Atlas.DEFAULT_SIZE);
+            scrollbar.addListener(SWT.Selection, new Listener() {
+                @Override
+                public void handleEvent(Event event) {
+                    canvas.redraw();
+                }
+            });
+            item.addListener(SWT.Resize, new Listener() {
+                @Override
+                public void handleEvent(Event event) {
+                    canvas.redraw();
+                }
+            });
+        }
     }
 }
