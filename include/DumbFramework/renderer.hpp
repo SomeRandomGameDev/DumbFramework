@@ -192,6 +192,44 @@ struct BlendFunc
 };
 
 /**
+ * Facet culling modes. 
+ * @ingroup DUMB_FW_RENDERING
+ */
+struct CullFace
+{
+    /**
+     * Facet culling mode values.
+     */
+    enum Value
+    {
+        /**
+         * Front facing facets are culled.
+         */
+        FRONT,
+        /**
+         * Back facing facets are culled.
+         */
+        BACK,
+        /**
+         * No facets are drawn but points and lines are drawn.
+         */
+        FRONT_AND_BACK,
+    };
+    /**  **/
+    Value value;
+    /**
+     * Default constructor.
+     */
+    inline CullFace() : value(BACK) {}
+    /**
+     * Constructor.
+     * @param [in] v 
+     */
+    inline CullFace(Value v) : value(v) {}
+    inline operator Value() { return value; }
+};
+
+/**
  * Rendering state manager.
  * @ingroup DUMB_FW_RENDERING
  */
@@ -282,11 +320,47 @@ class Renderer
          */
         void blendFunc(BlendFunc src, BlendFunc dst);
         
-
-        // blend mode
-        // clear
-        // more ...
+        /**
+         * Enable or disable facet culling.
+         * @param [in] enable If true, cull facets based on their winding in window coordinates.
+         */
+        void culling(bool enable);
         
+        /**
+         * Check if facet culling is enabled.
+         * @return true if facet culling is enabled.
+         */
+        bool isCullingEnabled();
+        
+        /**
+         * Specify culling mode.
+         * @param [in] mode Culling mode.
+         */
+        void cullingMode(CullFace mode);
+        
+        /**
+         * Specify the orientation of front-facing polygons.
+         * @param [in] clockwise If true, the polygon is considered to be
+         *                       clockwise, otherwise it is counterclockwise.
+         */
+        void polygonWinding(bool clockwise);
+        
+        /**
+         * Discard fragments that are outside the scissor box.
+         * @param [in] enable If true, discard fragments that are outside
+         *                    the scissor box.
+         */
+        void scissorTest(bool enable);
+        /**
+         * Define scissor box.
+         * @param [in] pos  Lower left corner of the scissor box.
+         * @param [in] size Size of the scissor box.
+         */
+        void scissor(glm::ivec2 const& pos, glm::ivec2 const& size);
+
+        
+        // clear
+        // getters
         // cache values?
         
     private:
