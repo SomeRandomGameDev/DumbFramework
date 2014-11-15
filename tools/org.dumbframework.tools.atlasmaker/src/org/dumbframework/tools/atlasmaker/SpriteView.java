@@ -27,6 +27,7 @@ package org.dumbframework.tools.atlasmaker;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -40,8 +41,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.FormAttachment;
@@ -57,6 +60,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Sash;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.part.ViewPart;
@@ -84,9 +88,14 @@ public class SpriteView extends ViewPart {
     private static final Pattern PATTERN = Pattern.compile("(.+)\\.(jpg|png|gif|JPG|PNG|GIF)"); //$NON-NLS-1$
 
     /**
-     * Color RED.
+     * Bounding box color.
      */
-    private static final Color RED = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
+    private static final Color BOUNDING_BOX = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
+
+    /**
+     * Anchor color.
+     */
+    private static final Color ANCHOR = Display.getCurrent().getSystemColor(SWT.COLOR_GREEN);
 
     /**
      * Input validator for sprite identifier change.
@@ -106,14 +115,14 @@ public class SpriteView extends ViewPart {
     };
 
     /**
-     * Image to display in the canvas.
+     * Sprite to display in the canvas.
      */
-    private Image toDisplay;
+    private Sprite toDisplay;
 
     /**
-     * Effective current sprite area.
+     * Anchors buffer.
      */
-    private Rectangle area;
+    private Map<String, Point> anchors = new HashMap<String, Point>();
 
     /**
      * Constructor.
@@ -218,6 +227,30 @@ public class SpriteView extends ViewPart {
         data.bottom = new FormAttachment(100, 0);
         data.right = new FormAttachment(100, 0);
         infoPanel.setLayoutData(data);
+        infoPanel.setLayout(new FillLayout());
+        final Table anchorTable = new Table(infoPanel, SWT.BORDER | SWT.SINGLE);
+        anchorTable.setHeaderVisible(true);
+        anchorTable.setLinesVisible(true);
+        final TableColumn anchorColumnName = new TableColumn(anchorTable, SWT.NONE);
+        anchorColumnName.setText("Name"); //$NON-NLS-1$
+        final TableColumn anchorColumnX = new TableColumn(anchorTable, SWT.NONE);
+        anchorColumnX.setText("X"); //$NON-NLS-1$
+        final TableColumn anchorColumnY = new TableColumn(anchorTable, SWT.NONE);
+        anchorColumnY.setText("Y"); //$NON-NLS-1$
+        Listener anchorTableListener = new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                int size = anchorTable.getBounds().width;
+                int colSize = size / 3;
+                anchorColumnName.setWidth(colSize);
+                anchorColumnX.setWidth(colSize);
+                anchorColumnY.setWidth(colSize);
+            }
+        };
+        anchorTable.addListener(SWT.Resize, anchorTableListener);
+        anchorTable.layout();
+        // TODO Add contextual menu pop-up IIF there's a selected sprite.
+        // TODO Contextual menu contains : Add, Edit, Remove.
 
         parent.setLayout(new FillLayout());
         main.pack();
@@ -371,11 +404,11 @@ public class SpriteView extends ViewPart {
 
         String first = dialog.open();
         String[] path = null;
-        if(null != first) {
+        if (null != first) {
             File file = new File(first);
             String directory = file.getParent();
             path = dialog.getFileNames();
-            for(int i = 0; i < path.length; ++i) {
+            for (int i = 0; i < path.length; ++i) {
                 path[i] = directory + "/" + path[i]; //$NON-NLS-1$
             }
         }
@@ -434,8 +467,8 @@ public class SpriteView extends ViewPart {
         if (imageList.getSelectionCount() > 0) {
             TableItem item = imageList.getSelection()[0];
             Sprite sprite = (Sprite) item.getData();
-            toDisplay = sprite.getImage();
-            area = sprite.getBounds();
+            toDisplay = sprite;
+            toDisplay.fetchAnchors(anchors);
             canvas.redraw();
         }
     }
@@ -445,10 +478,21 @@ public class SpriteView extends ViewPart {
      * @param e Paint event.
      */
     protected void paintSpriteCanvas(PaintEvent e) {
-        if (!(toDisplay == null || toDisplay.isDisposed())) {
-            e.gc.setForeground(RED);
-            e.gc.drawRectangle(area);
-            e.gc.drawImage(toDisplay, 0, 0);
+        if (null != toDisplay) {
+            GC gc = e.gc;
+            Image image = toDisplay.getImage();
+            Rectangle area = toDisplay.getBounds();
+            Rectangle clientArea = gc.getClipping();
+            if (!(image == null || image.isDisposed())) {
+                gc.setForeground(BOUNDING_BOX);
+                gc.drawRectangle(area);
+                gc.drawImage(image, 0, 0);
+                gc.setForeground(ANCHOR);
+                for (Point i : anchors.values()) {
+                    gc.drawLine(i.x + area.x, clientArea.y, i.x + area.x, clientArea.y + clientArea.height);
+                    gc.drawLine(clientArea.x, i.y + area.y, clientArea.x + clientArea.width, i.y + area.y);
+                }
+            }
         }
     }
 

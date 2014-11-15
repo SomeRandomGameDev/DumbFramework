@@ -24,7 +24,11 @@
  */
 package org.dumbframework.tools.atlasmaker.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 /**
@@ -44,6 +48,10 @@ public class Sprite {
      * Trim.
      */
     private Rectangle bounds;
+    /**
+     * Anchor points.
+     */
+    private Map<String, Point> anchors;
 
     /**
      * Constructor.
@@ -55,6 +63,7 @@ public class Sprite {
         image = img;
         identifier = id;
         bounds = bds;
+        anchors = new HashMap<String, Point>();
         SpriteManager.getDefault().register(this);
     }
 
@@ -71,6 +80,37 @@ public class Sprite {
      */
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
+    }
+
+    /**
+     * Set the anchor coordinate.
+     * @param id Anchor identifier.
+     * @param pt Associated container..
+     */
+    public void setAnchor(String id, Point pt) {
+        if (null == pt) {
+            anchors.remove(id);
+        }
+    }
+
+    /**
+     * @param id Anchor identifier.
+     * @return The container of the identified anchor.
+     */
+    public Point getAnchor(String id) {
+        Point result = anchors.get(id);
+        return result;
+    }
+
+    /**
+     * Fetch the anchors.
+     * @param buffer Container in which to store anchors.
+     */
+    public void fetchAnchors(Map<String, Point> buffer) {
+        if (null != buffer) {
+            buffer.clear();
+            buffer.putAll(anchors);
+        }
     }
 
     /**
@@ -95,5 +135,7 @@ public class Sprite {
         image = null;
         identifier = null;
         bounds = null;
+        anchors.clear();
+        anchors = null;
     }
 }
