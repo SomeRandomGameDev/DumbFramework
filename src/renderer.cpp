@@ -246,4 +246,74 @@ void Renderer::blendFunc(BlendFunc src, BlendFunc dst)
     glBlendFunc(convert(src), convert(dst));
 }
 
+/**
+ * Enable or disable facet culling.
+ * @param [in] enable If true, cull facets based on their winding in window coordinates.
+ */
+void Renderer::culling(bool enable)
+{
+    (enable ? glEnable : glDisable)(GL_CULL_FACE);
+}
+
+/**
+ * Check if facet culling is enabled.
+ * @return true if facet culling is enabled.
+ */
+bool Renderer::isCullingEnabled()
+{
+    return (GL_TRUE == glIsEnabled(GL_CULL_FACE));
+}
+
+/**
+ * Specify culling mode.
+ * @param [in] mode Culling mode.
+ */
+void Renderer::cullingMode(CullFace mode)
+{
+    GLenum glMode;
+    switch(mode)
+    {
+        case CullFace::BACK:
+            glMode = GL_BACK;
+            break;
+        case CullFace::FRONT:
+            glMode = GL_FRONT;
+            break;
+        case CullFace::FRONT_AND_BACK:
+            glMode = GL_FRONT_AND_BACK;
+            break;
+    }
+    glCullFace(glMode);
+}
+
+/**
+ * Specify the orientation of front-facing polygons.
+ * @param [in] clockwise If true, the polygon is considered to be
+ *                       clockwise, otherwise it is counterclockwise.
+ */
+void Renderer::polygonWinding(bool clockwise)
+{
+    glFrontFace(clockwise ? GL_CW : GL_CCW);
+}
+
+/**
+ * Discard fragments that are outside the scissor box.
+ * @param [in] enable If true, discard fragments that are outside
+ *                    the scissor box.
+ */
+void Renderer::scissorTest(bool enable)
+{
+    (enable ? glEnable : glDisable)(GL_SCISSOR_TEST);
+}
+
+/**
+ * Define scissor box.
+ * @param [in] pos  Lower left corner of the scissor box.
+ * @param [in] size Size of the scissor box.
+ */
+void Renderer::scissor(glm::ivec2 const& pos, glm::ivec2 const& size)
+{
+    glScissor(pos.x, pos.y, size.x, size.y);
+}
+
 } // Framework

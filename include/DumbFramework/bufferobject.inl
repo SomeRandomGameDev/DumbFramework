@@ -94,10 +94,8 @@ bool Detail<t>::set(off_t offset, size_t size, void* data)
         Log_Error(Framework::Module::Render, "Buffer overflow (offset: %d, size: %d, buffer size: %d)", offset, size, _size);
         return false;
     }
-
-    bind();
-        glBufferSubData(_infos.target, offset, size, data);
-    unbind();
+    glBufferSubData(_infos.target, offset, size, data);
+    return true;
 }
 /**
  * Bind buffer.
