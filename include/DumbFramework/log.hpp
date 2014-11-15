@@ -6,7 +6,6 @@
 #include <stdarg.h>
 #include <pthread.h>
 
-#include <DumbFramework/config.hpp>
 #include <DumbFramework/module.hpp>
 #include <DumbFramework/severity.hpp>
 #include <DumbFramework/file.hpp>

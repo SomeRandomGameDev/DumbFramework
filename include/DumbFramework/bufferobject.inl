@@ -12,6 +12,8 @@ Access::operator GLenum()
             return GL_WRITE_ONLY;
         case READ_WRITE:
             return GL_READ_WRITE;
+        default:
+            return GL_READ_ONLY;
     }
 }
 
@@ -214,7 +216,7 @@ void* Detail<t>::map(BufferObject::Access access, off_t offset, size_t length)
     bind();
     
     GLvoid* ptr;
-    ptr = glMapBufferRange(_infos.target, offset, size, access);
+    ptr = glMapBufferRange(_infos.target, offset, length, access);
     if(NULL == ptr)
     {
         GLenum err = glGetError();

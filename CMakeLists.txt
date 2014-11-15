@@ -44,11 +44,15 @@ include_directories( ${EXPAT_INCLUDE_DIR}
                      ${SOIL_INCLUDE_DIRS}
                      ${FREETYPE_GL_INCLUDE_DIRS}
                      ${CMAKE_CURRENT_SOURCE_DIR} 
-                     include/)
+                     include/
+                     external/)
+
+set(IMGUI_SOURCES
+    external/imgui/imgui.cpp)
 
 set(DUMB_FRAMEWORK_SOURCES
+    src/imguidelegate.cpp
     src/application.cpp
-    src/entity.cpp
     src/rect.cpp
     src/boundingbox.cpp
     src/boundingsphere.cpp
@@ -75,7 +79,7 @@ set(DUMB_FRAMEWORK_SOURCES
     src/joystick.cpp
     src/mouse.cpp)
 
-add_library(DumbFramework STATIC ${DUMB_FRAMEWORK_SOURCES})
+add_library(DumbFramework STATIC ${DUMB_FRAMEWORK_SOURCES} ${IMGUI_SOURCES})
 target_link_libraries(DumbFramework ${TINYXML2_LIBRARY} )
 target_link_libraries(DumbFramework ${OPENGL_LIBRARIES} )
 target_link_libraries(DumbFramework ${GLFW_LIBRARIES} )
@@ -98,7 +102,6 @@ if(BUILD_TESTS)
         src/test/boundingcircle.cpp
         src/test/plane.cpp
         src/test/log.cpp
-        src/test/entity.cpp
         src/test/runtests.cpp)
     
     add_executable(RunTests ${DUMB_FRAMEWORK_TEST_SOURCES})

@@ -1,9 +1,9 @@
 #ifndef _DUMB_FW_WHINT_
 #define _DUMB_FW_WHINT_
 
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <string>
+#include <DumbFramework/config.hpp>
 
 namespace Framework {
 

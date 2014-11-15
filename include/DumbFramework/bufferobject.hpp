@@ -1,7 +1,6 @@
 #ifndef _DUMB_FW_BUFFER_OBJECT_
 #define _DUMB_FW_BUFFER_OBJECT_
 
-#include <GL/glew.h>
 #include <DumbFramework/config.hpp>
 #include <DumbFramework/log.hpp>
 

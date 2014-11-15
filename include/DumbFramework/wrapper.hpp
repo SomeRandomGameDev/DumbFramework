@@ -1,14 +1,16 @@
 #ifndef _DUMB_FW_WRAPPER_
 #define _DUMB_FW_WRAPPER_
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include <DumbFramework/config.hpp>
+#include <DumbFramework/module.hpp>
 
 #ifndef Log_Error
 #include <stdio.h>
-namespace ModuleID {
+namespace Framework {
+namespace Module {
     int Base = 0;
-}
+} // Module
+} // Framework
 
 #define Log_Info(module, format, ...) printf("[INFO] <%s:%d in %s> " format "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__);
 #define Log_Warning(module, format, ...) fprintf(stderr, "[WARN] <%s:%d in %s> " format "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__);
@@ -23,7 +25,7 @@ namespace ModuleID {
  */
 static void Log_GLFWErrorCallback(int errorCode, const char* description)
 {
-     Log_Error(ModuleID::Base, "GLFW failed with error code %d: %s", errorCode, description);
+     Log_Error(Framework::Module::Base, "GLFW failed with error code %d: %s", errorCode, description);
 }
 
 /*
