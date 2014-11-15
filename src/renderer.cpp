@@ -270,20 +270,20 @@ bool Renderer::isCullingEnabled()
  */
 void Renderer::cullingMode(CullFace mode)
 {
-    GLenum mode;
+    GLenum glMode;
     switch(mode)
     {
         case CullFace::BACK:
-            mode = GL_BACK;
+            glMode = GL_BACK;
             break;
-        case CullFace::FRONT;
-            mode = GL_FRONT;
+        case CullFace::FRONT:
+            glMode = GL_FRONT;
             break;
         case CullFace::FRONT_AND_BACK:
-            mode = GL_FRONT_AND_BACK;
+            glMode = GL_FRONT_AND_BACK;
             break;
     }
-    glCullFace(mode);
+    glCullFace(glMode);
 }
 
 /**
@@ -311,7 +311,7 @@ void Renderer::scissorTest(bool enable)
  * @param [in] pos  Lower left corner of the scissor box.
  * @param [in] size Size of the scissor box.
  */
-void Renderer::scissor(glm::ivec2 const& pos, glm::ivec2 const& size);
+void Renderer::scissor(glm::ivec2 const& pos, glm::ivec2 const& size)
 {
     glScissor(pos.x, pos.y, size.x, size.y);
 }

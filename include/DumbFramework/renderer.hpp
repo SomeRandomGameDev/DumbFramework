@@ -1,6 +1,8 @@
 #ifndef _DUMB_FW_RENDERER_
 #define _DUMB_FW_RENDERER_
 
+#include <glm/glm.hpp>
+
 namespace Framework    {
 
 /**
