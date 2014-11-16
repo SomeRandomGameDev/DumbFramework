@@ -12,7 +12,99 @@ namespace Framework    {
  */
 namespace BufferObject {
 /**
- * @brief Buffer object access.
+ * @defgroup DUMB_FW_BUFFER_OBJECT_ACCESS Buffer object access usage.
+ * @ingroup DUMB_FW_BUFFER_OBJECT
+ * 
+ */
+namespace Access {
+/**
+ * @brief Buffer object access type.
+ * This structure specifies the type of access to buffer object storage.
+ *      - Type::DRAW : The data store contents are modified by the
+ *                     application, and used as the source for graphic
+ *                     library drawing and image specification commands. 
+ *      - Type::READ : The data store contents are modified by reading
+ *                     data from the graphic library, and used to return
+ *                     that data when queried by the application. 
+ *      - Type::COPY : The data store contents are modified by reading
+ *                     data from the graphic library, and used as the
+ *                     source for graphic library drawing and image
+ *                     specification commands.
+ * @ingroup DUMB_FW_BUFFER_OBJECT_ACCESS
+ */
+struct Type
+{
+    /** Buffer object access type. **/
+    enum Value
+    {
+        /** The data store contents are modified by the application, and
+         *  used as the source for graphic library drawing and image
+         * specification commands. **/
+        DRAW,
+        /** The data store contents are modified by reading data from
+         *  the graphic library, and used to return that data when 
+         *  queried by the application. **/
+        READ,
+        /** The data store contents are modified by reading data from
+         *  the graphic library, and used as the source for graphic
+         *  library drawing and image specification commands. **/
+        COPY
+    };
+    Value value; /**< Buffer object access type. **/
+    /** 
+     * @brief Default constructor.
+     * By default the buffer object access type is @c Type::DRAW.
+     */
+    inline Type() : value(Type::DRAW) {}
+    /**
+     * @brief Constructor.
+     * @param [in] v  Buffer object access frequency.
+     */
+    inline Type(Value v) : value(v) {}
+    inline operator Value() { return value; }
+};
+/**
+ * @brief Buffer object access frequency.
+ * This structure specifies the frequency of access to buffer object
+ * storage.
+ *      - Frequency::STREAM  : the data store contents will be modified
+ *                             once and used at most a few times. 
+ *      - Frequency::STATIC  : the data store contents will be modified
+ *                             once and used many times. 
+ *      - Frequency::DYNAMIC : the data store contents will be modified
+ *                             repeatedly and used many times.
+ * @ingroup DUMB_FW_BUFFER_OBJECT_ACCESS
+ */
+struct Frequency
+{
+    /** Buffer object access frequency. **/
+    enum Value
+    {
+        /** The data store contents will be modified once and used at
+         *  most a few times. **/
+        STREAM,
+        /** The data store contents will be modified once and used many
+         *  times. **/
+        STATIC,
+        /** The data store contents will be modified repeatedly and used
+         *  many times. **/
+        DYNAMIC
+    };
+    Value value; /**< Buffer object access frequency. **/
+    /** 
+     * @brief Default constructor.
+     * By default the buffer object access frequency is @c Frequency::STATIC.
+     */
+    inline Frequency() : value(Frequency::STATIC) {}
+    /**
+     * @brief Constructor.
+     * @param [in] v  Buffer object access frequency.
+     */
+    inline Frequency(Value v) : value(v) {}
+    inline operator Value() { return value; }
+};
+/**
+ * @brief Buffer object access policy.
  * This structure specifies the access policy to mapped buffer 
  * object storage.
  *      - Access::READ_ONLY : it is only possible to @b read @b from
@@ -24,7 +116,7 @@ namespace BufferObject {
  *                             object data.
  * @ingroup DUMB_FW_BUFFER_OBJECT
  */
-struct Access
+struct Policy
 {
     /** Buffer object access. **/
     enum Value
@@ -39,18 +131,18 @@ struct Access
     Value value; /**< Buffer object access value. **/
     /** 
      * @brief Default constructor.
-     * By default the buffer object access is @c Access::READ_ONLY.
+     * By default the buffer object access is @c Policy::READ_ONLY.
      */
-    inline Access() : value(Access::READ_ONLY) {}
+    inline Policy() : value(Policy::READ_ONLY) {}
     /**
      * @brief Constructor.
      * @param [in] v  Buffer object access value.
      */
-    inline Access(Value v) : value(v) {}
+    inline Policy(Value v) : value(v) {}
     inline operator Value() { return value; }
-    /** Convert to OpenGL compliant value. **/
     inline operator GLenum();
 };
+} // Access
 
 /**
  * @brief Buffer object type.
@@ -80,9 +172,11 @@ class Detail
          * @param [in] size  Size in bytes of the buffer data storage.
          * @param [in] data  Pointer to the data that will be copied to
          *                   buffer data storage (default = NULL).
+         * @param [in] freq  Access frequency (default = Access::Frequency::STATIC).
+         * @param [in] type  Access type (default = Access::Type::DRAW).
          * @return true if the buffer was successfully created.
          */
-        bool create(size_t size, void* data = NULL);
+        bool create(size_t size, void* data = NULL, Access::Frequency freq = Access::Frequency::STATIC, Access::Type type = Access::Type::DRAW);
         /**
          * Destroy buffer.
          */
@@ -117,11 +211,11 @@ class Detail
         static void unbindAll();
         /**
          * Map buffer data storage.
-         * @param [in] access  Data storage access policy.
+         * @param [in] policy  Data storage access policy.
          * @return Pointer to the buffer data storage or NULL if an
          *         error occured.
          */ 
-        void* map(BufferObject::Access access);
+        void* map(BufferObject::Access::Policy policy);
         /**
          * Map only a given area of the buffer data storage.
          * @param [in] access  Data storage access policy.
@@ -131,7 +225,7 @@ class Detail
          * @return Pointer to the buffer data storage or NULL if an
          *         error occured.
          */
-        void* map(BufferObject::Access access, off_t offset, size_t length);
+        void* map(BufferObject::Access::Policy access, off_t offset, size_t length);
         /**
          * Unmap buffer.
          * The pointer previously returned by Detail::map will become 

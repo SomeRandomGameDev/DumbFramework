@@ -116,7 +116,6 @@ void ImGuiDelegate::init()
     io.GetClipboardTextFn = ImGuiDelegate::getClipboardText;
 
     // Default font (embedded in code)
-    // [todo] texture loader
     const void* png_data;
     unsigned int png_size;
     ImGui::GetDefaultFontData(NULL, NULL, &png_data, &png_size);
@@ -127,7 +126,7 @@ void ImGuiDelegate::init()
     bool ret = _fontTexture.create(glm::ivec2(tex_x, tex_y), Texture::PixelFormat::RGBA_8);
     if(false == ret)
     {
-        // [todo]
+        return;
     }
     
     _fontTexture.setData(tex_data);
@@ -139,10 +138,10 @@ void ImGuiDelegate::init()
     stbi_image_free(tex_data);
     
     // Create vertex buffer
-    ret = _vertexBuffer.create(sizeof(ImDrawVert) * 10000, nullptr);
+    ret = _vertexBuffer.create(sizeof(ImDrawVert) * 10000, nullptr, BufferObject::Access::Frequency::STREAM, BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
-        // [todo]
+        return;
     }
     
     // Create vertex stream
@@ -151,7 +150,7 @@ void ImGuiDelegate::init()
                                                 { 2, Geometry::ComponentType::UNSIGNED_BYTE,  4, true,  sizeof(ImDrawVert), 16, 0 } } );
     if(false == ret)
     {
-        // [todo]
+        return;
     }
     
     // Create program.
@@ -159,24 +158,31 @@ void ImGuiDelegate::init()
                             {Shader::Type::FRAGMENT_SHADER, g_fragmentShader}} );
     if(false == ret)
     {
-        // [todo]
+        return;
     }
-        
+    
+    ret = _program.link();
+    if(false == ret)
+    {
+        return;
+    }
+    
     _program.begin();
         GLint fontTexId = _program.getUniformLocation("un_font");
         _projectionMatrixId = _program.getUniformLocation("projection");
 
         _program.uniform(fontTexId, 0);
     _program.end();
+    
+    // Reset mouse
+    _mousePressed[0] = _mousePressed[1] = false;
+    io.MouseWheel = 0;
 }
 
 void ImGuiDelegate::render()
 {
     ImGuiIO& io = ImGui::GetIO();
-    _mousePressed[0] = _mousePressed[1] = false;
-    io.MouseWheel = 0;
-    glfwPollEvents();
-        
+
     // Setup timestep
     static double time = 0.0f;
     const double current_time =  glfwGetTime();
@@ -201,6 +207,9 @@ void ImGuiDelegate::render()
     glClearColor(0.8f, 0.6f, 0.6f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui::Render();
+
+    _mousePressed[0] = _mousePressed[1] = false;
+    io.MouseWheel = 0;
 }
 
 void ImGuiDelegate::handleKeyAction(int key, int scancode, int action, int mods)
@@ -280,41 +289,22 @@ void ImGuiDelegate::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_
     renderer.scissorTest(true);
 
     // Upload vertex data
-#if 0
-    size_t vCount = 0;
+    size_t totalVertexCount = 0;
     for(int n=0; n<cmd_lists_count; n++)
     {
-        vCount += cmd_lists[n]->vtx_buffer.size();
+        totalVertexCount += cmd_lists[n]->vtx_buffer.size();
     }
-    
-    // Why does map makes my gpu fan go berserk?
-    // [todo] make a map range method
-    uint8_t *data = (uint8_t*)delegate->_vertexBuffer.map(BufferObject::Access::WRITE_ONLY, 0, vCount*sizeof(ImDrawVert));
-    for (int n = 0; n < cmd_lists_count; n++)
-    {
-        const ImDrawList* cmd_list = cmd_lists[n];
-        const uint8_t* vtx_buffer = (const uint8_t*)cmd_list->vtx_buffer.begin();
-        vCount = cmd_list->vtx_buffer.size() * sizeof(ImDrawVert);
-        memcpy(data, vtx_buffer, vCount);
-        data += vCount;
-    }
-    glFlushMappedBufferRange(GL_ARRAY_BUFFER, 0, vCount*sizeof(ImDrawVert));
-    delegate->_vertexBuffer.unmap();
-    // [todo] add flush buffer range
-    // delegate->_vertexBuffer.unmap();
-#else
-    delegate->_vertexBuffer.bind();
-    off_t offset = 0;
+
+    uint8_t *data = (uint8_t*)delegate->_vertexBuffer.map(BufferObject::Access::Policy::WRITE_ONLY, 0, totalVertexCount*sizeof(ImDrawVert));
     for (int n = 0; n < cmd_lists_count; n++)
     {
         const ImDrawList* cmd_list = cmd_lists[n];
         const uint8_t* vtx_buffer = (const uint8_t*)cmd_list->vtx_buffer.begin();
         size_t vertexCount = cmd_list->vtx_buffer.size() * sizeof(ImDrawVert);
-        delegate->_vertexBuffer.set(offset, vertexCount, (void*)vtx_buffer);
-        offset += vertexCount;
+        memcpy(data, vtx_buffer, vertexCount);
+        data += vertexCount;
     }
-    delegate->_vertexBuffer.unbind();
-#endif
+    delegate->_vertexBuffer.unmap();
 
     // Setup texture
     delegate->_fontTexture.bind();

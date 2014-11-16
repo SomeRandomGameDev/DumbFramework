@@ -55,9 +55,7 @@ class Shader
          */
         bool getSource(char* out, size_t outSize, size_t& length) const;
 
-        /** Retrieve internal shader info logs. 
-         *  @todo add return value. 
-         */
+        /** Retrieve internal shader info logs. **/
         void infoLog(Framework::Severity severity = Framework::Severity::Error) const;
 
     private:

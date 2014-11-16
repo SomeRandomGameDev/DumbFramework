@@ -31,9 +31,14 @@ class Program
          */
         bool create();
         /**
-         * 
+         * All-in-one program creation.
+         * Creates, loads and compiles shaders with the parameters provided.
+         * Those shaders are then attached to the program.
+         * Note that the program is not linked. You will have to call it
+         * beforehand.
+         * @param [in] attr A list of shader type and source code string tuples.
+         * @return true if the shaders where succesfully compiled and attached to the program.
          */
-        // [todo]
         bool create(std::initializer_list<std::pair<Shader::Type, char const *>> const& attr);
         /**
          * Attach a shader to current program.

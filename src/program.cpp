@@ -32,9 +32,14 @@ bool Program::create()
     return true;
 }
 /**
- * 
+ * All-in-one program creation.
+ * Creates, loads and compiles shaders with the parameters provided.
+ * Those shaders are then attached to the program.
+ * Note that the program is not linked. You will have to call it
+ * beforehand.
+ * @param [in] attr A list of shader type and source code string tuples.
+ * @return true if the shaders where succesfully compiled and attached to the program.
  */
-// [todo]
 bool Program::create(std::initializer_list<std::pair<Shader::Type, char const *>> const& attr)
 {
     bool ret;
@@ -43,28 +48,25 @@ bool Program::create(std::initializer_list<std::pair<Shader::Type, char const *>
     ret = create();
     if(false == ret)
     {
-        // [todo]
         return ret;
     }
     
     std::pair<Shader::Type, char const*> const* it;
-    for(it=attr.begin(); it!=attr.end(); ++it)
+    int i;
+    for(it=attr.begin(), i=0; ret && (it!=attr.end()); ++it, ++i)
     {
         Shader shader;
         ret = shader.create(it->first, it->second);
         if(false == ret)
         {
-            // [todo]
-            return ret;
+            Log_Error(Module::Render, "Failed to create shader #%d", i);
         }
-        ret = attach(shader);
-        if(false == ret)
+        else
         {
-            // [todo]
-            return ret;
+            ret = attach(shader);
         }
     }
-    return link();
+    return ret;
 }
 /**
  * Attach a shader to current program.

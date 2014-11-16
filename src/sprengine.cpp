@@ -476,7 +476,7 @@ namespace Sprite {
             renderer.setActiveTextureUnit(0);
             _texture->bind();
 
-            GLfloat *ptr = (GLfloat *) _buffer.map(BufferObject::Access::WRITE_ONLY);
+            GLfloat *ptr = (GLfloat *) _buffer.map(BufferObject::Access::Policy::WRITE_ONLY);
             memcpy(ptr, _cell, VBO_STRIDE * _count);
             _buffer.unmap();
 

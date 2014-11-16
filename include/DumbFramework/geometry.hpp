@@ -166,9 +166,9 @@ struct Attribute
      */
     size_t offset;
     /**
-     * Divisior...
+     * Specify the number of instances that will pass between updates of
+     * the attribute.
      */
-    // [todo] comment
     unsigned int divisor;
     
     /** Default constructor. **/
@@ -183,7 +183,6 @@ struct Attribute
      * @param [in] off Offset.
      * @param [in] d   Divisor (default=0).  
      */
-    // [todo] add bool normalize
     Attribute(unsigned int index, ComponentType t, size_t sz, bool n, size_t st, size_t off, unsigned int d=0);
     /**
      * Copy constructor.

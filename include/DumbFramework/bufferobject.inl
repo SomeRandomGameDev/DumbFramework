@@ -2,7 +2,7 @@ namespace Framework    {
 namespace BufferObject {
 
 /** Convert to OpenGL compliant value. **/
-Access::operator GLenum()
+Access::Policy::operator GLenum()
 {
     switch(value)
     {
@@ -32,21 +32,35 @@ Detail<t>::~Detail()
  * @param [in] size  Size in bytes of the buffer data storage.
  * @param [in] data  Pointer to the data that will be copied to
  *                   buffer data storage (default = NULL).
+ * @param [in] freq  Access frequency (default = Access::Frequency::STATIC).
+ * @param [in] type  Access type (default = Access::Type::DRAW).
  * @return true if the buffer was successfully created.
  */
 template <Type t>
-bool Detail<t>::create(size_t size, void* data)
+bool Detail<t>::create(size_t size, void* data, Access::Frequency freq, Access::Type type)
 {
     if(_id)
     {
         destroy();
     }
     
+    GLenum access;
+    static const GLenum conversionMatrix[3][3] =
+    {
+        // Access::Frequency::STREAM
+        {GL_STREAM_DRAW,  GL_STREAM_READ,  GL_STREAM_COPY},
+        // Access::Frequency::STATIC
+        {GL_STATIC_DRAW,  GL_STATIC_READ,  GL_STATIC_COPY},
+        // Access::Frequency::DYNAMIC
+        {GL_DYNAMIC_DRAW, GL_DYNAMIC_READ, GL_DYNAMIC_COPY}
+    };
+    access = conversionMatrix[freq.value][type.value];
+    
     _size = size;
     
     glGenBuffers(1, &_id);
     glBindBuffer(_infos.target, _id);
-    glBufferData(_infos.target, _size, data, GL_STATIC_DRAW);
+    glBufferData(_infos.target, _size, data, access);
 
     GLenum err = glGetError();
 
@@ -169,12 +183,12 @@ void Detail<t>::unbindAll()
 }
 /**
  * Map buffer data storage.
- * @param [in] access  Data storage access policy.
+ * @param [in] policy  Data storage access policy.
  * @return Pointer to the buffer data storage or NULL if an
  *         error occured.
  */
 template <Type t>
-void* Detail<t>::map(BufferObject::Access access)
+void* Detail<t>::map(BufferObject::Access::Policy policy)
 {
 #if defined(SANITY_CHECK)
     // Warning! This may spam your logs!
@@ -196,7 +210,7 @@ void* Detail<t>::map(BufferObject::Access access)
 }
 /**
  * Map only a given area of the buffer data storage.
- * @param [in] access  Data storage access policy.
+ * @param [in] policy  Data storage access policy.
  * @param [in] offset  Starting offset in the buffer data
  *                     storage.
  * @param [in] length  Number of bytes to be mapped.
@@ -204,7 +218,7 @@ void* Detail<t>::map(BufferObject::Access access)
  *         error occured.
  */
 template <Type t>
-void* Detail<t>::map(BufferObject::Access access, off_t offset, size_t length)
+void* Detail<t>::map(BufferObject::Access::Policy policy, off_t offset, size_t length)
 {
 #if defined(SANITY_CHECK)
     // Warning! This may spam your logs!
@@ -215,8 +229,22 @@ void* Detail<t>::map(BufferObject::Access access, off_t offset, size_t length)
 #endif // SANITY_CHECK
     bind();
     
+    GLbitfield access;
+    switch(policy.value)
+    {
+        case BufferObject::Access::Policy::READ_ONLY:
+            access = GL_MAP_READ_BIT;
+            break;
+        case BufferObject::Access::Policy::WRITE_ONLY:
+            access = GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_UNSYNCHRONIZED_BIT;
+            break;
+        case BufferObject::Access::Policy::READ_WRITE:
+            access = GL_MAP_READ_BIT | GL_MAP_WRITE_BIT;
+            break;
+    }
+    
     GLvoid* ptr;
-    ptr = glMapBufferRange(_infos.target, offset, length, GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT); // [todo] :(
+    ptr = glMapBufferRange(_infos.target, offset, length, access);
     if(NULL == ptr)
     {
         GLenum err = glGetError();
@@ -244,7 +272,6 @@ bool Detail<t>::unmap()
 
     GLboolean ret;
     ret = glUnmapBuffer(_infos.target);
-
     if(GL_FALSE == ret)
     {
         GLenum err = glGetError();
