@@ -124,7 +124,7 @@ template <typename T> bool Wrapper<T>::start()
     GLFWwindow *window = _delegate->createWindow();
     if(0 == window)
     {
-        Log_Error(ModuleID::Base, "Failed to create window.");
+        Log_Error(Framework::Module::Base, "Failed to create window.");
         glfwTerminate();
         return false;
     }
@@ -138,7 +138,7 @@ template <typename T> bool Wrapper<T>::start()
     GLenum glewError = glewInit();
     if(GLEW_OK != glewError)
     {
-        Log_Error(ModuleID::Base, "Failed to initialize OpenGL extensions: %s.", glewGetErrorString(glewError));
+        Log_Error(Framework::Module::Base, "Failed to initialize OpenGL extensions: %s.", glewGetErrorString(glewError));
         glfwTerminate();
         return false;
     }
@@ -160,7 +160,7 @@ template <typename T> bool Wrapper<T>::start()
     while(!glfwWindowShouldClose(window))
     {
         _delegate->render();
-        glfwPollEvents();
+// [todo]        glfwPollEvents();
         glfwSwapBuffers(window);
     }
     

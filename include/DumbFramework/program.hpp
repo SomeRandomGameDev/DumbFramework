@@ -31,6 +31,11 @@ class Program
          */
         bool create();
         /**
+         * 
+         */
+        // [todo]
+        bool create(std::initializer_list<std::pair<Shader::Type, char const *>> const& attr);
+        /**
          * Attach a shader to current program.
          * @param [in] shader Shader to attach.
          */

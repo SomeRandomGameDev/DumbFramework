@@ -111,3 +111,6 @@ endif()
 
 add_executable(flatengine src/demo/flatengine.cpp)
 target_link_libraries(flatengine DumbFramework)
+
+add_executable(gui src/demo/gui.cpp)
+target_link_libraries(gui DumbFramework)

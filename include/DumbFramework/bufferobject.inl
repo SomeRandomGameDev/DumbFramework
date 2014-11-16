@@ -85,7 +85,7 @@ void Detail<t>::destroy()
 template <Type t>
 bool Detail<t>::set(off_t offset, size_t size, void* data)
 {
-    if(offset >= _size)
+    if((size_t)offset >= _size)
     {
         Log_Error(Framework::Module::Render, "Offset (%d) out of bound (buffer size: %d)", offset, _size);
         return false;
@@ -216,7 +216,7 @@ void* Detail<t>::map(BufferObject::Access access, off_t offset, size_t length)
     bind();
     
     GLvoid* ptr;
-    ptr = glMapBufferRange(_infos.target, offset, length, access);
+    ptr = glMapBufferRange(_infos.target, offset, length, GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT); // [todo] :(
     if(NULL == ptr)
     {
         GLenum err = glGetError();

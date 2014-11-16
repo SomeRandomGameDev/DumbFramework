@@ -129,8 +129,8 @@ bool VertexStream::compile()
     _vertexBuffer->bind();
     for(size_t i=0; i<_attributes.size(); i++)
     {
-        glVertexAttribPointer(i, _attributes[i].size, _attributes[i].type, GL_FALSE, _attributes[i].stride, (GLvoid*)_attributes[i].offset);
-        glVertexAttribDivisor(i, _attributes[i].divisor);
+        glVertexAttribPointer(_attributes[i].index, _attributes[i].size, _attributes[i].type, _attributes[i].normalized ? GL_TRUE : GL_FALSE, _attributes[i].stride, (GLvoid*)_attributes[i].offset);
+        glVertexAttribDivisor(_attributes[i].index, _attributes[i].divisor);
     }
     _vertexBuffer->unbind();
     unbind();

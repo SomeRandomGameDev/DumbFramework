@@ -153,6 +153,11 @@ struct Attribute
      */
     size_t size;
     /**
+     * Specifies whether fixed-point data values should be normalized (true)
+     * or converted directly as fixed-point values (false) when they are accessed.
+     */
+    bool normalized;
+    /**
      * Number of bytes between 2 consecutives attributes.
      */
     size_t stride;
@@ -163,6 +168,7 @@ struct Attribute
     /**
      * Divisior...
      */
+    // [todo] comment
     unsigned int divisor;
     
     /** Default constructor. **/
@@ -172,11 +178,13 @@ struct Attribute
      * @param [in] i   Index.
      * @param [in] t   Components type.
      * @param [in] sz  Number of components.
+     * @param [in] n   Specify if the data should be normalized or not.
      * @param [in] st  Stride.
      * @param [in] off Offset.
      * @param [in] d   Divisor (default=0).  
      */
-    Attribute(unsigned int index, ComponentType t, size_t sz, size_t st, size_t off, unsigned int d=0); 
+    // [todo] add bool normalize
+    Attribute(unsigned int index, ComponentType t, size_t sz, bool n, size_t st, size_t off, unsigned int d=0);
     /**
      * Copy constructor.
      * @param [in] attr Input attribute.

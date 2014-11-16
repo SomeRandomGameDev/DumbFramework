@@ -32,6 +32,41 @@ bool Program::create()
     return true;
 }
 /**
+ * 
+ */
+// [todo]
+bool Program::create(std::initializer_list<std::pair<Shader::Type, char const *>> const& attr)
+{
+    bool ret;
+    
+    // Create program
+    ret = create();
+    if(false == ret)
+    {
+        // [todo]
+        return ret;
+    }
+    
+    std::pair<Shader::Type, char const*> const* it;
+    for(it=attr.begin(); it!=attr.end(); ++it)
+    {
+        Shader shader;
+        ret = shader.create(it->first, it->second);
+        if(false == ret)
+        {
+            // [todo]
+            return ret;
+        }
+        ret = attach(shader);
+        if(false == ret)
+        {
+            // [todo]
+            return ret;
+        }
+    }
+    return link();
+}
+/**
  * Attach a shader to current program.
  * @param [in] shader Shader to attach.
  */

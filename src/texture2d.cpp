@@ -62,7 +62,7 @@ Texture2D::OpenGLTextureInfos::OpenGLTextureInfos(Texture::PixelFormat pixelForm
         case Texture::PixelFormat::RGBA_8:
             internalFormat = GL_RGBA8;
             format = GL_RGBA;
-            type = GL_UNSIGNED_INT_8_8_8_8_REV;
+            type = GL_UNSIGNED_BYTE;
             break;
         case Texture::PixelFormat::LUMINANCE_8:
             internalFormat = GL_R8;
@@ -117,13 +117,13 @@ bool Texture2D::create(const glm::ivec2& size, Texture::PixelFormat format, int 
     {
         _target = GL_TEXTURE_2D_ARRAY;
         glBindTexture(_target, _id);
-        glTexStorage3D(_target, 1, _infos.internalFormat, _size.x, _size.y, _layers);
+        // OpenGL 4.2 only: glTexStorage3D(_target, 1, _infos.internalFormat, _size.x, _size.y, _layers);
     }
     else
     {
         _target = GL_TEXTURE_2D;
         glBindTexture(_target, _id);
-        glTexStorage2D(_target, 1, _infos.internalFormat, _size.x, _size.y);
+        // OpenGL 4.2 only: glTexStorage2D(_target, 0, _infos.internalFormat, _size.x, _size.y);
     }
     glBindTexture(_target, 0);
     return true;
@@ -156,6 +156,7 @@ bool Texture2D::isValid() const
 bool Texture2D::setData(void* data, int layer)
 {
     glBindTexture(_target, _id);
+
     if(GL_TEXTURE_2D == _target)
     {
         glTexImage2D(_target, 0, _infos.internalFormat, _size.x, _size.y, 0, _infos.format, _infos.type, data);

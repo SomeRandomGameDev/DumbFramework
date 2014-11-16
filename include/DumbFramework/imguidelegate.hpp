@@ -2,6 +2,7 @@
 #define _DUMB_FW_IMGUI_DELEGATE_
 
 #include <external/stb_image.h>
+#include <imgui/imgui.h>
 #include <DumbFramework/windowhint.hpp>
 #include <DumbFramework/program.hpp>
 #include <DumbFramework/texture2d.hpp>
@@ -36,8 +37,6 @@ class ImGuiDelegate
     protected:
         GLFWwindow *_window;
         Program _program;
-        Shader _vertexShader;
-        Shader _fragmentShader;
         Texture2D _fontTexture;
         VertexBuffer _vertexBuffer;
         VertexStream _vertexStream;

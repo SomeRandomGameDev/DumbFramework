@@ -1,16 +1,39 @@
-#include <imgui/imgui.h>
 #include <DumbFramework/renderer.hpp>
 #include <DumbFramework/imguidelegate.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 static const char* g_vertexShader = R"EOT(
+#version 410 core
+uniform mat4 projection;
 
+layout (location=0) in vec2 vs_position;
+layout (location=1) in vec2 vs_uv;
+layout (location=2) in vec4 vs_color;
 
+noperspective out vec2 fs_uv;
+noperspective out vec4 fs_col;
+void main()
+{
+    fs_col = vs_color;
+    fs_uv  = vs_uv;
+    gl_Position = projection * vec4(vs_position, 0.0, 1.0);
+}
 )EOT";
 
+
 static const char* g_fragmentShader = R"EOT(
+#version 410 core
+uniform sampler2D un_font;
 
+noperspective in vec2 fs_uv;
+noperspective in vec4 fs_col;
 
+out vec4 out_color;
+
+void main()
+{
+    out_color = texture(un_font, fs_uv) * fs_col;
+}
 )EOT";
 
 namespace Framework {
@@ -18,8 +41,6 @@ namespace Framework {
 ImGuiDelegate::ImGuiDelegate()
     : _window(nullptr)
     , _program()
-    , _vertexShader()
-    , _fragmentShader()
     , _fontTexture()
     , _vertexBuffer()
     , _vertexStream()
@@ -27,9 +48,8 @@ ImGuiDelegate::ImGuiDelegate()
 
 ImGuiDelegate::~ImGuiDelegate()
 {
+    _program.destroyShaders();
     _program.destroy();
-    _vertexShader.destroy();
-    _fragmentShader.destroy();
     _fontTexture.destroy();
     _vertexBuffer.destroy();
     _vertexStream.destroy();
@@ -37,13 +57,19 @@ ImGuiDelegate::~ImGuiDelegate()
 
 GLFWwindow* ImGuiDelegate::createWindow()
 {
-    // [todo]
-    return nullptr;
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    _window = glfwCreateWindow(1280, 720, "Fix me!", nullptr, nullptr);
+    return _window;
 }
 
 void ImGuiDelegate::destroyWindow(GLFWwindow *window)
 {
-    // [todo]
+    glfwDestroyWindow(window);
+    _program.destroy();
+    _fontTexture.destroy();
+    _vertexBuffer.destroy();
+    _vertexStream.destroy();
+    ImGui::Shutdown();
 }
 
 void ImGuiDelegate::init()
@@ -103,65 +129,78 @@ void ImGuiDelegate::init()
     {
         // [todo]
     }
-    _fontTexture.setMagFilter(Texture::MagFilter::NEAREST_TEXEL);
-    _fontTexture.setMinFilter(Texture::MinFilter::NEAREST_TEXEL);
+    
     _fontTexture.setData(tex_data);
-
+    _fontTexture.bind();
+        _fontTexture.setMagFilter(Texture::MagFilter::NEAREST_TEXEL);
+        _fontTexture.setMinFilter(Texture::MinFilter::NEAREST_TEXEL);
+    _fontTexture.unbind();
+        
     stbi_image_free(tex_data);
     
     // Create vertex buffer
-    ret = _vertexBuffer.create(sizeof(ImDrawVert) * 16384, nullptr);
+    ret = _vertexBuffer.create(sizeof(ImDrawVert) * 10000, nullptr);
     if(false == ret)
     {
         // [todo]
     }
     
     // Create vertex stream
-    ret = _vertexStream.build(&_vertexBuffer, { { 0, Geometry::ComponentType::FLOAT, 2, sizeof(ImDrawVert),  0, 0 },
-                                                { 1, Geometry::ComponentType::FLOAT, 2, sizeof(ImDrawVert),  8, 0 },
-                                                { 2, Geometry::ComponentType::BYTE,  4, sizeof(ImDrawVert), 16, 0 } } );
+    ret = _vertexStream.build(&_vertexBuffer, { { 0, Geometry::ComponentType::FLOAT,          2, false, sizeof(ImDrawVert),  0, 0 },
+                                                { 1, Geometry::ComponentType::FLOAT,          2, false, sizeof(ImDrawVert),  8, 0 },
+                                                { 2, Geometry::ComponentType::UNSIGNED_BYTE,  4, true,  sizeof(ImDrawVert), 16, 0 } } );
     if(false == ret)
     {
         // [todo]
     }
     
-    // Create shaders
-    ret = _vertexShader.create(Shader::Type::VERTEX_SHADER, g_vertexShader);
+    // Create program.
+    ret = _program.create( {{Shader::Type::VERTEX_SHADER,   g_vertexShader},
+                            {Shader::Type::FRAGMENT_SHADER, g_fragmentShader}} );
     if(false == ret)
     {
         // [todo]
     }
-    ret = _fragmentShader.create(Shader::Type::FRAGMENT_SHADER, g_fragmentShader);
-    if(false == ret)
-    {
-        // [todo]
-    }
-    // Create program
-    ret = _program.create();
-    if(false == ret)
-    {
-        // [todo]
-    }
-    ret = _program.attach(_vertexShader);
-    if(false == ret)
-    {
-        // [todo]
-    }
-    ret = _program.attach(_fragmentShader);
-    if(false == ret)
-    {
-        // [todo]
-    }
-    ret = _program.link();
-    if(false == ret)
-    {
-    }
-    
-    _projectionMatrixId = _program.getUniformLocation("projection");
+        
+    _program.begin();
+        GLint fontTexId = _program.getUniformLocation("un_font");
+        _projectionMatrixId = _program.getUniformLocation("projection");
+
+        _program.uniform(fontTexId, 0);
+    _program.end();
 }
 
 void ImGuiDelegate::render()
 {
+    ImGuiIO& io = ImGui::GetIO();
+    _mousePressed[0] = _mousePressed[1] = false;
+    io.MouseWheel = 0;
+    glfwPollEvents();
+        
+    // Setup timestep
+    static double time = 0.0f;
+    const double current_time =  glfwGetTime();
+    io.DeltaTime = (float)(current_time - time);
+    time = current_time;
+
+    // Setup inputs
+    // (we already got mouse wheel, keyboard keys & characters from glfw callbacks polled in glfwPollEvents())
+    double mouse_x, mouse_y;
+    glfwGetCursorPos(_window, &mouse_x, &mouse_y);
+    io.MousePos = ImVec2((float)mouse_x * _mousePosScale.x, (float)mouse_y * _mousePosScale.y);      // Mouse position, in pixels (set to -1,-1 if no mouse / on another screen, etc.)
+    io.MouseDown[0] = _mousePressed[0] || glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT) != 0;  // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+    io.MouseDown[1] = _mousePressed[1] || glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_RIGHT) != 0;
+
+    // Start the frame
+    ImGui::NewFrame();
+
+    bool dummy = true;
+    ImGui::ShowTestWindow(&dummy);
+    
+    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+    glClearColor(0.8f, 0.6f, 0.6f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui::Render();
 }
 
 void ImGuiDelegate::handleKeyAction(int key, int scancode, int action, int mods)
@@ -234,46 +273,65 @@ void ImGuiDelegate::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_
     ImGuiDelegate *delegate = static_cast<ImGuiDelegate*>(io.UserData);
     if(nullptr == delegate) { return; }
     
-    
     renderer.blend(true);
     renderer.blendFunc(BlendFunc::SRC_ALPHA, BlendFunc::ONE_MINUS_SRC_ALPHA);
     renderer.culling(false);
     renderer.depthTest(false);
     renderer.scissorTest(true);
-    renderer.texture2D(true);
-    
-    // Setup texture
-    delegate->_fontTexture.bind();
-    
-    // Setup orthographic projection matrix
-    const float width  = ImGui::GetIO().DisplaySize.x;
-    const float height = ImGui::GetIO().DisplaySize.y;
-    glm::mat4 projection = glm::ortho(0.0f, width, height, 0.0f, -1.0f, +1.0f);
-    delegate->_program.uniform(delegate->_projectionMatrixId, true, projection);
 
-    // Compute vertex count
+    // Upload vertex data
+#if 0
     size_t vCount = 0;
     for(int n=0; n<cmd_lists_count; n++)
     {
         vCount += cmd_lists[n]->vtx_buffer.size();
     }
-
-    // Render command lists
-    uint8_t *data = (uint8_t*)delegate->_vertexBuffer.map(BufferObject::Access::WRITE_ONLY, 0, cmd_lists_count*sizeof(ImDrawVert));
+    
+    // Why does map makes my gpu fan go berserk?
+    // [todo] make a map range method
+    uint8_t *data = (uint8_t*)delegate->_vertexBuffer.map(BufferObject::Access::WRITE_ONLY, 0, vCount*sizeof(ImDrawVert));
     for (int n = 0; n < cmd_lists_count; n++)
     {
         const ImDrawList* cmd_list = cmd_lists[n];
         const uint8_t* vtx_buffer = (const uint8_t*)cmd_list->vtx_buffer.begin();
-        vCount += cmd_list->vtx_buffer.size() * sizeof(ImDrawVert);
+        vCount = cmd_list->vtx_buffer.size() * sizeof(ImDrawVert);
         memcpy(data, vtx_buffer, vCount);
         data += vCount;
     }
+    glFlushMappedBufferRange(GL_ARRAY_BUFFER, 0, vCount*sizeof(ImDrawVert));
     delegate->_vertexBuffer.unmap();
-    
-    delegate->_vertexStream.bind();
+    // [todo] add flush buffer range
+    // delegate->_vertexBuffer.unmap();
+#else
+    delegate->_vertexBuffer.bind();
+    off_t offset = 0;
     for (int n = 0; n < cmd_lists_count; n++)
     {
-        int vtx_offset = 0;
+        const ImDrawList* cmd_list = cmd_lists[n];
+        const uint8_t* vtx_buffer = (const uint8_t*)cmd_list->vtx_buffer.begin();
+        size_t vertexCount = cmd_list->vtx_buffer.size() * sizeof(ImDrawVert);
+        delegate->_vertexBuffer.set(offset, vertexCount, (void*)vtx_buffer);
+        offset += vertexCount;
+    }
+    delegate->_vertexBuffer.unbind();
+#endif
+
+    // Setup texture
+    delegate->_fontTexture.bind();
+    renderer.texture2D(true);
+    
+    // Setup orthographic projection matrix
+    const float width  = ImGui::GetIO().DisplaySize.x;
+    const float height = ImGui::GetIO().DisplaySize.y;
+    glm::mat4 projection = glm::ortho(0.0f, width, height, 0.0f, -1.0f, +1.0f);
+    delegate->_program.begin();
+    delegate->_program.uniform(delegate->_projectionMatrixId, false, projection);
+
+    // Render command lists
+    delegate->_vertexStream.bind();
+    int vtx_offset = 0;
+    for (int n = 0; n < cmd_lists_count; n++)
+    {
         const ImDrawList* cmd_list = cmd_lists[n];
         const ImDrawCmd* pcmd_end = cmd_list->commands.end();
         for (const ImDrawCmd* pcmd = cmd_list->commands.begin(); pcmd != pcmd_end; pcmd++)
@@ -282,9 +340,11 @@ void ImGuiDelegate::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_
             delegate->_vertexStream.draw(Geometry::Primitive::TRIANGLES, vtx_offset, pcmd->vtx_count);
             vtx_offset += pcmd->vtx_count;
         }
-    }    
+    }
     renderer.scissorTest(false);
     delegate->_vertexStream.unbind();
+    
+    delegate->_program.end();
 }
 
 const char* ImGuiDelegate::getClipboardText()
