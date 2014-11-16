@@ -3,7 +3,7 @@
 
 #include <DumbFramework/config.hpp>
 #include <DumbFramework/module.hpp>
-#include <chrono>
+
 #ifndef Log_Error
 #include <stdio.h>
 namespace Framework {
@@ -155,26 +155,14 @@ template <typename T> bool Wrapper<T>::start()
 
     // Delegate init.
     _delegate->init();
-    
-    double sum = 0.0;
-    int frames = 0;
+
     // This is the application loop.
     while(!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
-        auto begin = std::chrono::high_resolution_clock::now();
-
-        _delegate->render();
-
-        auto end = std::chrono::high_resolution_clock::now();
-        auto diff = end - begin;
-        sum += std::chrono::duration <double, std::milli> (diff).count();
-        frames++;
-        
+        _delegate->render();        
         glfwSwapBuffers(window);
     }
-    
-    Log_Info(Framework::Module::App, "%f", sum / frames);
     
     // Destroy window.
     _delegate->destroyWindow(window);

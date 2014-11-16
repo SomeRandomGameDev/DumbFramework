@@ -11,15 +11,39 @@
 
 namespace Framework {
 
+/**
+ * ImGui delegate.
+ */
 class ImGuiDelegate
 {
     public:
-        ImGuiDelegate();
+        /** 
+         * Constructor.
+         * @param [in] width  Window witdh
+         * @param [in] height Window height
+         * @param [in] title  Window title.
+         */
+        ImGuiDelegate(int width, int height, char const* title);
+        /**
+         * Destructor.
+         */
         ~ImGuiDelegate();
-        
+        /**
+         * Create window.
+         */
         GLFWwindow *createWindow();
+        /**
+         * Destroy window.
+         * @param [in] window Window pointer.
+         */
         void destroyWindow(GLFWwindow *window);
+        /**
+         * Initialize delegate.
+         */
         void init();
+        /**
+         * Render everything.
+         */
         void render();
         void handleKeyAction(int key, int scancode, int action, int mods);
         void handleMouseButtonAction(int button, int action, int mods);
@@ -35,13 +59,27 @@ class ImGuiDelegate
         static void setClipboardText(const char* txt);
 
     protected:
+        /** Window width. **/
+        int _width;
+        /** Window height. **/
+        int _height;
+        /** Window title. **/
+        char const* _title;
+        /** Window pointer. **/
         GLFWwindow *_window;
+        /** GLSL program **/
         Program _program;
+        /** Font texture. **/
         Texture2D _fontTexture;
+        /** Vertex buffer. **/
         VertexBuffer _vertexBuffer;
+        /** Vertex stream. **/
         VertexStream _vertexStream;
+        /** Mouse button state (true: pressed, false: released). **/
         bool _mousePressed[2];
+        /** Mouse pointer scaled position. **/
         glm::vec2 _mousePosScale;
+        /** Projection matrix uniform id. **/
         int _projectionMatrixId;
 };
 

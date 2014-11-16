@@ -12,7 +12,7 @@ int main()
     Log::LogProcessor& logProcessor = Log::LogProcessor::instance();
     logProcessor.start(&msgBuilder, &outputPolicy);
     
-    ImGuiDelegate delegate;
+    ImGuiDelegate delegate(1024, 768, "ImGui test");
     Wrapper<ImGuiDelegate> wrapper(&delegate);
     wrapper.start();
     

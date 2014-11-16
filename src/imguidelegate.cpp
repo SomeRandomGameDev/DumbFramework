@@ -2,6 +2,7 @@
 #include <DumbFramework/imguidelegate.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+// ImGui vertex shader
 static const char* g_vertexShader = R"EOT(
 #version 410 core
 uniform mat4 projection;
@@ -20,7 +21,7 @@ void main()
 }
 )EOT";
 
-
+// ImGui fragment shader
 static const char* g_fragmentShader = R"EOT(
 #version 410 core
 uniform sampler2D un_font;
@@ -37,15 +38,26 @@ void main()
 )EOT";
 
 namespace Framework {
-
-ImGuiDelegate::ImGuiDelegate()
-    : _window(nullptr)
+/** 
+ * Constructor.
+ * @param [in] width  Window witdh
+ * @param [in] height Window height
+ * @param [in] title  Window title.
+ */
+ImGuiDelegate::ImGuiDelegate(int width, int height, char const* title)
+    : _width(width)
+    , _height(height)
+    , _title(title)
+    , _window(nullptr)
     , _program()
     , _fontTexture()
     , _vertexBuffer()
     , _vertexStream()
 {}
 
+/**
+ * Destructor.
+ */
 ImGuiDelegate::~ImGuiDelegate()
 {
     _program.destroyShaders();
@@ -54,24 +66,37 @@ ImGuiDelegate::~ImGuiDelegate()
     _vertexBuffer.destroy();
     _vertexStream.destroy();
 }
-
+/**
+ * Create window.
+ */
 GLFWwindow* ImGuiDelegate::createWindow()
 {
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    _window = glfwCreateWindow(1280, 720, "Fix me!", nullptr, nullptr);
+    _window = glfwCreateWindow(_width, _height, _title, nullptr, nullptr);
     return _window;
 }
-
+/**
+ * Destroy window.
+ * @param [in] window Window pointer.
+ */
 void ImGuiDelegate::destroyWindow(GLFWwindow *window)
 {
-    glfwDestroyWindow(window);
+    if(window != _window)
+    {
+        return;
+    }
+    glfwDestroyWindow(_window);
+    _window = nullptr;
+    
     _program.destroy();
     _fontTexture.destroy();
     _vertexBuffer.destroy();
     _vertexStream.destroy();
     ImGui::Shutdown();
 }
-
+/**
+ * Initialize delegate.
+ */
 void ImGuiDelegate::init()
 {
     // Initialize ImGui.
@@ -178,7 +203,9 @@ void ImGuiDelegate::init()
     _mousePressed[0] = _mousePressed[1] = false;
     io.MouseWheel = 0;
 }
-
+/**
+ * Render everything.
+ */
 void ImGuiDelegate::render()
 {
     ImGuiIO& io = ImGui::GetIO();
@@ -204,6 +231,7 @@ void ImGuiDelegate::render()
     ImGui::ShowTestWindow(&dummy);
     
     glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+    // [todo] remove this
     glClearColor(0.8f, 0.6f, 0.6f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui::Render();
