@@ -43,8 +43,12 @@ namespace Framework {
  * @param [in] width  Window witdh
  * @param [in] height Window height
  * @param [in] title  Window title.
+ * @param [in] renderDelegate    Render delegate.
+ * @param [in] renderGUIDelegate Render GUI delegate.
  */
-ImGuiDelegate::ImGuiDelegate(int width, int height, char const* title)
+ImGuiDelegate::ImGuiDelegate(int width, int height, char const* title,
+                             std::function<void()> renderDelegate,
+                             std::function<void()> renderGUIDelegate)
     : _width(width)
     , _height(height)
     , _title(title)
@@ -53,6 +57,8 @@ ImGuiDelegate::ImGuiDelegate(int width, int height, char const* title)
     , _fontTexture()
     , _vertexBuffer()
     , _vertexStream()
+    , _render(renderDelegate)
+    , _renderGUI(renderGUIDelegate)
 {}
 
 /**
@@ -227,13 +233,10 @@ void ImGuiDelegate::render()
     // Start the frame
     ImGui::NewFrame();
 
-    bool dummy = true;
-    ImGui::ShowTestWindow(&dummy);
+    _renderGUI();
     
-    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-    // [todo] remove this
-    glClearColor(0.8f, 0.6f, 0.6f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    _render();
+    
     ImGui::Render();
 
     _mousePressed[0] = _mousePressed[1] = false;

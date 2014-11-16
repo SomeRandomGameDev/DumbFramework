@@ -1,6 +1,7 @@
 #ifndef _DUMB_FW_IMGUI_DELEGATE_
 #define _DUMB_FW_IMGUI_DELEGATE_
 
+#include <functional>
 #include <external/stb_image.h>
 #include <imgui/imgui.h>
 #include <DumbFramework/windowhint.hpp>
@@ -22,8 +23,12 @@ class ImGuiDelegate
          * @param [in] width  Window witdh
          * @param [in] height Window height
          * @param [in] title  Window title.
+         * @param [in] renderDelegate    Render delegate.
+         * @param [in] renderGUIDelegate Render GUI delegate.
          */
-        ImGuiDelegate(int width, int height, char const* title);
+        ImGuiDelegate(int width, int height, char const* title,
+                      std::function<void()> renderDelegate,
+                      std::function<void()> renderGUIDelegate);
         /**
          * Destructor.
          */
@@ -81,6 +86,10 @@ class ImGuiDelegate
         glm::vec2 _mousePosScale;
         /** Projection matrix uniform id. **/
         int _projectionMatrixId;
+        /** Render delegate. **/
+        std::function<void()> _render;
+        /** Render GUI delegate. **/
+        std::function<void()> _renderGUI;
 };
 
 } // Framework
