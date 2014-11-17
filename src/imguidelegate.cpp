@@ -44,11 +44,9 @@ namespace Framework {
  * @param [in] height Window height
  * @param [in] title  Window title.
  * @param [in] renderDelegate    Render delegate.
- * @param [in] renderGUIDelegate Render GUI delegate.
  */
 ImGuiDelegate::ImGuiDelegate(int width, int height, char const* title,
-                             std::function<void()> renderDelegate,
-                             std::function<void()> renderGUIDelegate)
+                             std::function<void()> renderDelegate)
     : _width(width)
     , _height(height)
     , _title(title)
@@ -58,7 +56,6 @@ ImGuiDelegate::ImGuiDelegate(int width, int height, char const* title,
     , _vertexBuffer()
     , _vertexStream()
     , _render(renderDelegate)
-    , _renderGUI(renderGUIDelegate)
 {}
 
 /**
@@ -233,11 +230,7 @@ void ImGuiDelegate::render()
     // Start the frame
     ImGui::NewFrame();
 
-    _renderGUI();
-    
     _render();
-    
-    ImGui::Render();
 
     _mousePressed[0] = _mousePressed[1] = false;
     io.MouseWheel = 0;

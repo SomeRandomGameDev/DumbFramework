@@ -5,12 +5,6 @@
 
 using namespace Framework;
 
-void dummyRenderGUI()
-{
-    bool dummy = true;
-    ImGui::ShowTestWindow(&dummy);
-}
-
 class Dummy
 {
     public:
@@ -20,9 +14,17 @@ class Dummy
         void render()
         {
             ImGuiIO& io = ImGui::GetIO();
+            
+            bool dummy = true;
+            ImGui::ShowTestWindow(&dummy);
+    
             glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
             glClearColor(bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a);
             glClear(GL_COLOR_BUFFER_BIT);
+            
+            // Draw a cube 
+            
+            ImGui::Render();
         }
         
     public:
@@ -39,7 +41,7 @@ int main()
     Dummy foobar;
     foobar.bgcolor.r = 0.5;
     
-    ImGuiDelegate delegate(1024, 768, "ImGui test", std::bind(std::mem_fn(&Dummy::render), foobar), dummyRenderGUI);
+    ImGuiDelegate delegate(1024, 768, "ImGui test", std::bind(std::mem_fn(&Dummy::render), foobar));
     Wrapper<ImGuiDelegate> wrapper(&delegate);
     wrapper.start();
     

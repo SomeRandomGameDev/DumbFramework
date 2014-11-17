@@ -24,11 +24,9 @@ class ImGuiDelegate
          * @param [in] height Window height
          * @param [in] title  Window title.
          * @param [in] renderDelegate    Render delegate.
-         * @param [in] renderGUIDelegate Render GUI delegate.
          */
         ImGuiDelegate(int width, int height, char const* title,
-                      std::function<void()> renderDelegate,
-                      std::function<void()> renderGUIDelegate);
+                      std::function<void()> renderDelegate);
         /**
          * Destructor.
          */
@@ -88,8 +86,6 @@ class ImGuiDelegate
         int _projectionMatrixId;
         /** Render delegate. **/
         std::function<void()> _render;
-        /** Render GUI delegate. **/
-        std::function<void()> _renderGUI;
 };
 
 } // Framework
