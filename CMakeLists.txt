@@ -76,6 +76,7 @@ set(DUMB_FRAMEWORK_SOURCES
     src/sprite.cpp
     src/texture2d.cpp
     src/windowhint.cpp
+    src/transform.cpp
     src/joystick.cpp
     src/mouse.cpp)
 
