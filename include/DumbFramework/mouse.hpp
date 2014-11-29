@@ -1,16 +1,11 @@
 #ifndef _DUMB_FW_MOUSE_
 #define _DUMB_FW_MOUSE_
 
-#include <vector>
-#include <string>
-#include <functional>
-
-#include <DumbFramework/config.hpp>
-#include <DumbFramework/windowhint.hpp>
+#include <DumbFramework/inputdelegate.hpp>
 
 namespace Framework {
 namespace Input     {
-    
+
 /**
  * Simple mouse class.
  */
@@ -29,7 +24,11 @@ class Mouse
                 LEFT   = 0,
                 RIGHT,
                 MIDDLE,
-                EXTRA
+                EXTRA_0,
+                EXTRA_1,
+                EXTRA_2,
+                EXTRA_3,
+                EXTRA_4
             };
             Value value; /**< Mouse button value. **/
             /**
@@ -43,56 +42,7 @@ class Mouse
             inline Button(Value v) : value(v) {}
             inline operator Value() { return value; }
         };
-        /**
-         * Mouse event delegate base class.
-         * Return type is always void.
-         * To add a new listener just do:
-         * @code
-         * Delegate<void(int, int)> dummy;
-         * dummy += [](int a, int b) { std::cout << a << ' ' << b << std::endl; };
-         * 
-         * // Consider we have a class Foo with a method void bar(int, int)
-         * Foo bleep;
-         * dummy += std::bind(&Foo::bar, bleep, std::placeholders::_1, std::placeholders::_2);
-         * 
-         * // Call delegate.
-         * dummy(0xcafe, 0xbeef);
-         * 
-         * @endcode
-         */
-        template <typename... Args>
-        class Delegate
-        {
-            using Func = std::function<void(Args...)>;
-            public:
-                /**
-                 * Add listener to delegate.
-                 * @param [in] rhs Listener.
-                 */
-                Delegate& operator+= (Func const& rhs)
-                {   _listeners.push_back(rhs);
-                    return *this;
-                }
-                /**
-                 * Call listeners.
-                 */
-                void operator() (Args&&... rhs)
-                {   for(auto call : _listeners)
-                    {
-                        call(rhs...);
-                    }
-                }
-                /**
-                 * Remove all listeners.
-                 */
-                void clear()
-                {   _listeners.clear();
-                }
-            private:
-                /** Listeners. **/
-                std::vector<Func> _listeners;
-        };
-        
+       
     public:
         /** 
          * Constructor.
@@ -102,6 +52,11 @@ class Mouse
          * Destructor.
          */
         ~Mouse();
+        /**
+         * Attach to window.
+         * @param [in] window Parent window.
+         */
+        void attach(GLFWwindow *window);
         /**
          * Clear listeners.
          */
@@ -142,6 +97,21 @@ class Mouse
          */
         bool isGrabbed() const;
         /**
+         * Get mouse position.
+         */
+        glm::dvec2 position() const;
+        /**
+         * Set mouse position.
+         * @param [in] p Mouse position.
+         */
+        void position(glm::dvec2 const& p);
+        /**
+         * Get button state.
+         * @param [in] id Button id.
+         * @return true if the button is pressed, false otherwise.
+         */
+         bool buttonState(Button id);
+        /**
          * This delegate is called whenever the mouse pointer is moved.
          * The pointer coordinate is relative to the upper left corner
          * of the window.
@@ -149,19 +119,16 @@ class Mouse
          */
         Delegate<glm::dvec2 const&> onMousePositionChanged;
         /**
-         * This delegate is called when the mouse button is pressed.
-         * @param [in] button   Button id.
-         * @param [in] modifier Key modifier [todo]
-         */
-        Delegate<Button, int> onMouseButtonPressed;
-        /**
-         * This delegate is called when the mouse button  is released. 
+         * This delegate is called when the mouse button is pressed or 
+         * released.
          * Mouse button release events will be generated for all pressed
          * buttons when the window loses focus.
          * @param [in] button   Button id.
+         * @param [in] pressed  true if the button is pressed or
+         *                      false if released.
          * @param [in] modifier Key modifier [todo]
          */
-        Delegate<Button, int> onMouseButtonReleased;
+        Delegate<Button, bool, int> onMouseButton;
         /**
          * This delegate is called when the mouse wheel moves or the
          * touchpad scrolling is used.
@@ -171,7 +138,7 @@ class Mouse
         
     private:
         /** Mouse parent window. **/
-        WindowHint* _hint;
+        GLFWwindow *_window;
         /** Mouse manager state. **/
         bool _enabled;
         // [todo] ...

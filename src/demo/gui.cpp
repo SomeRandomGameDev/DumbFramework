@@ -43,6 +43,13 @@ int main()
     
     ImGuiDelegate delegate(1024, 768, "ImGui test", std::bind(std::mem_fn(&Dummy::render), foobar));
     Wrapper<ImGuiDelegate> wrapper(&delegate);
+
+    wrapper.mouse.onMouseButton +=
+        [](Framework::Input::Mouse::Button button, bool state, int modifier)
+        {
+            Log_Info(Module::Base, "button %x %s %d", button, state ? "pressed " : "released", modifier);
+        };
+
     wrapper.start();
     
     logProcessor.stop();

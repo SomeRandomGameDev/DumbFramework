@@ -2,21 +2,8 @@
 #define _DUMB_FW_WRAPPER_
 
 #include <DumbFramework/config.hpp>
-#include <DumbFramework/module.hpp>
-
-#ifndef Log_Error
-#include <stdio.h>
-namespace Framework {
-namespace Module {
-    int Base = 0;
-} // Module
-} // Framework
-
-#define Log_Info(module, format, ...) printf("[INFO] <%s:%d in %s> " format "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__);
-#define Log_Warning(module, format, ...) fprintf(stderr, "[WARN] <%s:%d in %s> " format "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__);
-#define Log_Error(module, format, ...) fprintf(stderr, "[FAIL] <%s:%d in %s> " format "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__);
-
-#endif
+#include <DumbFramework/log.hpp>
+#include <DumbFramework/mouse.hpp>
 
 /**
  * GLFW error callback
@@ -53,6 +40,10 @@ template <typename T> class Wrapper {
          * Delegate instance.
          */
         T* _delegate;
+        /**
+         * Mouse manager.
+         */
+        Framework::Input::Mouse mouse;
     public:
 
         /**
@@ -65,6 +56,7 @@ template <typename T> class Wrapper {
          * Start the wrapper.
          */
         bool start();
+
     private:
 
         /**
@@ -129,6 +121,8 @@ template <typename T> bool Wrapper<T>::start()
         return false;
     }
 
+    mouse.attach(window);
+
     glfwMakeContextCurrent(window);
     // Set window user data.
     glfwSetWindowUserPointer(window, this);
@@ -160,7 +154,7 @@ template <typename T> bool Wrapper<T>::start()
     while(!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
-        _delegate->render();        
+        _delegate->render();
         glfwSwapBuffers(window);
     }
     
@@ -179,16 +173,56 @@ template <typename T> void Wrapper<T>::handleKey(GLFWwindow* window, int key, in
 template <typename T> void Wrapper<T>::handleMouseButton(GLFWwindow* window, int button, int action, int mods) {
     Wrapper<T> *app = static_cast<Wrapper<T> *>(glfwGetWindowUserPointer(window));
     app->_delegate->handleMouseButtonAction(button, action, mods);
+    if(app->mouse.isEnabled())
+    {
+        Framework::Input::Mouse::Button bvalue;
+        switch(button)
+        {
+            case  GLFW_MOUSE_BUTTON_LEFT:
+                bvalue = Framework::Input::Mouse::Button::LEFT;
+                break;
+            case  GLFW_MOUSE_BUTTON_RIGHT:
+                bvalue = Framework::Input::Mouse::Button::RIGHT;
+                break;
+            case  GLFW_MOUSE_BUTTON_MIDDLE:
+                bvalue = Framework::Input::Mouse::Button::MIDDLE;
+                break;
+            case GLFW_MOUSE_BUTTON_4:
+                bvalue = Framework::Input::Mouse::Button::EXTRA_0;
+                break;
+            case GLFW_MOUSE_BUTTON_5:
+                bvalue = Framework::Input::Mouse::Button::EXTRA_1;
+                break;
+            case GLFW_MOUSE_BUTTON_6:
+                bvalue = Framework::Input::Mouse::Button::EXTRA_2;
+                break;
+            case GLFW_MOUSE_BUTTON_7:
+                bvalue = Framework::Input::Mouse::Button::EXTRA_3;
+                break;
+            default:
+                bvalue = Framework::Input::Mouse::Button::EXTRA_4;
+                break;
+        }
+        app->mouse.onMouseButton(bvalue, (GLFW_PRESS == action), mods);
+    }
 }
 
 template <typename T> void Wrapper<T>::handleMousePosition(GLFWwindow* window, double x, double y) {
     Wrapper<T> *app = static_cast<Wrapper<T> *>(glfwGetWindowUserPointer(window));
     app->_delegate->handleMousePositionAction(x, y);
+    if(app->mouse.isEnabled())
+    {
+        app->mouse.onMousePositionChanged(glm::dvec2(x, y));
+    }
 }
 
 template <typename T> void Wrapper<T>::handleMouseWheel(GLFWwindow* window, double x, double y) {
     Wrapper<T> *app = static_cast<Wrapper<T> *>(glfwGetWindowUserPointer(window));
     app->_delegate->handleMouseWheelAction(x, y);
+    if(app->mouse.isEnabled())
+    {
+        app->mouse.onMouseScroll(glm::dvec2(x, y));
+    }
 }
 
 template <typename T> void Wrapper<T>::handleWindowSize(GLFWwindow* window, int width, int height) {
