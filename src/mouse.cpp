@@ -3,59 +3,12 @@
 namespace Framework {
 namespace Input     {
 
-/**
- * Constructor.
- */
-Mouse::Listener::Listener()
-{}
-/**
- * Destructor.
- */
-Mouse::Listener::~Listener()
-{}
-/**
- * Button pressed callback.
- * @param [in] button   Button id.
- * @param [in] modifier Key modifier [todo]
- */
-void Mouse::Listener::onMouseButtonPressed(Mouse::Button button, int modifier)
-{
-    (void)button;
-    (void)modifier;
-}
-/**
- * Button released callback.
- * @param [in] button   Button id.
- * @param [in] modifier Key modifier [todo]
- */
-void Mouse::Listener::onMouseButtonReleased(Mouse::Button button, int modifier)
-{
-    (void)button;
-    (void)modifier;
-}
-/**
- * Cursor movement callback.
- * @param [in] cursor Current cursor position.
- */
-void Mouse::Listener::onMousePositionChanged(glm::dvec2 const& cursor)
-{
-    (void)cursor;
-}
-/**
- * Mouse wheel, touchpad scrolling callback.
- * @param [in] offset Scroll offset.
- */
-void Mouse::Listener::onMouseScroll(glm::dvec2 const& offset)
-{
-    (void)offset;
-}
-
 /** 
  * Constructor.
  */
 Mouse::Mouse()
-    : _hint(NULL)
-    , _listeners()
+    : _hint(nullptr)
+    , _enabled(true)
 {}
 /** 
  * Destructor.
@@ -67,29 +20,31 @@ Mouse::~Mouse()
  */
 void Mouse::clear()
 {
-    _listeners.clear();
+    onMousePositionChanged.clear();
+    onMouseButtonPressed.clear();
+    onMouseButtonReleased.clear();
+    onMouseScroll.clear();
 }
 /**
  * Enable mouse.
  */
 void Mouse::enable()
 {
-    // [todo]
+    _enabled = true;
 }
 /**
  * Disable mouse.
  */
 void Mouse::disable()
 {
-    // [todo]
+    _enabled = false;
 }
 /**
  * Check if the mouse is enabled.
  */
 bool Mouse::isEnabled() const
 {
-    // [todo]
-    return true;
+    return _enabled;
 }
 /**
  * Set mouse cursor visibility.
@@ -118,8 +73,7 @@ bool Mouse::isVisible() const
  */
 void Mouse::grab(bool grabbed)
 {
-    (void)grabbed;
-    // [todo]
+     glfwSetInputMode(_hint->getWindow(), GLFW_CURSOR, grabbed ? GL_TRUE : GL_FALSE);
 }
 /**
  * Check if the mouse cursor is grabbed.
@@ -127,68 +81,8 @@ void Mouse::grab(bool grabbed)
  */
 bool Mouse::isGrabbed() const
 {
-    // [todo]
-    return false;
-}
-/**
- * Add mouse evnt listener.
- * @param [in] listener Mouse listener to add.
- */
-void Mouse::addListener(Listener* listener)
-{
-    if(NULL == listener)
-    {
-        return;
-    }
-    _listeners.push_back(listener);
-    // [todo] lock?
-}
-/**
- * Call the OnMousePositionChanged method of each registered
- * listeners when the mouse pointer is moved.
- * The pointer coordinate is relative to the upper left corner
- * of the window.
- * @param [in] cursor Current cursor position.
- * @return false if an error occured.
- */
-void Mouse::processPositionListeners(glm::dvec2 const& cursor)
-{
-    for(size_t i=0; i<_listeners.size(); i++)
-    {
-        _listeners[i]->onMousePositionChanged(cursor);
-    }
-}
-/**
- * Call the OnMouseButtonPressed or OnMouseButtonReleased 
- * methods of each registered listeners wether the mouse button 
- * is pressed or released. Mouse button release events
- * will be generated for all pressed buttons when the window 
- * loses focus.
- * @param [in] button   Button id.
- * @param [in] pressed  Button state.
- * @param [in] modifier Key modifier [todo]
- */
-void Mouse::processButtonListeners(Mouse::Button button, bool pressed, int modifier)
-{
-    void (Mouse::Listener::*callback)(Mouse::Button, int);
-    callback = pressed ? &Mouse::Listener::onMouseButtonReleased : &Mouse::Listener::onMouseButtonReleased;
-    
-    for(size_t i=0; i<_listeners.size(); i++)
-    {
-        (_listeners[i]->*callback)(button, modifier);
-    }
-}
-/**
- * Call the onMouseScroll method of each registered listeners
- * when the mouse wheel moves or the touchpad scrolling is used.
- * @param [in] offset Scroll offset.
- */
-void Mouse::processScrollListeners(glm::dvec2 const& offset)
-{
-    for(size_t i=0; i<_listeners.size(); i++)
-    {
-        _listeners[i]->onMouseScroll(offset);
-    }
+    int value = glfwGetInputMode(_hint->getWindow(), GLFW_CURSOR);
+    return (value == GL_TRUE);
 }
 
 } // Input
