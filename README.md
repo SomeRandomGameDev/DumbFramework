@@ -86,7 +86,10 @@ $ cmake ..
 $ make
 ``` 
 
-This will produce tons of stuff including the **libDumbFramework.a** static library file. Feel free to modify the CMakeLists.txt file in the root directory to fit your need (and/or to tune it with your favorite options).
-
+This will produce tons of stuff including the **libDumbFramework.a** static library file. Feel free to modify the CMakeLists.txt file in the root directory to fit your need (and/or to tune it with your favorite options. In my case, I'm very fond of clang++ hence the
+```
+cmake -DCMAKE_CXX_COMPILER=/usr/bin/clang++ ..
+```
+).
 
 *SomeRandomGameDev* and *BlockoS*
