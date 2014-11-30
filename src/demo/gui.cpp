@@ -11,19 +11,21 @@ class Dummy
         Dummy() 
             : bgcolor(0.8f, 0.6f, 0.6f, 1.0f)
             , pushed(false)
+            , open(true)
         {}
         void render()
         {
             // First build the interface
             ImGuiIO& io = ImGui::GetIO();
             
-            ImGui::Text("DumbFramework ImGui integration test.");
-            if(ImGui::Button("Push me!"))
-            {
-                pushed = true;
-            }
-            ImGui::SameLine();
-            ImGui::Text(pushed ? "How dare you!" : "Move along!");
+            ImGui::Begin("DumbFramework + ImGui Test", &open, ImVec2(520,340), 0.75f, 0);
+                if(ImGui::Button("Push me!"))
+                {
+                    pushed = !pushed;
+                }
+                ImGui::SameLine();
+                ImGui::Text(pushed ? "How dare you!" : "Move along!");
+            ImGui::End();
             
             glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
             glClearColor(bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a);
@@ -38,6 +40,7 @@ class Dummy
     public:
         glm::vec4 bgcolor;
         bool pushed;
+        bool open;
 };
 
 int main()
