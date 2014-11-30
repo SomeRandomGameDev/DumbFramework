@@ -2,32 +2,32 @@
 
 namespace Framework {
 
-        /** Orientation **/
-        glm::fquat orientation;
-        /** Position **/
-        glm::vec3  position;
-        
 /**
  * Default constructor.
  */
 Transform::Transform()
-    : orientation()
-    , position(0.0)
+    : _q()
+{}
+/**
+ * Constructor.
+ * @param [in] orientation Orientation.
+ * @param [in] position    Position.
+ */
+Transform::Transform(glm::fquat const& orientation, glm::vec3 const& position)
+    : _q(orientation, position)
 {}
 /**
  * Copy constructor.
  */
 Transform::Transform(Transform const& t)
-    : orientation(t.orientation)
-    , position(t.position)
+    : _q(t._q)
 {}
 /**
  * Copy operator.
  */
 Transform& Transform::operator=(Transform const& t)
 {
-    orientation = t.orientation;
-    position    = t.position;
+    _q = t._q;
     return *this;
 }
 /**
@@ -35,118 +35,89 @@ Transform& Transform::operator=(Transform const& t)
  */
 glm::vec3 Transform::up() const
 {
-    return glm::normalize(glm::rotate(orientation, glm::vec3( 0.0f, 1.0f, 0.0f)));
+    return glm::normalize(glm::rotate(_q.real, glm::vec3( 0.0f, 1.0f, 0.0f)));
 }
 /**
  * Retrieve right vector.
  */
 glm::vec3 Transform::right() const
 {
-    return glm::normalize(glm::rotate(orientation, glm::vec3(-1.0f, 0.0f, 0.0f)));
+    return glm::normalize(glm::rotate(_q.real, glm::vec3(-1.0f, 0.0f, 0.0f)));
 }
 /**
  * Retrieve forward vector.
  */
 glm::vec3 Transform::forward() const
 {
-    return glm::normalize(glm::rotate(orientation, glm::vec3( 0.0f, 0.0f, 1.0f)));
+    return glm::normalize(glm::rotate(_q.real, glm::vec3( 0.0f, 0.0f, 1.0f)));
 }
 /**
  * Retrieve euler angles.
  */
 glm::vec3 Transform::eulerAngles() const
 {
-    return glm::vec3(glm::pitch(orientation), glm::yaw(orientation), glm::roll(orientation));
+    return glm::vec3(glm::pitch(_q.real), glm::yaw(_q.real), glm::roll(_q.real));
 }
 /**
  * Return local transform matrix.
  */
 glm::mat4 Transform::local() const
 {
-    // [todo] might be wrong!
-    glm::mat4 local = glm::mat4_cast(orientation);
-    local[3][0] = position.x;
-    local[3][1] = position.y;
-    local[3][2] = position.z;
-    local[3][3] = 1.0f;
-    return local;
+    return glm::mat4(glm::mat3x4_cast(_q));
 }
-
-// Build a dual quaternion from a transform
-// [todo] remove this as soon as the shipped version of glm contains dual quaternions
-struct DualQuat
-{
-    glm::fquat real;
-    glm::fquat dual;
-    
-    DualQuat(Transform const& t)
-    {
-        real = t.orientation;
-        dual.w = -0.5f * ( t.position.x*t.orientation.x + t.position.y*t.orientation.y + t.position.z*t.orientation.z),
-        dual.x =  0.5f * ( t.position.x*t.orientation.w + t.position.y*t.orientation.z - t.position.z*t.orientation.y),
-        dual.y =  0.5f * (-t.position.x*t.orientation.z + t.position.y*t.orientation.w + t.position.z*t.orientation.x),
-        dual.z =  0.5f * ( t.position.x*t.orientation.y - t.position.y*t.orientation.x + t.position.z*t.orientation.w);
-    }
-    
-    DualQuat(glm::fquat const& p, glm::fquat const& q)
-        : real(p)
-        , dual(q)
-    {}
-    
-    glm::vec3 translation() const
-    {
-        glm::fquat q = (dual * 2.0f) * glm::conjugate(real);
-        return glm::vec3(q.x, q.y, q.z);
-    }
-    
-    Transform toTransform() const
-    {
-        Transform t;
-        t.orientation = real;
-        t.position = translation();
-        return t;
-    }
-    
-    friend DualQuat operator+(DualQuat const& p, DualQuat const& q)
-    {
-        return DualQuat(p.real+q.real, p.dual+q.dual);
-    }
-    
-    friend DualQuat operator*(DualQuat const& p, float s)
-    {
-        return DualQuat(p.real*s, p.dual*s);
-    }
-    
-    friend DualQuat operator*(float s, DualQuat const& p)
-    {
-        return DualQuat(p.real*s, p.dual*s);
-    }
-    
-    friend DualQuat lerp(DualQuat const& from , DualQuat const& to, float t)
-    {
-        const float s = (glm::dot(from.real, to.real) < 0.0f) ? -t : t;
-        return (from * (1.0f - t) + to * s);
-    }
-    
-    friend DualQuat operator* (DualQuat const& a, DualQuat const& b)
-    {
-        return DualQuat(a.real*b.real, (a.real*b.dual) + (a.dual*b.real));
-    }
-};
-
 /**
  * Interpolate between 2 transform.
  */
 Transform mix(Transform const& from, Transform const& to, float t)
 {
-    return lerp(DualQuat(from), DualQuat(to), t).toTransform();
+    Transform tr;
+    tr._q = glm::lerp(from._q, to._q, t);
+    return tr;
 }
 /**
  * Concatenate transforms.
  */
 Transform concat(Transform const& a, Transform const& b)
 {
-    return (DualQuat(a) * DualQuat(b)).toTransform();
+    Transform t;
+    t._q = a._q * b._q;
+    return t;
 }
-
+/** Orientation **/
+glm::fquat Transform::orientation() const
+{
+    return _q.real;
+}
+/** Position **/
+glm::vec3  Transform::position() const
+{
+    glm::fquat q = (_q.dual * 2.0f) * glm::conjugate(_q.real);
+    return glm::vec3(q.x, q.y, q.z);
+}
+/** 
+ * Set orientation.
+ * @param [in] q Orientation.
+ */
+void Transform::orientation(glm::fquat const& q)
+{
+    glm::vec3 p = position();
+    _q = glm::fdualquat(q, p);
+}
+/** 
+ * Set position. 
+ * @param [in] p Position.
+ */
+void Transform::position(glm::vec3 const& p)
+{
+    _q = glm::dualquat(_q.real, p);
+}
+/**
+ * Directly transform a point.
+ * @param [in] p Input position.
+ */
+glm::vec3 Transform::transform(glm::vec3 const& p) const
+{
+    return _q * p;
+}
+ 
 } // Framework

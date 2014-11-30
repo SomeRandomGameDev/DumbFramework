@@ -15,6 +15,8 @@ if(SANITY_CHECK)
     add_definitions(-DSANITY_CHECK)
 endif(SANITY_CHECK)
 
+    add_definitions(-DGLM_FORCE_RADIANS)
+
 if(MSVC)
     add_definitions (/D "_CRT_SECURE_NO_WARNINGS")
 endif(MSVC)
@@ -103,6 +105,7 @@ if(BUILD_TESTS)
         src/test/boundingcircle.cpp
         src/test/plane.cpp
         src/test/log.cpp
+        src/test/transform.cpp
         src/test/runtests.cpp)
     
     add_executable(RunTests ${DUMB_FRAMEWORK_TEST_SOURCES})

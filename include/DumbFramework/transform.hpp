@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/dual_quaternion.hpp>
 
 namespace Framework {
 
@@ -13,16 +14,16 @@ namespace Framework {
 class Transform
 {
     public:
-        /** Orientation **/
-        glm::fquat orientation;
-        /** Position **/
-        glm::vec3  position;
-        
-    public:
         /**
          * Default constructor.
          */
         Transform();
+        /**
+         * Constructor.
+         * @param [in] orientation Orientation.
+         * @param [in] position    Position.
+         */
+        Transform(glm::fquat const& orientation, glm::vec3 const& position);
         /**
          * Copy constructor.
          */
@@ -59,6 +60,29 @@ class Transform
          * Concatenate transforms.
          */
         friend Transform concat(Transform const& from, Transform const& to);
+        /** Get orientation. **/
+        glm::fquat orientation() const;
+        /** Get position. **/
+        glm::vec3  position() const;
+        /** 
+         * Set orientation.
+         * @param [in] q Orientation.
+         */
+        void orientation(glm::fquat const& q);
+        /** 
+         * Set position. 
+         * @param [in] p Position.
+         */
+        void position(glm::vec3 const& p);
+        /**
+         * Directly transform a point.
+         * @param [in] p Input position.
+         */
+         glm::vec3 transform(glm::vec3 const& p) const;
+         
+    private:
+        /** Transformations are represented internally as a dual quaternion. **/
+        glm::fdualquat _q;
 };
 
 } // Framework
