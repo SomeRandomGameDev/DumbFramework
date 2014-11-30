@@ -1,6 +1,13 @@
 cmake_minimum_required (VERSION 2.6)
+include(CheckCXXSymbolExists)
 
 project(DumbFramework)
+
+# Force build type to Debug if none was specified.
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug")
+endif()
+
 
 option(BUILD_TESTS "Build unit tests." OFF)
 option(SANITY_CHECK "Enable sanity checks. WARNING: performance loss + large logs." OFF)
@@ -8,18 +15,21 @@ option(SANITY_CHECK "Enable sanity checks. WARNING: performance loss + large log
 set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+set(LIBRARY_OUTPUT_PATH    "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
+set(ARCHIVE_OUTPUT_PATH    "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 
 if(SANITY_CHECK)
     add_definitions(-DSANITY_CHECK)
 endif(SANITY_CHECK)
 
-    add_definitions(-DGLM_FORCE_RADIANS)
+add_definitions(-DGLM_FORCE_RADIANS)
 
 if(MSVC)
     add_definitions (/D "_CRT_SECURE_NO_WARNINGS")
 endif(MSVC)
+
+set(GLM_MINIMUM_VERSION "0.9.5.4")
 
 find_package(EXPAT)
 find_package(tinyxml2)
@@ -28,7 +38,7 @@ find_package(Threads)
 find_package(OpenGL)
 find_package(GLEW)
 find_package(GLFW)
-find_package(GLM)
+find_package(GLM ${GLM_MINIMUM_VERSION} REQUIRED)
 find_package(BOX2D)
 find_package(AntTweakBar)
 find_package(Freetype-gl)
