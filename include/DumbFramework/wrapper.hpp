@@ -15,19 +15,18 @@ static void Log_GLFWErrorCallback(int errorCode, const char* description)
      Log_Error(Framework::Module::Base, "GLFW failed with error code %d: %s", errorCode, description);
 }
 
-/*
- * The delegated concept shall implement:
- * GLFWwindow *createWindow();
- * void destroyWindow(GLFWwindow *);
- * void init();
- * void render();
- * void handleKeyAction(int key, int scancode, int action, int mods);
- * void handleMouseButtonAction(int button, int action, int mods);
- * void handleMousePositionAction(double x, double y);
- * void handleMouseWheelAction(double x, double y);
- * void handleWindowSize(int x, int y);
- * void handleChar(unsigned int unicodeChar);
- * void handleCursorEnter(int flag);
+/* The delegated concept shall implement:
+   GLFWwindow *createWindow();
+   void destroyWindow(GLFWwindow *);
+   void init();
+   void render();
+   void handleKeyAction(int key, int scancode, int action, int mods);
+   void handleMouseButtonAction(int button, int action, int mods);
+   void handleMousePositionAction(double x, double y);
+   void handleMouseWheelAction(double x, double y);
+   void handleWindowSize(int x, int y);
+   void handleChar(unsigned int unicodeChar);
+   void handleCursorEnter(int flag);
  */
 
 /**
