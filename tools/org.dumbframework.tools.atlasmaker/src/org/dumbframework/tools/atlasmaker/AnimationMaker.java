@@ -25,20 +25,21 @@
 
 package org.dumbframework.tools.atlasmaker;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.ui.part.ViewPart;
 
 /**
  * Animation Maker.
- *
  * @author Stoned Xander
- *
  */
 public class AnimationMaker extends ViewPart {
 
     /**
      * Constructor.
-     *
      */
     public AnimationMaker() {
         // TODO Auto-generated constructor stub
@@ -49,8 +50,12 @@ public class AnimationMaker extends ViewPart {
      */
     @Override
     public void createPartControl(Composite parent) {
-        // Let the fun begins ! We have a list on the left with all the animations and the right part with the animation
-        // building controls.
+        // Let the fun begins ! We have a list on the left with all the animations and the right part with the
+        // animation building controls.
+        parent.setLayout(new GridLayout(2, false));
+        final Table animList = new Table(parent, SWT.BORDER | SWT.SINGLE);
+        animList.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true));
+        
     }
 
     /**
