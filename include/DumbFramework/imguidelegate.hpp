@@ -26,6 +26,7 @@ class ImGuiDelegate
          * @param [in] renderDelegate    Render delegate.
          */
         ImGuiDelegate(int width, int height, char const* title,
+                      std::function<void()> initDelegate,
                       std::function<void()> renderDelegate);
         /**
          * Destructor.
@@ -84,6 +85,8 @@ class ImGuiDelegate
         glm::vec2 _mousePosScale;
         /** Projection matrix uniform id. **/
         int _projectionMatrixId;
+        /** Init delegate. **/
+        std::function<void()> _init;
         /** Render delegate. **/
         std::function<void()> _render;
 };

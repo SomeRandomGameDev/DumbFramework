@@ -46,6 +46,7 @@ namespace Framework {
  * @param [in] renderDelegate    Render delegate.
  */
 ImGuiDelegate::ImGuiDelegate(int width, int height, char const* title,
+                             std::function<void()> initDelegate,
                              std::function<void()> renderDelegate)
     : _width(width)
     , _height(height)
@@ -55,6 +56,7 @@ ImGuiDelegate::ImGuiDelegate(int width, int height, char const* title,
     , _fontTexture()
     , _vertexBuffer()
     , _vertexStream()
+    , _init(initDelegate)
     , _render(renderDelegate)
 {}
 
@@ -205,6 +207,8 @@ void ImGuiDelegate::init()
     // Reset mouse
     _mousePressed[0] = _mousePressed[1] = false;
     io.MouseWheel = 0;
+    
+    _init();
 }
 /**
  * Render everything.
