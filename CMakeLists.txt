@@ -40,7 +40,6 @@ find_package(GLEW)
 find_package(GLFW)
 find_package(GLM ${GLM_MINIMUM_VERSION} REQUIRED)
 find_package(BOX2D)
-find_package(AntTweakBar)
 find_package(Freetype-gl)
 
 set(DUMB_FRAMEWORK_VERSION 0.1a)
