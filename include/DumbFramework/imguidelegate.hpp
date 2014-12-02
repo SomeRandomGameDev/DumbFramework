@@ -1,20 +1,27 @@
 #ifndef _DUMB_FW_IMGUI_DELEGATE_
 #define _DUMB_FW_IMGUI_DELEGATE_
 
-#include <functional>
 #include <external/stb_image.h>
 #include <imgui/imgui.h>
+
 #include <DumbFramework/windowhint.hpp>
 #include <DumbFramework/program.hpp>
 #include <DumbFramework/texture2d.hpp>
 #include <DumbFramework/vertexbuffer.hpp>
 #include <DumbFramework/vertexstream.hpp>
+#include <DumbFramework/renderer.hpp>
+
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace Framework {
+
+const char* ImGuiDelegateVertexShader();
+const char* ImGuiDelegateFragmentShader();
 
 /**
  * ImGui delegate.
  */
+template <typename T>
 class ImGuiDelegate
 {
     public:
@@ -23,11 +30,9 @@ class ImGuiDelegate
          * @param [in] width  Window witdh
          * @param [in] height Window height
          * @param [in] title  Window title.
-         * @param [in] renderDelegate    Render delegate.
+         * @param [in] delegate Delegate.
          */
-        ImGuiDelegate(int width, int height, char const* title,
-                      std::function<void()> initDelegate,
-                      std::function<void()> renderDelegate);
+        ImGuiDelegate(int width, int height, char const* title, T *delegate);
         /**
          * Destructor.
          */
@@ -85,11 +90,11 @@ class ImGuiDelegate
         glm::vec2 _mousePosScale;
         /** Projection matrix uniform id. **/
         int _projectionMatrixId;
-        /** Init delegate. **/
-        std::function<void()> _init;
-        /** Render delegate. **/
-        std::function<void()> _render;
+        /**  Delegate instance. **/
+        T *_delegate;
 };
+
+#include "imguidelegate.inl"
 
 } // Framework
 

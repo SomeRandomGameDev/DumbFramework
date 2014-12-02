@@ -159,6 +159,15 @@ class Dummy
             ImGui::Render();
         }
         
+        void destroy()
+        {
+            program.destroy();
+            vertexBuffer.destroy();
+            vertexStream.destroy();
+            points.clear();
+            mvpId = colorId = 0;
+        }
+        
     public:
         glm::vec3 bgcolor;
         glm::vec3 color;
@@ -182,8 +191,8 @@ int main()
     Dummy foobar;
     foobar.bgcolor.r = 0.5;
     
-    ImGuiDelegate delegate(1024, 768, "ImGui test", [&foobar](){foobar.init();},  [&foobar](){foobar.render();}); // <= ugly
-    Wrapper<ImGuiDelegate> wrapper(&delegate);
+    ImGuiDelegate<Dummy> delegate(1024, 768, "ImGui test", &foobar);
+    Wrapper<ImGuiDelegate<Dummy>> wrapper(&delegate);
 
     wrapper.mouse.onMouseButton +=
         [](Framework::Input::Mouse::Button button, bool state, int modifier)
