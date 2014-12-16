@@ -1,4 +1,4 @@
-ifndef _DUMB_FW_CAMERA_
+#ifndef _DUMB_FW_CAMERA_
 #define _DUMB_FW_CAMERA_
 
 #include <glm/glm.hpp>
@@ -9,7 +9,7 @@ ifndef _DUMB_FW_CAMERA_
 namespace Framework {
 
 /**
- * Camera
+ * Camera.
  */
 class Camera
 {
@@ -55,21 +55,46 @@ class Camera
          * Compute screen space position for a given screen size.
          * @param [in] world   World position.
          * @param [in] size    Screen size.
-         * @return Screen position.
+         * @return Screen position between [-1, 1].
          */
-        glm::vec2 screenPosition(glm::vec3 const& world, glm::ivec2 const& size) const;
+        glm::vec3 screenPosition(glm::vec3 const& world, glm::ivec2 const& size) const;
         
-    public:
+        // [todo] move/rotate ...
+        
         /** Position. **/
-        glm::vec3  eye;
-        /** Orientation. **/
-        glm::fquat orientation;
+        glm::vec3 const& eye() const;
+        /** Forward vector. **/
+        glm::vec3 const& forward() const;
+        /** Up vector. **/
+        glm::vec3 const& up() const;
+        /** Right vector. **/
+        glm::vec3 const& right() const;
         /** Field of view. **/
-        float fov;
+        float fov() const;
         /** Near plane distance. **/
-        float near;
+        float near() const;
         /** Far plane distance. **/
-        float far;
+        float far() const;
+        
+    protected:
+        /** Position. **/
+        glm::vec3 m_eye;
+        /** Forward vector. **/
+        glm::vec3 m_forward;
+        /** Up vector. **/
+        glm::vec3 m_up;
+        /** Right vector. **/
+        glm::vec3 m_right;
+        /** Field of view. **/
+        float m_fov;
+        /** Near plane distance. **/
+        float m_near;
+        /** Far plane distance. **/
+        float m_far;
+        /** Cached view matrix. **/
+        glm::mat4 m_view;
+        /** Cached perspective matrix. **/
+        glm::mat4 m_perspective;
 };
 
 } // Framework

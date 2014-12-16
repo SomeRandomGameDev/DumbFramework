@@ -3,6 +3,7 @@
 #include <DumbFramework/wrapper.hpp>
 #include <DumbFramework/renderer.hpp>
 #include <DumbFramework/imguidelegate.hpp>
+#include <DumbFramework/camera.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace Framework;
@@ -94,13 +95,16 @@ class Dummy
                 mvpId = program.getUniformLocation("modelviewproj");
                 colorId = program.getUniformLocation("color");
             program.end();
+            
+            camera.lookAt(glm::vec3(0.0f, 0.0f, 4.0f), glm::vec3(0.0f));
+            camera.perspective(45.0f, 0.1f, 10.0f);
+            
+            angle = 0.0f;
         }
         
         void render()
         {
             Framework::Renderer& renderer = Framework::Renderer::instance();
-
-            float angle;
 
             // First build the interface
             ImGuiIO& io = ImGui::GetIO();
@@ -141,10 +145,8 @@ class Dummy
             renderer.culling(false);
             renderer.depthTest(false);
             
-            glm::mat4 projection = glm::perspective(45.0f, io.DisplaySize.x/(float)io.DisplaySize.y, 0.1f, 10.0f);
-            glm::mat4 view       = glm::lookAt(glm::vec3(0.0f, 0.0f, 4.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            glm::mat4 model      = glm::rotate(glm::mat4(), angle, glm::vec3(1.0f, 0.0f, 0.0f));
-            glm::mat4 mvp = projection * view * model;
+            glm::mat4 model = glm::rotate(glm::mat4(), angle, glm::vec3(1.0f, 0.0f, 0.0f));
+            glm::mat4 mvp = camera.projectionMatrix(glm::ivec2(io.DisplaySize.x, io.DisplaySize.y)) * camera.viewMatrix() * model;
 
             program.begin();
                 program.uniform(mvpId, false, mvp);
@@ -179,6 +181,8 @@ class Dummy
         Framework::VertexStream vertexStream;
         Framework::Program program;
         GLint mvpId, colorId;
+        float angle;
+        Framework::Camera camera;
 };
 
 int main()

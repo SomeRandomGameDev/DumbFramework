@@ -62,6 +62,7 @@ set(IMGUI_SOURCES
     external/imgui/imgui.cpp)
 
 set(DUMB_FRAMEWORK_SOURCES
+    src/camera.cpp
     src/imguidelegate.cpp
     src/application.cpp
     src/rect.cpp
