@@ -1,3 +1,4 @@
+#include <glm/gtc/matrix_transform.hpp>
 #include <DumbFramework/camera.hpp>
 
 namespace Framework {
@@ -12,15 +13,11 @@ Camera::Camera()
  * @param [in] cam    Input camera.
  */
 Camera::Camera(Camera const& cam)
-    : m_eye(cam.m_eye)
-    , m_forward(cam.m_forward)
-    , m_up(cam.m_up)
-    , m_right(cam.m_right)
-    , m_fov(cam.m_fov)
-    , m_near(cam.m_near)
-    , m_far(cam.m_far)
-    , m_view(cam.m_view)
-    , m_perspective(cam.m_perspective)
+    : eye(cam.eye)
+    , orientation(cam.orientation)
+    , fov(cam.fov)
+    , near(cam.near)
+    , far(cam.far)
 {}
 /**
  * Copy operator.
@@ -28,15 +25,11 @@ Camera::Camera(Camera const& cam)
  */
 Camera& Camera::operator=(Camera const& cam)
 {
-    m_eye = cam.m_eye;
-    m_forward = cam.m_forward;
-    m_up      = cam.m_up;
-    m_right   = cam.m_right;
-    m_fov = cam.m_fov;
-    m_near = cam.m_near;
-    m_far  = cam.m_far;
-    m_view = cam.m_view;
-    m_perspective = cam.m_perspective;
+    eye = cam.eye;
+    orientation = cam.orientation;
+    fov = cam.fov;
+    near = cam.near;
+    far  = cam.far;
     return *this;
 }
 /**
@@ -47,26 +40,18 @@ Camera& Camera::operator=(Camera const& cam)
  */
 void Camera::lookAt(glm::vec3 const& eye, glm::vec3 const& center, glm::vec3 const& up)
 {
-    m_eye  = eye;
-    m_forward = glm::normalize(center - eye);
-    m_right   = glm::normalize(glm::cross(m_forward, up));
-    m_up      = glm::cross(m_right, m_forward);
+    this->eye  = eye;
+    glm::mat3 m;
     
-    m_view[0][0] = -m_right.x;
-    m_view[1][0] = -m_right.y;
-    m_view[2][0] = -m_right.z;
+    glm::vec3 f = glm::normalize(center - eye);
+    glm::vec3 l = glm::normalize(glm::cross(up, f));
+    glm::vec3 u = glm::cross(f, l);
     
-    m_view[0][1] =  m_up.x;
-    m_view[1][1] =  m_up.y;
-    m_view[2][1] =  m_up.z;
-    
-    m_view[0][2] = -m_forward.x;
-    m_view[1][2] = -m_forward.y;
-    m_view[2][2] = -m_forward.z;
-    
-    m_view[3][0] = -glm::dot(m_right,   m_eye);
-    m_view[3][1] = -glm::dot(m_up,      m_eye);
-    m_view[3][2] =  glm::dot(m_forward, m_eye);
+    m[0][0] = l.x; m[1][0] = l.y; m[2][0] = l.z;
+    m[0][1] = u.x; m[1][1] = u.y; m[2][1] = u.z;
+    m[0][2] = f.x; m[1][2] = f.y; m[2][2] = f.z;
+
+    this->orientation = glm::quat_cast(m);
 }
 /**
  * Set perspective information.
@@ -76,31 +61,39 @@ void Camera::lookAt(glm::vec3 const& eye, glm::vec3 const& center, glm::vec3 con
  */
 void Camera::perspective(float fovy, float near, float far)
 {
-    m_fov  = fovy;
-    m_near = near;
-    m_far  = far;
-    
-    m_perspective = glm::mat4(0.0f);
-    m_perspective[0][0] = m_perspective[1][1] = 1.0f / tan(m_fov / 2.0f);
-    m_perspective[2][2] = -(m_far + m_near) / (m_far - m_near);
-    m_perspective[2][3] = -1.0f;
-    m_perspective[3][2] = -(2.0f * m_far * m_near) / (m_far - m_near);
+    this->fov  = fovy;
+    this->near = near;
+    this->far  = far;
 }
 /**
  * Compute view matrix.
  */
 glm::mat4 Camera::viewMatrix() const
-{ return m_view; }
+{
+    glm::mat4 result = glm::mat4_cast(orientation);
+
+    result[3][0] =  (result[0][0]*eye.x + result[1][0]*eye.y + result[2][0]*eye.z);
+    result[3][1] = -(result[0][1]*eye.x + result[1][1]*eye.y + result[2][1]*eye.z);
+    result[3][2] =  (result[0][2]*eye.x + result[1][2]*eye.y + result[2][2]*eye.z);
+
+    result[0][0] *= -1.0f;
+    result[1][0] *= -1.0f;
+    result[2][0] *= -1.0f;
+
+    result[0][2] *= -1.0f;
+    result[1][2] *= -1.0f;
+    result[2][2] *= -1.0f;
+
+    return result;
+}
 /**
  * Compute projection matrix for a given screen size.
  * @param [in] size    Screen size.
  */
 glm::mat4 Camera::projectionMatrix(glm::ivec2 const& size) const
 {
-    float invAspect = static_cast<float>(size.y) / static_cast<float>(size.x);
-    glm::mat4 result(m_perspective);
-    result[0][0] *= invAspect;
-    return result;
+    float aspect = size.x / (float)size.y;
+    return glm::perspective(fov, aspect, near, far);
 }
 /**
  * Compute screen space position for a given screen size.
@@ -111,24 +104,16 @@ glm::mat4 Camera::projectionMatrix(glm::ivec2 const& size) const
 glm::vec3 Camera::screenPosition(glm::vec3 const& world, glm::ivec2 const& size) const
 {
     glm::vec4 tmp = glm::vec4(world, 1.0f);
-    tmp  = m_view * tmp;
+    tmp  = viewMatrix() * tmp;
     tmp  = projectionMatrix(size) * tmp;
     tmp /= tmp.w;
     return glm::vec3(tmp);
 }
-/** Position. **/
-glm::vec3 const& Camera::eye() const { return m_eye; }
 /** Forward vector. **/
-glm::vec3 const& Camera::forward() const { return m_forward; }
+glm::vec3 Camera::forward() const { return glm::rotate(orientation, glm::vec3(0.0, 0.0, 1.0f)); }
 /** Up vector. **/
-glm::vec3 const& Camera::up() const { return m_up; }
+glm::vec3 Camera::up() const { return glm::rotate(orientation, glm::vec3(0.0, 1.0, 0.0f)); }
 /** Right vector. **/
-glm::vec3 const& Camera::right() const { return m_right; }
-/** Field of view. **/
-float Camera::fov() const { return m_fov; }
-/** Near plane distance. **/
-float Camera::near() const { return m_near; }
-/** Far plane distance. **/
-float Camera::far() const { return m_far; }
+glm::vec3 Camera::right() const { return glm::rotate(orientation, glm::vec3(-1.0, 0.0, 0.0f)); }
 
 } // Framework

@@ -59,42 +59,24 @@ class Camera
          */
         glm::vec3 screenPosition(glm::vec3 const& world, glm::ivec2 const& size) const;
         
-        // [todo] move/rotate ...
-        
-        /** Position. **/
-        glm::vec3 const& eye() const;
         /** Forward vector. **/
-        glm::vec3 const& forward() const;
+        glm::vec3 forward() const;
         /** Up vector. **/
-        glm::vec3 const& up() const;
+        glm::vec3 up() const;
         /** Right vector. **/
-        glm::vec3 const& right() const;
-        /** Field of view. **/
-        float fov() const;
-        /** Near plane distance. **/
-        float near() const;
-        /** Far plane distance. **/
-        float far() const;
+        glm::vec3 right() const;
         
-    protected:
+    public:
         /** Position. **/
-        glm::vec3 m_eye;
-        /** Forward vector. **/
-        glm::vec3 m_forward;
-        /** Up vector. **/
-        glm::vec3 m_up;
-        /** Right vector. **/
-        glm::vec3 m_right;
+        glm::vec3 eye;
+        /** Orientation. **/
+        glm::fquat orientation;
         /** Field of view. **/
-        float m_fov;
+        float fov;
         /** Near plane distance. **/
-        float m_near;
+        float near;
         /** Far plane distance. **/
-        float m_far;
-        /** Cached view matrix. **/
-        glm::mat4 m_view;
-        /** Cached perspective matrix. **/
-        glm::mat4 m_perspective;
+        float far;
 };
 
 } // Framework

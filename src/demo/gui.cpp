@@ -96,10 +96,14 @@ class Dummy
                 colorId = program.getUniformLocation("color");
             program.end();
             
-            camera.lookAt(glm::vec3(0.0f, 0.0f, 4.0f), glm::vec3(0.0f));
-            camera.perspective(45.0f, 0.1f, 10.0f);
+            camera[0].lookAt(glm::vec3(0.0f, 0.0f, 4.0f), glm::vec3(0.0f));
+            camera[0].perspective(45.0f, 0.1f, 10.0f);
             
-            angle = 0.0f;
+            camera[1] = camera[0];
+            
+            angle = glm::vec3(0.0f);
+            
+            depth = 0.1f;
         }
         
         void render()
@@ -116,7 +120,12 @@ class Dummy
                 ImGui::SameLine();
                 ImGui::Text(pushed ? "How dare you!" : "Move along!");
                 ImGui::SliderFloat("Window alpha", &alpha, 0.0f,1.0f);
-                ImGui::SliderAngle("angle", &angle);
+                
+                bool back = ImGui::Button("Back");
+                ImGui::SameLine();
+                bool forward = ImGui::Button("Forward");
+                
+                ImGui::SliderFloat3("Angle", glm::value_ptr(angle), -180.0f, 180.0f);
                 ImGui::ColorEdit3("Cube color", glm::value_ptr(color));
                 int size = points.size();
                 ImGui::InputInt("Point count", &size, 1, 10);
@@ -143,16 +152,31 @@ class Dummy
             // Draw a cube 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             renderer.culling(false);
-            renderer.depthTest(false);
+            renderer.depthTest(true);
             
-            glm::mat4 model = glm::rotate(glm::mat4(), angle, glm::vec3(1.0f, 0.0f, 0.0f));
-            glm::mat4 mvp = camera.projectionMatrix(glm::ivec2(io.DisplaySize.x, io.DisplaySize.y)) * camera.viewMatrix() * model;
+            camera[1].orientation  = glm::angleAxis(glm::radians(angle.x), glm::vec3(1.0f, 0.0, 0.0f)) * 
+                                     glm::angleAxis(glm::radians(angle.y), glm::vec3(0.0f, 1.0, 0.0f)) *
+                                     glm::angleAxis(glm::radians(angle.z), glm::vec3(0.0f, 0.0, 1.0f)) * camera[0].orientation;
+            if(back)
+            {
+                camera[1].eye -= depth * camera[1].forward();
+            }
+            if(forward)
+            {
+                camera[1].eye += depth * camera[1].forward();
+            }
+            glm::mat4 mvp = camera[1].projectionMatrix(glm::ivec2(io.DisplaySize.x, io.DisplaySize.y)) * camera[1].viewMatrix();
 
             program.begin();
-                program.uniform(mvpId, false, mvp);
-                program.uniform(colorId, color);
-                
                 vertexStream.bind();
+                    program.uniform(mvpId, false, mvp);
+                    program.uniform(colorId, color);
+                    
+                    vertexStream.draw(Geometry::Primitive::TRIANGLES, 0, sizeof(g_cube)/sizeof(g_cube[0]));
+                    
+                    program.uniform(mvpId, false, glm::translate(mvp, glm::vec3(2.25f, 0.0f, 0.0f)));
+                    program.uniform(colorId, glm::vec3(1.0f)-color);
+                    
                     vertexStream.draw(Geometry::Primitive::TRIANGLES, 0, sizeof(g_cube)/sizeof(g_cube[0]));
                 vertexStream.unbind();
             program.end();
@@ -181,8 +205,9 @@ class Dummy
         Framework::VertexStream vertexStream;
         Framework::Program program;
         GLint mvpId, colorId;
-        float angle;
-        Framework::Camera camera;
+        glm::vec3 angle;
+        float depth;
+        Framework::Camera camera[2];
 };
 
 int main()
