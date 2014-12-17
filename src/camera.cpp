@@ -46,10 +46,8 @@ void Camera::lookAt(glm::vec3 const& eye, glm::vec3 const& center, glm::vec3 con
     glm::vec3 f = glm::normalize(center - eye);
     glm::vec3 l = glm::normalize(glm::cross(up, f));
     glm::vec3 u = glm::cross(f, l);
-    
-    m[0][0] = l.x; m[1][0] = l.y; m[2][0] = l.z;
-    m[0][1] = u.x; m[1][1] = u.y; m[2][1] = u.z;
-    m[0][2] = f.x; m[1][2] = f.y; m[2][2] = f.z;
+
+    m[0] = l; m[1] = u; m[2] = f;
 
     this->orientation = glm::quat_cast(m);
 }
@@ -70,7 +68,7 @@ void Camera::perspective(float fovy, float near, float far)
  */
 glm::mat4 Camera::viewMatrix() const
 {
-    glm::mat4 result = glm::mat4_cast(orientation);
+    glm::mat4 result = glm::mat4_cast(glm::inverse(orientation));
 
     result[3][0] =  (result[0][0]*eye.x + result[1][0]*eye.y + result[2][0]*eye.z);
     result[3][1] = -(result[0][1]*eye.x + result[1][1]*eye.y + result[2][1]*eye.z);

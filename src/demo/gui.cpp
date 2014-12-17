@@ -101,7 +101,7 @@ class Dummy
             
             camera[1] = camera[0];
             
-            angle = glm::vec3(0.0f);
+            angle[0] = angle[1] = glm::vec3(0.0f);
             
             depth = 0.1f;
         }
@@ -125,7 +125,7 @@ class Dummy
                 ImGui::SameLine();
                 bool forward = ImGui::Button("Forward");
                 
-                ImGui::SliderFloat3("Angle", glm::value_ptr(angle), -180.0f, 180.0f);
+                bool angleUpdate = ImGui::SliderFloat3("Angle", glm::value_ptr(angle[1]), -180.0f, 180.0f);
                 ImGui::ColorEdit3("Cube color", glm::value_ptr(color));
                 int size = points.size();
                 ImGui::InputInt("Point count", &size, 1, 10);
@@ -154,9 +154,16 @@ class Dummy
             renderer.culling(false);
             renderer.depthTest(true);
             
-            camera[1].orientation  = glm::angleAxis(glm::radians(angle.x), glm::vec3(1.0f, 0.0, 0.0f)) * 
-                                     glm::angleAxis(glm::radians(angle.y), glm::vec3(0.0f, 1.0, 0.0f)) *
-                                     glm::angleAxis(glm::radians(angle.z), glm::vec3(0.0f, 0.0, 1.0f)) * camera[0].orientation;
+            if(angleUpdate)
+            {
+                glm::vec3 dA = angle[1] - angle[0];
+                glm::fquat rotXYZ = glm::angleAxis(glm::radians(dA.x), glm::vec3(1.0f, 0.0, 0.0f)) *
+                                    glm::angleAxis(glm::radians(dA.y), glm::vec3(0.0f, 1.0, 0.0f)) *
+                                    glm::angleAxis(glm::radians(dA.z), glm::vec3(0.0f, 0.0, 1.0f));
+                
+                angle[0] = angle[1];
+                camera[1].orientation  *=  rotXYZ;
+            }
             if(back)
             {
                 camera[1].eye -= depth * camera[1].forward();
@@ -205,7 +212,7 @@ class Dummy
         Framework::VertexStream vertexStream;
         Framework::Program program;
         GLint mvpId, colorId;
-        glm::vec3 angle;
+        glm::vec3 angle[2];
         float depth;
         Framework::Camera camera[2];
 };
