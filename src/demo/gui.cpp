@@ -167,10 +167,12 @@ class Dummy
             if(back)
             {
                 camera[1].eye -= depth * camera[1].forward();
+                angle[0] = angle[1] = glm::vec3(0.0f);
             }
             if(forward)
             {
                 camera[1].eye += depth * camera[1].forward();
+                angle[0] = angle[1] = glm::vec3(0.0f);
             }
             glm::mat4 mvp = camera[1].projectionMatrix(glm::ivec2(io.DisplaySize.x, io.DisplaySize.y)) * camera[1].viewMatrix();
 
