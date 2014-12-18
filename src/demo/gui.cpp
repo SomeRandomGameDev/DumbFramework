@@ -65,6 +65,7 @@ class Dummy
         void init()
         {
             bool ret;
+            
             // Create vertex buffer
             ret = vertexBuffer.create(sizeof(g_cube), (void*)g_cube, BufferObject::Access::Frequency::STATIC, BufferObject::Access::Type::DRAW);
             if(false == ret)
@@ -104,14 +105,12 @@ class Dummy
             angle[0] = angle[1] = glm::vec3(0.0f);
             
             depth = 0.1f;
+            
+            glfwSwapInterval(1);
         }
         
-        void render()
+        void gui()
         {
-            Framework::Renderer& renderer = Framework::Renderer::instance();
-
-            // First build the interface
-            ImGuiIO& io = ImGui::GetIO();
             ImGui::Begin("DumbFramework + ImGui Test", &open, ImVec2(640, 360), alpha, 0);
                 if(ImGui::Button("Push me!"))
                 {
@@ -121,11 +120,11 @@ class Dummy
                 ImGui::Text(pushed ? "How dare you!" : "Move along!");
                 ImGui::SliderFloat("Window alpha", &alpha, 0.0f,1.0f);
                 
-                bool back = ImGui::Button("Back");
+                back = ImGui::Button("Back");
                 ImGui::SameLine();
-                bool forward = ImGui::Button("Forward");
+                forward = ImGui::Button("Forward");
                 
-                bool angleUpdate = ImGui::SliderFloat3("Angle", glm::value_ptr(angle[1]), -180.0f, 180.0f);
+                angleUpdate = ImGui::SliderFloat3("Angle", glm::value_ptr(angle[1]), -180.0f, 180.0f);
                 ImGui::ColorEdit3("Cube color", glm::value_ptr(color));
                 int size = points.size();
                 ImGui::InputInt("Point count", &size, 1, 10);
@@ -144,9 +143,15 @@ class Dummy
                     float height = (mpos.y - bmin.y) / (float)(bmax.y - bmin.y);
                     points[bucket] = 1.0f - height;
                 }
-            
             ImGui::End();
-            glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+        }
+        
+        void render()
+        {
+            ImGuiIO& io = ImGui::GetIO();
+            Framework::Renderer& renderer = Framework::Renderer::instance();
+            
+            glViewport(0, 0,(int)io.DisplaySize.x, (int)io.DisplaySize.y);
             glClearColor(bgcolor.r, bgcolor.g, bgcolor.b, 1.0);
             
             // Draw a cube 
@@ -187,11 +192,9 @@ class Dummy
                     program.uniform(colorId, glm::vec3(1.0f)-color);
                     
                     vertexStream.draw(Geometry::Primitive::TRIANGLES, 0, sizeof(g_cube)/sizeof(g_cube[0]));
+                    
                 vertexStream.unbind();
             program.end();
-            
-            // Render interface.
-            ImGui::Render();
         }
         
         void destroy()
@@ -217,6 +220,7 @@ class Dummy
         glm::vec3 angle[2];
         float depth;
         Framework::Camera camera[2];
+        bool back, forward, angleUpdate;
 };
 
 int main()

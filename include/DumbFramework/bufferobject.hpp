@@ -142,6 +142,15 @@ struct Policy
     inline operator Value() { return value; }
     inline operator GLenum();
 };
+
+/**
+ * Convert access frequency and type to buffer data usage.
+ * @param [in] freq    Access frequency.
+ * @param [in] type    Access type.
+ * @return OpenGL buffer usage.
+ */
+GLenum usage(Frequency freq, Type type);
+
 } // Access
 
 /**
@@ -192,6 +201,11 @@ class Detail
          *         offset and size are out of bound.
          */
         bool set(off_t offset, size_t size, void* data);
+        /**
+         * Resize buffer.
+         * @param [in] size    Buffer size in bytes.
+         */
+        void resize(size_t size);
         /**
          * Bind buffer.
          */
@@ -248,7 +262,15 @@ class Detail
          * @return size in bytes.
          */
         size_t size() const;
-    
+        /**
+         * Get access frequency.
+         */
+        Access::Frequency accessFrequency() const;
+        /**
+         * Get access type.
+         */
+        Access::Type accessType() const;
+        
     private:
         struct Infos
         {
@@ -260,6 +282,9 @@ class Detail
         
         GLuint _id;   /**< Buffer id. **/
         size_t _size; /**< Buffer size in bytes. **/
+        Access::Frequency _freq; /**< Access frequency. **/
+        Access::Type      _type; /**< Access type. **/
+        GLenum _usage; /**< Buffer usage. **/
 };
 
 } // BufferObject

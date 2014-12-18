@@ -20,6 +20,14 @@ const char* ImGuiDelegateFragmentShader();
 
 /**
  * ImGui delegate.
+ * @param <T> Delegate class.
+ * 
+ * This is a delegate for the GLFW application wrapper.
+ * The delegate must implement the following methods:
+ *   - void init()
+ *   - void destroy()
+ *   - void gui()
+ *   - void render()
  */
 template <typename T>
 class ImGuiDelegate

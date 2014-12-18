@@ -22,6 +22,8 @@ template <Type t>
 Detail<t>::Detail()
     : _id(0)
     , _size(0)
+    , _freq(Access::Frequency::STATIC)
+    , _type(Access::Type::DRAW)
 {}
 /**Destructor. **/
 template <Type t>
@@ -44,23 +46,15 @@ bool Detail<t>::create(size_t size, void* data, Access::Frequency freq, Access::
         destroy();
     }
     
-    GLenum access;
-    static const GLenum conversionMatrix[3][3] =
-    {
-        // Access::Frequency::STREAM
-        {GL_STREAM_DRAW,  GL_STREAM_READ,  GL_STREAM_COPY},
-        // Access::Frequency::STATIC
-        {GL_STATIC_DRAW,  GL_STATIC_READ,  GL_STATIC_COPY},
-        // Access::Frequency::DYNAMIC
-        {GL_DYNAMIC_DRAW, GL_DYNAMIC_READ, GL_DYNAMIC_COPY}
-    };
-    access = conversionMatrix[freq.value][type.value];
+    _freq = freq;
+    _type = type;
+    _usage = Access::usage(_freq, _type);
     
     _size = size;
     
     glGenBuffers(1, &_id);
     glBindBuffer(_infos.target, _id);
-    glBufferData(_infos.target, _size, data, access);
+    glBufferData(_infos.target, _size, data, _usage);
 
     GLenum err = glGetError();
 
@@ -112,6 +106,16 @@ bool Detail<t>::set(off_t offset, size_t size, void* data)
     }
     glBufferSubData(_infos.target, offset, size, data);
     return true;
+}
+/**
+ * Resize buffer.
+ * @param [in] size    Buffer size in bytes.
+ */
+template <Type t>
+void Detail<t>::resize(size_t size)
+{
+    _size = size;
+    glBufferData(_infos.target, size, nullptr, _usage);
 }
 /**
  * Bind buffer.
@@ -311,6 +315,22 @@ template <Type t>
 size_t Detail<t>::size() const
 {
     return _size;
+}
+/**
+ * Get access frequency.
+ */
+template <Type t>
+Access::Frequency Detail<t>::accessFrequency() const
+{
+    return _freq;
+}
+/**
+ * Get access type.
+ */
+template <Type t>
+Access::Type Detail<t>::accessType() const
+{
+    return _type;
 }
 
 } // BufferObject

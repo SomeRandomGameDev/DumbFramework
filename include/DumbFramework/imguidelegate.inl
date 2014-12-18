@@ -198,8 +198,12 @@ void ImGuiDelegate<T>::render()
 
     // Start the frame
     ImGui::NewFrame();
+    _delegate->gui();
 
     _delegate->render();
+
+    // Render interface.
+    ImGui::Render();
 
     _mousePressed[0] = _mousePressed[1] = false;
     io.MouseWheel = 0;
@@ -294,6 +298,13 @@ void ImGuiDelegate<T>::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lis
     for(int n=0; n<cmd_lists_count; n++)
     {
         totalVertexCount += cmd_lists[n]->vtx_buffer.size();
+    }
+
+    size_t neededBufferSize = totalVertexCount * sizeof(ImDrawVert);
+    if(neededBufferSize > delegate->_vertexBuffer.size())
+    {
+        delegate->_vertexBuffer.bind();
+        delegate->_vertexBuffer.resize(neededBufferSize + 5000);
     }
 
     uint8_t *data = (uint8_t*)delegate->_vertexBuffer.map(BufferObject::Access::Policy::WRITE_ONLY, 0, totalVertexCount*sizeof(ImDrawVert));
