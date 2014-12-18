@@ -106,7 +106,11 @@ class Dummy
             
             depth = 0.1f;
             
-            glfwSwapInterval(1);
+            memset(msPerFrame, 0, sizeof(msPerFrame));
+            currentFrame = 0;
+            msPerFrameAccum = 0.0f;
+            
+            glfwSwapInterval(1); // vsync
         }
         
         void gui()
@@ -143,6 +147,13 @@ class Dummy
                     float height = (mpos.y - bmin.y) / (float)(bmax.y - bmin.y);
                     points[bucket] = 1.0f - height;
                 }
+                
+                msPerFrameAccum -= msPerFrame[currentFrame];
+                msPerFrame[currentFrame] = ImGui::GetIO().DeltaTime * 1000.0f;
+                msPerFrameAccum += msPerFrame[currentFrame];
+                currentFrame = (currentFrame + 1) % 120;
+                const float msPerFrameAvg = msPerFrameAccum / 120.0f;
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", msPerFrameAvg, 1000.0f / msPerFrameAvg);
             ImGui::End();
         }
         
@@ -221,6 +232,10 @@ class Dummy
         float depth;
         Framework::Camera camera[2];
         bool back, forward, angleUpdate;
+        
+        float msPerFrame[120];
+        int   currentFrame;
+        float msPerFrameAccum;
 };
 
 int main()
