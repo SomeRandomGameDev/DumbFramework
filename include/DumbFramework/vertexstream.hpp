@@ -27,17 +27,17 @@ class VertexStream
         ~VertexStream();
         /**
          * Create vertex stream.
-         * @param [in] vertexBuffer Vertex buffer that will be associated
-         *                          with the current vertex stream.
          * @return true if the vertex stream was succesfully created.
          */
-        bool create(VertexBuffer* vertexBuffer);
+        bool create();
         /**
          * Destroy vertex stream.
          */
         void destroy();
         /**
          * Add attribute to vertex stream.
+         * @param [in] vertexBuffer Vertex buffer that will be associated
+         *                          with the current attribute.
          * @param [in] index   Attribute index (starts at 0).
          * @param [in] type    Type of the attribute components.
          * @param [in] size    Number of components.
@@ -46,29 +46,29 @@ class VertexStream
          * @param [in] divisor (default=0). 
          * @return true if the attribute was successfully set.
          */
-        bool set(unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset, unsigned int divisor=0);
+        bool add(VertexBuffer* vertexBuffer, unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset, unsigned int divisor=0);
         /**
          * Add attribute to vertex stream.
+         * @param [in] vertexBuffer Vertex buffer that will be associated
+         *                          with the current attribute.
          * @param [in] attr   Attribute.
          * @return true if the attribute was successfully set.
          */
-        bool set(Geometry::Attribute const& attr);
+        bool add(VertexBuffer* vertexBuffer, Geometry::Attribute const& attr);
+        /**
+         * Add a set of attributes to vertex stream.
+         * @param [in] vertexBuffer Vertex buffer that will be associated
+         *                          with the current attributes.
+         * @param [in] attr         A list of vertex attributes.
+         * @return true if the attributes were successfully added.
+         */
+        bool add(VertexBuffer* vertexBuffer, std::initializer_list<Geometry::Attribute> const& attr);
         /**
          * Check vertex attributes and build internal structures for
          * future rendering.
          * @return true if everything went right.
          */
         bool compile();
-        /**
-         * Build vertex stream.
-         * This method is a combination of VertexStream::create,
-         * VertexStream::set and VertexStream::compile.
-         * @param [in] vertexBuffer Vertex buffer that will be associated
-         *                          with the current vertex stream.
-         * @param [in] attr         A list of vertex attributes.
-         * @return true if the vertex stream was successfully built.
-         */
-        bool build(VertexBuffer* vertexBuffer, std::initializer_list<Geometry::Attribute> const& attr);
         /**
          * Bind vertex stream.
          */
@@ -101,23 +101,23 @@ class VertexStream
          */
         bool isAttributeSet(unsigned int index) const;
         /**
-         * Get the vertex buffer.
+         * Get the vertex buffer for a given attribute.
+         * @param [in] index Attribute index.
          * @return Pointer to the vertex buffer.
          */
-        VertexBuffer* getVertexBuffer();
+        VertexBuffer* getVertexBuffer(unsigned int index);
         /**
-         * Get the vertex buffer.
+         * Get the vertex buffer for a given attribute.
+         * @param [in] index Attribute index.
          * @return Constant pointer to the vertex buffer.
          */
-        VertexBuffer const* getVertexBuffer() const;
+        VertexBuffer const* getVertexBuffer(unsigned int index) const;
 
     private:
         /** Vertex array identifier. **/
         GLuint _vao;
-        /** Associated vertex buffer. **/
-        VertexBuffer* _vertexBuffer;
         /** Vertex attributes array. **/
-        std::vector<Geometry::Attribute> _attributes;
+        std::vector<std::pair<VertexBuffer*,Geometry::Attribute>> _attributes;
 };
 
 } // Framework

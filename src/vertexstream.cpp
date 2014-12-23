@@ -8,7 +8,6 @@ namespace Framework {
  */
 VertexStream::VertexStream()
     : _vao()
-    , _vertexBuffer(NULL)
     , _attributes()
 {}
 /**
@@ -18,25 +17,15 @@ VertexStream::~VertexStream()
 {}
 /**
  * Create vertex stream.
- * @param [in] vertexBuffer Vertex buffer that will be associated
- *                          with the current vertex stream.
  * @return true if the vertex stream was succesfully created.
  */
-bool VertexStream::create(VertexBuffer* vertexBuffer)
+bool VertexStream::create()
 {
     if(_vao)
     {
         destroy();
     }
     
-    if(NULL == vertexBuffer)
-    {
-        Log_Error(Framework::Module::Render, "Invalid vertex buffer.");
-        return false;
-    }
-    
-    _vertexBuffer = vertexBuffer;
-
     glGenVertexArrays(1, &_vao);
     GLenum err = glGetError();
     if(GL_NONE != err)
@@ -57,36 +46,82 @@ void VertexStream::destroy()
         glDeleteVertexArrays(1, &_vao);
         _vao = 0;
     }
-
-    _vertexBuffer = NULL;
     _attributes.clear();
 }
 /**
  * Add attribute to vertex stream.
+ * @param [in] vertexBuffer Vertex buffer that will be associated
+ *                          with the current attribute.
  * @param [in] index   Attribute index (starts at 0).
  * @param [in] type    Type of the attribute components.
  * @param [in] size    Number of components.
  * @param [in] stride  Number of bytes between 2 consecutives attributes.
  * @param [in] offset  Offset of the first attribute of the first vertex.
- * @param [in] divisor (default=0).
+ * @param [in] divisor (default=0). 
  * @return true if the attribute was successfully set.
  */
-bool VertexStream::set(unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset, unsigned int divisor)
+bool VertexStream::add(VertexBuffer* vertexBuffer, unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset, unsigned int divisor)
 {
-    return set(Geometry::Attribute(index, type, size, stride, offset, divisor));
+    return add(vertexBuffer, Geometry::Attribute(index, type, size, stride, offset, divisor));
 }
 /**
  * Add attribute to vertex stream.
+ * @param [in] vertexBuffer Vertex buffer that will be associated
+ *                          with the current attribute.
  * @param [in] attr   Attribute.
  * @return true if the attribute was successfully set.
  */
-bool VertexStream::set(Geometry::Attribute const& attr)
+bool VertexStream::add(VertexBuffer* vertexBuffer, Geometry::Attribute const& attr)
 {
+    if(nullptr == vertexBuffer)
+    {
+        Log_Error(Framework::Module::Render, "Invalid vertex buffer.");
+        return false;
+    }
     if(attr.index >= _attributes.size())
     {
         _attributes.resize(attr.index+1);
     }
-    _attributes[attr.index] = attr;
+    _attributes[attr.index].first  = vertexBuffer;
+    _attributes[attr.index].second = attr;
+    return true;
+}
+/**
+ * Add a set of attributes to vertex stream.
+ * @param [in] vertexBuffer Vertex buffer that will be associated
+ *                          with the current attributes.
+ * @param [in] attr         A list of vertex attributes.
+ * @return true if the attributes were successfully added.
+ */
+bool VertexStream::add(VertexBuffer* vertexBuffer, std::initializer_list<Geometry::Attribute> const& attr)
+{
+    if(nullptr == vertexBuffer)
+    {
+        Log_Error(Framework::Module::Render, "Invalid vertex buffer.");
+        return false;
+    }
+    unsigned int biggestIndex = 0;
+
+    const Geometry::Attribute* ptr;
+    for(ptr=attr.begin(); ptr!=attr.end(); ptr++)
+    {
+        if(ptr->index > biggestIndex)
+        {
+            biggestIndex = ptr->index;
+        }
+    }
+
+    if(biggestIndex >= _attributes.size())
+    {
+        _attributes.resize(biggestIndex+1);
+    }
+
+    for(ptr=attr.begin(); ptr!=attr.end(); ptr++)
+    {
+        _attributes[ptr->index].first  = vertexBuffer;
+        _attributes[ptr->index].second = *ptr;
+    }
+
     return true;
 }
 /**
@@ -100,11 +135,6 @@ bool VertexStream::compile()
         Log_Error(Framework::Module::Render, "Invalid vertex array object id: %x\n", _vao);
         return false;
     }
-    if(NULL == _vertexBuffer)
-    {
-        Log_Error(Framework::Module::Render, "Invalid vertex buffer.");
-        return false;
-    }
     if(0 == _attributes.size())
     {
         Log_Error(Framework::Module::Render, "Empty attributes.");
@@ -114,7 +144,7 @@ bool VertexStream::compile()
     // Validate attributes.
     for(size_t i=0; i<_attributes.size(); i++)
     {
-        if(0 == _attributes[i].size)
+        if(0 == _attributes[i].second.size)
         {
             Log_Error(Framework::Module::Render, "Attributes %d is not set.", i);
             return false;
@@ -125,16 +155,13 @@ bool VertexStream::compile()
     for(size_t i=0; i<_attributes.size(); i++)
     {
         glEnableVertexAttribArray(i);
+        _attributes[i].first->bind();
+        glVertexAttribPointer(_attributes[i].second.index, _attributes[i].second.size, _attributes[i].second.type, _attributes[i].second.normalized ? GL_TRUE : GL_FALSE, _attributes[i].second.stride, (GLvoid*)_attributes[i].second.offset);
+        glVertexAttribDivisor(_attributes[i].second.index, _attributes[i].second.divisor);
     }
-    _vertexBuffer->bind();
-    for(size_t i=0; i<_attributes.size(); i++)
-    {
-        glVertexAttribPointer(_attributes[i].index, _attributes[i].size, _attributes[i].type, _attributes[i].normalized ? GL_TRUE : GL_FALSE, _attributes[i].stride, (GLvoid*)_attributes[i].offset);
-        glVertexAttribDivisor(_attributes[i].index, _attributes[i].divisor);
-    }
-    _vertexBuffer->unbind();
     unbind();
-    
+    VertexBuffer::unbindAll();
+
     GLenum err = glGetError();
     if(GL_NO_ERROR != err)
     {
@@ -143,36 +170,7 @@ bool VertexStream::compile()
     }
     return true;
 }
-/**
- * Build vertex stream.
- * This method is a combination of VertexStream::create,
- * VertexStream::set and VertexStream::compile.
- * @param [in] vertexBuffer Vertex buffer that will be associated
- *                          with the current vertex stream.
- * @param [in] attr         A list of vertex attributes.
- * @return true if the vertex stream was successfully built.
- */
-bool VertexStream::build(VertexBuffer* vertexBuffer, std::initializer_list<Geometry::Attribute> const& attr)
-{
-    bool ret;
-    
-    if(false == _attributes.empty())
-    {
-        Log_Warning(Framework::Module::Render, "Flusing attributes.");
-        _attributes.clear();
-    }
-    
-    ret = create(vertexBuffer);
-    if(false == ret)
-    {
-        Log_Error(Framework::Module::Render, "Vertex stream creation failed.");
-        return false;
-    }
-    
-    _attributes.insert(_attributes.end(), attr);
-    
-    return compile();
-}
+
 /**
  * Bind vertex stream.
  */
@@ -284,27 +282,37 @@ bool VertexStream::isAttributeSet(unsigned int index) const
     {
         return false;
     }
-    if(0 == _attributes[index].size)
+    if(0 == _attributes[index].second.size)
     {
         return false;
     }
     return true;
 }
 /**
- * Get the vertex buffer.
+ * Get the vertex buffer for a given attribute.
+ * @param [in] index Attribute index.
  * @return Pointer to the vertex buffer.
  */
-VertexBuffer* VertexStream::getVertexBuffer()
+VertexBuffer* VertexStream::getVertexBuffer(unsigned int index)
 {
-    return _vertexBuffer;
+    if(index >= _attributes.size())
+    {
+        return nullptr;
+    }
+    return _attributes[index].first;
 }
 /**
- * Get the vertex buffer.
+ * Get the vertex buffer for a given attribute.
+ * @param [in] index Attribute index.
  * @return Constant pointer to the vertex buffer.
  */
-VertexBuffer const* VertexStream::getVertexBuffer() const
+VertexBuffer const* VertexStream::getVertexBuffer(unsigned int index) const
 {
-    return _vertexBuffer;
+    if(index >= _attributes.size())
+    {
+        return nullptr;
+    }
+    return _attributes[index].first;
 }
 
 } // Framework

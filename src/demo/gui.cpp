@@ -26,13 +26,16 @@ static const float g_cube[] =
 
 static const char* g_vertexShader = R"EOT(
 #version 410 core
-uniform mat4 modelviewproj;
 
 layout (location=0) in vec3 vs_position;
+layout (location=1) in mat4 vs_modelviewproj;
+
+flat out int instanceID; 
 
 void main()
 {
-    gl_Position = modelviewproj * vec4(vs_position, 1.0);
+    gl_Position = vs_modelviewproj * vec4(vs_position, 1.0);
+    instanceID = gl_InstanceID; 
 }
 )EOT";
 
@@ -41,11 +44,13 @@ static const char* g_fragmentShader = R"EOT(
 
 uniform vec3 color;
 
+flat in int instanceID;
+
 out vec4 out_color;
 
 void main()
 {
-    out_color = vec4(color, 1.0);
+    out_color = vec4(color * (instanceID / 4096.0f), 1.0);
 }
 )EOT";
 
@@ -73,8 +78,32 @@ class Dummy
                 return;
             }
             
+            // Create vertex buffer for mvp
+            ret = mvpBuffer.create(16*16*16*sizeof(float[16]), nullptr, BufferObject::Access::Frequency::STREAM, BufferObject::Access::Type::DRAW);
+            if(false == ret)
+            {
+                return;
+            }
+            
             // Create vertex stream
-            ret = vertexStream.build(&vertexBuffer, { { 0, Geometry::ComponentType::FLOAT, 3, false, 3*sizeof(float), 0, 0 } } );
+            vertexStream.create();
+            ret = vertexStream.add(&vertexBuffer, { { 0, Geometry::ComponentType::FLOAT, 3, false, 3*sizeof(float), 0, 0 } } );
+            if(false == ret)
+            {
+                return;
+            }
+            ret = vertexStream.add(&mvpBuffer, 
+                                {
+                                       { 1, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  0,               1 },
+                                       { 2, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  4*sizeof(float), 1 },
+                                       { 3, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  8*sizeof(float), 1 },
+                                       { 4, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float), 12*sizeof(float), 1 }
+                                });
+            if(false == ret)
+            {
+                return;
+            }
+            ret = vertexStream.compile();
             if(false == ret)
             {
                 return;
@@ -93,11 +122,10 @@ class Dummy
                 return;
             }
             program.begin();
-                mvpId = program.getUniformLocation("modelviewproj");
                 colorId = program.getUniformLocation("color");
             program.end();
             
-            camera[0].lookAt(glm::vec3(0.0f, 0.0f, 4.0f), glm::vec3(0.0f));
+            camera[0].lookAt(glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f));
             camera[0].perspective(45.0f, 0.1f, 10.0f);
             
             camera[1] = camera[0];
@@ -105,6 +133,8 @@ class Dummy
             angle[0] = angle[1] = glm::vec3(0.0f);
             
             depth = 0.1f;
+            
+            color = glm::vec3(1.0f);
             
             memset(msPerFrame, 0, sizeof(msPerFrame));
             currentFrame = 0;
@@ -190,20 +220,27 @@ class Dummy
                 camera[1].eye += depth * camera[1].forward();
                 angle[0] = angle[1] = glm::vec3(0.0f);
             }
-            glm::mat4 mvp = camera[1].projectionMatrix(glm::ivec2(io.DisplaySize.x, io.DisplaySize.y)) * camera[1].viewMatrix();
-
+            
+            float *mvp = (float*)mvpBuffer.map(BufferObject::Access::Policy::WRITE_ONLY);
+            glm::mat4 projView = camera[1].projectionMatrix(glm::ivec2(io.DisplaySize.x, io.DisplaySize.y)) * camera[1].viewMatrix();
+            for(size_t k=0; k<16; k++)
+            {
+                for(size_t j=0; j<16; j++)
+                {
+                    for(size_t i=0; i<16; i++, mvp+=16)
+                    {
+                        glm::mat4 model = glm::scale( glm::translate(glm::mat4(), glm::vec3(k*0.2f, i*0.2f, j*0.2f)), glm::vec3(0.07f));
+                        memcpy(mvp, glm::value_ptr(projView * model), 16*sizeof(float));
+                    }
+                }
+            }
+            mvpBuffer.unmap();
+            
             program.begin();
                 vertexStream.bind();
-                    program.uniform(mvpId, false, mvp);
                     program.uniform(colorId, color);
-                    
-                    vertexStream.draw(Geometry::Primitive::TRIANGLES, 0, sizeof(g_cube)/sizeof(g_cube[0]));
-                    
-                    program.uniform(mvpId, false, glm::translate(mvp, glm::vec3(2.25f, 0.0f, 0.0f)));
-                    program.uniform(colorId, glm::vec3(1.0f)-color);
-                    
-                    vertexStream.draw(Geometry::Primitive::TRIANGLES, 0, sizeof(g_cube)/sizeof(g_cube[0]));
-                    
+                    //vertexStream.draw(Geometry::Primitive::TRIANGLES, 0, sizeof(g_cube)/sizeof(g_cube[0]));
+                    glDrawArraysInstanced(GL_TRIANGLES, 0, 12*3, 16*16*16);
                 vertexStream.unbind();
             program.end();
         }
@@ -212,9 +249,10 @@ class Dummy
         {
             program.destroy();
             vertexBuffer.destroy();
+            mvpBuffer.destroy();
             vertexStream.destroy();
             points.clear();
-            mvpId = colorId = 0;
+            colorId = 0;
         }
         
     public:
@@ -225,9 +263,10 @@ class Dummy
         bool pushed;
         bool open;
         Framework::VertexBuffer vertexBuffer;
+        Framework::VertexBuffer mvpBuffer;
         Framework::VertexStream vertexStream;
         Framework::Program program;
-        GLint mvpId, colorId;
+        GLint colorId;
         glm::vec3 angle[2];
         float depth;
         Framework::Camera camera[2];

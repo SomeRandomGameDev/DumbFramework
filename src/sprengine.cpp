@@ -108,7 +108,9 @@ namespace Sprite {
 
             // vertex buffer + stream init.
             _buffer.create(VBO_STRIDE*capacity);
-            _stream.build(&_buffer,
+            
+            _stream.create();
+            _stream.add(&_buffer,
             {
                 Geometry::Attribute(  VERTEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, 0,                  1),
                 Geometry::Attribute(  OFFSET_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  2, 1),
@@ -119,6 +121,7 @@ namespace Sprite {
                 Geometry::Attribute(   SCALE_INDEX, Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 11, 1),
                 Geometry::Attribute( TEXTURE_INDEX, Geometry::ComponentType::UNSIGNED_INT, 1, VBO_STRIDE, sizeof(float) * 12, 1)
             });
+            _stream.compile();
             
             _time = glfwGetTime();
 

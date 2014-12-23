@@ -139,9 +139,20 @@ void ImGuiDelegate<T>::init()
     }
     
     // Create vertex stream
-    ret = _vertexStream.build(&_vertexBuffer, { { 0, Geometry::ComponentType::FLOAT,          2, false, sizeof(ImDrawVert),  0, 0 },
-                                                { 1, Geometry::ComponentType::FLOAT,          2, false, sizeof(ImDrawVert),  8, 0 },
-                                                { 2, Geometry::ComponentType::UNSIGNED_BYTE,  4, true,  sizeof(ImDrawVert), 16, 0 } } );
+    ret = _vertexStream.create();
+    if(false == ret)
+    {
+        return;
+    }
+    ret = _vertexStream.add(&_vertexBuffer, { { 0, Geometry::ComponentType::FLOAT,          2, false, sizeof(ImDrawVert),  0, 0 },
+                                              { 1, Geometry::ComponentType::FLOAT,          2, false, sizeof(ImDrawVert),  8, 0 },
+                                              { 2, Geometry::ComponentType::UNSIGNED_BYTE,  4, true,  sizeof(ImDrawVert), 16, 0 } } );
+    if(false == ret)
+    {
+        return;
+    }
+    
+    ret = _vertexStream.compile();
     if(false == ret)
     {
         return;
