@@ -4,36 +4,65 @@
 #include <DumbFramework/renderer.hpp>
 #include <DumbFramework/imguidelegate.hpp>
 #include <DumbFramework/camera.hpp>
+#include <DumbFramework/texture.hpp>
+#include <DumbFramework/textureloader.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace Framework;
 
 static const float g_cube[] =
 {
-    -1.0f,-1.0f,-1.0f,-1.0f,-1.0f, 1.0f,-1.0f, 1.0f, 1.0f,
-     1.0f, 1.0f,-1.0f,-1.0f,-1.0f,-1.0f,-1.0f, 1.0f,-1.0f,
-     1.0f,-1.0f, 1.0f,-1.0f,-1.0f,-1.0f, 1.0f,-1.0f,-1.0f,
-     1.0f, 1.0f,-1.0f, 1.0f,-1.0f,-1.0f,-1.0f,-1.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f,-1.0f, 1.0f, 1.0f,-1.0f, 1.0f,-1.0f,
-     1.0f,-1.0f, 1.0f,-1.0f,-1.0f, 1.0f,-1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f,-1.0f,-1.0f, 1.0f, 1.0f,-1.0f, 1.0f,
-     1.0f, 1.0f, 1.0f, 1.0f,-1.0f,-1.0f, 1.0f, 1.0f,-1.0f,
-     1.0f,-1.0f,-1.0f, 1.0f, 1.0f, 1.0f, 1.0f,-1.0f, 1.0f,
-     1.0f, 1.0f, 1.0f, 1.0f, 1.0f,-1.0f,-1.0f, 1.0f,-1.0f,
-     1.0f, 1.0f, 1.0f,-1.0f, 1.0f,-1.0f,-1.0f, 1.0f, 1.0f,
-     1.0f, 1.0f, 1.0f,-1.0f, 1.0f, 1.0f, 1.0f,-1.0f, 1.0f
+    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f,-1.0f, 1.0f, 0.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+     1.0f, 1.0f,-1.0f, 1.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f,-1.0f, 0.0f, 1.0f,
+     1.0f,-1.0f, 1.0f, 1.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+     1.0f,-1.0f,-1.0f, 1.0f, 0.0f,
+     1.0f, 1.0f,-1.0f, 1.0f, 1.0f,
+     1.0f,-1.0f,-1.0f, 1.0f, 0.0f,
+    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f,-1.0f, 1.0f, 0.0f,
+     1.0f,-1.0f, 1.0f, 1.0f, 1.0f,
+    -1.0f,-1.0f, 1.0f, 0.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+    -1.0f,-1.0f, 1.0f, 0.0f, 0.0f,
+     1.0f,-1.0f, 1.0f, 1.0f, 0.0f,
+     1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+     1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+     1.0f, 1.0f,-1.0f, 1.0f, 0.0f,
+     1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+     1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+     1.0f,-1.0f, 1.0f, 0.0f, 1.0f,
+     1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+     1.0f, 1.0f,-1.0f, 1.0f, 0.0f,
+    -1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
+     1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+     1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+     1.0f,-1.0f, 1.0f, 1.0f, 0.0f
 };
 
 static const char* g_vertexShader = R"EOT(
 #version 410 core
 
 layout (location=0) in vec3 vs_position;
-layout (location=1) in mat4 vs_modelviewproj;
+layout (location=1) in vec2 vs_uv;
+layout (location=2) in mat4 vs_modelviewproj;
 
 flat out int instanceID; 
+out vec2 texCoord;
 
 void main()
 {
+    texCoord = vs_uv;
     gl_Position = vs_modelviewproj * vec4(vs_position, 1.0);
     instanceID = gl_InstanceID; 
 }
@@ -43,14 +72,16 @@ static const char* g_fragmentShader = R"EOT(
 #version 410 core
 
 uniform vec3 color;
+uniform sampler2DArray texSampler;
 
 flat in int instanceID;
+in vec2 texCoord;
 
 out vec4 out_color;
 
 void main()
 {
-    out_color = vec4(color * (instanceID / 4096.0f), 1.0);
+    out_color = vec4(color * (instanceID / 4096.0f), 1.0) * texture2DArray(texSampler, vec3(texCoord, instanceID%6));
 }
 )EOT";
 
@@ -87,17 +118,21 @@ class Dummy
             
             // Create vertex stream
             vertexStream.create();
-            ret = vertexStream.add(&vertexBuffer, { { 0, Geometry::ComponentType::FLOAT, 3, false, 3*sizeof(float), 0, 0 } } );
+            ret = vertexStream.add(&vertexBuffer, 
+                                   {
+                                        { 0, Geometry::ComponentType::FLOAT, 3, false, 5*sizeof(float), 0,               0 },
+                                        { 1, Geometry::ComponentType::FLOAT, 2, false, 5*sizeof(float), 3*sizeof(float), 0 }
+                                    });
             if(false == ret)
             {
                 return;
             }
             ret = vertexStream.add(&mvpBuffer, 
                                 {
-                                       { 1, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  0,               1 },
-                                       { 2, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  4*sizeof(float), 1 },
-                                       { 3, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  8*sizeof(float), 1 },
-                                       { 4, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float), 12*sizeof(float), 1 }
+                                       { 2, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  0,               1 },
+                                       { 3, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  4*sizeof(float), 1 },
+                                       { 4, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  8*sizeof(float), 1 },
+                                       { 5, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float), 12*sizeof(float), 1 }
                                 });
             if(false == ret)
             {
@@ -123,6 +158,8 @@ class Dummy
             }
             program.begin();
                 colorId = program.getUniformLocation("color");
+                GLint texId = program.getUniformLocation("texSampler");
+                program.uniform(texId, 0);
             program.end();
             
             camera[0].lookAt(glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f));
@@ -139,6 +176,13 @@ class Dummy
             memset(msPerFrame, 0, sizeof(msPerFrame));
             currentFrame = 0;
             msPerFrameAccum = 0.0f;
+
+            Framework::Texture::load(texture, {"tex00.png","tex01.png","tex02.png","tex03.png","tex04.png","tex05.png"});
+            texture.bind();
+                texture.setMagFilter(Framework::Texture::MagFilter::LINEAR_TEXEL);
+                texture.setMinFilter(Framework::Texture::MinFilter::LINEAR_TEXEL);
+                texture.setWrap(Framework::Texture::Wrap::CLAMP_TO_EDGE, Framework::Texture::Wrap::CLAMP_TO_EDGE);
+            texture.unbind();
             
             glfwSwapInterval(1); // vsync
         }
@@ -236,6 +280,8 @@ class Dummy
             }
             mvpBuffer.unmap();
             
+            renderer.setActiveTextureUnit(0);
+            texture.bind();
             program.begin();
                 vertexStream.bind();
                     program.uniform(colorId, color);
@@ -243,6 +289,7 @@ class Dummy
                     glDrawArraysInstanced(GL_TRIANGLES, 0, 12*3, 16*16*16);
                 vertexStream.unbind();
             program.end();
+            texture.unbind();
         }
         
         void destroy()
@@ -271,6 +318,8 @@ class Dummy
         float depth;
         Framework::Camera camera[2];
         bool back, forward, angleUpdate;
+        
+        Framework::Texture2D texture;
         
         float msPerFrame[120];
         int   currentFrame;

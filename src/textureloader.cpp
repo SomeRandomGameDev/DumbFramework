@@ -1,0 +1,197 @@
+#include <DumbFramework/textureloader.hpp>
+#include <DumbFramework/log.hpp>
+#include <DumbFramework/module.hpp>
+
+namespace Framework {
+namespace Texture   {
+
+// [todo] Should be moved to pixel format constructor.
+PixelFormat compToFormat(int comp)
+{
+    PixelFormat format;
+    switch(comp)
+    {
+        case 1:
+            return PixelFormat::LUMINANCE_8;
+        case 3:
+            return PixelFormat::RGB_8;
+        case 4:
+            return PixelFormat::RGBA_8;
+        default:
+            return PixelFormat::UNKNOWN;
+    }
+}
+/**
+ * Create texture from file.
+ * @param [out] out     Output texture.
+ * @param [in]  filname Image filename.
+ */
+bool load(Texture2D& out, std::string const& filename)
+{
+    unsigned char *data;
+    glm::ivec2 size;
+    int comp;
+    
+    data = stbi_load(filename.c_str(), &size.x, &size.y, &comp, 0);
+    if(nullptr == data)
+    {
+        Log_Error(Module::Base, "Failed to load image: %s", filename.c_str());
+        return false;
+    }
+
+    bool ret = true;
+
+    PixelFormat format;
+    switch(comp)
+    {
+        case 1:
+            format = PixelFormat::LUMINANCE_8;
+            break;
+        case 3:
+            format = PixelFormat::RGB_8;
+            break;
+        case 4:
+            format = PixelFormat::RGBA_8;
+            break;
+        default:
+            ret = false;
+            Log_Error(Module::Base, "Unsupported pixel format %s", filename.c_str());
+            break;
+    }
+    
+    if(ret)
+    {
+        ret = out.create(size, format);
+        if(false == ret)
+        {
+            Log_Error(Module::Base, "Failed to create texture.");
+        }
+        else
+        {
+            ret = out.setData(data);
+            if(false == ret)
+            {
+                Log_Error(Module::Base, "Failed to set texture data.");
+            }
+        }
+    }
+    
+    stbi_image_free(data);
+    return ret;
+}
+/**
+ * Load a single texture layer from file.
+ * @param [out] out      Output texture.
+ * @param [in]  filename Image filename.
+ * @param [in]  layer    Layer in which the image will be loaded (default = 0).
+ * @return @b true if the layer was successfully loaded, or @b false if
+ *            the image failed to load or if the image description (size, pixelformat)
+ *            foes not match the texture.
+ */
+bool loadLayer(Texture2D& out, std::string const& filename, int layer)
+{
+    if(layer >= out.layerCount())
+    {
+        Log_Error(Module::Base, "Invalid layer %d (max: %d)", layer, out.layerCount());
+        return false;
+    }
+    
+    unsigned char *data;
+    glm::ivec2 size;
+    int comp;
+    bool ret = true;
+    
+    data = stbi_load(filename.c_str(), &size.x, &size.y, &comp, 0);
+    if(nullptr == data)
+    {
+        Log_Error(Module::Base, "Failed to load image: %s", filename.c_str());
+        return false;
+    }
+    
+    if(size != out.size())
+    {
+        Log_Error(Module::Base, "Incorrect image size %s: [%d,%d], texture: [%d;%d]", 
+                                filename.c_str(), size.x, size.y, out.size().x, out.size().y);
+        ret = false;
+    }
+
+    PixelFormat format = compToFormat(comp);
+    if(format.value != out.pixelFormat().value)
+    {
+        Log_Error(Module::Base, "Incorrect pixel format %s: %x, texture: %x", 
+                                filename.c_str(), format, out.pixelFormat());
+        ret = false;
+    }
+
+    if(ret)
+    {
+        ret = out.setData(data, layer);
+        if(false == ret)
+        {
+            Log_Error(Module::Base, "Failed to set texture data.");
+        }
+    }
+
+    stbi_image_free(data);
+    return ret;
+}
+/**
+ * Create texture array from files.
+ * @param [out] out          Output texture.
+ * @param [in]  filenameList Image filenames.
+ * @return @b true if the images were successfully loaded, or @b false if
+ *            one of the image failed to load or if the image description
+ *            does not match.
+ */
+bool load(Texture2D& out, std::initializer_list<const char*> filenameList)
+{
+    int layerCount = filenameList.size();
+    int comp;
+    glm::ivec2 size;
+    unsigned char* data;
+
+    bool ret;
+
+    const char* const* filename = filenameList.begin();
+    
+    data = stbi_load(filename[0], &size.x, &size.y, &comp, 0);
+    if(nullptr == data)
+    {
+        Log_Error(Module::Base, "Failed to load image: %s", filename[0]);
+        return false;
+    }
+    
+    PixelFormat format = compToFormat(comp);
+    if(PixelFormat::UNKNOWN == format)
+    {
+        Log_Error(Module::Base, "Incorrect pixel format %s: %x", filename[0], format);
+        ret = false;
+    }
+    ret = out.create(size, format, layerCount);
+    if(ret)
+    {
+        ret = out.setData(data, 0);
+        if(false == ret)
+        {
+            Log_Error(Module::Base, "Failed to set texture data for layer 0.");
+        }
+    }
+    else
+    {
+        Log_Error(Module::Base, "Failed to create texture.");
+    }
+
+    for(int i=1; ret && (i<layerCount); i++)
+    {
+        ret = loadLayer(out, filename[i], i);
+        if(false == ret)
+        {
+            Log_Error(Module::Base, "Failed to load layer %d.", i);
+        }
+    }
+    return ret;
+}
+
+
+} // Texture
+} // Framework

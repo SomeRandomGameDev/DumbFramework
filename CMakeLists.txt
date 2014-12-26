@@ -87,6 +87,7 @@ set(DUMB_FRAMEWORK_SOURCES
     src/sprengine.cpp
     src/sprite.cpp
     src/texture2d.cpp
+    src/textureloader.cpp
     src/windowhint.cpp
     src/transform.cpp
     src/joystick.cpp

@@ -117,6 +117,7 @@ bool Texture2D::create(const glm::ivec2& size, Texture::PixelFormat format, int 
     {
         _target = GL_TEXTURE_2D_ARRAY;
         glBindTexture(_target, _id);
+        glTexImage3D(_target, 0, _infos.internalFormat, _size.x, _size.y, _layers, 0, _infos.format, _infos.type, nullptr);
         // OpenGL 4.2 only: glTexStorage3D(_target, 1, _infos.internalFormat, _size.x, _size.y, _layers);
     }
     else
@@ -169,7 +170,7 @@ bool Texture2D::setData(void* data, int layer)
         }
         else if(layer < _layers)
         {
-            glTexSubImage3D(_target, 0, 0, 0, layer, _size.x, _size.y, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            glTexSubImage3D(_target, 0, 0, 0, layer, _size.x, _size.y, 1, _infos.format, _infos.type, data);
         }
         else
         {
