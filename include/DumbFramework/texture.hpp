@@ -77,6 +77,12 @@ struct PixelFormat
      */
     inline size_t componentCount() const;
 };
+inline bool operator== (PixelFormat const& p0, PixelFormat const& p1);
+inline bool operator== (PixelFormat::Value const& v, PixelFormat const& p0);
+inline bool operator== (PixelFormat const& p0, PixelFormat::Value const& v);
+inline bool operator!= (PixelFormat const& p0, PixelFormat const& p1);
+inline bool operator!= (PixelFormat::Value const& v, PixelFormat const& p0);
+inline bool operator!= (PixelFormat const& p0, PixelFormat::Value const& v);
 /** 
  * @brief Texel minification filter. 
  * @ingroup DUMB_FW_TEXTURE
@@ -144,6 +150,12 @@ struct MinFilter
     /** Convert to OpenGL compliant value. **/
     inline operator GLint();
 };
+inline bool operator== (MinFilter const& f0, MinFilter const& f1);
+inline bool operator== (MinFilter::Value const& v, MinFilter const& f0);
+inline bool operator== (MinFilter const& f0, MinFilter::Value const& v);
+inline bool operator!= (MinFilter const& f0, MinFilter const& f1);
+inline bool operator!= (MinFilter::Value const& v, MinFilter const& f0);
+inline bool operator!= (MinFilter const& f0, MinFilter::Value const& v);
 /** 
  * @brief Texel magnification filter. 
  * @ingroup DUMB_FW_TEXTURE
@@ -181,6 +193,12 @@ struct MagFilter
     /** Convert to OpenGL compliant value. **/
     inline operator GLint();
 };
+inline bool operator== (MagFilter const& f0, MagFilter const& f1);
+inline bool operator== (MagFilter::Value const& v, MagFilter const& f0);
+inline bool operator== (MagFilter const& f0, MagFilter::Value const& v);
+inline bool operator!= (MagFilter const& f0, MagFilter const& f1);
+inline bool operator!= (MagFilter::Value const& v, MagFilter const& f0);
+inline bool operator!= (MagFilter const& f0, MagFilter::Value const& v);
 /** 
  * @brief Texture wrap. 
  * @ingroup DUMB_FW_TEXTURE
@@ -240,7 +258,12 @@ struct Wrap
     /** Convert to OpenGL compliant value. **/
     inline operator GLint();
 };
-
+inline bool operator== (Wrap const& w0, Wrap const& w1);
+inline bool operator== (Wrap::Value const& v, Wrap const& w0);
+inline bool operator== (Wrap const& w0, Wrap::Value const& v);
+inline bool operator!= (Wrap const& w0, Wrap const& w1);
+inline bool operator!= (Wrap::Value const& v, Wrap const& w0);
+inline bool operator!= (Wrap const& w0, Wrap::Value const& v);
 } // Texture
 } // Framework
 

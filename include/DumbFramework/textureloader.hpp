@@ -13,8 +13,13 @@ namespace Texture   {
  * Create texture from file.
  * @param [out] out     Output texture.
  * @param [in]  filname Image filename.
+ * @param [in]  format  (Optional) Expected pixel format. If set to
+ *                      UNKNOWN, the image pixel format will be used.
+ *                      Otherwise the image pixel format must match the
+ *                      one provided.
+ * @param [in]  size    (Optional) Expected image size.
  */
-bool load(Texture2D& out, std::string const& filename);
+bool load(Texture2D& out, std::string const& filename, PixelFormat const& format = PixelFormat::UNKNOWN, glm::ivec2 const& size = glm::ivec2(-1));
 /**
  * Load a single texture layer from file.
  * @param [out] out      Output texture.

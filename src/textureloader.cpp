@@ -25,14 +25,19 @@ PixelFormat compToFormat(int comp)
  * Create texture from file.
  * @param [out] out     Output texture.
  * @param [in]  filname Image filename.
+ * @param [in]  format  (Optional) Expected pixel format. If set to
+ *                      UNKNOWN, the image pixel format will be used.
+ *                      Otherwise the image pixel format must match the
+ *                      one provided.
+ * @param [in]  size    (Optional) Expected image size.
  */
-bool load(Texture2D& out, std::string const& filename)
+bool load(Texture2D& out, std::string const& filename, PixelFormat const& format, glm::ivec2 const& size)
 {
     unsigned char *data;
-    glm::ivec2 size;
+    glm::ivec2 imageSize;
     int comp;
     
-    data = stbi_load(filename.c_str(), &size.x, &size.y, &comp, 0);
+    data = stbi_load(filename.c_str(), &imageSize.x, &imageSize.y, &comp, 0);
     if(nullptr == data)
     {
         Log_Error(Module::Base, "Failed to load image: %s", filename.c_str());
@@ -41,27 +46,43 @@ bool load(Texture2D& out, std::string const& filename)
 
     bool ret = true;
 
-    PixelFormat format;
+    PixelFormat imageFormat;
     switch(comp)
     {
         case 1:
-            format = PixelFormat::LUMINANCE_8;
+            imageFormat = PixelFormat::LUMINANCE_8;
             break;
         case 3:
-            format = PixelFormat::RGB_8;
+            imageFormat = PixelFormat::RGB_8;
             break;
         case 4:
-            format = PixelFormat::RGBA_8;
+            imageFormat = PixelFormat::RGBA_8;
             break;
         default:
             ret = false;
-            Log_Error(Module::Base, "Unsupported pixel format %s", filename.c_str());
+            Log_Error(Module::Base, "Unsupported pixel format (%s)", filename.c_str());
             break;
     }
     
+    if((PixelFormat::UNKNOWN != format) &&
+       (imageFormat != format))
+    {
+        Log_Error(Module::Base, "Invalid pixel format (%s)", filename.c_str());
+        ret = false;
+    }
+    if((-1 != size.x) && (imageSize.x != size.x))
+    {
+        Log_Error(Module::Base, "Invalid width. Expected %d but is %d (%s)", size.x, imageSize.x, filename.c_str());
+        ret = false;
+    }
+    if((-1 != size.y) && (imageSize.y != size.y))
+    {
+        Log_Error(Module::Base, "Invalid height. Expected %d but is %d (%s)", size.y, imageSize.y, filename.c_str());
+        ret = false;
+    }
     if(ret)
     {
-        ret = out.create(size, format);
+        ret = out.create(imageSize, imageFormat);
         if(false == ret)
         {
             Log_Error(Module::Base, "Failed to create texture.");
@@ -116,7 +137,7 @@ bool loadLayer(Texture2D& out, std::string const& filename, int layer)
     }
 
     PixelFormat format = compToFormat(comp);
-    if(format.value != out.pixelFormat().value)
+    if(format != out.pixelFormat())
     {
         Log_Error(Module::Base, "Incorrect pixel format %s: %x, texture: %x", 
                                 filename.c_str(), format, out.pixelFormat());

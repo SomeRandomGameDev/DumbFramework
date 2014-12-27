@@ -71,5 +71,57 @@ namespace Texture   {
         return glWrapMode[value];
     }
 
+    bool operator== (PixelFormat const& p0, PixelFormat const& p1)
+    {   return (p0.value == p1.value);   }
+    bool operator== (PixelFormat::Value const& v, PixelFormat const& p0)
+    {   return (p0.value == v);   }
+    bool operator== (PixelFormat const& p0, PixelFormat::Value const& v)
+    {   return (p0.value == v);   }
+    bool operator!= (PixelFormat::Value const& v, PixelFormat const& p0)
+    {   return (p0.value != v);   }
+    bool operator!= (PixelFormat const& p0, PixelFormat::Value const& v)
+    {   return (p0.value != v);   }
+    bool operator!= (PixelFormat const& p0, PixelFormat const& p1)
+    {   return (p0.value != p1.value);   }
+    
+    bool operator== (MinFilter const& f0, MinFilter const& f1)
+    {   return (f0.value == f1.value);   }
+    bool operator== (MinFilter::Value const& v, MinFilter const& f0)
+    {   return (f0.value == v);   }
+    bool operator== (MinFilter const& f0, MinFilter::Value const& v)
+    {   return (f0.value == v);   }
+    bool operator!= (MinFilter const& f0, MinFilter const& f1)
+    {   return (f0.value != f1.value); }
+    bool operator!= (MinFilter::Value const& v, MinFilter const& f0)
+    {   return (f0.value != v);   }
+    bool operator!= (MinFilter const& f0, MinFilter::Value const& v)
+    {   return (f0.value != v);   }
+    
+    bool operator== (MagFilter const& f0, MagFilter const& f1)
+    {   return (f0.value == f1.value);   }
+    bool operator== (MagFilter::Value const& v, MagFilter const& f0)
+    {   return (f0.value == v);   }
+    bool operator== (MagFilter const& f0, MagFilter::Value const& v)
+    {   return (f0.value == v);   }
+    bool operator!= (MagFilter const& f0, MagFilter const& f1)
+    {   return (f0.value != f1.value);   }
+    bool operator!= (MagFilter::Value const& v, MagFilter const& f0)
+    {   return (f0.value != v);   }
+    bool operator!= (MagFilter const& f0, MagFilter::Value const& v)
+    {   return (f0.value != v);   }
+    
+    bool operator== (Wrap const& w0, Wrap const& w1)
+    {   return (w0.value == w1.value);   }
+    bool operator== (Wrap::Value const& v, Wrap const& w0)
+    {   return (w0.value == v);   }
+    bool operator== (Wrap const& w0, Wrap::Value const& v)
+    {   return (w0.value == v);   }
+    bool operator!= (Wrap const& w0, Wrap const& w1)
+    {   return (w0.value != w1.value);   }
+    bool operator!= (Wrap::Value const& v, Wrap const& w0)
+    {   return (w0.value != v);   }
+    bool operator!= (Wrap const& w0, Wrap::Value const& v)
+    {   return (w0.value != v);   }
+
 } // Texture
 } // Framework
