@@ -3,6 +3,7 @@
 
 #include <initializer_list>
 #include <string>
+#include <vector>
 #include <external/stb_image.h>
 #include <DumbFramework/texture2d.hpp>
 
@@ -34,11 +35,30 @@ bool loadLayer(Texture2D& out, std::string const& filename, int layer=0);
  * Create texture array from files.
  * @param [out] out          Output texture.
  * @param [in]  filenameList Image filenames.
+ * @param [in]  format  (Optional) Expected pixel format. If set to
+ *                      UNKNOWN, the image pixel format will be used.
+ *                      Otherwise the image pixel format must match the
+ *                      one provided.
+ * @param [in]  size    (Optional) Expected image size.
  * @return @b true if the images were successfully loaded, or @b false if
  *            one of the image failed to load or if the image description
  *            does not match.
  */
-bool load(Texture2D& out, std::initializer_list<const char*> filenameList);
+bool load(Texture2D& out, std::initializer_list<std::string> filenameList, PixelFormat const& format = PixelFormat::UNKNOWN, glm::ivec2 const& size = glm::ivec2(-1));
+/**
+ * Create texture array from files.
+ * @param [out] out          Output texture.
+ * @param [in]  filenameList Image filenames.
+ * @param [in]  format  (Optional) Expected pixel format. If set to
+ *                      UNKNOWN, the image pixel format will be used.
+ *                      Otherwise the image pixel format must match the
+ *                      one provided.
+ * @param [in]  size    (Optional) Expected image size.
+ * @return @b true if the images were successfully loaded, or @b false if
+ *            one of the image failed to load or if the image description
+ *            does not match.
+ */
+bool load(Texture2D& out, std::vector<std::string> const& filenameList, PixelFormat const& format = PixelFormat::UNKNOWN, glm::ivec2 const& size = glm::ivec2(-1));
 
 } // Texture
 } // Framework

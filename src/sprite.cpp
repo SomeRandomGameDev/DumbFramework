@@ -1,11 +1,11 @@
 #include <DumbFramework/config.hpp>
-#include <SOIL/SOIL.h>
 #include <tinyxml2.h>
 #include <iostream>
 #include <string.h>
 #include <string>
 #include <sstream>
 
+#include <DumbFramework/textureloader.hpp>
 #include <DumbFramework/sprite.hpp>
 
 namespace Sprite {
@@ -542,60 +542,14 @@ bool Atlas::loadTextures(const char *filename)
     std::stringstream ss(filename);
     std::vector<std::string> items;
 
-    int width = -1;
-    int height = -1;
-    int currentWidth;
-    int currentHeight;
-    int channels; // Should be 4. Else, rejects.
-    
     std::string item;
     while (std::getline(ss, item, ';'))
     {
         items.push_back(item);
     }
 
-    bool ret = true;
-    unsigned int count = items.size();            
-    for(size_t i=0; ret && (i<items.size()); i++)
-    {
-        unsigned char* data;
-        
-        Log_Info(Framework::Module::Render, "Loading %s", items[i].c_str());
-        
-        data = SOIL_load_image(items[i].c_str(), &currentWidth, &currentHeight, &channels, SOIL_LOAD_AUTO);
-        if(NULL == data)
-        {
-            Log_Error(Framework::Module::Render, "Unable to load image %s!", items[i].c_str());
-            ret = false;
-            break;
-        }
-        
-        if(channels != 4)
-        {
-            Log_Error(Framework::Module::Render, "Incorrect channel size = %d", channels);
-            ret = false;
-        }
-    
-        if(width == -1)
-        {
-            width  = currentWidth;
-            height = currentHeight;
-            ret = _texture.create(glm::ivec2(width, height), Framework::Texture::PixelFormat::RGBA_8, count);
-        }
-        else if((width != currentWidth) || (height != currentHeight))
-        {
-            Log_Error(Framework::Module::Render, "Textures are not of the same size !");
-            ret = false;
-        }
-
-        if(ret)
-        {
-            _texture.setData(data, i);
-        }
-
-        SOIL_free_image_data(data);
-    }
-
+    bool ret;
+    ret = Framework::Texture::load(_texture, items, Framework::Texture::PixelFormat::RGBA_8);
     if(ret)
     {
         _texture.bind();
@@ -604,10 +558,9 @@ bool Atlas::loadTextures(const char *filename)
             _texture.setWrap(Framework::Texture::Wrap::CLAMP_TO_EDGE, Framework::Texture::Wrap::CLAMP_TO_EDGE);
         _texture.unbind();
         
-        _size.x = width;
-        _size.y = height;
+        _size = _texture.size();
 
-        Log_Info(Framework::Module::Render, "Atlas Size : %d x %d", width, height);
+        Log_Info(Framework::Module::Render, "Atlas Size : %d x %d", _size.x, _size.y);
     }
     return ret;
 }

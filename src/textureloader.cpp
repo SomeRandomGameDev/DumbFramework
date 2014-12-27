@@ -160,35 +160,65 @@ bool loadLayer(Texture2D& out, std::string const& filename, int layer)
  * Create texture array from files.
  * @param [out] out          Output texture.
  * @param [in]  filenameList Image filenames.
+ * @param [in]  format  (Optional) Expected pixel format. If set to
+ *                      UNKNOWN, the image pixel format will be used.
+ *                      Otherwise the image pixel format must match the
+ *                      one provided.
+ * @param [in]  size    (Optional) Expected image size.
  * @return @b true if the images were successfully loaded, or @b false if
  *            one of the image failed to load or if the image description
  *            does not match.
  */
-bool load(Texture2D& out, std::initializer_list<const char*> filenameList)
+bool load(Texture2D& out, std::initializer_list<std::string> filenameList, PixelFormat const& format, glm::ivec2 const& size)
 {
-    int layerCount = filenameList.size();
+    return load(out, std::vector<std::string>(filenameList), format, size);
+}
+/**
+ * Create texture array from files.
+ * @param [out] out          Output texture.
+ * @param [in]  filenameList Image filenames.
+ * @param [in]  format  (Optional) Expected pixel format. If set to
+ *                      UNKNOWN, the image pixel format will be used.
+ *                      Otherwise the image pixel format must match the
+ *                      one provided.
+ * @param [in]  size    (Optional) Expected image size.
+ * @return @b true if the images were successfully loaded, or @b false if
+ *            one of the image failed to load or if the image description
+ *            does not match.
+ */
+bool load(Texture2D& out, std::vector<std::string> const& filenameList, PixelFormat const& format, glm::ivec2 const& size)
+{
     int comp;
-    glm::ivec2 size;
-    unsigned char* data;
+    unsigned char *data;
+    glm::ivec2 imageSize;
 
     bool ret;
 
-    const char* const* filename = filenameList.begin();
-    
-    data = stbi_load(filename[0], &size.x, &size.y, &comp, 0);
+    data = stbi_load(filenameList[0].c_str(), &imageSize.x, &imageSize.y, &comp, 0);
     if(nullptr == data)
     {
-        Log_Error(Module::Base, "Failed to load image: %s", filename[0]);
+        Log_Error(Module::Base, "Failed to load image: %s", filenameList[0].c_str());
         return false;
     }
     
-    PixelFormat format = compToFormat(comp);
-    if(PixelFormat::UNKNOWN == format)
+    PixelFormat imageFormat = compToFormat(comp);
+    if((PixelFormat::UNKNOWN != format) &&
+       (imageFormat != format))
     {
-        Log_Error(Module::Base, "Incorrect pixel format %s: %x", filename[0], format);
+        Log_Error(Module::Base, "Invalid pixel format (%s)", filenameList[0].c_str());
         ret = false;
     }
-    ret = out.create(size, format, layerCount);
+    if((-1 != size.x) && (imageSize.x != size.x))
+    {
+        Log_Error(Module::Base, "Invalid width. Expected %d but is %d (%s)", size.x, imageSize.x, filenameList[0].c_str());
+        ret = false;
+    }
+    if((-1 != size.y) && (imageSize.y != size.y))
+    {
+        Log_Error(Module::Base, "Invalid height. Expected %d but is %d (%s)", size.y, imageSize.y, filenameList[0].c_str());
+        ret = false;
+    }
+    ret = out.create(imageSize, imageFormat, filenameList.size());
     if(ret)
     {
         ret = out.setData(data, 0);
@@ -202,9 +232,9 @@ bool load(Texture2D& out, std::initializer_list<const char*> filenameList)
         Log_Error(Module::Base, "Failed to create texture.");
     }
 
-    for(int i=1; ret && (i<layerCount); i++)
+    for(size_t i=1; ret && (i<filenameList.size()); i++)
     {
-        ret = loadLayer(out, filename[i], i);
+        ret = loadLayer(out, filenameList[i], i);
         if(false == ret)
         {
             Log_Error(Module::Base, "Failed to load layer %d.", i);
