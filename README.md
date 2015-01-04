@@ -92,4 +92,17 @@ cmake -DCMAKE_CXX_COMPILER=/usr/bin/clang++ ..
 ```
 ).
 
-*SomeRandomGameDev* and *BlockoS*
+#### What you'll need ...
+
+In order to compile, the librarie needs the following:
+```
+cmake >= 2.6
+GLM >= 0.9.5.4
+SOIL
+GLEW
+GLFW >= 3
+Box2D (in some cases)
+SOIL
+```
+
+*SomeRandomGameDev* and *BlockoS/MooZ*
