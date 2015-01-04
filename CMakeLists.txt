@@ -84,6 +84,7 @@ set(DUMB_FRAMEWORK_SOURCES
     src/vertexstream.cpp
     src/shader.cpp
     src/program.cpp
+    src/mesh.cpp
     src/sprengine.cpp
     src/sprite.cpp
     src/texture2d.cpp
