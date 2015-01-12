@@ -7,6 +7,7 @@
 #include <DumbFramework/boundingobjects.hpp>
 
 namespace Framework {
+namespace Render    {
 
 /**
  * Simple mesh class.
@@ -26,7 +27,17 @@ class Mesh
             TexCoord,
             AttributeCount
         };
-    
+        /**
+         * Mesh attribute bit mask.
+         */
+        enum AttributeMask
+        {
+            HasPosition = (1 << Position),
+            HasNormal   = (1 << Normal),
+            // [todo] HasTangent, HasBitangent ....
+            HasTexCoord = (1 << TexCoord)
+        };
+        
     public:
         /**
          * Default constructor.
@@ -36,19 +47,18 @@ class Mesh
          * Destructor.
          */
         ~Mesh();
-        
-        // [todo] create mesh ?
-        
+        /**
+         * Create mesh.
+         * @param [in] vertexCount   Vertex count.
+         * @param [in] triangleCount Triangle count.
+         * @param [in] mask          Attribute masks.
+         * @return false if an error occured.
+         */
+        bool create(size_t vertexCount, size_t triangleCount, AttributeMask mask);
         /**
          * Release any resource allocated by this mesh.
          */
         void destroy();
-        /**
-         * Get geometry attribute.
-         * @param [in] id Attribute identifier.
-         * @return Geometry attribute. @warning It can be empty.
-         */
-        inline Geometry::Attribute const& attribute(AttributeId id) const;
         /**
          * Bind mesh vertex buffer.
          */
@@ -57,8 +67,24 @@ class Mesh
          * Unbind mesh vertex buffer and attributes.
          */
         inline void unbind() const;
-        
-        // [todo] get vertex, index count
+        /**
+         * Get geometry attribute.
+         * @param [in] id Attribute identifier.
+         * @return Geometry attribute. @warning It can be empty.
+         */
+        Geometry::Attribute const& attribute(AttributeId id) const;
+        /**
+         * Get vertex count.
+         */
+        inline size_t vertexCount() const;
+        /**
+         * Get vertex size in bytes.
+         */
+        inline size_t vertexSize() const;
+        /**
+         * Get index count.
+         */
+        inline size_t triangleCount() const;
         // [todo] draw command
         
         /**
@@ -93,10 +119,14 @@ class Mesh
          * triangular face.
          */
         IndexBuffer  _indexBuffer;
-        /**
-         * Number of vertices.
-         */
+        
+        /** Number of vertices. **/
         size_t _vertexCount;
+        /** triangle count. **/
+        size_t _triangleCount;
+        /** Primitive type. **/
+        Geometry::Primitive _primitiveType;
+        
         /** Geometry attributes. **/
         Geometry::Attribute _attributes[AttributeCount];
         /** Bounding sphere. **/
@@ -105,6 +135,7 @@ class Mesh
         BoundingBox    _aabb;
 };
 
+} // Render
 } // Framework
 
 #include "mesh.inl"

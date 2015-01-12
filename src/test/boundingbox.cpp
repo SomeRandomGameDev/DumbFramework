@@ -7,39 +7,39 @@ using namespace Framework;
 
 namespace glm    {
 namespace detail {
-	// [todo] remove this.
-	std::ostream& operator<< (std::ostream& out, const glm::vec3& v)
-	{
-		return (out << v.x << ',' << v.y << ',' << v.z);
-	}
+    // [todo] remove this.
+    std::ostream& operator<< (std::ostream& out, const glm::vec3& v)
+    {
+        return (out << v.x << ',' << v.y << ',' << v.z);
+    }
 }
 }
 
 SUITE(BoundingBox)
 {
-	TEST(MergeCTOR)
-	{
-		BoundingBox b0(glm::vec3( 0.0f,-0.5f, 0.0f), glm::vec3( 2.0f, 0.25f, 1.5f));
-		BoundingBox b1(glm::vec3(-1.7f, 1.1f, 0.2f), glm::vec3(-0.1f, 4.25f, 6.5f));
-		
-		BoundingBox merged(b0, b1);
-		
+    TEST(MergeCTOR)
+    {
+        BoundingBox b0(glm::vec3( 0.0f,-0.5f, 0.0f), glm::vec3( 2.0f, 0.25f, 1.5f));
+        BoundingBox b1(glm::vec3(-1.7f, 1.1f, 0.2f), glm::vec3(-0.1f, 4.25f, 6.5f));
+        
+        BoundingBox merged(b0, b1);
+        
         CHECK_EQUAL(merged.getMin(), glm::min(b0.getMin(), b1.getMin()));
         CHECK_EQUAL(merged.getMax(), glm::max(b0.getMax(), b1.getMax()));
-	}
+    }
 
     TEST(ContainsPoint)
     {
         BoundingBox box(glm::vec3(-1.25f), glm::vec3(0.5f));
         ContainmentType::Value res;
-		
-		res = box.contains(glm::vec3(-0.75f,-0.5f, 0.125f));
+        
+        res = box.contains(glm::vec3(-0.75f,-0.5f, 0.125f));
         CHECK_EQUAL(ContainmentType::Contains, res);
         
-		res = box.contains(glm::vec3(-1.25f,-0.625f,0.125f));
+        res = box.contains(glm::vec3(-1.25f,-0.625f,0.125f));
         CHECK_EQUAL(ContainmentType::Intersects, res);
 
-		res = box.contains(glm::vec3(1.5f));
+        res = box.contains(glm::vec3(1.5f));
         CHECK_EQUAL(ContainmentType::Disjoints, res);
     }
 
@@ -100,20 +100,20 @@ SUITE(BoundingBox)
         CHECK_EQUAL(ContainmentType::Disjoints, ret);
     }
     
-	TEST(ContainsSphere)
+    TEST(ContainsSphere)
     {
         BoundingSphere sphere(glm::vec3(1.0f, 1.0f, 1.0f), 2.0f);
         BoundingBox box;
-    	ContainmentType::Value res;
-	    
+        ContainmentType::Value res;
+        
         box = BoundingBox(glm::vec3(0.5f), glm::vec3(1.0f));
         res = box.contains(sphere);
         CHECK_EQUAL(ContainmentType::Disjoints, res);
-		
+        
         box = BoundingBox(glm::vec3(0.5f, 0.5f,-2.0f), glm::vec3(1.5f, 1.5f, 3.0f));
         res = box.contains(sphere);
         CHECK_EQUAL(ContainmentType::Intersects, res);
-		
+        
         box = BoundingBox(glm::vec3(-1.75f), glm::vec3( 0.25f));
         res = box.contains(sphere);
         CHECK_EQUAL(ContainmentType::Intersects, res);
@@ -129,10 +129,10 @@ SUITE(BoundingBox)
         box = BoundingBox(glm::vec3(0.0f, 0.0f,-120.0f), glm::vec3(1.0f, 1.0f, -80.0f));
         res = box.contains(sphere);
         CHECK_EQUAL(ContainmentType::Disjoints, res);
-	}
-	
-	TEST(IntersectsRay)
-	{
+    }
+    
+    TEST(IntersectsRay)
+    {
         BoundingBox box(glm::vec3(-3.1f, 1.2f, -2.6f), glm::vec3(4.5f, 6.7f, 5.1f));
         Ray ray;
         bool res;
@@ -155,7 +155,7 @@ SUITE(BoundingBox)
         ray.direction = glm::normalize(glm::vec3(-1.0f,-1.0f,-1.0f));
         res = box.intersects(ray);
         CHECK_EQUAL(true, res);
-	}
+    }
     
     TEST(ContainsBox)
     {

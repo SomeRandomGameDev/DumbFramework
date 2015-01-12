@@ -49,5 +49,42 @@ ComponentType::operator GLenum()
     }
 }
 
+/** Size in bytes. **/
+size_t ComponentType::size() const
+{
+    switch(value)
+    {
+        case ComponentType::BYTE:
+            return sizeof(GLbyte);
+        case ComponentType::UNSIGNED_BYTE:
+            return sizeof(GLubyte);
+        case ComponentType::SHORT:
+            return sizeof(GLshort);
+        case ComponentType::UNSIGNED_SHORT:
+            return sizeof(GLushort);
+        case ComponentType::INT:
+            return sizeof(GLint);
+        case ComponentType::UNSIGNED_INT:
+            return sizeof(GLuint);
+        case ComponentType::HALF_FLOAT:
+            return sizeof(GLhalf);
+        case ComponentType::FLOAT:
+            return sizeof(GLfloat);
+        case ComponentType::DOUBLE:
+            return sizeof(GLdouble);
+        default:
+            return sizeof(GLfloat);
+    }
+}
+
+/**
+ * Get attribute size in bytes.
+ */
+size_t Attribute::bytes() const
+{
+    return size * type.size();
+}
+
+
 } // Geometry
 } // Framework

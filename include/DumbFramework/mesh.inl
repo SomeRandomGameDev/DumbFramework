@@ -1,4 +1,5 @@
 namespace Framework {
+namespace Render    {
 
 /**
  * Get geometry attribute.
@@ -25,5 +26,32 @@ BoundingBox const& Mesh::boundingBox() const
 {
     return _aabb;
 }
+/**
+ * Get vertex count.
+ */
+size_t Mesh::vertexCount() const
+{
+    return _vertexCount;
+}
+/**
+ * Get vertex size in bytes.
+ */
+size_t Mesh::vertexSize() const
+{
+    size_t size = 0;
+    for(size_t i=0; i<AttributeCount; i++)
+    {
+        size += _attributes[i].bytes();
+    }
+    return size;
+}
+/**
+ * Get index count.
+ */
+size_t Mesh::triangleCount() const
+{
+    return _triangleCount;
+}
 
+} // Render
 } // Framework

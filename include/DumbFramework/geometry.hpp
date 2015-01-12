@@ -1,7 +1,6 @@
 #ifndef _DUMB_FW_GEOMETRY_
 #define _DUMB_FW_GEOMETRY_
 
-#include <GL/glew.h>
 #include <DumbFramework/config.hpp>
 
 namespace Framework {
@@ -131,6 +130,8 @@ struct ComponentType
     inline operator Value() { return value; }
     /** Convert to OpenGL compliant value. **/
     inline operator GLenum();
+    /** Size in bytes. **/
+    inline size_t size() const;
 };
 
 /**
@@ -196,6 +197,10 @@ struct Attribute
      * @param [in] attr Input attribute
      */
     Attribute& operator=(Attribute const& attr);
+    /**
+     * Get attribute size in bytes.
+     */
+    inline size_t  bytes() const;
 };
 
 } // Geometry
