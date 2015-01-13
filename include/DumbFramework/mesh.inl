@@ -34,6 +34,13 @@ size_t Mesh::vertexCount() const
     return _vertexCount;
 }
 /**
+ * Get attributes mask.
+ */
+Mesh::AttributeMask Mesh::attributesMask() const
+{
+    return _attributesMask;
+}
+/**
  * Get vertex size in bytes.
  */
 size_t Mesh::vertexSize() const

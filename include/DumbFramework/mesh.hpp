@@ -32,10 +32,12 @@ class Mesh
          */
         enum AttributeMask
         {
+            None        = 0,
             HasPosition = (1 << Position),
             HasNormal   = (1 << Normal),
             // [todo] HasTangent, HasBitangent ....
-            HasTexCoord = (1 << TexCoord)
+            HasTexCoord = (1 << TexCoord),
+            HasAll      = (1 << AttributeCount) - 1
         };
         
     public:
@@ -56,17 +58,24 @@ class Mesh
          */
         bool create(size_t vertexCount, size_t triangleCount, AttributeMask mask);
         /**
+         * Set vertex attribute data.
+         * @param [in] id  Attribute id.
+         * @param [in] ptr Pointer to vertex attribute data.
+         * @return false if the attribute is not supported by the mesh or if the 
+         *         pointer is null.
+         */
+        bool setAttribute(AttributeId id, uint8_t* ptr);
+        // [todo] setAttributes
+        /**
+         * Update mesh.
+         * It recomputes bounding box and bounding sphere, as long as
+         * vertex normals, tangents and bitangents.
+         */
+        void update();
+        /**
          * Release any resource allocated by this mesh.
          */
         void destroy();
-        /**
-         * Bind mesh vertex buffer.
-         */
-        inline void bind() const;
-        /**
-         * Unbind mesh vertex buffer and attributes.
-         */
-        inline void unbind() const;
         /**
          * Get geometry attribute.
          * @param [in] id Attribute identifier.
@@ -85,6 +94,12 @@ class Mesh
          * Get index count.
          */
         inline size_t triangleCount() const;
+        /**
+         * Get attributes mask.
+         */
+        inline AttributeMask attributesMask() const;
+        // [todo] map vertex buffer
+        // [todo] map index buffer
         // [todo] draw command
         
         /**
@@ -126,7 +141,8 @@ class Mesh
         size_t _triangleCount;
         /** Primitive type. **/
         Geometry::Primitive _primitiveType;
-        
+        /** Attribute mask. **/
+        AttributeMask _attributesMask;
         /** Geometry attributes. **/
         Geometry::Attribute _attributes[AttributeCount];
         /** Bounding sphere. **/
