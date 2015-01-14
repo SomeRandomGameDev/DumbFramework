@@ -54,9 +54,11 @@ class Mesh
          * @param [in] vertexCount   Vertex count.
          * @param [in] triangleCount Triangle count.
          * @param [in] mask          Attribute masks.
+         * @param [in] vertexData    Pointer to vertex data (nullptr by default).
+         * @param [in] indexData     Pointer to triangle data (nullptr by default).
          * @return false if an error occured.
          */
-        bool create(size_t vertexCount, size_t triangleCount, AttributeMask mask);
+        bool create(size_t vertexCount, size_t triangleCount, uint32_t mask, void* vertexData=nullptr, void* indexData=nullptr);
         /**
          * Set vertex attribute data.
          * @param [in] id  Attribute id.
@@ -81,7 +83,15 @@ class Mesh
          * @param [in] id Attribute identifier.
          * @return Geometry attribute. @warning It can be empty.
          */
-        Geometry::Attribute const& attribute(AttributeId id) const;
+        inline Geometry::Attribute const& attribute(AttributeId id) const;
+        /**
+         * Get vertex buffer.
+         */
+        inline VertexBuffer const& vertexBuffer() const;
+        /**
+         * Get indeex buffer.
+         */
+        inline IndexBuffer const& indexBuffer() const;
         /**
          * Get vertex count.
          */
@@ -97,7 +107,7 @@ class Mesh
         /**
          * Get attributes mask.
          */
-        inline AttributeMask attributesMask() const;
+        inline uint32_t attributesMask() const;
         // [todo] map vertex buffer
         // [todo] map index buffer
         // [todo] draw command
@@ -142,7 +152,7 @@ class Mesh
         /** Primitive type. **/
         Geometry::Primitive _primitiveType;
         /** Attribute mask. **/
-        AttributeMask _attributesMask;
+        uint32_t _attributesMask;
         /** Geometry attributes. **/
         Geometry::Attribute _attributes[AttributeCount];
         /** Bounding sphere. **/

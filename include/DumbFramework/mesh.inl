@@ -36,9 +36,23 @@ size_t Mesh::vertexCount() const
 /**
  * Get attributes mask.
  */
-Mesh::AttributeMask Mesh::attributesMask() const
+uint32_t Mesh::attributesMask() const
 {
     return _attributesMask;
+}
+/**
+ * Get vertex buffer.
+ */
+VertexBuffer const& Mesh::vertexBuffer() const
+{
+    return _vertexBuffer;
+}
+/**
+ * Get indeex buffer.
+ */
+IndexBuffer const& Mesh::indexBuffer() const
+{
+    return _indexBuffer;
 }
 /**
  * Get vertex size in bytes.

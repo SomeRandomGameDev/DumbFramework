@@ -35,9 +35,11 @@ Mesh::~Mesh()
  * @param [in] vertexCount   Vertex count.
  * @param [in] triangleCount Triangle count.
  * @param [in] mask          Attribute masks.
+ * @param [in] vertexData    Pointer to vertex data (nullptr by default).
+ * @param [in] indexData     Pointer to triangle data (nullptr by default).
  * @return false if an error occured.
  */
-bool Mesh::create(size_t vertexCount, size_t triangleCount, AttributeMask mask)
+bool Mesh::create(size_t vertexCount, size_t triangleCount, uint32_t mask, void* vertexData, void* indexData)
 {
     bool ret;
     
@@ -64,20 +66,24 @@ bool Mesh::create(size_t vertexCount, size_t triangleCount, AttributeMask mask)
         _attributes[i].stride = stride;
     }
     
-    ret = _indexBuffer.create(3 * triangleCount * sizeof(GLuint), nullptr, BufferObject::Access::Frequency::STATIC, BufferObject::Access::Type::DRAW);
+    ret = _indexBuffer.create(3 * triangleCount * sizeof(GLuint), indexData, BufferObject::Access::Frequency::STATIC, BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
         Log_Error(Module::Render, "Failed to create index buffer!");
         return false;
     }
     
-    ret = _vertexBuffer.create(vertexCount * stride, nullptr, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
+    ret = _vertexBuffer.create(vertexCount * stride, vertexData, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
         Log_Error(Module::Render, "Failed to create vertex buffer!");
         return false;
     }
     
+    if(nullptr != vertexData)
+    {
+        update();
+    }
     return true;
 }
 /**

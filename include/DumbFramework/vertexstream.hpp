@@ -46,7 +46,7 @@ class VertexStream
          * @param [in] divisor (default=0). 
          * @return true if the attribute was successfully set.
          */
-        bool add(VertexBuffer* vertexBuffer, unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset, unsigned int divisor=0);
+        bool add(VertexBuffer const* vertexBuffer, unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset, unsigned int divisor=0);
         /**
          * Add attribute to vertex stream.
          * @param [in] vertexBuffer Vertex buffer that will be associated
@@ -54,7 +54,7 @@ class VertexStream
          * @param [in] attr   Attribute.
          * @return true if the attribute was successfully set.
          */
-        bool add(VertexBuffer* vertexBuffer, Geometry::Attribute const& attr);
+        bool add(VertexBuffer const* vertexBuffer, Geometry::Attribute const& attr);
         /**
          * Add a set of attributes to vertex stream.
          * @param [in] vertexBuffer Vertex buffer that will be associated
@@ -62,7 +62,7 @@ class VertexStream
          * @param [in] attr         A list of vertex attributes.
          * @return true if the attributes were successfully added.
          */
-        bool add(VertexBuffer* vertexBuffer, std::initializer_list<Geometry::Attribute> const& attr);
+        bool add(VertexBuffer const* vertexBuffer, std::initializer_list<Geometry::Attribute> const& attr);
         /**
          * Check vertex attributes and build internal structures for
          * future rendering.
@@ -103,12 +103,6 @@ class VertexStream
         /**
          * Get the vertex buffer for a given attribute.
          * @param [in] index Attribute index.
-         * @return Pointer to the vertex buffer.
-         */
-        VertexBuffer* getVertexBuffer(unsigned int index);
-        /**
-         * Get the vertex buffer for a given attribute.
-         * @param [in] index Attribute index.
          * @return Constant pointer to the vertex buffer.
          */
         VertexBuffer const* getVertexBuffer(unsigned int index) const;
@@ -117,7 +111,7 @@ class VertexStream
         /** Vertex array identifier. **/
         GLuint _vao;
         /** Vertex attributes array. **/
-        std::vector<std::pair<VertexBuffer*,Geometry::Attribute>> _attributes;
+        std::vector<std::pair<const VertexBuffer*,Geometry::Attribute>> _attributes;
 };
 
 } // Framework

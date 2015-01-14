@@ -60,7 +60,7 @@ void VertexStream::destroy()
  * @param [in] divisor (default=0). 
  * @return true if the attribute was successfully set.
  */
-bool VertexStream::add(VertexBuffer* vertexBuffer, unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset, unsigned int divisor)
+bool VertexStream::add(VertexBuffer const* vertexBuffer, unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset, unsigned int divisor)
 {
     return add(vertexBuffer, Geometry::Attribute(index, type, size, stride, offset, divisor));
 }
@@ -71,7 +71,7 @@ bool VertexStream::add(VertexBuffer* vertexBuffer, unsigned int index, Geometry:
  * @param [in] attr   Attribute.
  * @return true if the attribute was successfully set.
  */
-bool VertexStream::add(VertexBuffer* vertexBuffer, Geometry::Attribute const& attr)
+bool VertexStream::add(VertexBuffer const* vertexBuffer, Geometry::Attribute const& attr)
 {
     if(nullptr == vertexBuffer)
     {
@@ -93,7 +93,7 @@ bool VertexStream::add(VertexBuffer* vertexBuffer, Geometry::Attribute const& at
  * @param [in] attr         A list of vertex attributes.
  * @return true if the attributes were successfully added.
  */
-bool VertexStream::add(VertexBuffer* vertexBuffer, std::initializer_list<Geometry::Attribute> const& attr)
+bool VertexStream::add(VertexBuffer const* vertexBuffer, std::initializer_list<Geometry::Attribute> const& attr)
 {
     if(nullptr == vertexBuffer)
     {
@@ -287,19 +287,6 @@ bool VertexStream::isAttributeSet(unsigned int index) const
         return false;
     }
     return true;
-}
-/**
- * Get the vertex buffer for a given attribute.
- * @param [in] index Attribute index.
- * @return Pointer to the vertex buffer.
- */
-VertexBuffer* VertexStream::getVertexBuffer(unsigned int index)
-{
-    if(index >= _attributes.size())
-    {
-        return nullptr;
-    }
-    return _attributes[index].first;
 }
 /**
  * Get the vertex buffer for a given attribute.

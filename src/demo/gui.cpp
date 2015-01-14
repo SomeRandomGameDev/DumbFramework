@@ -6,48 +6,44 @@
 #include <DumbFramework/camera.hpp>
 #include <DumbFramework/texture.hpp>
 #include <DumbFramework/textureloader.hpp>
+#include <DumbFramework/mesh.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace Framework;
 
 static const float g_cube[] =
 {
-    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
-    -1.0f,-1.0f, 1.0f, 0.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-     1.0f, 1.0f,-1.0f, 1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
-    -1.0f, 1.0f,-1.0f, 0.0f, 1.0f,
-     1.0f,-1.0f, 1.0f, 1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
-     1.0f,-1.0f,-1.0f, 1.0f, 0.0f,
-     1.0f, 1.0f,-1.0f, 1.0f, 1.0f,
-     1.0f,-1.0f,-1.0f, 1.0f, 0.0f,
-    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
-    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
-    -1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+     1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
+     1.0f,-1.0f,-1.0f, 0.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f, 1.0f, 1.0f,
     -1.0f, 1.0f,-1.0f, 1.0f, 0.0f,
-     1.0f,-1.0f, 1.0f, 1.0f, 1.0f,
+     1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+    -1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
     -1.0f,-1.0f, 1.0f, 0.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
-    -1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-    -1.0f,-1.0f, 1.0f, 0.0f, 0.0f,
-     1.0f,-1.0f, 1.0f, 1.0f, 0.0f,
-     1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-     1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
-     1.0f, 1.0f,-1.0f, 1.0f, 0.0f,
-     1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
-     1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-     1.0f,-1.0f, 1.0f, 0.0f, 1.0f,
-     1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-     1.0f, 1.0f,-1.0f, 1.0f, 0.0f,
-    -1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
-     1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
-    -1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-     1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-     1.0f,-1.0f, 1.0f, 1.0f, 0.0f
+     1.0f,-1.0f, 1.0f, 1.0f, 1.0f,
+     1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f,-1.0f, 1.0f, 0.0f,
+    -1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+     1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+     1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f,-1.0f, 1.0f, 0.0f,
+    -1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+     1.0f, 1.0f, 1.0f, 0.0f, 1.0f
+};
+static const unsigned int g_cubeFace[] =
+{
+    0,  1,  2,
+    0,  2,  3,
+    0,  4,  7,
+    0,  7,  1,
+    4,  6,  7,
+    4,  5,  6,
+    5,  2,  6,
+    5,  3,  2,
+    8,  9, 10,
+    8, 10, 11,
+   12, 15, 14,
+   12, 14, 13
 };
 
 static const char* g_vertexShader = R"EOT(
@@ -102,12 +98,10 @@ class Dummy
         {
             bool ret;
             
-            // Create vertex buffer
-            ret = vertexBuffer.create(sizeof(g_cube), (void*)g_cube, BufferObject::Access::Frequency::STATIC, BufferObject::Access::Type::DRAW);
-            if(false == ret)
-            {
-                return;
-            }
+            uint32_t attrMask;
+            attrMask = Framework::Render::Mesh::HasPosition | Framework::Render::Mesh::HasTexCoord;
+            // Create mesh
+            ret = mesh.create(16, 12*3, attrMask, (void*)g_cube, (void*)g_cubeFace);
             
             // Create vertex buffer for mvp
             ret = mvpBuffer.create(16*16*16*sizeof(float[16]), nullptr, BufferObject::Access::Frequency::STREAM, BufferObject::Access::Type::DRAW);
@@ -118,7 +112,7 @@ class Dummy
             
             // Create vertex stream
             vertexStream.create();
-            ret = vertexStream.add(&vertexBuffer, 
+            ret = vertexStream.add(&mesh.vertexBuffer(),
                                    {
                                         { 0, Geometry::ComponentType::FLOAT, 3, false, 5*sizeof(float), 0,               0 },
                                         { 1, Geometry::ComponentType::FLOAT, 2, false, 5*sizeof(float), 3*sizeof(float), 0 }
@@ -285,8 +279,8 @@ class Dummy
             program.begin();
                 vertexStream.bind();
                     program.uniform(colorId, color);
-                    //vertexStream.draw(Geometry::Primitive::TRIANGLES, 0, sizeof(g_cube)/sizeof(g_cube[0]));
-                    glDrawArraysInstanced(GL_TRIANGLES, 0, 12*3, 16*16*16);
+                    mesh.indexBuffer().bind();
+                    glDrawElementsInstanced(GL_TRIANGLES, 12*3, GL_UNSIGNED_INT, 0, 16*16*16);
                 vertexStream.unbind();
             program.end();
             texture.unbind();
@@ -295,7 +289,7 @@ class Dummy
         void destroy()
         {
             program.destroy();
-            vertexBuffer.destroy();
+            mesh.destroy();
             mvpBuffer.destroy();
             vertexStream.destroy();
             points.clear();
@@ -309,7 +303,7 @@ class Dummy
         float alpha;
         bool pushed;
         bool open;
-        Framework::VertexBuffer vertexBuffer;
+        Framework::Render::Mesh mesh;
         Framework::VertexBuffer mvpBuffer;
         Framework::VertexStream vertexStream;
         Framework::Program program;
