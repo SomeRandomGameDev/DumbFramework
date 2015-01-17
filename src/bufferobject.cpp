@@ -21,6 +21,15 @@ BufferObject::Detail<BufferObject::INDEX_BUFFER>::_infos =
     GL_ELEMENT_ARRAY_BUFFER_BINDING
 };
 
+template<>
+const BufferObject::Detail<BufferObject::UNIFORM_BUFFER>::Infos
+BufferObject::Detail<BufferObject::UNIFORM_BUFFER>::_infos = 
+{
+    "uniform",
+    GL_UNIFORM_BUFFER,
+    GL_UNIFORM_BUFFER_BINDING
+};
+
 namespace Access {
 /**
  * Convert access frequency and type to buffer data usage.

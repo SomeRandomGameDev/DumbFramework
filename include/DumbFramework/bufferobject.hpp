@@ -161,7 +161,9 @@ enum Type
     /** Vertex buffer. **/
     VERTEX_BUFFER,
     /** Index buffer. **/
-    INDEX_BUFFER
+    INDEX_BUFFER,
+    /** Uniform buffer. **/
+    UNIFORM_BUFFER
 };
 
 /**
