@@ -1,76 +1,60 @@
 #ifndef _DUMB_FW_MATERIAL_
 #define _DUMB_FW_MATERIAL_
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include <DumbFramework/program.hpp>
+#include <DumbFramework/uniformbuffer.hpp>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp> 
+namespace Framework {
+namespace Render    {
 
-#define MATERIAL_MAX_TEXTURE_UNITS 8
-
-namespace Render
+class Material
 {
-	class Material
-	{
-		public:
-			Material();
-			~Material();
+    public:
+        Material();
+        ~Material();
 
-			bool create(GLuint shaderId);
-			void destroy();
+        void bind();
+        void unbind();
 
-			void bind();
-			void unbind();
+        void texture2D(std::string const& name, Texture2D const& texture);
+        Texture2D const& texture2D(std::string const& name);
 
-			const glm::vec4& ambient() const;
-			void ambient(const glm::vec4& color);
+        void program(Program const& prog);
+        Program const& program() const;
 
-			const glm::vec4& diffuse() const;
-			void diffuse(const glm::vec4& color);
+        std::string const& name() const;
 
-			const glm::vec4& specular() const;
-			void specular(const glm::vec4& color);
+        int input(std::string const& name) const;
 
-			const glm::vec4& emissive() const;
-			void emissive(const glm::vec4& color);
+        template<typename T>
+        void set(std::string const& name, T const& value);
 
-			GLuint shaderId() const;
+        template<typename T>
+        void set(std::string const& name, bool transpose, T const& value);
 
-			GLuint textureId(unsigned int unit) const;
-			bool textureId(unsigned int unit, GLuint id);
+        template<typename T>
+        T const& get(std::string const& name) const;
 
-			GLuint bufferId() const { return _colorsUBO; } // [todo] remove
-			GLuint blockIndex() const { return _colorsBlockIndex; } // [todo] remove
+    public:
+        bool visible;
 
-		public:
-			enum
-			{
-				AMBIENT = 0,
-				DIFFUSE,
-				SPECULAR,
-				EMISSIVE
-			};
+        bool      blend;
+        BlendFunc blendFunc;
+                
+        bool      depthWrite;
+        DepthFunc depthFunc;
+        
+        bool     culling;
+        CullFace cullingmode;
+        
+    protected:
+        std::string _name;
+        std::vector<std::pair<std::string, Texture2D>> _textures2D;
+        Program _program;
+        UniformBuffer _uniformBuffer;
+};
 
-		protected:
-			bool _updateNeeded; // [todo] better "dirty" flag?
-			GLuint _shader; ///< Program Id. [todo] Use program?
-
-			/** Material colors.
-			 *    0: Ambient color (rgba).
-			 *    1: Diffuse color (rgba).
-			 *    2: Specular color (rgba).
-			 *    3: Emissive color (rgba).
-			 */
-			glm::vec4 _colors[4];
-
-			GLuint  _colorsUBO;         // [todo] use bufferObjects? uniform block helpers?
-			GLuint  _colorsBlockIndex;
-			GLsizei _colorsBlockSize;
-			GLint   _colorsOffset[4];
-
-			GLuint _texture[MATERIAL_MAX_TEXTURE_UNITS]; ///< Texture id for each unit. [todo] Texture struct (targetType, id, etc...) ?
-	};
-}
+} // Render
+} // Framework
 
 #endif // _DUMB_FW_MATERIAL_
