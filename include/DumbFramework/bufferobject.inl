@@ -192,7 +192,7 @@ void Detail<t>::unbindAll()
  *         error occured.
  */
 template <Type t>
-void* Detail<t>::map(BufferObject::Access::Policy policy)
+void* Detail<t>::map(BufferObject::Access::Policy policy) const
 {
 #if defined(SANITY_CHECK)
     // Warning! This may spam your logs!
@@ -222,7 +222,7 @@ void* Detail<t>::map(BufferObject::Access::Policy policy)
  *         error occured.
  */
 template <Type t>
-void* Detail<t>::map(BufferObject::Access::Policy policy, off_t offset, size_t length)
+void* Detail<t>::map(BufferObject::Access::Policy policy, off_t offset, size_t length) const
 {
 #if defined(SANITY_CHECK)
     // Warning! This may spam your logs!
@@ -263,7 +263,7 @@ void* Detail<t>::map(BufferObject::Access::Policy policy, off_t offset, size_t l
  * @return true if the buffer was successfully unmapped.
  */
 template <Type t>
-bool Detail<t>::unmap()
+bool Detail<t>::unmap() const
 {
 #if defined(SANITY_CHECK)
     // Warning! This may spam your logs!

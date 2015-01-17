@@ -62,28 +62,30 @@ void VertexStream::destroy()
  */
 bool VertexStream::add(VertexBuffer const* vertexBuffer, unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset, unsigned int divisor)
 {
-    return add(vertexBuffer, Geometry::Attribute(index, type, size, stride, offset, divisor));
+    return add(vertexBuffer, index, Geometry::Attribute(type, size, stride, offset, divisor));
 }
 /**
  * Add attribute to vertex stream.
  * @param [in] vertexBuffer Vertex buffer that will be associated
  *                          with the current attribute.
+ * @param [in] index  Attribute index.
  * @param [in] attr   Attribute.
  * @return true if the attribute was successfully set.
  */
-bool VertexStream::add(VertexBuffer const* vertexBuffer, Geometry::Attribute const& attr)
+bool VertexStream::add(VertexBuffer const* vertexBuffer, unsigned int index, Geometry::Attribute const& attr)
 {
     if(nullptr == vertexBuffer)
     {
         Log_Error(Framework::Module::Render, "Invalid vertex buffer.");
         return false;
     }
-    if(attr.index >= _attributes.size())
+    
+    if(index >= _attributes.size())
     {
-        _attributes.resize(attr.index+1);
+        _attributes.resize(index+1);
     }
-    _attributes[attr.index].first  = vertexBuffer;
-    _attributes[attr.index].second = attr;
+    _attributes[index].first  = vertexBuffer;
+    _attributes[index].second = attr;
     return true;
 }
 /**
@@ -93,7 +95,7 @@ bool VertexStream::add(VertexBuffer const* vertexBuffer, Geometry::Attribute con
  * @param [in] attr         A list of vertex attributes.
  * @return true if the attributes were successfully added.
  */
-bool VertexStream::add(VertexBuffer const* vertexBuffer, std::initializer_list<Geometry::Attribute> const& attr)
+bool VertexStream::add(VertexBuffer const* vertexBuffer, std::initializer_list<std::pair<unsigned int, Geometry::Attribute>> const& attr)
 {
     if(nullptr == vertexBuffer)
     {
@@ -102,12 +104,12 @@ bool VertexStream::add(VertexBuffer const* vertexBuffer, std::initializer_list<G
     }
     unsigned int biggestIndex = 0;
 
-    const Geometry::Attribute* ptr;
+    const std::pair<unsigned int, Geometry::Attribute>* ptr;
     for(ptr=attr.begin(); ptr!=attr.end(); ptr++)
     {
-        if(ptr->index > biggestIndex)
+        if(ptr->first > biggestIndex)
         {
-            biggestIndex = ptr->index;
+            biggestIndex = ptr->first;
         }
     }
 
@@ -118,8 +120,8 @@ bool VertexStream::add(VertexBuffer const* vertexBuffer, std::initializer_list<G
 
     for(ptr=attr.begin(); ptr!=attr.end(); ptr++)
     {
-        _attributes[ptr->index].first  = vertexBuffer;
-        _attributes[ptr->index].second = *ptr;
+        _attributes[ptr->first].first  = vertexBuffer;
+        _attributes[ptr->first].second = ptr->second;
     }
 
     return true;
@@ -156,8 +158,8 @@ bool VertexStream::compile()
     {
         glEnableVertexAttribArray(i);
         _attributes[i].first->bind();
-        glVertexAttribPointer(_attributes[i].second.index, _attributes[i].second.size, _attributes[i].second.type, _attributes[i].second.normalized ? GL_TRUE : GL_FALSE, _attributes[i].second.stride, (GLvoid*)_attributes[i].second.offset);
-        glVertexAttribDivisor(_attributes[i].second.index, _attributes[i].second.divisor);
+        glVertexAttribPointer(i, _attributes[i].second.size, _attributes[i].second.type, _attributes[i].second.normalized ? GL_TRUE : GL_FALSE, _attributes[i].second.stride, (GLvoid*)_attributes[i].second.offset);
+        glVertexAttribDivisor(i, _attributes[i].second.divisor);
     }
     unbind();
     VertexBuffer::unbindAll();

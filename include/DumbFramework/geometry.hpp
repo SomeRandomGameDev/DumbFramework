@@ -142,10 +142,6 @@ struct ComponentType
 struct Attribute
 {
     /**
-     * Attribute index.
-     */
-    unsigned int index;
-    /**
      * Type of the attribute components.
      */
     ComponentType type;
@@ -176,7 +172,6 @@ struct Attribute
     Attribute();
     /** 
      * Constructor 
-     * @param [in] i   Index.
      * @param [in] t   Components type.
      * @param [in] sz  Number of components.
      * @param [in] n   Specify if the data should be normalized or not.
@@ -184,7 +179,7 @@ struct Attribute
      * @param [in] off Offset.
      * @param [in] d   Divisor (default=0).  
      */
-    Attribute(unsigned int index, ComponentType t, size_t sz, bool n, size_t st, size_t off, unsigned int d=0);
+    Attribute(ComponentType t, size_t sz, bool n, size_t st, size_t off, unsigned int d=0);
     /**
      * Copy constructor.
      * @param [in] attr Input attribute.

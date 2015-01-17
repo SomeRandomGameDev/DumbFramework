@@ -112,14 +112,14 @@ namespace Sprite {
             _stream.create();
             _stream.add(&_buffer,
             {
-                Geometry::Attribute(  VERTEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, 0,                  1),
-                Geometry::Attribute(  OFFSET_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  2, 1),
-                Geometry::Attribute(    SIZE_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  4, 1),
-                Geometry::Attribute( TOP_TEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  6, 1),
-                Geometry::Attribute(DOWN_TEX_INDEX, Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  8, 1),
-                Geometry::Attribute(  ROTATE_INDEX, Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 10, 1),
-                Geometry::Attribute(   SCALE_INDEX, Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 11, 1),
-                Geometry::Attribute( TEXTURE_INDEX, Geometry::ComponentType::UNSIGNED_INT, 1, VBO_STRIDE, sizeof(float) * 12, 1)
+                { VERTEX_INDEX,   Geometry::Attribute(Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, 0,                  1) },
+                { OFFSET_INDEX,   Geometry::Attribute(Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  2, 1) },
+                { SIZE_INDEX,     Geometry::Attribute(Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  4, 1) },
+                { TOP_TEX_INDEX,  Geometry::Attribute(Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  6, 1) },
+                { DOWN_TEX_INDEX, Geometry::Attribute(Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  8, 1) },
+                { ROTATE_INDEX,   Geometry::Attribute(Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 10, 1) },
+                { SCALE_INDEX,    Geometry::Attribute(Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 11, 1) },
+                { TEXTURE_INDEX,  Geometry::Attribute(Geometry::ComponentType::UNSIGNED_INT, 1, VBO_STRIDE, sizeof(float) * 12, 1) }
             });
             _stream.compile();
             

@@ -114,19 +114,19 @@ class Dummy
             vertexStream.create();
             ret = vertexStream.add(&mesh.vertexBuffer(),
                                    {
-                                        { 0, Geometry::ComponentType::FLOAT, 3, false, 5*sizeof(float), 0,               0 },
-                                        { 1, Geometry::ComponentType::FLOAT, 2, false, 5*sizeof(float), 3*sizeof(float), 0 }
+                                        { 0, mesh.attribute(Framework::Render::Mesh::Position) },
+                                        { 1, mesh.attribute(Framework::Render::Mesh::TexCoord) },
                                     });
             if(false == ret)
             {
                 return;
             }
-            ret = vertexStream.add(&mvpBuffer, 
+            ret = vertexStream.add(&mvpBuffer,
                                 {
-                                       { 2, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  0,               1 },
-                                       { 3, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  4*sizeof(float), 1 },
-                                       { 4, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  8*sizeof(float), 1 },
-                                       { 5, Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float), 12*sizeof(float), 1 }
+                                       { 2, { Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  0,               1 } },
+                                       { 3, { Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  4*sizeof(float), 1 } },
+                                       { 4, { Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  8*sizeof(float), 1 } },
+                                       { 5, { Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float), 12*sizeof(float), 1 } }
                                 });
             if(false == ret)
             {

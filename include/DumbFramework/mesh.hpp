@@ -22,9 +22,9 @@ class Mesh
         enum AttributeId
         {
             Position = 0,
+            TexCoord,
             Normal,
             // [todo] tangent, bitangent, bone id+weight...
-            TexCoord,
             AttributeCount
         };
         /**
@@ -34,9 +34,9 @@ class Mesh
         {
             None        = 0,
             HasPosition = (1 << Position),
+            HasTexCoord = (1 << TexCoord),
             HasNormal   = (1 << Normal),
             // [todo] HasTangent, HasBitangent ....
-            HasTexCoord = (1 << TexCoord),
             HasAll      = (1 << AttributeCount) - 1
         };
         

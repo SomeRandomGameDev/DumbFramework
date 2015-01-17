@@ -7,9 +7,9 @@ namespace Render    {
 /* Vertex attributes. */
 static const Geometry::Attribute vertexAttributes[Mesh::AttributeCount] = 
 {
-    Geometry::Attribute(Mesh::Position, Geometry::ComponentType::FLOAT, 3, false, 0, 0, 0),
-    Geometry::Attribute(Mesh::Normal,   Geometry::ComponentType::FLOAT, 3, false, 0, 0, 0),
-    Geometry::Attribute(Mesh::TexCoord, Geometry::ComponentType::FLOAT, 2, false, 0, 0, 0)
+    Geometry::Attribute(Geometry::ComponentType::FLOAT, 3, false, 0, 0, 0), // Position
+    Geometry::Attribute(Geometry::ComponentType::FLOAT, 2, false, 0, 0, 0), // TexCoord
+    Geometry::Attribute(Geometry::ComponentType::FLOAT, 3, false, 0, 0, 0)  // Normal
 };
 
 /**
@@ -52,7 +52,7 @@ bool Mesh::create(size_t vertexCount, size_t triangleCount, uint32_t mask, void*
     size_t offset = 0;
     for(size_t i=0; i<AttributeCount; i++)
     {
-        if(mask && (1 << i))
+        if(mask & (1 << i))
         {
             memcpy(&_attributes[i], &vertexAttributes[i], sizeof(Geometry::Attribute));
             _attributes[i].offset = offset;

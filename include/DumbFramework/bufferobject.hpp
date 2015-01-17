@@ -229,7 +229,7 @@ class Detail
          * @return Pointer to the buffer data storage or NULL if an
          *         error occured.
          */ 
-        void* map(BufferObject::Access::Policy policy);
+        void* map(BufferObject::Access::Policy policy) const;
         /**
          * Map only a given area of the buffer data storage.
          * @param [in] access  Data storage access policy.
@@ -239,14 +239,14 @@ class Detail
          * @return Pointer to the buffer data storage or NULL if an
          *         error occured.
          */
-        void* map(BufferObject::Access::Policy access, off_t offset, size_t length);
+        void* map(BufferObject::Access::Policy access, off_t offset, size_t length) const;
         /**
          * Unmap buffer.
          * The pointer previously returned by Detail::map will become 
          * invalid.
          * @return true if the buffer was successfully unmapped.
          */
-        bool unmap();
+        bool unmap() const;
         /**
          * Tells if the buffer is currently mapped.
          * @return true if the buffer is mapped.
