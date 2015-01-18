@@ -5,14 +5,30 @@ namespace Framework {
 /**
  * Constructor.
  */
-Program::Program() :
-    _id (0)
+Program::Program()
+    : _id ()
+{}
+/**
+ * Copy constructor.
+ */
+Program::Program(Program const& prog)
+    : _id(prog._id)
 {}
 /**
  * Destructor.
  */
 Program::~Program()
-{}
+{
+    destroy();
+}
+/**
+ * Copy operator.
+ */
+Program& Program::operator= (Program const& prog)
+{
+    _id = prog._id;
+    return *this;
+}
 /**
  * Create program.
  */
@@ -23,12 +39,12 @@ bool Program::create()
         destroy();
     }
     
-    _id = glCreateProgram();
-    if(0 == _id)
+    GLuint id = glCreateProgram();
+    if(0 == id)
     {
         return false;
     }
-
+    _id = std::make_shared<GLuint>(id);
     return true;
 }
 /**
@@ -74,16 +90,16 @@ bool Program::create(std::initializer_list<std::pair<Shader::Type, char const *>
  */
 bool Program::attach(Shader const& shader)
 { 
-    if(0 == _id)
+    if(false == _id)
     {
         Log_Error(Framework::Module::Render, "Can't attach shader to an uninitialized program!");
         return false;
     }
-    glAttachShader(_id, shader._id);
+    glAttachShader(*_id, shader._id);
     GLenum err = glGetError();
     if(GL_NO_ERROR != err)
     {
-        Log_Error(Framework::Module::Render, "Can't attach shader (%x) to program (%x) : %s", shader._id, _id, gluErrorString(err));
+        Log_Error(Framework::Module::Render, "Can't attach shader (%x) to program (%x) : %s", shader._id, *_id, gluErrorString(err));
         return false;
     }
     
@@ -94,15 +110,15 @@ bool Program::attach(Shader const& shader)
  */
 bool Program::link()
 {
-    if(0 == _id)
+    if(false == _id)
     {
         return false;
     }
     
-    glLinkProgram(_id);
+    glLinkProgram(*_id);
 
     GLint result;
-    glGetProgramiv(_id, GL_LINK_STATUS, &result);
+    glGetProgramiv(*_id, GL_LINK_STATUS, &result);
     if(GL_FALSE == result)
     {
         infoLog();
@@ -116,16 +132,20 @@ bool Program::link()
  */
 bool Program::isInUse() const
 {
-    GLuint current;
-    glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&current);
-    return (current == _id);
+    if(_id)
+    {
+        GLuint current;
+        glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&current);
+        return (current == *_id);
+    }
+    return false;
 }
 /**
  * Use program.
  */
 bool Program::begin() const
 {
-    if(!_id)
+    if(false == _id)
     {
         return false;
     }
@@ -133,12 +153,12 @@ bool Program::begin() const
     // Warning! This may spam your logs!
     GLuint current;
     glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&current);
-    if(current && (current != _id))
+    if(current && (current != *_id))
     {
         Log_Warning(Module::Render, "Program %d is currently in use.", current);
     }
 #endif // SANITY_CHECK
-    glUseProgram(_id);
+    glUseProgram(*_id);
     return true;
 }
 
@@ -152,7 +172,7 @@ void Program::end() const
     // Warning! This may spam your logs!
     GLuint current;
     glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&current);
-    if(current != _id)
+    if((true == _id) && (current != *_id))
     {
         Log_Warning(Module::Render, "You are trying to end using program %d whereas the current active program is %d", _id, current);
         Log_Warning(Module::Render, "If you really want to end any program currently in use, call Program::endAny() (static) instead.");
@@ -179,9 +199,12 @@ void Program::destroy()
         {
             end();
         }
-        // Delete program.
-        glDeleteProgram (_id);
-        _id = 0;
+        if(1 == _id.use_count())
+        {
+            // Delete program.
+            glDeleteProgram (*_id);
+        }
+        _id.reset();
     }
 }
 /**
@@ -189,10 +212,15 @@ void Program::destroy()
  */
 void Program::infoLog(Framework::Severity severity) const
 {
+    if(!_id)
+    {
+        return;
+    }
+    
     GLsizei maxLogLength, logLength;
     GLchar *log;
 
-    glGetProgramiv(_id, GL_INFO_LOG_LENGTH, (GLint*)&maxLogLength);
+    glGetProgramiv(*_id, GL_INFO_LOG_LENGTH, (GLint*)&maxLogLength);
     if(!maxLogLength)
         return;
     
@@ -203,7 +231,7 @@ void Program::infoLog(Framework::Severity severity) const
         return;
     }
 
-    glGetProgramInfoLog(_id, maxLogLength, &logLength, log);
+    glGetProgramInfoLog(*_id, maxLogLength, &logLength, log);
     Log_Ex(Framework::Module::Render, severity, log);
 
     delete [] log;
@@ -216,7 +244,7 @@ void Program::infoLog(Framework::Severity severity) const
  */
 void Program::bindAttribLocation(GLuint index, const GLchar* name)
 {
-    glBindAttribLocation(_id, index, name);
+    glBindAttribLocation(*_id, index, name);
 }
 /**
  * Bind multiple attribute locations.
@@ -228,7 +256,7 @@ void Program::bindAttribLocation(std::initializer_list<std::pair<unsigned int, c
     std::pair<unsigned int, char const*> const* it;
     for(it=attr.begin(); it!=attr.end(); ++it)
     {
-        glBindAttribLocation(_id, it->first, it->second);
+        glBindAttribLocation(*_id, it->first, it->second);
     }
 }
 /**
@@ -239,7 +267,7 @@ void Program::bindAttribLocation(std::initializer_list<std::pair<unsigned int, c
  */
 void Program::bindFragDataLocation(GLuint index, const GLchar* name)
 {
-    glBindFragDataLocation(_id, index, name);
+    glBindFragDataLocation(*_id, index, name);
 }
 /**
  * Bind multiple fragment output locations.
@@ -251,7 +279,7 @@ void Program::bindFragDataLocation(std::initializer_list<std::pair<unsigned int,
     std::pair<unsigned int, char const*> const* it;
     for(it=fragData.begin(); it!=fragData.end(); ++it)
     {
-        glBindFragDataLocation(_id, it->first, it->second);
+        glBindFragDataLocation(*_id, it->first, it->second);
     }
 }
 /**
@@ -262,7 +290,7 @@ void Program::bindFragDataLocation(std::initializer_list<std::pair<unsigned int,
 void Program::transformFeedbackVaryings(bool interleaved, std::initializer_list<char const*> names)
 {
     const char** ptr = const_cast<const char**>(names.begin());
-    glTransformFeedbackVaryings(_id, names.size(), ptr, (interleaved ? GL_INTERLEAVED_ATTRIBS : GL_SEPARATE_ATTRIBS));
+    glTransformFeedbackVaryings(*_id, names.size(), ptr, (interleaved ? GL_INTERLEAVED_ATTRIBS : GL_SEPARATE_ATTRIBS));
 }
 /**
  * Delete attached shaders.
@@ -272,11 +300,11 @@ void Program::destroyShaders()
     if(_id)
     {
         GLsizei count;
-        glGetProgramiv(_id, GL_ATTACHED_SHADERS, &count);
+        glGetProgramiv(*_id, GL_ATTACHED_SHADERS, &count);
         if(count)
         {
             GLuint* shaders = new GLuint[count];
-            glGetAttachedShaders(_id, count, NULL, &shaders[0]);
+            glGetAttachedShaders(*_id, count, NULL, &shaders[0]);
             for(GLsizei i=0; i<count; i++)
             {
                 glDeleteShader(shaders[i]);
@@ -292,7 +320,7 @@ void Program::destroyShaders()
  */
 int Program::getUniformLocation(char const* name)
 {
-    GLint uid = glGetUniformLocation(_id, name);
+    GLint uid = glGetUniformLocation(*_id, name);
     GLenum err = glGetError();
     if(err != GL_NO_ERROR)
     {
@@ -307,7 +335,7 @@ int Program::getUniformLocation(char const* name)
  */
 int Program::getAttribLocation(char const* name)
 {
-    GLint uid = glGetAttribLocation(_id, name);
+    GLint uid = glGetAttribLocation(*_id, name);
     GLenum err = glGetError();
     if(err != GL_NO_ERROR)
     {

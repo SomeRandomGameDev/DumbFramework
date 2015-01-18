@@ -2,6 +2,7 @@
 #define _DUMB_FW_PROGRAM_
 
 #include <initializer_list>
+#include <memory>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -23,9 +24,17 @@ class Program
          */
         Program();
         /**
+         * Copy constructor.
+         */
+        Program(Program const& prog);
+        /**
          * Destructor.
          */
         ~Program();
+        /**
+         * Copy operator.
+         */
+        Program& operator= (Program const& prog);
         /** 
          * Create program.
          */
@@ -148,9 +157,9 @@ class Program
          */
         template <typename T>
         void uniform(int id, bool transpose, T const& mat) const;
-
+        
     private:
-        GLuint _id; /**< Program id */
+        std::shared_ptr<GLuint> _id; /**< Program id */
 };
 
 } // Framework
