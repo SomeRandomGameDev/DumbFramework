@@ -2,56 +2,56 @@
 #define _DUMB_FW_MATERIAL_
 
 #include <DumbFramework/program.hpp>
+#include <DumbFramework/renderer.hpp>
+#include <DumbFramework/texture2d.hpp>
 #include <DumbFramework/uniformbuffer.hpp>
 
 namespace Framework {
-namespace Render    {
+namespace Render    {
 
+/**
+ * Material.
+ * [todo]
+ */
 class Material
 {
     public:
         Material();
         ~Material();
 
+        bool create(std::string const& name);
+        void destroy();
+
         void bind();
         void unbind();
 
-        void texture2D(std::string const& name, Texture2D const& texture);
-        Texture2D const& texture2D(std::string const& name);
-
-        void program(Program const& prog);
-        Program const& program() const;
-
         std::string const& name() const;
 
-        int input(std::string const& name) const;
-
-        template<typename T>
-        void set(std::string const& name, T const& value);
-
-        template<typename T>
-        void set(std::string const& name, bool transpose, T const& value);
-
-        template<typename T>
-        T const& get(std::string const& name) const;
+        void attach(Program const& prog);
 
     public:
         bool visible;
 
         bool      blend;
-        BlendFunc blendFunc;
-                
+        BlendFunc srcBLend, dstBlend;
+
         bool      depthWrite;
+        bool      depthTest;
         DepthFunc depthFunc;
         
         bool     culling;
-        CullFace cullingmode;
+        CullFace cullingMode;
+
+        Texture2D   diffuseMap;
+        Texture2D   specularMap;
+        float       shininess;
+
+        // [todo] normal map, etc...
         
-    protected:
+    private:
         std::string _name;
-        std::vector<std::pair<std::string, Texture2D>> _textures2D;
-        Program _program;
-        UniformBuffer _uniformBuffer;
+        Program     _program;
+        int         _shininessId; // [todo] change to UBO if there're more uniforms.
 };
 
 } // Render

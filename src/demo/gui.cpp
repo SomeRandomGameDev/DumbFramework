@@ -7,6 +7,7 @@
 #include <DumbFramework/texture.hpp>
 #include <DumbFramework/textureloader.hpp>
 #include <DumbFramework/mesh.hpp>
+#include <DumbFramework/material.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace Framework;
@@ -25,10 +26,10 @@ static const float g_cube[] =
     -1.0f, 1.0f,-1.0f, 1.0f, 0.0f,
     -1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
      1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-     1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
-    -1.0f, 1.0f,-1.0f, 1.0f, 0.0f,
-    -1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-     1.0f, 1.0f, 1.0f, 0.0f, 1.0f
+     1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f,-1.0f,-1.0f, 1.0f, 0.0f,
+    -1.0f,-1.0f, 1.0f, 1.0f, 1.0f,
+     1.0f,-1.0f, 1.0f, 0.0f, 1.0f
 };
 static const unsigned int g_cubeFace[] =
 {
@@ -53,31 +54,34 @@ layout (location=0) in vec3 vs_position;
 layout (location=1) in vec2 vs_uv;
 layout (location=2) in mat4 vs_modelviewproj;
 
-flat out int instanceID; 
 out vec2 texCoord;
 
 void main()
 {
     texCoord = vs_uv;
     gl_Position = vs_modelviewproj * vec4(vs_position, 1.0);
-    instanceID = gl_InstanceID; 
+//    instanceID = gl_InstanceID; 
 }
 )EOT";
 
 static const char* g_fragmentShader = R"EOT(
 #version 410 core
 
-uniform vec3 color;
-uniform sampler2DArray texSampler;
+// Make an uniform block
+//uniform Material {
+    uniform sampler2D diffuseMap;
+    uniform sampler2D specularMap;
+    uniform float shininess;
+//};
 
-flat in int instanceID;
 in vec2 texCoord;
 
 out vec4 out_color;
 
 void main()
 {
-    out_color = vec4(color * (instanceID / 4096.0f), 1.0) * texture2DArray(texSampler, vec3(texCoord, instanceID%6));
+    out_color = texture2D(diffuseMap, texCoord)*0.5 + texture2D(specularMap, texCoord)*0.5;
+//    out_color = vec4(color * (instanceID / 4096.0f), 1.0) * texture2DArray(texSampler, vec3(texCoord, instanceID%6));
 }
 )EOT";
 
@@ -86,7 +90,7 @@ class Dummy
 {
     public:
         Dummy() 
-            : bgcolor(0.8f, 0.6f, 0.6f)
+            : bgcolor(0.5f, 0.1f, 0.1f)
             , alpha(0.75f)
             , pushed(false)
             , open(true)
@@ -150,11 +154,24 @@ class Dummy
             {
                 return;
             }
-            program.begin();
-                colorId = program.getUniformLocation("color");
-                GLint texId = program.getUniformLocation("texSampler");
-                program.uniform(texId, 0);
-            program.end();
+      
+            ret = material.create("dummy");
+            material.attach(program);
+            
+            material.shininess = 10.0f;
+            Framework::Texture::load(material.diffuseMap, "tex03.png");
+            Framework::Texture::load(material.specularMap, "tex03_specular.png");
+            material.diffuseMap.bind();
+                material.diffuseMap.setMagFilter(Framework::Texture::MagFilter::LINEAR_TEXEL);
+                material.diffuseMap.setMinFilter(Framework::Texture::MinFilter::LINEAR_TEXEL);
+                material.diffuseMap.setWrap(Framework::Texture::Wrap::CLAMP_TO_EDGE, Framework::Texture::Wrap::CLAMP_TO_EDGE);
+            material.diffuseMap.unbind();
+            material.specularMap.bind();
+                material.specularMap.setMagFilter(Framework::Texture::MagFilter::LINEAR_TEXEL);
+                material.specularMap.setMinFilter(Framework::Texture::MinFilter::LINEAR_TEXEL);
+                material.specularMap.setWrap(Framework::Texture::Wrap::CLAMP_TO_EDGE, Framework::Texture::Wrap::CLAMP_TO_EDGE);
+            material.specularMap.unbind();
+            material.culling = false;
             
             camera[0].lookAt(glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f));
             camera[0].perspective(45.0f, 0.1f, 10.0f);
@@ -171,13 +188,6 @@ class Dummy
             currentFrame = 0;
             msPerFrameAccum = 0.0f;
 
-            Framework::Texture::load(texture, {"tex00.png","tex01.png","tex02.png","tex03.png","tex04.png","tex05.png"});
-            texture.bind();
-                texture.setMagFilter(Framework::Texture::MagFilter::LINEAR_TEXEL);
-                texture.setMinFilter(Framework::Texture::MinFilter::LINEAR_TEXEL);
-                texture.setWrap(Framework::Texture::Wrap::CLAMP_TO_EDGE, Framework::Texture::Wrap::CLAMP_TO_EDGE);
-            texture.unbind();
-            
             glfwSwapInterval(1); // vsync
         }
         
@@ -235,8 +245,6 @@ class Dummy
             
             // Draw a cube 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            renderer.culling(false);
-            renderer.depthTest(true);
             
             if(angleUpdate)
             {
@@ -275,15 +283,13 @@ class Dummy
             mvpBuffer.unmap();
             
             renderer.setActiveTextureUnit(0);
-            texture.bind();
-            program.begin();
+            material.bind();
                 vertexStream.bind();
                     program.uniform(colorId, color);
                     mesh.indexBuffer().bind();
                     glDrawElementsInstanced(GL_TRIANGLES, 12*3, GL_UNSIGNED_INT, 0, 16*16*16);
                 vertexStream.unbind();
-            program.end();
-            texture.unbind();
+            material.unbind();
         }
         
         void destroy()
@@ -304,6 +310,7 @@ class Dummy
         bool pushed;
         bool open;
         Framework::Render::Mesh mesh;
+        Framework::Render::Material material;
         Framework::VertexBuffer mvpBuffer;
         Framework::VertexStream vertexStream;
         Framework::Program program;
@@ -312,8 +319,6 @@ class Dummy
         float depth;
         Framework::Camera camera[2];
         bool back, forward, angleUpdate;
-        
-        Framework::Texture2D texture;
         
         float msPerFrame[120];
         int   currentFrame;
