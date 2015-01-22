@@ -325,5 +325,13 @@ int Texture2D::layerCount() const
 {
     return _layers;
 }
+/**
+ * Get texture id.
+ * @return texture id.
+ */
+GLuint Texture2D::id() const
+{
+    return _id;
+}
 
 } // Framework

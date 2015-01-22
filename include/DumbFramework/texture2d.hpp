@@ -103,7 +103,11 @@ class Texture2D
          * @return layer count.
          */
         int layerCount() const;
-        
+        /**
+         * Get texture id.
+         * @return texture id.
+         */
+        GLuint id() const;
     private:
         glm::ivec2 _size;               /**< Texture width and height. **/
         Texture::PixelFormat _format;   /**< Pixel format.             **/

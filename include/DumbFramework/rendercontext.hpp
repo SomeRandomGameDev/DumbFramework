@@ -8,17 +8,52 @@
 namespace Framework {
 namespace Render    {
 
+/** Framebuffer attachment point. **/
+struct Attachment
+{
+    /** Framebuffer attachment point values. **/
+    enum Value
+    {
+        DEPTH = 0,
+        STENCIL,
+        DEPTH_STENCIL,
+        COLOR
+    };
+    unsigned int value; /**< Framebuffer attachment point value. **/
+    /**
+     * @brief Default constructor.
+     */
+    inline Attachment() : value(COLOR) {}
+    /**
+     * @brief Constructor.
+     * Constructs attachment point from value.
+     */
+    inline Attachment(Value v) : value(v) {}
+    /**
+     * @brief Constructor.
+     * Constructs attachment point from value.
+     */
+    inline Attachment(unsigned int v) : value(v) {}
+    inline operator unsigned() { return value; }
+    inline operator const unsigned int() const { return value; }
+    /** Constructs attachment point from OpenGL value. **/
+    inline void from(GLenum v);
+    /** Convert to OpenGL compliant value. **/
+    inline GLenum to() const;
+};
+inline bool operator== (Attachment const& a0, Attachment const& a1);
+inline bool operator== (Attachment::Value const& v, Attachment const& a0);
+inline bool operator== (unsigned int v, Attachment const& a0);
+inline bool operator== (Attachment const& a0, Attachment::Value const& v);
+inline bool operator== (Attachment const& a0, unsigned int v);
+inline bool operator!= (Attachment const& a0, Attachment const& a1);
+inline bool operator!= (Attachment::Value const& v, Attachment const& a0);
+inline bool operator!= (unsigned int v, Attachment const& a0);
+inline bool operator!= (Attachment const& a0, Attachment::Value const& v);
+inline bool operator!= (Attachment const& a0, unsigned int v);
+
 class Context
 {
-    public:
-        enum AttachmentPoint
-        {
-            DEPTH = 0,
-            STENCIL,
-            DEPTH_STENCIL,
-            COLOR
-        };
-    
     public:
         Context();
         ~Context();
@@ -30,10 +65,10 @@ class Context
         bool bind();
         void unbind();
         
-        bool attach(AttachmentPoint point, size_t index, Texture2D *target, int level=0, int layer=0);
-        Texture2D* output(AttachmentPoint point, size_t index);
-        
-        glm::ivec2 const& size() const;
+        bool attach(Attachment point, Texture2D *target, int level=0, int layer=0);
+        Texture2D* output(Attachment point);
+
+        glm::ivec2 size() const;
         
     protected:
         struct Output
@@ -44,6 +79,7 @@ class Context
             GLint      layer;
             
             inline bool complete() const;
+            inline void attach() const;
         };
         
         enum InternalState
@@ -62,6 +98,7 @@ class Context
         
         size_t  _outputCapacity;
         size_t  _outputCount;
+        int*    _outputIndex;
         Output* _outputs;
 };
 

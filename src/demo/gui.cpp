@@ -7,6 +7,7 @@
 #include <DumbFramework/texture.hpp>
 #include <DumbFramework/textureloader.hpp>
 #include <DumbFramework/mesh.hpp>
+#include <DumbFramework/rendercontext.hpp>
 #include <DumbFramework/material.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 

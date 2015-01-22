@@ -12,6 +12,7 @@ Context::Context()
     , _colorAttachmentCount(0)
     , _colorAttachments(nullptr)
     , _outputCount(0)
+    , _outputIndex(nullptr)
     , _outputs(nullptr)
 {}
 
@@ -41,6 +42,8 @@ bool Context::create()
     
     _outputCapacity = maxColorAttachments+3; // color + depth + stenctil + depth_stencil
     _outputCount = 0;
+    _outputIndex = new int[_outputCapacity];
+    memset(_outputIndex, -1, sizeof(int)*_outputCapacity);
     _outputs = new Context::Output[_outputCapacity];
     memset(_outputs, 0, sizeof(Context::Output)*_outputCapacity);
     
@@ -66,6 +69,12 @@ void Context::destroy()
         _colorAttachments = nullptr;
     }
     _outputCount = 0;
+    _outputCapacity = 0;
+    if(nullptr != _outputIndex)
+    {
+        delete [] _outputIndex;
+        _outputIndex = nullptr;
+    }
     if(nullptr != _outputs)
     {
         delete [] _outputs,
@@ -98,16 +107,33 @@ bool Context::compile()
         }
     }
     
-    glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
-    for(size_t i=1; i<_outputCount; ++i)
+    _colorAttachmentCount = 0;
+    for(size_t i=0; i<_outputCount; ++i)
     {
-// [todo]        _outputs[i].attach();
+        if(_outputs[i].attachment >= GL_COLOR_ATTACHMENT0)
+        {
+            _colorAttachments[_colorAttachmentCount++] = _outputs[i].attachment;
+        }
     }
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
+    for(size_t i=0; i<_outputCount; ++i)
+    {
+        _outputs[i].attach();
+#ifdef SANITY_CHECK
+        GLenum err = glGetError();
+        if(GL_NO_ERROR != err)
+        {
+            Log_Error(Module::Render, "Unable to attach output %d : %s", i, (const char*)gluErrorString(err));
+        }
+#endif // SANITY_CHECK
+     }
+
     GLuint status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if(GL_FRAMEBUFFER_COMPLETE != status)
     {
         GLenum err = glGetError();
-        Log_Error(Module::Render, (const char*)gluErrorString(err));
+        Log_Error(Module::Render, "%s",(const char*)gluErrorString(err));
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return false;
     }
@@ -126,10 +152,6 @@ bool Context::bind()
         }
     }
     glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
-    for(size_t i=1; i<_outputCount; ++i)
-    {
-// [todo]        _outputs[i].attach();
-    }
     glDrawBuffers(_colorAttachmentCount, _colorAttachments);
     return true;
 }
@@ -140,12 +162,53 @@ void Context::unbind()
     glDrawBuffer(GL_BACK);
 }
 
-#if 0
-bool attach(AttachmentPoint point, size_t index, Texture2D *target, int level=0, int layer=0);
-Texture2D* output(AttachmentPoint point, size_t index);
+bool Context::attach(Attachment point, Texture2D *target, int level, int layer)
+{
+    if(point >= _outputCapacity)
+    {
+        Log_Error(Module::Render, "Invalid attachment point.");
+        return false;
+    }
+    
+    size_t index = point;
+    size_t pos;
+    if(_outputIndex[index] != -1)
+    {
+        Log_Warning(Module::Render, "Something is already attached to attachment %d! It will replaced.", point.to());
+        pos = _outputIndex[index];
+    }
+    else
+    {
+        pos = _outputCount++;
+    }
+    
+    _outputIndex[index] = pos;
+    _outputs[pos].attachment = point.to();
+    _outputs[pos].target     = target;
+    _outputs[pos].level      = level;
+    _outputs[pos].layer      = layer;
 
-glm::ivec2 const& size() const;
-#endif // 0
+    return true;
+}
+
+Texture2D* Context::output(Attachment point)
+{
+    size_t index = point.to();
+    if(-1 == _outputIndex[index])
+    {
+        return nullptr;
+    }
+    return _outputs[_outputIndex[index]].target;
+}
+
+glm::ivec2 Context::size() const
+{
+    if(-1 == _outputIndex[Attachment::COLOR])
+    {
+        return glm::ivec2(0);
+    }
+    return _outputs[_outputIndex[Attachment::COLOR]].target->size();
+}
 
 } // Render
 } // Framework

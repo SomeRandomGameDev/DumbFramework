@@ -264,6 +264,7 @@ inline bool operator== (Wrap const& w0, Wrap::Value const& v);
 inline bool operator!= (Wrap const& w0, Wrap const& w1);
 inline bool operator!= (Wrap::Value const& v, Wrap const& w0);
 inline bool operator!= (Wrap const& w0, Wrap::Value const& v);
+
 } // Texture
 } // Framework
 
