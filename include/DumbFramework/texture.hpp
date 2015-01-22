@@ -30,10 +30,28 @@ struct PixelFormat
         RGB_8,
         /** Red, Green, Blue, Alpha with 8 bits per component. **/
         RGBA_8,
+        /** Red, Green, Blue with 16 bits per component (float). **/
+        RGB_16F,
+        /** Red, Green, Blue, Alpha with 16 bits per component (float). **/
+        RGBA_16F,
+        /** Red, Green, Blue with 32 bits per component (float). **/
+        RGB_32F,
+        /** Red, Green, Blue, Alpha with 32 bits per component (float). **/
+        RGBA_32F,
         /** Luminance 8 bits (1 component). **/
         LUMINANCE_8,
         /** Luminance 16 bits (1 component). **/
-        LUMINANCE_16
+        LUMINANCE_16,
+        /** Depth 16 bits (1 component). **/
+        DEPTH_16,
+        /** Depth 24 bits (1 component). **/
+        DEPTH_24,
+        /** Depth 32 bits (1 component). **/
+        DEPTH_32,
+        /** Depth 24 bits and 8 bits stencil (2 component). **/
+        DEPTH_24_STENCIL_8,
+        /** Depth 32 bits and 8 bits stencil (2 component). **/
+        DEPTH_32_STENCIL_8
     };
     Value value; /**< Pixel format value. **/
     /** 
@@ -52,12 +70,21 @@ struct PixelFormat
      * 
      * Returns the number of bytes per pixel associated with current
      * pixel format. 
-     *  Pixel format | Bpp
-     *  ------------ | :--:
-     *  RGB_8        | 3
-     *  RGBA_8       | 4
-     *  LUMINANCE_8  | 1
-     *  LUMINANCE_16 | 2
+     *  Pixel format       | Bpp
+     *  ------------------ | :--:
+     *  RGB_8              | 3
+     *  RGBA_8             | 4
+     *  RGB_16F            | 6
+     *  RGBA_16F           | 8
+     *  RGB_32F            | 12
+     *  RGBA_32F           | 16
+     *  LUMINANCE_8        | 1
+     *  LUMINANCE_16       | 2
+     *  DEPTH_16           | 2
+     *  DEPTH_24           | 3
+     *  DEPTH_32           | 4
+     *  DEPTH_24_STENCIL_8 | 4
+     *  DEPTH_32_STENCIL_8 | 5
      * 
      * @return Bytes per pixel. 
      */
@@ -67,15 +94,31 @@ struct PixelFormat
      * 
      * Returns the number of color components associated with current
      * pixel format.
-     *  Pixel format | Components
-     *  ------------ | :--------:
-     *  RGB_8        | 3
-     *  RGBA_8       | 4
-     *  LUMINANCE_8  | 1
-     *  LUMINANCE_16 | 1
+     *  Pixel format       | Components
+     *  ------------------ | :--------:
+     *  RGB_8              | 3
+     *  RGBA_8             | 4
+     *  RGB_16F            | 3
+     *  RGBA_16F           | 4
+     *  RGB_32F            | 3
+     *  RGBA_32F           | 4
+     *  LUMINANCE_8        | 1
+     *  LUMINANCE_16       | 1
+     *  DEPTH_16           | 1
+     *  DEPTH_24           | 1
+     *  DEPTH_32           | 1
+     *  DEPTH_24_STENCIL_8 | 2
+     *  DEPTH_32_STENCIL_8 | 2
+     * 
      * @return Component count.
      */
     inline size_t componentCount() const;
+    /** Get the corresponding OpenGL internal format. **/
+    inline GLint internalFormat() const;
+    /** Get the corresponding OpenGL data format. **/
+    inline GLenum format() const;
+    /** Get the corresponding OpenGL data type. **/
+    inline GLenum type() const;
 };
 inline bool operator== (PixelFormat const& p0, PixelFormat const& p1);
 inline bool operator== (PixelFormat::Value const& v, PixelFormat const& p0);
@@ -83,6 +126,7 @@ inline bool operator== (PixelFormat const& p0, PixelFormat::Value const& v);
 inline bool operator!= (PixelFormat const& p0, PixelFormat const& p1);
 inline bool operator!= (PixelFormat::Value const& v, PixelFormat const& p0);
 inline bool operator!= (PixelFormat const& p0, PixelFormat::Value const& v);
+
 /** 
  * @brief Texel minification filter. 
  * @ingroup DUMB_FW_TEXTURE

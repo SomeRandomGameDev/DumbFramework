@@ -1,7 +1,7 @@
 namespace Framework {
 namespace Texture   {
 
-    inline size_t PixelFormat::bytesPerPixel() const
+    size_t PixelFormat::bytesPerPixel() const
     {
         switch(value)
         {
@@ -11,26 +11,134 @@ namespace Texture   {
                 return 3;
             case RGBA_8:
                 return 4;
+            case RGB_16F:
+                return 6;
+            case RGBA_16F:
+                return 8;
+            case RGB_32F:
+                return 12;
+            case RGBA_32F:
+                return 16;
             case LUMINANCE_8:
                 return 1;
             case LUMINANCE_16:
                 return 2;
+            case DEPTH_16:
+                return 2;
+            case DEPTH_24:
+                return 3;
+            case DEPTH_32:
+                return 4;
+            case DEPTH_24_STENCIL_8:
+                return 4;
+            case DEPTH_32_STENCIL_8:
+                return 5;
         };
     }
 
-    inline size_t PixelFormat::componentCount() const
+    size_t PixelFormat::componentCount() const
     {
         switch(value)
         {
             case UNKNOWN:
                 return 0;
             case RGB_8:
+            case RGB_16F:
+            case RGB_32F:
                 return 3;
             case RGBA_8:
+            case RGBA_16F:
+            case RGBA_32F:
                 return 4;
             case LUMINANCE_8:
             case LUMINANCE_16:
+            case DEPTH_16:
+            case DEPTH_24:
+            case DEPTH_32:
                 return 1;
+            case DEPTH_24_STENCIL_8:
+            case DEPTH_32_STENCIL_8:
+                return 2;
+        };
+    }
+    
+    /** Get the corresponding OpenGL internal format. **/
+    GLint PixelFormat::internalFormat() const
+    {
+        switch(value)
+        {
+            case Texture::PixelFormat::RGB_8:
+                return GL_RGB8;
+            case Texture::PixelFormat::RGBA_8:
+                return GL_RGBA8;
+            case Texture::PixelFormat::RGB_16F:
+                return GL_RGB16F;
+            case Texture::PixelFormat::RGBA_16F:
+                return GL_RGBA16F;
+            case Texture::PixelFormat::RGB_32F:
+                return GL_RGB32F;
+            case Texture::PixelFormat::RGBA_32F:
+                return GL_RGBA32F;
+            case Texture::PixelFormat::LUMINANCE_8:
+                return GL_R8;
+            case Texture::PixelFormat::LUMINANCE_16:
+                return GL_R16;
+            case Texture::PixelFormat::DEPTH_16:
+                return GL_DEPTH_COMPONENT16;
+            case Texture::PixelFormat::DEPTH_24:
+                return GL_DEPTH_COMPONENT24;
+            case Texture::PixelFormat::DEPTH_32:
+                return GL_DEPTH_COMPONENT32;
+            case Texture::PixelFormat::DEPTH_24_STENCIL_8:
+                return GL_DEPTH24_STENCIL8;
+            case Texture::PixelFormat::DEPTH_32_STENCIL_8:
+                return GL_DEPTH32F_STENCIL8;
+            default:
+                return GL_RGB8;
+        };
+    }
+
+    /** Get the corresponding OpenGL data format. **/
+    GLenum PixelFormat::format() const
+    {
+        switch(value)
+        {
+            case Texture::PixelFormat::RGB_8:
+            case Texture::PixelFormat::RGB_16F:
+            case Texture::PixelFormat::RGB_32F:
+                return GL_RGB;
+            case Texture::PixelFormat::RGBA_8:
+            case Texture::PixelFormat::RGBA_16F:
+            case Texture::PixelFormat::RGBA_32F:
+                return GL_RGBA;
+            case Texture::PixelFormat::LUMINANCE_8:
+            case Texture::PixelFormat::LUMINANCE_16:
+                return GL_RED;
+            case Texture::PixelFormat::DEPTH_16:
+                return GL_DEPTH_COMPONENT;
+            case Texture::PixelFormat::DEPTH_24:
+                return GL_DEPTH_COMPONENT;
+            case Texture::PixelFormat::DEPTH_32:
+                return GL_DEPTH_COMPONENT;
+            case Texture::PixelFormat::DEPTH_24_STENCIL_8:
+                return GL_DEPTH_STENCIL;
+            case Texture::PixelFormat::DEPTH_32_STENCIL_8:
+                return GL_DEPTH_STENCIL;
+            case Texture::PixelFormat::UNKNOWN:
+            default:
+                return GL_RGB;
+        };
+    }
+    /** Get the corresponding OpenGL data type. **/
+    GLenum PixelFormat::type() const
+    {
+        switch(value)
+        {
+            case Texture::PixelFormat::LUMINANCE_16:
+                return GL_UNSIGNED_SHORT;
+            default:
+                return GL_UNSIGNED_BYTE;
+                break;
         };
     }
     

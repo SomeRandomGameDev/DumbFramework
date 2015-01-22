@@ -47,36 +47,6 @@ static GLuint GetCurrentTextureId(GLenum target)
     return texID;
 }
 
-/** Construct from pixel format. **/
-Texture2D::OpenGLTextureInfos::OpenGLTextureInfos(Texture::PixelFormat pixelFormat)
-{
-    switch(pixelFormat)
-    {
-        case Texture::PixelFormat::UNKNOWN:
-            break;
-        case Texture::PixelFormat::RGB_8:
-            internalFormat = GL_RGB8;
-            format = GL_RGB;
-            type = GL_UNSIGNED_BYTE;
-            break;
-        case Texture::PixelFormat::RGBA_8:
-            internalFormat = GL_RGBA8;
-            format = GL_RGBA;
-            type = GL_UNSIGNED_BYTE;
-            break;
-        case Texture::PixelFormat::LUMINANCE_8:
-            internalFormat = GL_R8;
-            format = GL_RED;
-            type = GL_UNSIGNED_BYTE;
-            break;
-        case Texture::PixelFormat::LUMINANCE_16:        
-            internalFormat = GL_R16;
-            format = GL_RED;
-            type = GL_UNSIGNED_SHORT;
-            break;
-    };
-}
-
 /** Constructor. **/
 Texture2D::Texture2D()
     : _size(0)
@@ -84,7 +54,6 @@ Texture2D::Texture2D()
     , _id(0)
     , _target(GL_NONE)
     , _layers(0)
-    , _infos(Texture::PixelFormat())
 {}
 
 /**Destructor. **/
@@ -109,7 +78,6 @@ bool Texture2D::create(const glm::ivec2& size, Texture::PixelFormat format, int 
     }
     glGenTextures( 1, &_id );
     _format = format;
-    _infos  = Texture2D::OpenGLTextureInfos(format);
     _size   = size;
     _layers = layers;
     
@@ -117,14 +85,14 @@ bool Texture2D::create(const glm::ivec2& size, Texture::PixelFormat format, int 
     {
         _target = GL_TEXTURE_2D_ARRAY;
         glBindTexture(_target, _id);
-        glTexImage3D(_target, 0, _infos.internalFormat, _size.x, _size.y, _layers, 0, _infos.format, _infos.type, nullptr);
-        // OpenGL 4.2 only: glTexStorage3D(_target, 1, _infos.internalFormat, _size.x, _size.y, _layers);
+        glTexImage3D(_target, 0, _format.internalFormat(), _size.x, _size.y, _layers, 0, _format.format(), _format.type(), nullptr);
+        // OpenGL 4.2 only: glTexStorage3D(_target, 1, _format.internalFormat(), _size.x, _size.y, _layers);
     }
     else
     {
         _target = GL_TEXTURE_2D;
         glBindTexture(_target, _id);
-        // OpenGL 4.2 only: glTexStorage2D(_target, 0, _infos.internalFormat, _size.x, _size.y);
+        // OpenGL 4.2 only: glTexStorage2D(_target, 0, _format.internalFormat(), _size.x, _size.y);
     }
     glBindTexture(_target, 0);
     return true;
@@ -160,17 +128,17 @@ bool Texture2D::setData(void* data, int layer)
 
     if(GL_TEXTURE_2D == _target)
     {
-        glTexImage2D(_target, 0, _infos.internalFormat, _size.x, _size.y, 0, _infos.format, _infos.type, data);
+        glTexImage2D(_target, 0, _format.internalFormat(), _size.x, _size.y, 0, _format.format(), _format.type(), data);
     }
     else
     {
         if(layer < 0)
         {
-            glTexImage3D(_target, 0, _infos.internalFormat, _size.x, _size.y, _layers, 0, _infos.format, _infos.type, data);
+            glTexImage3D(_target, 0, _format.internalFormat(), _size.x, _size.y, _layers, 0, _format.format(), _format.type(), data);
         }
         else if(layer < _layers)
         {
-            glTexSubImage3D(_target, 0, 0, 0, layer, _size.x, _size.y, 1, _infos.format, _infos.type, data);
+            glTexSubImage3D(_target, 0, 0, 0, layer, _size.x, _size.y, 1, _format.format(), _format.type(), data);
         }
         else
         {

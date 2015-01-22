@@ -114,16 +114,6 @@ class Texture2D
         GLuint _id;                     /**< Resource id.              **/
         GLenum _target;                 /**< Texture binding target.   **/
         int    _layers;                 /**< Number of layers.         **/
-        
-        /** OpenGL texture informations. **/
-        struct OpenGLTextureInfos
-        {
-            GLint  internalFormat; /**< Internal format.   **/
-            GLenum format;         /**< Pixel data format. **/
-            GLenum type;           /**< Pixel data type.   **/
-            
-            OpenGLTextureInfos(Texture::PixelFormat pixelFormat);
-        } _infos;
 };
 
 } // Framework

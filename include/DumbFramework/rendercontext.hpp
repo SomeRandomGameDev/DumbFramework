@@ -14,9 +14,16 @@ struct Attachment
     /** Framebuffer attachment point values. **/
     enum Value
     {
+        /** Depth attachment. **/
         DEPTH = 0,
+        /** Stencil attachment. **/
         STENCIL,
+        /** 
+         * Both depth and stencil values will be written to attached
+         * element.
+         */
         DEPTH_STENCIL,
+        /** Color attachments. **/
         COLOR
     };
     unsigned int value; /**< Framebuffer attachment point value. **/
@@ -52,10 +59,16 @@ inline bool operator!= (unsigned int v, Attachment const& a0);
 inline bool operator!= (Attachment const& a0, Attachment::Value const& v);
 inline bool operator!= (Attachment const& a0, unsigned int v);
 
+/**
+ * Render context.
+ * [todo]
+ */
 class Context
 {
     public:
+        /** Default constructor. **/
         Context();
+        /** Destructor. **/
         ~Context();
         
         bool create();
