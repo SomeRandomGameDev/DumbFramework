@@ -86,6 +86,7 @@ set(DUMB_FRAMEWORK_SOURCES
     src/program.cpp
     src/mesh.cpp
     src/material.cpp
+    src/rendercontext.cpp
     src/sprengine.cpp
     src/sprite.cpp
     src/texture2d.cpp
