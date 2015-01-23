@@ -20,6 +20,8 @@ class Light
         virtual ~Light();
         
     public:
+        /** Light position. **/
+        glm::vec3 _position;
         /** Light radius. **/
         float radius;
         /** Light intensity. **/

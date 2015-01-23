@@ -18,8 +18,6 @@ class PointLight : public Light
         virtual ~PointLight();
         
     public:
-        /** Light position. **/
-        glm::vec3 _position;
 };
 
 } // Render
