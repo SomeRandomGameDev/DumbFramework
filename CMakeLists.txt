@@ -66,14 +66,19 @@ set(DUMB_FRAMEWORK_RENDER_SOURCES
     src/render/bufferobject.cpp
     src/render/geometry.cpp
     src/render/vertexstream.cpp
+    src/render/mesh.cpp
+    src/render/dummy.cpp
     src/render/shader.cpp
     src/render/program.cpp
-    src/render/mesh.cpp
     src/render/material.cpp
     src/render/rendercontext.cpp
     src/render/renderbuffer.cpp
     src/render/texture2d.cpp
-    src/render/textureloader.cpp)
+    src/render/textureloader.cpp
+    src/render/light/light.cpp
+    src/render/light/directionallight.cpp
+    src/render/light/pointlight.cpp
+    src/render/light/spotlight.cpp)
 
 set(DUMB_FRAMEWORK_SOURCES
     ${DUMB_FRAMEWORK_RENDER_SOURCES}

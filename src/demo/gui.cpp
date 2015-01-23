@@ -12,43 +12,10 @@
 #include <DumbFramework/render/mesh.hpp>
 #include <DumbFramework/render/rendercontext.hpp>
 #include <DumbFramework/render/material.hpp>
+#include <DumbFramework/render/mesh.hpp>
+#include <DumbFramework/render/dummy.hpp>
 
 using namespace Framework;
-
-static const float g_cube[] =
-{
-     1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
-     1.0f,-1.0f,-1.0f, 0.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f, 1.0f, 0.0f,
-     1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-    -1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-    -1.0f,-1.0f, 1.0f, 0.0f, 1.0f,
-     1.0f,-1.0f, 1.0f, 1.0f, 1.0f,
-     1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
-    -1.0f, 1.0f,-1.0f, 1.0f, 0.0f,
-    -1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-     1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-     1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
-    -1.0f,-1.0f,-1.0f, 1.0f, 0.0f,
-    -1.0f,-1.0f, 1.0f, 1.0f, 1.0f,
-     1.0f,-1.0f, 1.0f, 0.0f, 1.0f
-};
-static const unsigned int g_cubeFace[] =
-{
-    0,  1,  2,
-    0,  2,  3,
-    0,  4,  7,
-    0,  7,  1,
-    4,  6,  7,
-    4,  5,  6,
-    5,  2,  6,
-    5,  3,  2,
-    8,  9, 10,
-    8, 10, 11,
-   12, 15, 14,
-   12, 14, 13
-};
 
 static const char* g_vertexShader = R"EOT(
 #version 410 core
@@ -105,10 +72,7 @@ class Dummy
         {
             bool ret;
             
-            uint32_t attrMask;
-            attrMask = Render::Mesh::HasPosition | Render::Mesh::HasTexCoord;
-            // Create mesh
-            ret = mesh.create(16, 12*3, attrMask, (void*)g_cube, (void*)g_cubeFace);
+            ret = Render::createCube(mesh);
             
             // Create vertex buffer for mvp
             ret = mvpBuffer.create(16*16*16*sizeof(float[16]), nullptr, Render::BufferObject::Access::Frequency::STREAM, Render::BufferObject::Access::Type::DRAW);
@@ -162,8 +126,8 @@ class Dummy
             material.attach(program);
             
             material.shininess = 10.0f;
-            Render::Texture::load(material.diffuseMap, "tex03.png");
-            Render::Texture::load(material.specularMap, "tex03_specular.png");
+            Render::Texture::load(material.diffuseMap,  "cubeTex.png");
+            Render::Texture::load(material.specularMap, "cubeTexSpec.png");
             material.diffuseMap.bind();
                 material.diffuseMap.setMagFilter(Render::Texture::MagFilter::LINEAR_TEXEL);
                 material.diffuseMap.setMinFilter(Render::Texture::MinFilter::LINEAR_TEXEL);

@@ -24,7 +24,9 @@ class Mesh
             Position = 0,
             TexCoord,
             Normal,
-            // [todo] tangent, bitangent, bone id+weight...
+            Tangent,
+            Bitangent,
+            // [todo] bone id + weight ...
             AttributeCount
         };
         /**
@@ -32,12 +34,14 @@ class Mesh
          */
         enum AttributeMask
         {
-            None        = 0,
-            HasPosition = (1 << Position),
-            HasTexCoord = (1 << TexCoord),
-            HasNormal   = (1 << Normal),
-            // [todo] HasTangent, HasBitangent ....
-            HasAll      = (1 << AttributeCount) - 1
+            None         = 0,
+            HasPosition  = (1 << Position),
+            HasTexCoord  = (1 << TexCoord),
+            HasNormal    = (1 << Normal),
+            HasTangent   = (1 << Tangent),
+            HasBitangent = (1 << Bitangent),
+            // [todo] bone id + weight ...
+            HasAll       = (1 << AttributeCount) - 1
         };
         
     public:
