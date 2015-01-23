@@ -117,7 +117,7 @@ void ImGuiDelegate<T>::init()
     void* tex_data = stbi_load_from_memory((const unsigned char*)png_data, (int)png_size, &tex_x, &tex_y, &tex_comp, 0);
     IM_ASSERT(tex_data != NULL);
 
-    bool ret = _fontTexture.create(glm::ivec2(tex_x, tex_y), Texture::PixelFormat::RGBA_8);
+    bool ret = _fontTexture.create(glm::ivec2(tex_x, tex_y), Render::Texture::PixelFormat::RGBA_8);
     if(false == ret)
     {
         return;
@@ -125,14 +125,14 @@ void ImGuiDelegate<T>::init()
     
     _fontTexture.setData(tex_data);
     _fontTexture.bind();
-        _fontTexture.setMagFilter(Texture::MagFilter::NEAREST_TEXEL);
-        _fontTexture.setMinFilter(Texture::MinFilter::NEAREST_TEXEL);
+        _fontTexture.setMagFilter(Render::Texture::MagFilter::NEAREST_TEXEL);
+        _fontTexture.setMinFilter(Render::Texture::MinFilter::NEAREST_TEXEL);
     _fontTexture.unbind();
         
     stbi_image_free(tex_data);
     
     // Create vertex buffer
-    ret = _vertexBuffer.create(sizeof(ImDrawVert) * 10000, nullptr, BufferObject::Access::Frequency::STREAM, BufferObject::Access::Type::DRAW);
+    ret = _vertexBuffer.create(sizeof(ImDrawVert) * 10000, nullptr, Render::BufferObject::Access::Frequency::STREAM, Render::BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
         return;
@@ -144,9 +144,9 @@ void ImGuiDelegate<T>::init()
     {
         return;
     }
-    ret = _vertexStream.add(&_vertexBuffer, { { 0, { Geometry::ComponentType::FLOAT,          2, false, sizeof(ImDrawVert),  0, 0 }},
-                                              { 1, { Geometry::ComponentType::FLOAT,          2, false, sizeof(ImDrawVert),  8, 0 }},
-                                              { 2, { Geometry::ComponentType::UNSIGNED_BYTE,  4, true,  sizeof(ImDrawVert), 16, 0 }} } );
+    ret = _vertexStream.add(&_vertexBuffer, { { 0, { Render::Geometry::ComponentType::FLOAT,          2, false, sizeof(ImDrawVert),  0, 0 }},
+                                              { 1, { Render::Geometry::ComponentType::FLOAT,          2, false, sizeof(ImDrawVert),  8, 0 }},
+                                              { 2, { Render::Geometry::ComponentType::UNSIGNED_BYTE,  4, true,  sizeof(ImDrawVert), 16, 0 }} } );
     if(false == ret)
     {
         return;
@@ -159,8 +159,8 @@ void ImGuiDelegate<T>::init()
     }
     
     // Create program.
-    ret = _program.create( {{Shader::Type::VERTEX_SHADER,   ImGuiDelegateVertexShader()},
-                            {Shader::Type::FRAGMENT_SHADER, ImGuiDelegateFragmentShader()}} );
+    ret = _program.create( {{Render::Shader::Type::VERTEX_SHADER,   ImGuiDelegateVertexShader()},
+                            {Render::Shader::Type::FRAGMENT_SHADER, ImGuiDelegateFragmentShader()}} );
     if(false == ret)
     {
         return;
@@ -292,14 +292,14 @@ void ImGuiDelegate<T>::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lis
     if (cmd_lists_count == 0)
         return;
 
-    Renderer& renderer = Renderer::instance();
+    Render::Renderer& renderer = Render::Renderer::instance();
 
     ImGuiIO& io = ImGui::GetIO();
     ImGuiDelegate<T> *delegate = static_cast<ImGuiDelegate<T>*>(io.UserData);
     if(nullptr == delegate) { return; }
     
     renderer.blend(true);
-    renderer.blendFunc(BlendFunc::SRC_ALPHA, BlendFunc::ONE_MINUS_SRC_ALPHA);
+    renderer.blendFunc(Render::BlendFunc::SRC_ALPHA, Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
     renderer.culling(false);
     renderer.depthTest(false);
     renderer.scissorTest(true);
@@ -318,7 +318,7 @@ void ImGuiDelegate<T>::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lis
         delegate->_vertexBuffer.resize(neededBufferSize + 5000);
     }
 
-    uint8_t *data = (uint8_t*)delegate->_vertexBuffer.map(BufferObject::Access::Policy::WRITE_ONLY, 0, totalVertexCount*sizeof(ImDrawVert));
+    uint8_t *data = (uint8_t*)delegate->_vertexBuffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY, 0, totalVertexCount*sizeof(ImDrawVert));
     for (int n = 0; n < cmd_lists_count; n++)
     {
         const ImDrawList* cmd_list = cmd_lists[n];
@@ -350,7 +350,7 @@ void ImGuiDelegate<T>::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lis
         for (const ImDrawCmd* pcmd = cmd_list->commands.begin(); pcmd != pcmd_end; pcmd++)
         {
             renderer.scissor(glm::ivec2(pcmd->clip_rect.x, height - pcmd->clip_rect.w), glm::ivec2(pcmd->clip_rect.z - pcmd->clip_rect.x, pcmd->clip_rect.w - pcmd->clip_rect.y));
-            delegate->_vertexStream.draw(Geometry::Primitive::TRIANGLES, vtx_offset, pcmd->vtx_count);
+            delegate->_vertexStream.draw(Render::Geometry::Primitive::TRIANGLES, vtx_offset, pcmd->vtx_count);
             vtx_offset += pcmd->vtx_count;
         }
     }

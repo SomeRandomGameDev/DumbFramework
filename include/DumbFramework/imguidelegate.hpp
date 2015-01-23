@@ -5,11 +5,11 @@
 #include <imgui/imgui.h>
 
 #include <DumbFramework/windowhint.hpp>
-#include <DumbFramework/program.hpp>
-#include <DumbFramework/texture2d.hpp>
-#include <DumbFramework/vertexbuffer.hpp>
-#include <DumbFramework/vertexstream.hpp>
-#include <DumbFramework/renderer.hpp>
+#include <DumbFramework/render/program.hpp>
+#include <DumbFramework/render/texture2d.hpp>
+#include <DumbFramework/render/vertexbuffer.hpp>
+#include <DumbFramework/render/vertexstream.hpp>
+#include <DumbFramework/render/renderer.hpp>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -85,13 +85,13 @@ class ImGuiDelegate
         /** Window pointer. **/
         GLFWwindow *_window;
         /** GLSL program **/
-        Program _program;
+        Render::Program _program;
         /** Font texture. **/
-        Texture2D _fontTexture;
+        Render::Texture2D _fontTexture;
         /** Vertex buffer. **/
-        VertexBuffer _vertexBuffer;
+        Render::VertexBuffer _vertexBuffer;
         /** Vertex stream. **/
-        VertexStream _vertexStream;
+        Render::VertexStream _vertexStream;
         /** Mouse button state (true: pressed, false: released). **/
         bool _mousePressed[2];
         /** Mouse pointer scaled position. **/

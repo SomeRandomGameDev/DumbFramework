@@ -5,7 +5,7 @@
 #include <string>
 #include <sstream>
 
-#include <DumbFramework/textureloader.hpp>
+#include <DumbFramework/render/textureloader.hpp>
 #include <DumbFramework/sprite.hpp>
 
 namespace Sprite {
@@ -210,7 +210,7 @@ Atlas::~Atlas()
  * Access texture.
  * @return texture object.
  */
-Framework::Texture2D const& Atlas::texture() const
+Framework::Render::Texture2D const& Atlas::texture() const
 {
     return _texture;
 }
@@ -549,13 +549,13 @@ bool Atlas::loadTextures(const char *filename)
     }
 
     bool ret;
-    ret = Framework::Texture::load(_texture, items, Framework::Texture::PixelFormat::RGBA_8);
+    ret = Framework::Render::Texture::load(_texture, items, Framework::Render::Texture::PixelFormat::RGBA_8);
     if(ret)
     {
         _texture.bind();
-            _texture.setMinFilter(Framework::Texture::MinFilter::LINEAR_TEXEL);
-            _texture.setMagFilter(Framework::Texture::MagFilter::LINEAR_TEXEL);
-            _texture.setWrap(Framework::Texture::Wrap::CLAMP_TO_EDGE, Framework::Texture::Wrap::CLAMP_TO_EDGE);
+            _texture.setMinFilter(Framework::Render::Texture::MinFilter::LINEAR_TEXEL);
+            _texture.setMagFilter(Framework::Render::Texture::MagFilter::LINEAR_TEXEL);
+            _texture.setWrap(Framework::Render::Texture::Wrap::CLAMP_TO_EDGE, Framework::Render::Texture::Wrap::CLAMP_TO_EDGE);
         _texture.unbind();
         
         _size = _texture.size();

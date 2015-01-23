@@ -1,15 +1,17 @@
 #include <DumbFramework/config.hpp>
+
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <DumbFramework/log.hpp>
 #include <DumbFramework/wrapper.hpp>
-#include <DumbFramework/renderer.hpp>
 #include <DumbFramework/imguidelegate.hpp>
 #include <DumbFramework/camera.hpp>
-#include <DumbFramework/texture.hpp>
-#include <DumbFramework/textureloader.hpp>
-#include <DumbFramework/mesh.hpp>
-#include <DumbFramework/rendercontext.hpp>
-#include <DumbFramework/material.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <DumbFramework/render/renderer.hpp>
+#include <DumbFramework/render/texture.hpp>
+#include <DumbFramework/render/textureloader.hpp>
+#include <DumbFramework/render/mesh.hpp>
+#include <DumbFramework/render/rendercontext.hpp>
+#include <DumbFramework/render/material.hpp>
 
 using namespace Framework;
 
@@ -104,12 +106,12 @@ class Dummy
             bool ret;
             
             uint32_t attrMask;
-            attrMask = Framework::Render::Mesh::HasPosition | Framework::Render::Mesh::HasTexCoord;
+            attrMask = Render::Mesh::HasPosition | Render::Mesh::HasTexCoord;
             // Create mesh
             ret = mesh.create(16, 12*3, attrMask, (void*)g_cube, (void*)g_cubeFace);
             
             // Create vertex buffer for mvp
-            ret = mvpBuffer.create(16*16*16*sizeof(float[16]), nullptr, BufferObject::Access::Frequency::STREAM, BufferObject::Access::Type::DRAW);
+            ret = mvpBuffer.create(16*16*16*sizeof(float[16]), nullptr, Render::BufferObject::Access::Frequency::STREAM, Render::BufferObject::Access::Type::DRAW);
             if(false == ret)
             {
                 return;
@@ -119,8 +121,8 @@ class Dummy
             vertexStream.create();
             ret = vertexStream.add(&mesh.vertexBuffer(),
                                    {
-                                        { 0, mesh.attribute(Framework::Render::Mesh::Position) },
-                                        { 1, mesh.attribute(Framework::Render::Mesh::TexCoord) },
+                                        { 0, mesh.attribute(Render::Mesh::Position) },
+                                        { 1, mesh.attribute(Render::Mesh::TexCoord) },
                                     });
             if(false == ret)
             {
@@ -128,10 +130,10 @@ class Dummy
             }
             ret = vertexStream.add(&mvpBuffer,
                                 {
-                                       { 2, { Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  0,               1 } },
-                                       { 3, { Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  4*sizeof(float), 1 } },
-                                       { 4, { Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  8*sizeof(float), 1 } },
-                                       { 5, { Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float), 12*sizeof(float), 1 } }
+                                       { 2, { Render::Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  0,               1 } },
+                                       { 3, { Render::Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  4*sizeof(float), 1 } },
+                                       { 4, { Render::Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  8*sizeof(float), 1 } },
+                                       { 5, { Render::Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float), 12*sizeof(float), 1 } }
                                 });
             if(false == ret)
             {
@@ -144,8 +146,8 @@ class Dummy
             }
             
             // Create program.
-            ret = program.create( {{Shader::Type::VERTEX_SHADER,   g_vertexShader},
-                                   {Shader::Type::FRAGMENT_SHADER, g_fragmentShader}} );
+            ret = program.create( {{Render::Shader::Type::VERTEX_SHADER,   g_vertexShader},
+                                   {Render::Shader::Type::FRAGMENT_SHADER, g_fragmentShader}} );
             if(false == ret)
             {
                 return;
@@ -160,17 +162,17 @@ class Dummy
             material.attach(program);
             
             material.shininess = 10.0f;
-            Framework::Texture::load(material.diffuseMap, "tex03.png");
-            Framework::Texture::load(material.specularMap, "tex03_specular.png");
+            Render::Texture::load(material.diffuseMap, "tex03.png");
+            Render::Texture::load(material.specularMap, "tex03_specular.png");
             material.diffuseMap.bind();
-                material.diffuseMap.setMagFilter(Framework::Texture::MagFilter::LINEAR_TEXEL);
-                material.diffuseMap.setMinFilter(Framework::Texture::MinFilter::LINEAR_TEXEL);
-                material.diffuseMap.setWrap(Framework::Texture::Wrap::CLAMP_TO_EDGE, Framework::Texture::Wrap::CLAMP_TO_EDGE);
+                material.diffuseMap.setMagFilter(Render::Texture::MagFilter::LINEAR_TEXEL);
+                material.diffuseMap.setMinFilter(Render::Texture::MinFilter::LINEAR_TEXEL);
+                material.diffuseMap.setWrap(Render::Texture::Wrap::CLAMP_TO_EDGE, Render::Texture::Wrap::CLAMP_TO_EDGE);
             material.diffuseMap.unbind();
             material.specularMap.bind();
-                material.specularMap.setMagFilter(Framework::Texture::MagFilter::LINEAR_TEXEL);
-                material.specularMap.setMinFilter(Framework::Texture::MinFilter::LINEAR_TEXEL);
-                material.specularMap.setWrap(Framework::Texture::Wrap::CLAMP_TO_EDGE, Framework::Texture::Wrap::CLAMP_TO_EDGE);
+                material.specularMap.setMagFilter(Render::Texture::MagFilter::LINEAR_TEXEL);
+                material.specularMap.setMinFilter(Render::Texture::MinFilter::LINEAR_TEXEL);
+                material.specularMap.setWrap(Render::Texture::Wrap::CLAMP_TO_EDGE, Render::Texture::Wrap::CLAMP_TO_EDGE);
             material.specularMap.unbind();
             material.culling = false;
             
@@ -239,7 +241,7 @@ class Dummy
         void render()
         {
             ImGuiIO& io = ImGui::GetIO();
-            Framework::Renderer& renderer = Framework::Renderer::instance();
+            Render::Renderer& renderer = Render::Renderer::instance();
             
             glViewport(0, 0,(int)io.DisplaySize.x, (int)io.DisplaySize.y);
             glClearColor(bgcolor.r, bgcolor.g, bgcolor.b, 1.0);
@@ -268,7 +270,7 @@ class Dummy
                 angle[0] = angle[1] = glm::vec3(0.0f);
             }
             
-            float *mvp = (float*)mvpBuffer.map(BufferObject::Access::Policy::WRITE_ONLY);
+            float *mvp = (float*)mvpBuffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY);
             glm::mat4 projView = camera[1].projectionMatrix(glm::ivec2(io.DisplaySize.x, io.DisplaySize.y)) * camera[1].viewMatrix();
             for(size_t k=0; k<16; k++)
             {
@@ -310,15 +312,15 @@ class Dummy
         float alpha;
         bool pushed;
         bool open;
-        Framework::Render::Mesh mesh;
-        Framework::Render::Material material;
-        Framework::VertexBuffer mvpBuffer;
-        Framework::VertexStream vertexStream;
-        Framework::Program program;
+        Render::Mesh mesh;
+        Render::Material material;
+        Render::VertexBuffer mvpBuffer;
+        Render::VertexStream vertexStream;
+        Render::Program program;
         GLint colorId;
         glm::vec3 angle[2];
         float depth;
-        Framework::Camera camera[2];
+        Camera camera[2];
         bool back, forward, angleUpdate;
         
         float msPerFrame[120];

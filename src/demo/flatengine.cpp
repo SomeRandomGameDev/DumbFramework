@@ -7,7 +7,7 @@
 #include <DumbFramework/application.hpp>
 #include <DumbFramework/scene.hpp>
 #include <DumbFramework/sprengine.hpp>
-#include <DumbFramework/renderer.hpp>
+#include <DumbFramework/render/renderer.hpp>
 
 class TestEngine : public Scene {
 public:
@@ -178,12 +178,12 @@ void TestEngine::resume(GLFWwindow * /* window */) {
   _start = glfwGetTime();
   _elapsed = 0;
   
-  Framework::Renderer& renderer = Framework::Renderer::instance();
+  Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
   renderer.depthTest(true);
   
   renderer.texture2D(true);
   renderer.blend(true);
-  renderer.blendFunc(Framework::BlendFunc::SRC_ALPHA, Framework::BlendFunc::ONE_MINUS_SRC_ALPHA);
+  renderer.blendFunc(Framework::Render::BlendFunc::SRC_ALPHA, Framework::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
 }
 
 void TestEngine::pause() {

@@ -7,8 +7,8 @@
 #include <vector>
 #include <unordered_map>
 
-#include <DumbFramework/program.hpp>
-#include <DumbFramework/texture2d.hpp>
+#include <DumbFramework/render/program.hpp>
+#include <DumbFramework/render/texture2d.hpp>
 
 namespace Sprite {
 
@@ -167,7 +167,7 @@ class Atlas
          * Access texture.
          * @return texture object.
          */
-        Framework::Texture2D const& texture() const;
+        Framework::Render::Texture2D const& texture() const;
 
         /**
          * @brief Access to definitions.
@@ -226,7 +226,7 @@ class Atlas
          */
         std::unordered_map<std::string, unsigned int > _dict;
         /** Texture. **/
-        Framework::Texture2D _texture;
+        Framework::Render::Texture2D _texture;
         /** Atlas size in pixels. **/
         glm::ivec2 _size;
 };

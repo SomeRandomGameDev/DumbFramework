@@ -9,7 +9,7 @@
 #include <string>
 
 #include <DumbFramework/sprengine.hpp>
-#include <DumbFramework/renderer.hpp>
+#include <DumbFramework/render/renderer.hpp>
 
 using namespace Framework; // temporary
 
@@ -112,23 +112,23 @@ namespace Sprite {
             _stream.create();
             _stream.add(&_buffer,
             {
-                { VERTEX_INDEX,   Geometry::Attribute(Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, 0,                  1) },
-                { OFFSET_INDEX,   Geometry::Attribute(Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  2, 1) },
-                { SIZE_INDEX,     Geometry::Attribute(Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  4, 1) },
-                { TOP_TEX_INDEX,  Geometry::Attribute(Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  6, 1) },
-                { DOWN_TEX_INDEX, Geometry::Attribute(Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  8, 1) },
-                { ROTATE_INDEX,   Geometry::Attribute(Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 10, 1) },
-                { SCALE_INDEX,    Geometry::Attribute(Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 11, 1) },
-                { TEXTURE_INDEX,  Geometry::Attribute(Geometry::ComponentType::UNSIGNED_INT, 1, VBO_STRIDE, sizeof(float) * 12, 1) }
+                { VERTEX_INDEX,   Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, 0,                  1) },
+                { OFFSET_INDEX,   Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  2, 1) },
+                { SIZE_INDEX,     Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  4, 1) },
+                { TOP_TEX_INDEX,  Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  6, 1) },
+                { DOWN_TEX_INDEX, Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT,        2, VBO_STRIDE, sizeof(float) *  8, 1) },
+                { ROTATE_INDEX,   Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 10, 1) },
+                { SCALE_INDEX,    Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT,        1, VBO_STRIDE, sizeof(float) * 11, 1) },
+                { TEXTURE_INDEX,  Render::Geometry::Attribute(Render::Geometry::ComponentType::UNSIGNED_INT, 1, VBO_STRIDE, sizeof(float) * 12, 1) }
             });
             _stream.compile();
             
             _time = glfwGetTime();
 
             // Create program.
-            std::array<Shader, 2> shaders;
-            shaders[0].create(Shader::VERTEX_SHADER,   s_vertexShaderInstanced);
-            shaders[1].create(Shader::FRAGMENT_SHADER, s_fragmentShader);
+            std::array<Render::Shader, 2> shaders;
+            shaders[0].create(Render::Shader::VERTEX_SHADER,   s_vertexShaderInstanced);
+            shaders[1].create(Render::Shader::FRAGMENT_SHADER, s_fragmentShader);
 
             _program.create();
             for(unsigned long i=0; i<shaders.size(); i++)
@@ -465,7 +465,7 @@ namespace Sprite {
     }
 
     void Engine::render() {
-        Renderer& renderer = Renderer::instance();
+        Render::Renderer& renderer = Render::Renderer::instance();
         
         // Animate the sprites
         animate();
@@ -479,7 +479,7 @@ namespace Sprite {
             renderer.setActiveTextureUnit(0);
             _texture->bind();
 
-            GLfloat *ptr = (GLfloat *) _buffer.map(BufferObject::Access::Policy::WRITE_ONLY);
+            GLfloat *ptr = (GLfloat *) _buffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY);
             memcpy(ptr, _cell, VBO_STRIDE * _count);
             _buffer.unmap();
 

@@ -2,9 +2,9 @@
 #define _DUMB_FW_SPRENGINE_
 
 #include <DumbFramework/sprite.hpp>
-#include <DumbFramework/vertexbuffer.hpp>
-#include <DumbFramework/vertexstream.hpp>
-#include <DumbFramework/program.hpp>
+#include <DumbFramework/render/vertexbuffer.hpp>
+#include <DumbFramework/render/vertexstream.hpp>
+#include <DumbFramework/render/program.hpp>
 
 namespace Sprite {
 
@@ -301,22 +301,22 @@ private:
   /**
    * Vertex Stream.
    */
-  Framework::VertexStream _stream;
+  Framework::Render::VertexStream _stream;
 
   /**
    * Vertex Buffer Object.
    */
-  Framework::VertexBuffer _buffer;
+  Framework::Render::VertexBuffer _buffer;
 
   /**
    * GLSL Program identifier.
    */
-  Framework::Program _program;
+  Framework::Render::Program _program;
 
   /**
    * Sprite Atlas texture.
    */
-  Framework::Texture2D const* _texture;
+  Framework::Render::Texture2D const* _texture;
 
   /**
    * Sprite Atlas uniform binding.

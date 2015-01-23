@@ -61,7 +61,22 @@ include_directories( ${EXPAT_INCLUDE_DIR}
 set(IMGUI_SOURCES
     external/imgui/imgui.cpp)
 
+set(DUMB_FRAMEWORK_RENDER_SOURCES
+    src/render/renderer.cpp
+    src/render/bufferobject.cpp
+    src/render/geometry.cpp
+    src/render/vertexstream.cpp
+    src/render/shader.cpp
+    src/render/program.cpp
+    src/render/mesh.cpp
+    src/render/material.cpp
+    src/render/rendercontext.cpp
+    src/render/renderbuffer.cpp
+    src/render/texture2d.cpp
+    src/render/textureloader.cpp)
+
 set(DUMB_FRAMEWORK_SOURCES
+    ${DUMB_FRAMEWORK_RENDER_SOURCES}
     src/camera.cpp
     src/imguidelegate.cpp
     src/application.cpp
@@ -78,20 +93,8 @@ set(DUMB_FRAMEWORK_SOURCES
     src/module.cpp
     src/severity.cpp
     src/log.cpp
-    src/renderer.cpp
-    src/bufferobject.cpp
-    src/geometry.cpp
-    src/vertexstream.cpp
-    src/shader.cpp
-    src/program.cpp
-    src/mesh.cpp
-    src/material.cpp
-    src/rendercontext.cpp
     src/sprengine.cpp
     src/sprite.cpp
-    src/renderbuffer.cpp
-    src/texture2d.cpp
-    src/textureloader.cpp
     src/windowhint.cpp
     src/transform.cpp
     src/joystick.cpp
