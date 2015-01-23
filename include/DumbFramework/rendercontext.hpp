@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <DumbFramework/config.hpp>
 #include <DumbFramework/texture2d.hpp>
+#include <DumbFramework/renderbuffer.hpp>
 
 namespace Framework {
 namespace Render    {
@@ -78,18 +79,26 @@ class Context
         bool bind();
         void unbind();
         
-        bool attach(Attachment point, Texture2D *target, int level=0, int layer=0);
-        Texture2D* output(Attachment point);
+        bool attach(Attachment point, Texture2D *texture, int level=0, int layer=0);
+        bool attach(Attachment point, Renderbuffer *renderbuffer);
+
+        Texture2D*    getTexture(Attachment point);
+        Renderbuffer* getRenderbuffer(Attachment point);
 
         glm::ivec2 size() const;
         
     protected:
-        struct Output
+        bool addNewAttachment(Attachment point,  glm::ivec2 const& size);
+
+    protected:
+        struct TargetParameter
         {
             GLenum     attachment;
-            Texture2D *target;
             GLint      level;
             GLint      layer;
+            
+            Texture2D    *texture;
+            Renderbuffer *renderbuffer;
             
             inline bool complete() const;
             inline void attach() const;
@@ -109,10 +118,10 @@ class Context
         size_t  _colorAttachmentCount;
         GLenum* _colorAttachments;
         
-        size_t  _outputCapacity;
-        size_t  _outputCount;
-        int*    _outputIndex;
-        Output* _outputs;
+        size_t  _targetCapacity;
+        size_t  _targetCount;
+        int*    _targetIndex;
+        TargetParameter* _targets;
 };
 
 } // Render

@@ -11,9 +11,9 @@ Context::Context()
     , _framebuffer(0)
     , _colorAttachmentCount(0)
     , _colorAttachments(nullptr)
-    , _outputCount(0)
-    , _outputIndex(nullptr)
-    , _outputs(nullptr)
+    , _targetCount(0)
+    , _targetIndex(nullptr)
+    , _targets(nullptr)
 {}
 
 Context::~Context()
@@ -40,12 +40,12 @@ bool Context::create()
     GLint maxColorAttachments;
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxColorAttachments);
     
-    _outputCapacity = maxColorAttachments+3; // color + depth + stenctil + depth_stencil
-    _outputCount = 0;
-    _outputIndex = new int[_outputCapacity];
-    memset(_outputIndex, -1, sizeof(int)*_outputCapacity);
-    _outputs = new Context::Output[_outputCapacity];
-    memset(_outputs, 0, sizeof(Context::Output)*_outputCapacity);
+    _targetCapacity = maxColorAttachments+3; // color + depth + stenctil + depth_stencil
+    _targetCount = 0;
+    _targetIndex = new int[_targetCapacity];
+    memset(_targetIndex, -1, sizeof(int)*_targetCapacity);
+    _targets = new Context::TargetParameter[_targetCapacity];
+    memset(_targets, 0, sizeof(Context::TargetParameter)*_targetCapacity);
     
     _colorAttachmentCount = 0;
     _colorAttachments = new GLenum[maxColorAttachments];
@@ -68,17 +68,17 @@ void Context::destroy()
         delete [] _colorAttachments;
         _colorAttachments = nullptr;
     }
-    _outputCount = 0;
-    _outputCapacity = 0;
-    if(nullptr != _outputIndex)
+    _targetCount = 0;
+    _targetCapacity = 0;
+    if(nullptr != _targetIndex)
     {
-        delete [] _outputIndex;
-        _outputIndex = nullptr;
+        delete [] _targetIndex;
+        _targetIndex = nullptr;
     }
-    if(nullptr != _outputs)
+    if(nullptr != _targets)
     {
-        delete [] _outputs,
-        _outputs = nullptr;
+        delete [] _targets,
+        _targets = nullptr;
     }
 }
 
@@ -90,36 +90,27 @@ bool Context::compile()
         return false;
     }
     
-    for(size_t i=0; i<_outputCount; ++i)
+    for(size_t i=0; i<_targetCount; ++i)
     {
-        if(false == _outputs[i].complete())
+        if(false == _targets[i].complete())
         {
             Log_Error(Module::Render, "There is no target for output %d.", i);
             return false;
         }
     }
-    for(size_t i=1; i<_outputCount; ++i)
-    {
-        if(_outputs[i].target->size() != _outputs[0].target->size())
-        {
-            Log_Error(Module::Render, "Output %d dimension mismatch. All outputs must have the same size (%d,%d).", _outputs[0].target->size().x, _outputs[0].target->size().y);
-            return false;
-        }
-    }
-    
     _colorAttachmentCount = 0;
-    for(size_t i=0; i<_outputCount; ++i)
+    for(size_t i=0; i<_targetCount; ++i)
     {
-        if(_outputs[i].attachment >= GL_COLOR_ATTACHMENT0)
+        if(_targets[i].attachment >= GL_COLOR_ATTACHMENT0)
         {
-            _colorAttachments[_colorAttachmentCount++] = _outputs[i].attachment;
+            _colorAttachments[_colorAttachmentCount++] = _targets[i].attachment;
         }
     }
     
     glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
-    for(size_t i=0; i<_outputCount; ++i)
+    for(size_t i=0; i<_targetCount; ++i)
     {
-        _outputs[i].attach();
+        _targets[i].attach();
 #ifdef SANITY_CHECK
         GLenum err = glGetError();
         if(GL_NO_ERROR != err)
@@ -162,52 +153,112 @@ void Context::unbind()
     glDrawBuffer(GL_BACK);
 }
 
-bool Context::attach(Attachment point, Texture2D *target, int level, int layer)
+bool Context::addNewAttachment(Attachment point,  glm::ivec2 const& size)
 {
-    if(point >= _outputCapacity)
+    if(point >= _targetCapacity)
     {
         Log_Error(Module::Render, "Invalid attachment point.");
         return false;
     }
+
+    bool empty = true;
+    glm::ivec2 contextSize(0);
+    if(nullptr != _targets[0].texture)
+    {
+        empty = false;
+        contextSize = _targets[0].texture->size();
+    }
+    else if(nullptr != _targets[0].renderbuffer)
+    {
+        empty = false;
+        contextSize = _targets[0].renderbuffer->size();
+    }
     
+    if((false == empty) && (size != contextSize))
+    {
+        Log_Error(Module::Render, "Attachment dimension mismatch. All outputs must have the same size (%d,%d).", contextSize.x, contextSize.y);
+        return false;
+    }
+
     size_t index = point;
     size_t pos;
-    if(_outputIndex[index] != -1)
+    if(_targetIndex[index] != -1)
     {
         Log_Warning(Module::Render, "Something is already attached to attachment %d! It will replaced.", point.to());
-        pos = _outputIndex[index];
+        pos = _targetIndex[index];
     }
     else
     {
-        pos = _outputCount++;
+        pos = _targetCount++;
     }
     
-    _outputIndex[index] = pos;
-    _outputs[pos].attachment = point.to();
-    _outputs[pos].target     = target;
-    _outputs[pos].level      = level;
-    _outputs[pos].layer      = layer;
-
+    _targetIndex[index] = pos;
     return true;
 }
 
-Texture2D* Context::output(Attachment point)
+bool Context::attach(Attachment point, Texture2D *texture, int level, int layer)
+{
+    bool ret =  addNewAttachment(point, texture->size());
+    if(false == ret)
+    {
+        return false;
+    }
+    int pos = _targetIndex[point];
+    _targets[pos].attachment   = point.to();
+    _targets[pos].texture      = texture;
+    _targets[pos].renderbuffer = nullptr;
+    _targets[pos].level        = level;
+    _targets[pos].layer        = layer;
+    return true;
+}
+
+bool Context::attach(Attachment point, Renderbuffer *renderbuffer)
+{
+    bool ret =  addNewAttachment(point, renderbuffer->size());
+    if(false == ret)
+    {
+        return false;
+    }
+    int pos = _targetIndex[point];
+    _targets[pos].attachment   = point.to();
+    _targets[pos].texture      = nullptr;
+    _targets[pos].renderbuffer = renderbuffer;
+    _targets[pos].level        = 0;
+    _targets[pos].layer        = 0;
+    return true;
+}
+
+Texture2D*    Context::getTexture(Attachment point)
 {
     size_t index = point.to();
-    if(-1 == _outputIndex[index])
+    if(-1 == _targetIndex[index])
     {
         return nullptr;
     }
-    return _outputs[_outputIndex[index]].target;
+    return _targets[_targetIndex[index]].texture;
+}
+
+Renderbuffer* Context::getRenderbuffer(Attachment point)
+{
+    size_t index = point.to();
+    if(-1 == _targetIndex[index])
+    {
+        return nullptr;
+    }
+    return _targets[_targetIndex[index]].renderbuffer;
 }
 
 glm::ivec2 Context::size() const
 {
-    if(-1 == _outputIndex[Attachment::COLOR])
+    if(nullptr != _targets[0].texture)
     {
-        return glm::ivec2(0);
+        return _targets[0].texture->size();
     }
-    return _outputs[_outputIndex[Attachment::COLOR]].target->size();
+    if(nullptr != _targets[0].renderbuffer)
+    {
+        return _targets[0].renderbuffer->size();
+    }
+    return glm::ivec2(0);
 }
 
 } // Render

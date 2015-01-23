@@ -64,24 +64,27 @@ bool operator!= (Attachment const& a0, unsigned int v)
 { return (a0.value != v); }
 
 
-bool Context::Output::complete() const
+bool Context::TargetParameter::complete() const
 {
-    return (nullptr != target) && (GL_NONE != attachment);
+    return ((GL_NONE != attachment) && ((nullptr != texture) || (nullptr != renderbuffer)));
 }
 
-void Context::Output::attach() const
+void Context::TargetParameter::attach() const
 {
-    if(nullptr == target)
+    if(nullptr != texture)
     {
-        return;
+        if(texture->layerCount() > 1)
+        {
+            glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, texture->id(), level, layer);
+        }
+        else
+        {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture->id(), level);
+        }
     }
-    if(target->layerCount() > 1)
+    else if(nullptr != renderbuffer)
     {
-        glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, target->id(), level, layer);
-    }
-    else
-    {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, target->id(), level);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderbuffer->id());
     }
 }
 
