@@ -159,8 +159,7 @@ bool VertexStream::compile()
     {
         glEnableVertexAttribArray(i);
         _attributes[i].first->bind();
-        glVertexAttribPointer(i, _attributes[i].second.size, _attributes[i].second.type, _attributes[i].second.normalized ? GL_TRUE : GL_FALSE, _attributes[i].second.stride, (GLvoid*)_attributes[i].second.offset);
-        glVertexAttribDivisor(i, _attributes[i].second.divisor);
+        _attributes[i].second.attach(i);
     }
     unbind();
     VertexBuffer::unbindAll();
@@ -263,7 +262,7 @@ void VertexStream::draw(Geometry::Primitive primitive, size_t offset, size_t cou
         }
     }
 #endif // SANITY_CHECK
-    glDrawArrays(primitive, offset, count);
+    glDrawArrays(primitive.to(), offset, count);
 
 #if defined(SANITY_CHECK)
     // Warning! This may spam your logs!

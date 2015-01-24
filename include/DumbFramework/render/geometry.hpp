@@ -83,7 +83,7 @@ struct Primitive
     inline Primitive(Value v) : value(v) {}
     inline operator Value() { return value; }
     /** Convert to OpenGL compliant value. **/
-    inline operator GLenum();
+    inline GLenum to() const;
 };
 
 /**
@@ -130,7 +130,7 @@ struct ComponentType
     inline ComponentType(Value v) : value(v) {}
     inline operator Value() { return value; }
     /** Convert to OpenGL compliant value. **/
-    inline operator GLenum();
+    inline GLenum to() const;
     /** Size in bytes. **/
     inline size_t size() const;
 };
@@ -197,6 +197,11 @@ struct Attribute
      * Get attribute size in bytes.
      */
     inline size_t  bytes() const;
+    /**
+     * Attach attribute.
+     * @param [in] index Attribute index.
+     */
+    inline void attach(int index) const;
 };
 
 } // Geometry

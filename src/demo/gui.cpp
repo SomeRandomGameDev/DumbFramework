@@ -14,46 +14,9 @@
 #include <DumbFramework/render/material.hpp>
 #include <DumbFramework/render/mesh.hpp>
 #include <DumbFramework/render/dummy.hpp>
+#include <DumbFramework/render/geometrypass.hpp>
 
 using namespace Framework;
-
-static const char* g_vertexShader = R"EOT(
-#version 410 core
-
-layout (location=0) in vec3 vs_position;
-layout (location=1) in vec2 vs_uv;
-layout (location=2) in mat4 vs_modelviewproj;
-
-out vec2 texCoord;
-
-void main()
-{
-    texCoord = vs_uv;
-    gl_Position = vs_modelviewproj * vec4(vs_position, 1.0);
-//    instanceID = gl_InstanceID; 
-}
-)EOT";
-
-static const char* g_fragmentShader = R"EOT(
-#version 410 core
-
-// Make an uniform block
-//uniform Material {
-    uniform sampler2D diffuseMap;
-    uniform sampler2D specularMap;
-    uniform float shininess;
-//};
-
-in vec2 texCoord;
-
-out vec4 out_color;
-
-void main()
-{
-    out_color = texture2D(diffuseMap, texCoord)*0.5 + texture2D(specularMap, texCoord)*0.5;
-//    out_color = vec4(color * (instanceID / 4096.0f), 1.0) * texture2DArray(texSampler, vec3(texCoord, instanceID%6));
-}
-)EOT";
 
 // Dummy "application" class
 class Dummy
@@ -72,60 +35,15 @@ class Dummy
         {
             bool ret;
             
+            ret = geometrypass.create(glm::ivec2(1024, 768));
+            if(false == ret)
+            {
+                return;
+            }
+            
             ret = Render::createCube(mesh);
-            
-            // Create vertex buffer for mvp
-            ret = mvpBuffer.create(16*16*16*sizeof(float[16]), nullptr, Render::BufferObject::Access::Frequency::STREAM, Render::BufferObject::Access::Type::DRAW);
-            if(false == ret)
-            {
-                return;
-            }
-            
-            // Create vertex stream
-            vertexStream.create();
-            ret = vertexStream.add(&mesh.vertexBuffer(),
-                                   {
-                                        { 0, mesh.attribute(Render::Mesh::Position) },
-                                        { 1, mesh.attribute(Render::Mesh::TexCoord) },
-                                    });
-            if(false == ret)
-            {
-                return;
-            }
-            ret = vertexStream.add(&mvpBuffer,
-                                {
-                                       { 2, { Render::Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  0,               1 } },
-                                       { 3, { Render::Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  4*sizeof(float), 1 } },
-                                       { 4, { Render::Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float),  8*sizeof(float), 1 } },
-                                       { 5, { Render::Geometry::ComponentType::FLOAT, 4, false, 16*sizeof(float), 12*sizeof(float), 1 } }
-                                });
-            if(false == ret)
-            {
-                return;
-            }
-            ret = vertexStream.compile();
-            if(false == ret)
-            {
-                return;
-            }
-            
-            // Create program.
-            ret = program.create( {{Render::Shader::Type::VERTEX_SHADER,   g_vertexShader},
-                                   {Render::Shader::Type::FRAGMENT_SHADER, g_fragmentShader}} );
-            if(false == ret)
-            {
-                return;
-            }
-            ret = program.link();
-            if(false == ret)
-            {
-                return;
-            }
-      
+
             ret = material.create("dummy");
-            material.attach(program);
-            
-            material.shininess = 10.0f;
             Render::Texture::load(material.diffuseMap,  "cubeTex.png");
             Render::Texture::load(material.specularMap, "cubeTexSpec.png");
             material.diffuseMap.bind();
@@ -140,7 +58,7 @@ class Dummy
             material.specularMap.unbind();
             material.culling = false;
             
-            camera[0].lookAt(glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f));
+            camera[0].lookAt(glm::vec3(4.0f, 0.0f, -4.0f), glm::vec3(0.0f));
             camera[0].perspective(45.0f, 0.1f, 10.0f);
             
             camera[1] = camera[0];
@@ -205,13 +123,6 @@ class Dummy
         void render()
         {
             ImGuiIO& io = ImGui::GetIO();
-            Render::Renderer& renderer = Render::Renderer::instance();
-            
-            glViewport(0, 0,(int)io.DisplaySize.x, (int)io.DisplaySize.y);
-            glClearColor(bgcolor.r, bgcolor.g, bgcolor.b, 1.0);
-            
-            // Draw a cube 
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
             if(angleUpdate)
             {
@@ -234,37 +145,23 @@ class Dummy
                 angle[0] = angle[1] = glm::vec3(0.0f);
             }
             
-            float *mvp = (float*)mvpBuffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY);
-            glm::mat4 projView = camera[1].projectionMatrix(glm::ivec2(io.DisplaySize.x, io.DisplaySize.y)) * camera[1].viewMatrix();
-            for(size_t k=0; k<16; k++)
-            {
-                for(size_t j=0; j<16; j++)
-                {
-                    for(size_t i=0; i<16; i++, mvp+=16)
-                    {
-                        glm::mat4 model = glm::scale( glm::translate(glm::mat4(), glm::vec3(k*0.2f, i*0.2f, j*0.2f)), glm::vec3(0.07f));
-                        memcpy(mvp, glm::value_ptr(projView * model), 16*sizeof(float));
-                    }
-                }
-            }
-            mvpBuffer.unmap();
-            
-            renderer.setActiveTextureUnit(0);
-            material.bind();
-                vertexStream.bind();
-                    program.uniform(colorId, color);
-                    mesh.indexBuffer().bind();
-                    glDrawElementsInstanced(GL_TRIANGLES, 12*3, GL_UNSIGNED_INT, 0, 16*16*16);
-                vertexStream.unbind();
-            material.unbind();
+            geometrypass.begin();
+                geometrypass.render(camera[1], material, mesh);
+            geometrypass.end();
+
+            glViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+            glClearColor(0, 0, 0, 0);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            glm::ivec2 halfSize(io.DisplaySize.x/2, io.DisplaySize.y/2);
+            geometrypass.debug(Framework::Render::GeometryPass::ALBEDO,       glm::ivec2(0),             halfSize);
+            geometrypass.debug(Framework::Render::GeometryPass::SPECULAR,     glm::ivec2(halfSize.x, 0), glm::ivec2(halfSize.x, 0)+halfSize);
+            geometrypass.debug(Framework::Render::GeometryPass::NORMAL_DEPTH, glm::ivec2(0, halfSize.y), glm::ivec2(0, halfSize.y)+halfSize);
         }
         
         void destroy()
         {
-            program.destroy();
             mesh.destroy();
-            mvpBuffer.destroy();
-            vertexStream.destroy();
             points.clear();
             colorId = 0;
         }
@@ -276,11 +173,11 @@ class Dummy
         float alpha;
         bool pushed;
         bool open;
+
         Render::Mesh mesh;
         Render::Material material;
-        Render::VertexBuffer mvpBuffer;
-        Render::VertexStream vertexStream;
-        Render::Program program;
+        Render::GeometryPass geometrypass;
+        
         GLint colorId;
         glm::vec3 angle[2];
         float depth;

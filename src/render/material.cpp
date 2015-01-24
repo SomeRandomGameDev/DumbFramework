@@ -14,9 +14,7 @@ Material::Material()
     , depthFunc(DepthFunc::LESS)
     , culling(true)
     , cullingMode(CullFace::BACK)
-    , shininess(1.0f)
     , _name(g_defaultMaterialName)
-    , _program()
 {}
 
 Material::~Material()
@@ -38,8 +36,6 @@ bool Material::create(std::string const& name)
     depthTest  = true;
     depthFunc  = DepthFunc::LESS;
     
-    shininess = 1.0f;
-    
     // [todo]
     return true;
 }
@@ -54,9 +50,8 @@ void Material::destroy()
 void Material::bind()
 {
     Renderer& renderer = Renderer::instance();
-
     renderer.blend(blend);
-    renderer.blendFunc(BlendFunc::SRC_ALPHA, BlendFunc::ONE_MINUS_SRC_ALPHA);
+    renderer.blendFunc(BlendFunc::SRC_ALPHA, BlendFunc::ONE_MINUS_SRC_ALPHA); // [todo]
     
     renderer.culling(culling);
     renderer.cullingMode(cullingMode);
@@ -65,44 +60,28 @@ void Material::bind()
     renderer.depthTest(depthTest);
     renderer.setDepthFunc(depthFunc);
     
-    renderer.setActiveTextureUnit(0);
+    renderer.texture2D(true);
+    renderer.setActiveTextureUnit(DIFFUSE);
     diffuseMap.bind();
-    renderer.setActiveTextureUnit(1);
+    renderer.setActiveTextureUnit(SPECULAR);
     specularMap.bind();
-
-    _program.begin();
-    _program.uniform(_shininessId, shininess);
 }
 
 void Material::unbind()
 {
     Renderer& renderer = Renderer::instance();
 
-    _program.end();
-
-    renderer.setActiveTextureUnit(1);
+    renderer.setActiveTextureUnit(SPECULAR);
     specularMap.unbind();
-    renderer.setActiveTextureUnit(0);
+    renderer.setActiveTextureUnit(DIFFUSE);
     diffuseMap.unbind();
+
+    renderer.setActiveTextureUnit(0);
 }
 
 std::string const& Material::name() const
 {
     return _name;
-}
-
-void Material::attach(Program const& prog)
-{
-    _program = prog;
-    _shininessId = _program.getUniformLocation("shininess");
-
-    int diffuseId  = _program.getUniformLocation("diffuseMap");
-    int specularId = _program.getUniformLocation("specularMap");
-
-    _program.begin();
-        _program.uniform(diffuseId,  0);
-        _program.uniform(specularId, 1);
-    _program.end();
 }
 
 } // Render

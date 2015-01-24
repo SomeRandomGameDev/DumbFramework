@@ -16,6 +16,13 @@ namespace Render    {
 class Material
 {
     public:
+        enum TextureUnit
+        {
+            DIFFUSE  = 0,
+            SPECULAR = 1
+            // [todo] normal etc...
+        };
+    public:
         Material();
         ~Material();
 
@@ -26,8 +33,6 @@ class Material
         void unbind();
 
         std::string const& name() const;
-
-        void attach(Program const& prog);
 
     public:
         bool visible;
@@ -44,14 +49,11 @@ class Material
 
         Texture2D   diffuseMap;
         Texture2D   specularMap;
-        float       shininess;
 
         // [todo] normal map, etc...
         
     private:
         std::string _name;
-        Program     _program;
-        int         _shininessId; // [todo] change to UBO if there're more uniforms.
 };
 
 } // Render

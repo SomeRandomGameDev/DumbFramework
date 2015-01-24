@@ -1,5 +1,5 @@
-#ifndef _DUMB_FW_RENDER_LIGHT_RENDERER_
-#define _DUMB_FW_RENDER_LIGHT_RENDERER_
+#ifndef _DUMB_FW_RENDER_LIGHT_PASS_
+#define _DUMB_FW_RENDER_LIGHT_PASS_
 
 #include <DumbFramework/render/vertexbuffer.hpp>
 #include <DumbFramework/render/vertexstream.hpp>
@@ -29,4 +29,4 @@ class LightPass
 } // Render
 } // Framework
 
-#endif /* _DUMB_FW_RENDER_LIGHT_RENDERER_ */
+#endif /* _DUMB_FW_RENDER_LIGHT_PASS_ */

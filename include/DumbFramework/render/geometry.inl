@@ -1,8 +1,9 @@
+#include <DumbFramework/log.hpp>
 namespace Framework {
 namespace Render    {
 namespace Geometry  {
     
-Primitive::operator GLenum()
+GLenum Primitive::to() const
 {
     switch(value)
     {
@@ -23,7 +24,7 @@ Primitive::operator GLenum()
     }
 }
 
-ComponentType::operator GLenum()
+GLenum ComponentType::to() const
 {
     switch(value)
     {
@@ -84,6 +85,16 @@ size_t ComponentType::size() const
 size_t Attribute::bytes() const
 {
     return size * type.size();
+}
+
+/**
+ * Attach attribute.
+ * @param [in] index Attribute index.
+ */
+void Attribute::attach(int index) const
+{
+    glVertexAttribPointer(index, size, type.to(), normalized ? GL_TRUE : GL_FALSE, stride, (const GLvoid*)offset);
+    glVertexAttribDivisor(index, divisor);
 }
 
 } // Geometry

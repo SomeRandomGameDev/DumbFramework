@@ -302,6 +302,7 @@ void ImGuiDelegate<T>::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lis
     renderer.blendFunc(Render::BlendFunc::SRC_ALPHA, Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
     renderer.culling(false);
     renderer.depthTest(false);
+    renderer.depthBufferWrite(false);
     renderer.scissorTest(true);
 
     // Upload vertex data
@@ -330,6 +331,7 @@ void ImGuiDelegate<T>::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lis
     delegate->_vertexBuffer.unmap();
 
     // Setup texture
+    renderer.setActiveTextureUnit(0);
     delegate->_fontTexture.bind();
     renderer.texture2D(true);
     
@@ -358,6 +360,7 @@ void ImGuiDelegate<T>::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lis
     delegate->_vertexStream.unbind();
     
     delegate->_program.end();
+    renderer.depthBufferWrite(true);
 }
 
 template<class T>
