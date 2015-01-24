@@ -9,7 +9,8 @@ static const Geometry::Attribute vertexAttributes[Mesh::AttributeCount] =
 {
     Geometry::Attribute(Geometry::ComponentType::FLOAT, 3, false, 0, 0, 0), // Position
     Geometry::Attribute(Geometry::ComponentType::FLOAT, 2, false, 0, 0, 0), // TexCoord
-    Geometry::Attribute(Geometry::ComponentType::FLOAT, 3, false, 0, 0, 0)  // Normal
+    Geometry::Attribute(Geometry::ComponentType::FLOAT, 3, false, 0, 0, 0), // Normal
+    Geometry::Attribute(Geometry::ComponentType::FLOAT, 4, false, 0, 0, 0)  // Tangent
 };
 
 /**
@@ -59,6 +60,7 @@ bool Mesh::create(size_t vertexCount, size_t triangleCount, uint32_t mask, void*
             offset += _attributes[i].bytes();
         }
     }
+
     // fix stride.
     size_t stride = offset;
     for(size_t i=0; i<AttributeCount; i++)
@@ -126,6 +128,8 @@ bool Mesh::setAttribute(AttributeId id, uint8_t* ptr)
 void Mesh::update()
 {
     computeBoundingObjects();
+    // [todo]
+    computeTangents();
     // [todo] compute normals, tangents and bitangents.
 }
 /**
@@ -135,6 +139,86 @@ void Mesh::destroy()
 {
     _vertexBuffer.destroy();
     _indexBuffer.destroy();
+}
+/** Compute vertex tangents. **/
+void Mesh::computeTangents()
+{
+    const uint8_t* vertex = (uint8_t*)_vertexBuffer.map(BufferObject::Access::Policy::READ_WRITE);
+    if(nullptr == vertex)
+    {
+        return;
+    }
+
+    const GLuint* face = (GLuint*)_indexBuffer.map(BufferObject::Access::Policy::READ_ONLY);
+    if(nullptr == face)
+    {
+        return;
+    }
+    size_t delta;
+    float* ptr;
+    
+    glm::vec3* tangent[2];
+    tangent[0] = new glm::vec3[2*_vertexCount];
+    tangent[1] = tangent[0] + _vertexCount;
+    memset(tangent[0], 0, sizeof(glm::vec3) * 2 * _vertexCount);
+
+    for(size_t i=0; i<_triangleCount; i++)
+    {
+        glm::vec3 position[3];
+        glm::vec2 texcoord[3];
+        
+        for(size_t j=0; j<3; j++)
+        {
+            delta = _attributes[Position].offset + (face[j] * _attributes[Position].stride);
+            ptr = (float*)(vertex + delta);
+            position[j].x = ptr[0];
+            position[j].y = ptr[1];
+            position[j].z = ptr[2];
+            
+            delta = _attributes[TexCoord].offset + (face[j] * _attributes[TexCoord].stride);
+            ptr = (float*)(vertex + delta);
+            texcoord[j].x = ptr[0];
+            texcoord[j].y = ptr[1];
+        }
+        
+        glm::vec3 e0 = position[1] - position[0];
+        glm::vec3 e1 = position[2] - position[0];
+        glm::vec2 t0 = texcoord[1] - texcoord[0];
+        glm::vec2 t1 = texcoord[2] - texcoord[0];
+        
+        float r = 1.0f / (t0.x*t1.y - t0.y*t1.x);
+        glm::vec3 sdir = r * (t1.y*e0 - t0.y*e1);
+        glm::vec3 tdir = r * (t0.x*e1 - t1.x*e0);
+        
+        for(size_t j=0; j<3; j++)
+        {
+            tangent[0][face[j]] += sdir;
+            tangent[1][face[j]] += tdir;
+        }
+        face += 3;
+    }
+    _indexBuffer.unmap();
+    
+    for(size_t i=0; i<_vertexCount; i++)
+    {
+        delta = _attributes[Normal].offset + (i * _attributes[Normal].stride);
+        ptr = (float*)(vertex + delta);
+        glm::vec3 n(ptr[0], ptr[1], ptr[2]);
+        
+        delta = _attributes[Tangent].offset + (i * _attributes[Tangent].stride);
+        ptr = (float*)(vertex + delta);
+        
+        glm::vec3 t(tangent[0][i]);
+        
+        glm::vec3 ft = glm::normalize(t - n*glm::dot(n,t));
+        ptr[0] = ft.x;
+        ptr[1] = ft.y;
+        ptr[2] = ft.z;
+        ptr[3] = (glm::dot(glm::cross(n,t), tangent[1][i]) < 0.0f) ? -1.0f : 1.0f;
+    }
+    _vertexBuffer.unmap();
+
+    delete [] tangent[0];
 }
 /** Compute axis aligned bounding box and bounding sphere. **/
 void Mesh::computeBoundingObjects()

@@ -5,58 +5,65 @@
 namespace Framework {
 namespace Render    {
 
-static const char* g_vertexShader = R"EOT(
+static const char* g_instancedVertexShader = R"EOT(
 #version 410 core
-
 layout (location=0) in vec3 vs_position;
 layout (location=1) in vec2 vs_uv;
 layout (location=2) in vec3 vs_normal;
-// [todo] layout (location=3) in vec3 vs_tangent;
-// [todo] layout (location=4) in vec3 vs_bitangent;
-// [todo] layout (location=5) in mat4 vs_model;
-
+// [todo] layout (location=3) in vec4 vs_tangent;
+layour (location=5) in mat4 vs_model;
 uniform mat4 viewProj;
-
 out vec3 worldPos;
 out vec2 texCoord;
 out vec3 normal;
 // [todo] out vec3 tangent;
 // [todo] out vec3 bitangent;
-
 void main()
 {
-// [todo]    vec4 tmp = vs_model * vec4(vs_position, 1.0);
-    vec4 tmp = vec4(vs_position, 1.0);
+    vec4 tmp = model * vec4(vs_position, 1.0);
     gl_Position = viewProj *tmp;
     worldPos    = tmp.xyz;
     texCoord    = vs_uv;
-    normal      = vs_normal;
-// [todo]     normal      = (vs_model * vec4(vs_normal,    0.0)).xyz;
+    normal      = (vs_model * vec4(vs_normal,    0.0)).xyz;
 // [todo]     tangent     = (vs_model * vec4(vs_tangent,   0.0)).xyz;
-// [todo]     bitangent   = (vs_model * vec4(vs_bitangent, 0.0)).xyz;
+)EOT";
+
+
+static const char* g_vertexShader = R"EOT(
+#version 410 core
+layout (location=0) in vec3 vs_position;
+layout (location=1) in vec2 vs_uv;
+layout (location=2) in vec3 vs_normal;
+layout (location=3) in vec4 vs_tangent;
+uniform mat4 model;
+uniform mat4 viewProj;
+out vec3 worldPos;
+out vec2 texCoord;
+out vec3 normal;
+out vec4 tangent;
+void main()
+{
+    vec4 tmp = /* model */ vec4(vs_position, 1.0);
+    gl_Position = viewProj *tmp;
+    worldPos    = tmp.xyz;
+    texCoord    = vs_uv;
+    normal      = (/*model */ vec4(vs_normal,    0.0)).xyz;
+    tangent     = vec4((/*model */ vec4(vs_tangent.xyz, 0.0)).xyz, vs_tangent.w);
 }
 )EOT";
 
 static const char* g_fragmentShader = R"EOT(
 #version 410 core
-
-// [todo] uniform Material {
-    uniform sampler2D diffuseMap;
-    uniform sampler2D specularMap;
-// [todo] uniform sampler2D normalMap;
-//  [...]
-// [todo] };
-
+uniform sampler2D diffuseMap;
+uniform sampler2D specularMap;
+// [todo] more? sampleArray?
 in vec3 worldPos;
 in vec2 texCoord;
 in vec3 normal;
-// [todo] in vec3 tangent;
-// [todo] in vec3 bitangent;
-
+in vec4 tangent;
 layout (location=0) out vec4 albedo;
 layout (location=1) out vec4 specular;
 layout (location=2) out vec4 normalDepth;
-
 void main()
 {
     albedo      = texture(diffuseMap, texCoord);
@@ -219,6 +226,9 @@ void GeometryPass::render(Camera const& camera, Material& material, Mesh const& 
         glEnableVertexAttribArray(2);
         mesh.attribute(Render::Mesh::Normal).attach(2);
 
+        glEnableVertexAttribArray(3);
+        mesh.attribute(Render::Mesh::Tangent).attach(3);
+
         // [todo] model matrix
 
         mesh.indexBuffer().bind();
@@ -227,6 +237,7 @@ void GeometryPass::render(Camera const& camera, Material& material, Mesh const& 
 
         mesh.vertexBuffer().unbind();
         
+        glDisableVertexAttribArray(3);
         glDisableVertexAttribArray(2);
         glDisableVertexAttribArray(1);
         glDisableVertexAttribArray(0);

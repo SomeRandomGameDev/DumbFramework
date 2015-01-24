@@ -266,13 +266,13 @@ void* Detail<t>::map(BufferObject::Access::Policy policy, off_t offset, size_t l
 template <Type t>
 bool Detail<t>::unmap() const
 {
+    bind();
 #if defined(SANITY_CHECK)
     // Warning! This may spam your logs!
     if(!isMapped())
     {
         Log_Warning(Framework::Module::Render, "The buffer was not mapped. Unmapping will fail!");
     }
-    bind();
 #endif // SANITY_CHECK
 
     GLboolean ret;

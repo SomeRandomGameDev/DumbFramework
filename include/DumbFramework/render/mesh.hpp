@@ -25,7 +25,6 @@ class Mesh
             TexCoord,
             Normal,
             Tangent,
-            Bitangent,
             // [todo] bone id + weight ...
             AttributeCount
         };
@@ -39,7 +38,6 @@ class Mesh
             HasTexCoord  = (1 << TexCoord),
             HasNormal    = (1 << Normal),
             HasTangent   = (1 << Tangent),
-            HasBitangent = (1 << Bitangent),
             // [todo] bone id + weight ...
             HasAll       = (1 << AttributeCount) - 1
         };
@@ -129,7 +127,8 @@ class Mesh
         
     protected:
         // [todo] void computeVertexNormals();
-        // [todo] void computeVertexTangents();
+        /** Compute vertex tangents. **/
+        void computeTangents();
         /** Compute axis aligned bounding box and bounding sphere. **/
         void computeBoundingObjects();
 
