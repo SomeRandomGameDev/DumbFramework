@@ -5,6 +5,7 @@
 #include <DumbFramework/render/geometry.hpp>
 #include <DumbFramework/render/vertexbuffer.hpp>
 #include <DumbFramework/render/indexbuffer.hpp>
+#include <DumbFramework/render/vertexstream.hpp>
 
 namespace Framework {
 namespace Render    {
@@ -111,6 +112,11 @@ class Mesh
          * @return Axis aligned bounding box.
          */
         inline BoundingBox const& boundingBox() const;
+        /**
+         * Retrieve vertex stream.
+         */
+        inline VertexStream const& vertexStream() const;
+        
     public:
         /** Vertex size in bytes. */
         static const size_t vertexSize;
@@ -130,7 +136,8 @@ class Mesh
         void computeTangents();
         /** Compute axis aligned bounding box and bounding sphere. **/
         void computeBoundingObjects();
-
+        /** Create vertex stream. **/
+        bool createVertexStream();
     protected:
         /**
          * Vertex buffer.
@@ -157,6 +164,8 @@ class Mesh
         BoundingSphere _sphere;
         /** Axis aligned bounging sphere. **/
         BoundingBox    _aabb;
+        /** Vertex stream for a single instance. **/
+        VertexStream _stream;
 };
 
 } // Render

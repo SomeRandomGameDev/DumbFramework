@@ -33,10 +33,9 @@ class GeometryPass
         bool create(glm::ivec2 const& viewportSize);
         void destroy();
         
-        void begin();
+        void begin(Camera const& camera);
         void end();
-        void render(Camera const& camera, Material& material, Mesh const& mesh);
-        // [todo] render instancied
+        void render(Material& material, glm::mat4 const& modelMatrix, glm::mat3 const& normalMatrix, Mesh const& mesh);
         
         Texture2D* output();
         Renderbuffer* depthbuffer();
@@ -50,7 +49,9 @@ class GeometryPass
         Renderbuffer  _depthbuffer;
         
         glm::ivec2 _viewportSize;
-        int _viewProjId;
+        int _modelMatrixId;
+        int _normalMatrixId;
+        int _viewProjMatrixId;
 };
 
 } // Render

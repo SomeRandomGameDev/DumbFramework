@@ -5,29 +5,31 @@
 namespace Framework {
 namespace Render    {
 
-static const char* g_instancedVertexShader = R"EOT(
+#if 0
+static const char* g_vertexShaderInstanced = R"EOT(
 #version 410 core
 layout (location=0) in vec3 vs_position;
 layout (location=1) in vec2 vs_uv;
 layout (location=2) in vec3 vs_normal;
-// [todo] layout (location=3) in vec4 vs_tangent;
-layour (location=5) in mat4 vs_model;
-uniform mat4 viewProj;
+layout (location=3) in vec4 vs_tangent;
+layout (location=4) in mat4 vs_modelMatrix;
+layout (location=8) in mat3 vs_normalMatrix;
+uniform mat4 viewProjMatrix;
 out vec3 worldPos;
 out vec2 texCoord;
 out vec3 normal;
-// [todo] out vec3 tangent;
-// [todo] out vec3 bitangent;
+out vec4 tangent;
 void main()
 {
-    vec4 tmp = model * vec4(vs_position, 1.0);
-    gl_Position = viewProj *tmp;
+    vec4 tmp = vs_modelMatrix * vec4(vs_position, 1.0);
+    gl_Position = viewProjMatrix *tmp;
     worldPos    = tmp.xyz;
     texCoord    = vs_uv;
-    normal      = (vs_model * vec4(vs_normal,    0.0)).xyz;
-// [todo]     tangent     = (vs_model * vec4(vs_tangent,   0.0)).xyz;
+    normal      = vs_normalMatrix * vs_normal;
+    tangent     = vec4(vs_normalMatrix * vs_tangent.xyz, vs_tangent.w);
+}
 )EOT";
-
+#endif // [todo] later...
 
 static const char* g_vertexShader = R"EOT(
 #version 410 core
@@ -35,20 +37,21 @@ layout (location=0) in vec3 vs_position;
 layout (location=1) in vec2 vs_uv;
 layout (location=2) in vec3 vs_normal;
 layout (location=3) in vec4 vs_tangent;
-uniform mat4 model;
-uniform mat4 viewProj;
+uniform mat4 modelMatrix;
+uniform mat3 normalMatrix;
+uniform mat4 viewProjMatrix;
 out vec3 worldPos;
 out vec2 texCoord;
 out vec3 normal;
 out vec4 tangent;
 void main()
 {
-    vec4 tmp = /* model */ vec4(vs_position, 1.0);
-    gl_Position = viewProj *tmp;
+    vec4 tmp = modelMatrix * vec4(vs_position, 1.0);
+    gl_Position = viewProjMatrix *tmp;
     worldPos    = tmp.xyz;
     texCoord    = vs_uv;
-    normal      = (/*model */ vec4(vs_normal,    0.0)).xyz;
-    tangent     = vec4((/*model */ vec4(vs_tangent.xyz, 0.0)).xyz, vs_tangent.w);
+    normal      = normalMatrix * vs_normal;
+    tangent     = vec4(normalMatrix * vs_tangent.xyz, vs_tangent.w);
 }
 )EOT";
 
@@ -161,7 +164,9 @@ bool GeometryPass::create(glm::ivec2 const& viewportSize)
 
     int id;
     _program.begin();
-        _viewProjId = _program.getUniformLocation("viewProj");
+        _modelMatrixId    = _program.getUniformLocation("modelMatrix");
+        _normalMatrixId   = _program.getUniformLocation("normalMatrix");
+        _viewProjMatrixId = _program.getUniformLocation("viewProjMatrix");
         id = _program.getUniformLocation("diffuseMap");
         _program.uniform(id, (int)Material::DIFFUSE);
         id = _program.getUniformLocation("specularMap");
@@ -181,7 +186,7 @@ void GeometryPass::destroy()
     _output.destroy();
 }
 
-void GeometryPass::begin()
+void GeometryPass::begin(Camera const& camera)
 {
     Renderer& renderer = Renderer::instance();
     
@@ -196,6 +201,8 @@ void GeometryPass::begin()
     renderer.depthTest(true);
 
     _program.begin();
+    glm::mat4 viewProj = camera.projectionMatrix(_viewportSize) * camera.viewMatrix();
+    _program.uniform(_viewProjMatrixId, false, viewProj);
 }
 
 void GeometryPass::end()
@@ -208,32 +215,14 @@ void GeometryPass::end()
 /**
  * Render a single mesh.
  */
-void GeometryPass::render(Camera const& camera, Material& material, Mesh const& mesh)
+void GeometryPass::render(Material& material, glm::mat4 const& modelMatrix, glm::mat3 const& normalMatrix, Mesh const& mesh)
 {
     material.bind();
-    glm::mat4 viewProj = camera.projectionMatrix(_viewportSize) * camera.viewMatrix();
-        _program.uniform(_viewProjId, false, viewProj);
-
-        mesh.vertexBuffer().bind();
-
-        for(int i=0; i<Mesh::AttributeCount; i++)
-        {
-            glEnableVertexAttribArray(i);
-            mesh.attributes[i].attach(i);
-        }
-
-        // [todo] model matrix
-
-        mesh.indexBuffer().bind();
+        _program.uniform(_modelMatrixId, false, modelMatrix);
+        _program.uniform(_normalMatrixId, false, normalMatrix);
+        mesh.vertexStream().bind();
         glDrawElements(GL_TRIANGLES, mesh.triangleCount()*3, GL_UNSIGNED_INT, 0);
-        mesh.indexBuffer().unbind();
-
-        mesh.vertexBuffer().unbind();
-        
-        for(int i=0; i<Mesh::AttributeCount; i++)
-        {
-            glDisableVertexAttribArray(i);
-        }
+        mesh.vertexStream().unbind();
 
     material.unbind();
 }

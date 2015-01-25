@@ -45,6 +45,13 @@ size_t Mesh::triangleCount() const
 {
     return _triangleCount;
 }
+/**
+ * Retrieve vertex stream.
+ */
+VertexStream const& Mesh::vertexStream() const
+{
+    return _stream;
+}
 
 } // Render
 } // Framework

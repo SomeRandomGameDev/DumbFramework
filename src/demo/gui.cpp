@@ -114,8 +114,8 @@ class Dummy
                 angle[0] = angle[1] = glm::vec3(0.0f);
             }
             
-            geometrypass.begin();
-                geometrypass.render(camera[1], material, mesh);
+            geometrypass.begin(camera[1]);
+                geometrypass.render(material, glm::mat4(), glm::mat3(), mesh);
             geometrypass.end();
 
             glViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y);

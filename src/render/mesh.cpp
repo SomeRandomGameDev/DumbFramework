@@ -65,7 +65,6 @@ bool Mesh::create(size_t vertexCount, size_t triangleCount, uint32_t mask, void*
 
     float* src = (float*)vertexData;
     uint8_t* data = (uint8_t*)_vertexBuffer.map(BufferObject::Access::Policy::WRITE_ONLY);
-    size_t offset = 0;
     for(int i=0; i<AttributeCount; i++)
     {
         uint8_t* dest = data + attributes[i].offset;
@@ -82,7 +81,7 @@ bool Mesh::create(size_t vertexCount, size_t triangleCount, uint32_t mask, void*
     _vertexBuffer.unmap();
     
     update(mask);
-    return true;
+    return createVertexStream();
 }
 /**
  * Set vertex attribute data.
@@ -288,6 +287,30 @@ void Mesh::computeBoundingObjects()
     _vertexBuffer.unmap();
     
     _sphere = BoundingSphere(_aabb.getCenter(), glm::distance(_aabb.getMin(), _aabb.getMax()) / 2.0f);
+}
+/** Create vertex stream. **/
+bool Mesh::createVertexStream()
+{
+    bool ret;
+    _stream.create();
+    for(size_t i=0; i<Mesh::AttributeCount; i++)
+    {
+        ret = _stream.add(&_vertexBuffer, i, attributes[i]);
+        if(false == ret)
+        {
+            Log_Error(Module::Render, "Failed to add attribute %d to stream.", i);
+            return false;
+        }
+    }
+    _stream.add(&_indexBuffer);
+    
+    ret = _stream.compile();
+    if(false == ret)
+    {
+        Log_Error(Module::Render, "Stream compilation failed.");
+        return false;
+    }
+    return true;
 }
 
 } // Render

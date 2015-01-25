@@ -66,6 +66,10 @@ class VertexStream
          */
         bool add(VertexBuffer const* vertexBuffer, std::initializer_list< std::pair<unsigned int, Geometry::Attribute> > const& attr);
         /**
+         * Add index buffer to vertex stream.
+         */
+        bool add(IndexBuffer* indexBuffer);
+        /**
          * Check vertex attributes and build internal structures for
          * future rendering.
          * @return true if everything went right.
@@ -74,11 +78,11 @@ class VertexStream
         /**
          * Bind vertex stream.
          */
-        void bind();
+        void bind() const;
         /**
          * Unbind vertex stream.
          */
-        void unbind();
+        void unbind() const;
         /**
          * Unbind any vertex stream.
          */
@@ -108,12 +112,17 @@ class VertexStream
          * @return Constant pointer to the vertex buffer.
          */
         VertexBuffer const* getVertexBuffer(unsigned int index) const;
-
+        /**
+         * Get index buffer.
+         */
+        IndexBuffer const* getIndexBuffer() const;
     private:
         /** Vertex array identifier. **/
         GLuint _vao;
         /** Vertex attributes array. **/
         std::vector<std::pair<const VertexBuffer*, Geometry::Attribute>> _attributes;
+        /** Index buffer. **/
+        IndexBuffer *_elements;
 };
 
 } // Render

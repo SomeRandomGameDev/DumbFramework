@@ -10,6 +10,7 @@ namespace Render    {
 VertexStream::VertexStream()
     : _vao()
     , _attributes()
+    , _elements(nullptr)
 {}
 /**
  * Destructor.
@@ -48,6 +49,7 @@ void VertexStream::destroy()
         _vao = 0;
     }
     _attributes.clear();
+    _elements = nullptr;
 }
 /**
  * Add attribute to vertex stream.
@@ -128,6 +130,14 @@ bool VertexStream::add(VertexBuffer const* vertexBuffer, std::initializer_list<s
     return true;
 }
 /**
+ * Add index buffer to vertex stream.
+ */
+bool VertexStream::add(IndexBuffer* indexBuffer)
+{
+    _elements = indexBuffer;
+    return true;
+}
+/**
  * 
  */
 bool VertexStream::compile()
@@ -161,8 +171,13 @@ bool VertexStream::compile()
         _attributes[i].first->bind();
         _attributes[i].second.attach(i);
     }
+    if(nullptr != _elements)
+    {
+        _elements->bind();
+    }
     unbind();
     VertexBuffer::unbindAll();
+    IndexBuffer::unbindAll();
 
     GLenum err = glGetError();
     if(GL_NO_ERROR != err)
@@ -176,7 +191,7 @@ bool VertexStream::compile()
 /**
  * Bind vertex stream.
  */
-void VertexStream::bind()
+void VertexStream::bind() const
 {
 #if defined(SANITY_CHECK)
     // Warning! This may spam your logs!
@@ -199,7 +214,7 @@ void VertexStream::bind()
 /**
  * Unbind vertex stream.
  */
-void VertexStream::unbind()
+void VertexStream::unbind() const
 {
 #if defined(SANITY_CHECK)
     // Warning! This may spam your logs!
@@ -302,6 +317,13 @@ VertexBuffer const* VertexStream::getVertexBuffer(unsigned int index) const
         return nullptr;
     }
     return _attributes[index].first;
+}
+/**
+ * Get index buffer.
+ */
+IndexBuffer const* VertexStream::getIndexBuffer() const
+{
+    return _elements;
 }
 
 } // Render
