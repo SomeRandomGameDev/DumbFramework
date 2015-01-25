@@ -71,12 +71,6 @@ class Mesh
         bool setAttribute(AttributeId id, uint8_t* ptr);
         // [todo] setAttributes
         /**
-         * Update mesh.
-         * It recomputes bounding box and bounding sphere, as long as
-         * vertex normals, tangents and bitangents.
-         */
-        void update();
-        /**
          * Release any resource allocated by this mesh.
          */
         void destroy();
@@ -99,17 +93,10 @@ class Mesh
          */
         inline size_t vertexCount() const;
         /**
-         * Get vertex size in bytes.
-         */
-        inline size_t vertexSize() const;
-        /**
          * Get index count.
          */
         inline size_t triangleCount() const;
-        /**
-         * Get attributes mask.
-         */
-        inline uint32_t attributesMask() const;
+        
         // [todo] map vertex buffer
         // [todo] map index buffer
         // [todo] draw command
@@ -124,9 +111,21 @@ class Mesh
          * @return Axis aligned bounding box.
          */
         inline BoundingBox const& boundingBox() const;
+    public:
+        /** Vertex size in bytes. */
+        static const size_t vertexSize;
+        /** Geometry attributes. **/
+        static const Geometry::Attribute attributes[AttributeCount];
         
     protected:
-        // [todo] void computeVertexNormals();
+        /**
+         * Update mesh.
+         * It recomputes bounding box and bounding sphere, as long as
+         * vertex normals, tangents and bitangents.
+         */
+        void update(uint32_t mask);
+        /** Compute vertex normals. **/
+        void computeNormals();
         /** Compute vertex tangents. **/
         void computeTangents();
         /** Compute axis aligned bounding box and bounding sphere. **/
@@ -154,10 +153,6 @@ class Mesh
         size_t _triangleCount;
         /** Primitive type. **/
         Geometry::Primitive _primitiveType;
-        /** Attribute mask. **/
-        uint32_t _attributesMask;
-        /** Geometry attributes. **/
-        Geometry::Attribute _attributes[AttributeCount];
         /** Bounding sphere. **/
         BoundingSphere _sphere;
         /** Axis aligned bounging sphere. **/

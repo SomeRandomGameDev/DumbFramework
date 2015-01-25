@@ -216,18 +216,11 @@ void GeometryPass::render(Camera const& camera, Material& material, Mesh const& 
 
         mesh.vertexBuffer().bind();
 
-        // [todo] make loop
-        glEnableVertexAttribArray(0);
-        mesh.attribute(Render::Mesh::Position).attach(0);
-
-        glEnableVertexAttribArray(1);
-        mesh.attribute(Render::Mesh::TexCoord).attach(1);
-
-        glEnableVertexAttribArray(2);
-        mesh.attribute(Render::Mesh::Normal).attach(2);
-
-        glEnableVertexAttribArray(3);
-        mesh.attribute(Render::Mesh::Tangent).attach(3);
+        for(int i=0; i<Mesh::AttributeCount; i++)
+        {
+            glEnableVertexAttribArray(i);
+            mesh.attributes[i].attach(i);
+        }
 
         // [todo] model matrix
 
@@ -237,10 +230,10 @@ void GeometryPass::render(Camera const& camera, Material& material, Mesh const& 
 
         mesh.vertexBuffer().unbind();
         
-        glDisableVertexAttribArray(3);
-        glDisableVertexAttribArray(2);
-        glDisableVertexAttribArray(1);
-        glDisableVertexAttribArray(0);
+        for(int i=0; i<Mesh::AttributeCount; i++)
+        {
+            glDisableVertexAttribArray(i);
+        }
 
     material.unbind();
 }

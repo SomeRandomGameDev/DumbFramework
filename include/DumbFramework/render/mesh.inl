@@ -2,15 +2,6 @@ namespace Framework {
 namespace Render    {
 
 /**
- * Get geometry attribute.
- * @param [in] id Attribute identifier.
- * @return Geometry attribute. @warning It can be empty.
- */
-Geometry::Attribute const& Mesh::attribute(AttributeId id) const
-{
-    return _attributes[id];
-}
-/**
  * Get mesh bounding sphere.
  * @return Bounding sphere.
  */
@@ -34,13 +25,6 @@ size_t Mesh::vertexCount() const
     return _vertexCount;
 }
 /**
- * Get attributes mask.
- */
-uint32_t Mesh::attributesMask() const
-{
-    return _attributesMask;
-}
-/**
  * Get vertex buffer.
  */
 VertexBuffer const& Mesh::vertexBuffer() const
@@ -53,18 +37,6 @@ VertexBuffer const& Mesh::vertexBuffer() const
 IndexBuffer const& Mesh::indexBuffer() const
 {
     return _indexBuffer;
-}
-/**
- * Get vertex size in bytes.
- */
-size_t Mesh::vertexSize() const
-{
-    size_t size = 0;
-    for(size_t i=0; i<AttributeCount; i++)
-    {
-        size += _attributes[i].bytes();
-    }
-    return size;
 }
 /**
  * Get index count.

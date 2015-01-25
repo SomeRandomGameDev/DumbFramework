@@ -4,13 +4,15 @@
 namespace Framework {
 namespace Render    {
 
-/* Vertex attributes. */
-static const Geometry::Attribute vertexAttributes[Mesh::AttributeCount] = 
+/** Vertex size in bytes. */
+const size_t Mesh::vertexSize = 12*sizeof(float);
+/** Geometry attributes. **/
+const Geometry::Attribute Mesh::attributes[Mesh::AttributeCount] = 
 {
-    Geometry::Attribute(Geometry::ComponentType::FLOAT, 3, false, 0, 0, 0), // Position
-    Geometry::Attribute(Geometry::ComponentType::FLOAT, 2, false, 0, 0, 0), // TexCoord
-    Geometry::Attribute(Geometry::ComponentType::FLOAT, 3, false, 0, 0, 0), // Normal
-    Geometry::Attribute(Geometry::ComponentType::FLOAT, 4, false, 0, 0, 0)  // Tangent
+    Geometry::Attribute(Geometry::ComponentType::FLOAT, 3, false, vertexSize, 0              , 0), // Position
+    Geometry::Attribute(Geometry::ComponentType::FLOAT, 2, false, vertexSize, 3*sizeof(float), 0), // TexCoord
+    Geometry::Attribute(Geometry::ComponentType::FLOAT, 3, false, vertexSize, 5*sizeof(float), 0), // Normal
+    Geometry::Attribute(Geometry::ComponentType::FLOAT, 4, false, vertexSize, 8*sizeof(float), 0)  // Tangent
 };
 
 /**
@@ -22,7 +24,6 @@ Mesh::Mesh()
     , _vertexCount(0)
     , _triangleCount(0)
     , _primitiveType(Geometry::Primitive::TRIANGLES)
-    , _attributesMask(Mesh::None)
     , _sphere()
     , _aabb()
 {}
@@ -47,26 +48,6 @@ bool Mesh::create(size_t vertexCount, size_t triangleCount, uint32_t mask, void*
     _triangleCount  = triangleCount;
     _vertexCount    = vertexCount;
     _primitiveType  = Geometry::Primitive::TRIANGLES;
-    _attributesMask = mask;
-    
-    // stride will be fixed later.
-    size_t offset = 0;
-    for(size_t i=0; i<AttributeCount; i++)
-    {
-        if(mask & (1 << i))
-        {
-            memcpy(&_attributes[i], &vertexAttributes[i], sizeof(Geometry::Attribute));
-            _attributes[i].offset = offset;
-            offset += _attributes[i].bytes();
-        }
-    }
-
-    // fix stride.
-    size_t stride = offset;
-    for(size_t i=0; i<AttributeCount; i++)
-    {
-        _attributes[i].stride = stride;
-    }
     
     ret = _indexBuffer.create(3 * triangleCount * sizeof(GLuint), indexData, BufferObject::Access::Frequency::STATIC, BufferObject::Access::Type::DRAW);
     if(false == ret)
@@ -75,17 +56,32 @@ bool Mesh::create(size_t vertexCount, size_t triangleCount, uint32_t mask, void*
         return false;
     }
     
-    ret = _vertexBuffer.create(vertexCount * stride, vertexData, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
+    ret = _vertexBuffer.create(vertexCount * vertexSize, vertexData, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
         Log_Error(Module::Render, "Failed to create vertex buffer!");
         return false;
     }
-    
-    if(nullptr != vertexData)
+
+    float* src = (float*)vertexData;
+    uint8_t* data = (uint8_t*)_vertexBuffer.map(BufferObject::Access::Policy::WRITE_ONLY);
+    size_t offset = 0;
+    for(int i=0; i<AttributeCount; i++)
     {
-        update();
+        uint8_t* dest = data + attributes[i].offset;
+        if(mask & (1<<i))
+        {
+            for(size_t j=0; j<vertexCount; j++)
+            {
+                memcpy(dest, src, attributes[i].bytes());
+                src  += attributes[i].size;
+                dest += attributes[i].stride;
+            }
+        }
     }
+    _vertexBuffer.unmap();
+    
+    update(mask);
     return true;
 }
 /**
@@ -102,16 +98,11 @@ bool Mesh::setAttribute(AttributeId id, uint8_t* ptr)
         Log_Error(Module::Render, "Invalid data pointer.");
         return false;
     }
-    if(0 == (_attributesMask & (1 << id)))
-    {
-        Log_Error(Module::Render, "Unsupported vertex attribute.");
-        return false;
-    }
     
     uint8_t* data = (uint8_t*)_vertexBuffer.map(BufferObject::Access::Policy::WRITE_ONLY);
-    data += _attributes[id].offset;
-    size_t size   = _attributes[id].bytes();
-    size_t stride = _attributes[id].stride;
+    data += attributes[id].offset;
+    size_t size   = attributes[id].bytes();
+    size_t stride = attributes[id].stride;
     for(size_t i=0; i<_vertexCount; i++)
     {
         memcpy(data, ptr, size);
@@ -125,12 +116,17 @@ bool Mesh::setAttribute(AttributeId id, uint8_t* ptr)
  * It recomputes bounding box and bounding sphere, as long as
  * vertex normals, tangents and bitangents.
  */
-void Mesh::update()
+void Mesh::update(uint32_t mask)
 {
     computeBoundingObjects();
-    // [todo]
-    computeTangents();
-    // [todo] compute normals, tangents and bitangents.
+    if(0 == (mask & Mesh::HasNormal))
+    {
+        computeNormals();
+    }
+    if(0 == (mask & Mesh::HasTangent))
+    {
+        computeTangents();
+    }
 }
 /**
  * Release any resource allocated by this mesh.
@@ -140,6 +136,66 @@ void Mesh::destroy()
     _vertexBuffer.destroy();
     _indexBuffer.destroy();
 }
+/** Compute vertex normals. **/
+void Mesh::computeNormals()
+{
+    const uint8_t* vertex = (uint8_t*)_vertexBuffer.map(BufferObject::Access::Policy::READ_WRITE);
+    if(nullptr == vertex)
+    {
+        return;
+    }
+
+    const GLuint* face = (GLuint*)_indexBuffer.map(BufferObject::Access::Policy::READ_ONLY);
+    if(nullptr == face)
+    {
+        return;
+    }
+
+    float *ptr;
+    for(size_t i=0; i<_vertexCount; i++)
+    {
+        ptr = (float*)(vertex + attributes[Normal].offset + (i * attributes[Normal].stride));
+        memset(ptr, 0, attributes[Normal].bytes());
+    }
+
+    for(size_t i=0; i<_triangleCount; i++)
+    {
+        glm::vec3 n;
+        glm::vec3 p[3];
+        
+        for(size_t j=0; j<3; j++)
+        {
+            ptr = (float*)(vertex + attributes[Position].offset + (face[j] * attributes[Position].stride));
+            p[j].x = ptr[0];
+            p[j].y = ptr[1];
+            p[j].z = ptr[2];
+        }
+        
+        n = glm::normalize(glm::cross(p[1]-p[0], p[2]-p[0]));
+        
+        for(size_t j=0; j<3; j++)
+        {
+            ptr = (float*)(vertex + attributes[Normal].offset + (face[j] * attributes[Normal].stride));
+            ptr[0] += n.x;
+            ptr[1] += n.y;
+            ptr[2] += n.z;
+        }
+        face += 3;
+    }
+
+    for(size_t i=0; i<_vertexCount; i++)
+    {
+        ptr = (float*)(vertex + attributes[Normal].offset + (i * attributes[Normal].stride));
+        glm::vec3 n = glm::normalize(glm::vec3(ptr[0], ptr[1], ptr[2]));
+        ptr[0] = n.x;
+        ptr[1] = n.y;
+        ptr[2] = n.z;
+    }
+    _indexBuffer.unmap();
+    
+    _vertexBuffer.unmap();
+}
+
 /** Compute vertex tangents. **/
 void Mesh::computeTangents()
 {
@@ -169,13 +225,13 @@ void Mesh::computeTangents()
         
         for(size_t j=0; j<3; j++)
         {
-            delta = _attributes[Position].offset + (face[j] * _attributes[Position].stride);
+            delta = attributes[Position].offset + (face[j] * attributes[Position].stride);
             ptr = (float*)(vertex + delta);
             position[j].x = ptr[0];
             position[j].y = ptr[1];
             position[j].z = ptr[2];
             
-            delta = _attributes[TexCoord].offset + (face[j] * _attributes[TexCoord].stride);
+            delta = attributes[TexCoord].offset + (face[j] * attributes[TexCoord].stride);
             ptr = (float*)(vertex + delta);
             texcoord[j].x = ptr[0];
             texcoord[j].y = ptr[1];
@@ -201,11 +257,11 @@ void Mesh::computeTangents()
     
     for(size_t i=0; i<_vertexCount; i++)
     {
-        delta = _attributes[Normal].offset + (i * _attributes[Normal].stride);
+        delta = attributes[Normal].offset + (i * attributes[Normal].stride);
         ptr = (float*)(vertex + delta);
         glm::vec3 n(ptr[0], ptr[1], ptr[2]);
         
-        delta = _attributes[Tangent].offset + (i * _attributes[Tangent].stride);
+        delta = attributes[Tangent].offset + (i * attributes[Tangent].stride);
         ptr = (float*)(vertex + delta);
         
         glm::vec3 t(tangent[0][i]);
@@ -228,7 +284,7 @@ void Mesh::computeBoundingObjects()
     {
         return;
     }
-    _aabb = BoundingBox(ptr+_attributes[Position].offset, _vertexCount, _attributes[Position].stride);
+    _aabb = BoundingBox(ptr+attributes[Position].offset, _vertexCount, attributes[Position].stride);
     _vertexBuffer.unmap();
     
     _sphere = BoundingSphere(_aabb.getCenter(), glm::distance(_aabb.getMin(), _aabb.getMax()) / 2.0f);
