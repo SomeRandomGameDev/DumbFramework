@@ -19,8 +19,9 @@ class Material
         enum TextureUnit
         {
             DIFFUSE  = 0,
-            SPECULAR = 1
-            // [todo] normal etc...
+            SPECULAR = 1,
+            NORMAL   = 2
+            // [todo] more...
         };
     public:
         Material();
@@ -49,6 +50,7 @@ class Material
 
         Texture2D   diffuseMap;
         Texture2D   specularMap;
+        Texture2D   normalMap;
 
         // [todo] normal map, etc...
         

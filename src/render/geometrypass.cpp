@@ -5,32 +5,6 @@
 namespace Framework {
 namespace Render    {
 
-#if 0
-static const char* g_vertexShaderInstanced = R"EOT(
-#version 410 core
-layout (location=0) in vec3 vs_position;
-layout (location=1) in vec2 vs_uv;
-layout (location=2) in vec3 vs_normal;
-layout (location=3) in vec4 vs_tangent;
-layout (location=4) in mat4 vs_modelMatrix;
-layout (location=8) in mat3 vs_normalMatrix;
-uniform mat4 viewProjMatrix;
-out vec3 worldPos;
-out vec2 texCoord;
-out vec3 normal;
-out vec4 tangent;
-void main()
-{
-    vec4 tmp = vs_modelMatrix * vec4(vs_position, 1.0);
-    gl_Position = viewProjMatrix *tmp;
-    worldPos    = tmp.xyz;
-    texCoord    = vs_uv;
-    normal      = vs_normalMatrix * vs_normal;
-    tangent     = vec4(vs_normalMatrix * vs_tangent.xyz, vs_tangent.w);
-}
-)EOT";
-#endif // [todo] later...
-
 static const char* g_vertexShader = R"EOT(
 #version 410 core
 layout (location=0) in vec3 vs_position;
@@ -43,7 +17,8 @@ uniform mat4 viewProjMatrix;
 out vec3 worldPos;
 out vec2 texCoord;
 out vec3 normal;
-out vec4 tangent;
+out vec3 tangent;
+out vec3 bitangent;
 void main()
 {
     vec4 tmp = modelMatrix * vec4(vs_position, 1.0);
@@ -51,7 +26,8 @@ void main()
     worldPos    = tmp.xyz;
     texCoord    = vs_uv;
     normal      = normalMatrix * vs_normal;
-    tangent     = vec4(normalMatrix * vs_tangent.xyz, vs_tangent.w);
+    tangent     = normalMatrix * vs_tangent.xyz;
+    bitangent   = cross(normal, tangent) * vs_tangent.w;
 }
 )EOT";
 
@@ -59,19 +35,25 @@ static const char* g_fragmentShader = R"EOT(
 #version 410 core
 uniform sampler2D diffuseMap;
 uniform sampler2D specularMap;
+uniform sampler2D normalMap;
 // [todo] more? sampleArray?
 in vec3 worldPos;
 in vec2 texCoord;
 in vec3 normal;
-in vec4 tangent;
+in vec3 tangent;
+in vec3 bitangent;
 layout (location=0) out vec4 albedo;
 layout (location=1) out vec4 specular;
 layout (location=2) out vec4 normalDepth;
 void main()
 {
+    mat3 tbn = mat3(tangent, bitangent, normal);
+    vec3 n = 2.0*texture(normalMap, texCoord).xyz - 1.0;
+    n = normalize(tbn * n);
+    
     albedo      = texture(diffuseMap, texCoord);
     specular    = texture(specularMap, texCoord);
-    normalDepth = vec4(normal, worldPos.z);
+    normalDepth = vec4(n, worldPos.z);
 }
 )EOT";
 
@@ -171,6 +153,8 @@ bool GeometryPass::create(glm::ivec2 const& viewportSize)
         _program.uniform(id, (int)Material::DIFFUSE);
         id = _program.getUniformLocation("specularMap");
         _program.uniform(id, (int)Material::SPECULAR);
+        id = _program.getUniformLocation("normalMap");
+        _program.uniform(id, (int)Material::NORMAL);
 // [todo] normal Map etc...
     _program.end();
 

@@ -43,6 +43,7 @@ class Dummy
             ret = material.create("dummy");
             Render::Texture::load(material.diffuseMap,  "cubeTex.png");
             Render::Texture::load(material.specularMap, "cubeTexSpec.png");
+            Render::Texture::load(material.normalMap,   "cubeTexNormal.png");
             material.diffuseMap.bind();
                 material.diffuseMap.setMagFilter(Render::Texture::MagFilter::LINEAR_TEXEL);
                 material.diffuseMap.setMinFilter(Render::Texture::MinFilter::LINEAR_TEXEL);
@@ -53,6 +54,12 @@ class Dummy
                 material.specularMap.setMinFilter(Render::Texture::MinFilter::LINEAR_TEXEL);
                 material.specularMap.setWrap(Render::Texture::Wrap::CLAMP_TO_EDGE, Render::Texture::Wrap::CLAMP_TO_EDGE);
             material.specularMap.unbind();
+            material.normalMap.bind();
+                material.normalMap.setMagFilter(Render::Texture::MagFilter::LINEAR_TEXEL);
+                material.normalMap.setMinFilter(Render::Texture::MinFilter::LINEAR_TEXEL);
+                material.normalMap.setWrap(Render::Texture::Wrap::CLAMP_TO_EDGE, Render::Texture::Wrap::CLAMP_TO_EDGE);
+            material.normalMap.unbind();
+            
             material.culling = false;
             
             camera[0].lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f));

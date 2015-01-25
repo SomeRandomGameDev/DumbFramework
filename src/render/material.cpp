@@ -45,6 +45,7 @@ void Material::destroy()
     _name = g_defaultMaterialName;
     diffuseMap.destroy();
     specularMap.destroy();
+    normalMap.destroy();
 }
 
 void Material::bind()
@@ -65,12 +66,16 @@ void Material::bind()
     diffuseMap.bind();
     renderer.setActiveTextureUnit(SPECULAR);
     specularMap.bind();
+    renderer.setActiveTextureUnit(NORMAL);
+    normalMap.bind();
 }
 
 void Material::unbind()
 {
     Renderer& renderer = Renderer::instance();
 
+    renderer.setActiveTextureUnit(NORMAL);
+    normalMap.unbind();
     renderer.setActiveTextureUnit(SPECULAR);
     specularMap.unbind();
     renderer.setActiveTextureUnit(DIFFUSE);
