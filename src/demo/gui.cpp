@@ -75,7 +75,9 @@ class Dummy
             currentFrame = 0;
             msPerFrameAccum = 0.0f;
 
-            glfwSwapInterval(1); // vsync
+            rot = 0.0f;
+            
+            //glfwSwapInterval(1); // vsync
         }
         
         void gui()
@@ -121,8 +123,12 @@ class Dummy
                 angle[0] = angle[1] = glm::vec3(0.0f);
             }
             
+            rot += ImGui::GetIO().DeltaTime * 1.2f;
+            glm::mat4 model  = glm::rotate(glm::mat4(), rot, glm::vec3(0.0f, 1.0f, 0.0f));
+            glm::mat3 normal = glm::mat3(glm::transpose(glm::inverse(model)));
+            
             geometrypass.begin(camera[1]);
-                geometrypass.render(material, glm::mat4(), glm::mat3(), mesh);
+                geometrypass.render(material, model, normal, mesh);
             geometrypass.end();
 
             glViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y);
@@ -154,6 +160,7 @@ class Dummy
         
         GLint colorId;
         glm::vec3 angle[2];
+        float rot;
         float depth;
         Camera camera[2];
         bool back, forward, angleUpdate;

@@ -5,6 +5,9 @@
 namespace Framework {
 namespace Render    {
 
+// tangent and bitangent are useless if the technique described in the
+// following link is used (from three.js):
+// http://mmikkelsen3d.blogspot.sk/2012/02/parallaxpoc-mapping-and-no-tangent.html
 static const char* g_vertexShader = R"EOT(
 #version 410 core
 layout (location=0) in vec3 vs_position;
