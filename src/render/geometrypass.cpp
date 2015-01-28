@@ -169,8 +169,14 @@ bool GeometryPass::create(glm::ivec2 const& viewportSize)
  */
 void GeometryPass::destroy()
 {
+    if(_framebuffer)
+    {
+        glDeleteFramebuffers(1, &_framebuffer);
+        _framebuffer = 0;
+    }
     _program.destroy();
     _output.destroy();
+    _depthbuffer.destroy();
 }
 
 void GeometryPass::begin(Camera const& camera)

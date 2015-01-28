@@ -79,6 +79,7 @@ set(DUMB_FRAMEWORK_RENDER_SOURCES
     src/render/light/directionallight.cpp
     src/render/light/pointlight.cpp
     src/render/light/spotlight.cpp
+    src/render/light/lightpass.cpp
     src/render/geometrypass.cpp)
 
 set(DUMB_FRAMEWORK_SOURCES
