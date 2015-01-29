@@ -21,13 +21,13 @@ class Light
         
     public:
         /** Light position. **/
-        glm::vec3 _position;
+        glm::vec3 position;
         /** Light radius. **/
         float radius;
-        /** Light intensity. **/
-        float intensity;
         /** Light color. **/
         glm::vec3 color;
+        /** Light intensity. **/
+        float intensity;
 };
 
 } // Render

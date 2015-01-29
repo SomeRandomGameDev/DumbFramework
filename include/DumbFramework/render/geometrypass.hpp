@@ -22,7 +22,8 @@ class GeometryPass
         {
             ALBEDO = 0,
             SPECULAR,
-            NORMAL_DEPTH,
+            NORMAL,
+            WORLD_POS,
             OUTPUT_LAYER_COUNT
         };
         

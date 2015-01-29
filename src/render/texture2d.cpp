@@ -95,6 +95,7 @@ bool Texture2D::create(const glm::ivec2& size, Texture::PixelFormat format, int 
     {
         _target = GL_TEXTURE_2D;
         glBindTexture(_target, _id);
+        glTexImage2D(_target, 0, _format.internalFormat(), _size.x, _size.y, 0, _format.format(), _format.type(), nullptr);
         // OpenGL 4.2 only: glTexStorage2D(_target, 0, _format.internalFormat(), _size.x, _size.y);
     }
     glBindTexture(_target, 0);

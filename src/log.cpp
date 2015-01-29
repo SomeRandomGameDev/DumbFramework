@@ -245,7 +245,7 @@ namespace Log {
         
         std::ostringstream oss;
         oss << '[' << severity.toString() << "][" << module.toString() << "][" << infos.function << "]";
-        oss << data;
+        oss << ' ' << infos.filename << ':' << infos.line << ':' << data;
         buffer = oss.str();
     }
 

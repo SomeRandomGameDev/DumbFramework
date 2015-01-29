@@ -28,6 +28,8 @@ class LightPass
         void draw(Camera const& camera);
         Texture2D* output();
 
+        void debug(glm::ivec2 const& pos, glm::ivec2 const& size);
+
     protected:
         Texture2D* _gbuffer;
         Renderbuffer* _depthbuffer;
@@ -40,6 +42,8 @@ class LightPass
         Render::VertexBuffer  _vertexBuffer;
         Render::VertexStream  _vertexStream;
         Render::Program       _program;
+        int _viewProjMatrixId;
+        int _viewMatrixId;
 };
 
 // Generate shadow maps for shadow casting lights

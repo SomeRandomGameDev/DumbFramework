@@ -15,6 +15,7 @@
 #include <DumbFramework/render/mesh.hpp>
 #include <DumbFramework/render/dummy.hpp>
 #include <DumbFramework/render/geometrypass.hpp>
+#include <DumbFramework/render/light/lightpass.hpp>
 
 using namespace Framework;
 
@@ -37,6 +38,8 @@ class Dummy
             {
                 return;
             }
+            
+            ret = lightpass.create(geometrypass.output(), geometrypass.depthbuffer());
             
             ret = Render::createCube(mesh);
 
@@ -131,20 +134,38 @@ class Dummy
                 geometrypass.render(material, model, normal, mesh);
             geometrypass.end();
 
+            Render::PointLight light;
+            light.radius    = 0.75f;
+            light.color     = glm::vec3(1.0f);
+            light.intensity = 1.0f;
+
+            lightpass.clear();
+ 
+            light.position  = glm::vec3( 0.0f, 0.0f, 1.2f);
+            lightpass.add(light);
+            light.position  = glm::vec3( 1.2f, 0.0f, 0.0f);
+            lightpass.add(light);
+            light.position  = glm::vec3( 0.0f, 1.2f, 0.0f);
+            lightpass.add(light);
+
+            lightpass.draw(camera[1]);
+
             glViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y);
             glClearColor(0, 0, 0, 0);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glm::ivec2 halfSize(io.DisplaySize.x/2, io.DisplaySize.y/2);
-            geometrypass.debug(Framework::Render::GeometryPass::ALBEDO,       glm::ivec2(0),             halfSize);
-            geometrypass.debug(Framework::Render::GeometryPass::SPECULAR,     glm::ivec2(halfSize.x, 0), glm::ivec2(halfSize.x, 0)+halfSize);
-            geometrypass.debug(Framework::Render::GeometryPass::NORMAL_DEPTH, glm::ivec2(0, halfSize.y), glm::ivec2(0, halfSize.y)+halfSize);
+            geometrypass.debug(Framework::Render::GeometryPass::ALBEDO,   glm::ivec2(0),             halfSize);
+            geometrypass.debug(Framework::Render::GeometryPass::SPECULAR, glm::ivec2(halfSize.x, 0), glm::ivec2(halfSize.x, 0)+halfSize);
+            geometrypass.debug(Framework::Render::GeometryPass::NORMAL,   glm::ivec2(0, halfSize.y), glm::ivec2(0, halfSize.y)+halfSize);
+            lightpass.debug   (glm::ivec2(halfSize.x, halfSize.y), glm::ivec2(halfSize.x, halfSize.y)+halfSize);
         }
         
         void destroy()
         {
             mesh.destroy();
             geometrypass.destroy();
+            lightpass.destroy();
             material.destroy();
             colorId = 0;
         }
@@ -157,6 +178,7 @@ class Dummy
         Render::Mesh mesh;
         Render::Material material;
         Render::GeometryPass geometrypass;
+        Render::LightPass    lightpass;
         
         GLint colorId;
         glm::vec3 angle[2];

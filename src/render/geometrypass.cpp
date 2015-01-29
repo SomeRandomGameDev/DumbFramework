@@ -17,20 +17,23 @@ layout (location=3) in vec4 vs_tangent;
 uniform mat4 modelMatrix;
 uniform mat3 normalMatrix;
 uniform mat4 viewProjMatrix;
-out vec3 worldPos;
-out vec2 texCoord;
-out vec3 normal;
-out vec3 tangent;
-out vec3 bitangent;
+out VS_OUT
+{
+    vec3 worldPos;
+    vec2 texCoord;
+    vec3 normal;
+    vec3 tangent;
+    vec3 bitangent;
+} vs_out;
 void main()
 {
     vec4 tmp = modelMatrix * vec4(vs_position, 1.0);
     gl_Position = viewProjMatrix *tmp;
-    worldPos    = tmp.xyz;
-    texCoord    = vs_uv;
-    normal      = normalMatrix * vs_normal;
-    tangent     = normalMatrix * vs_tangent.xyz;
-    bitangent   = cross(normal, tangent) * vs_tangent.w;
+    vs_out.worldPos  = tmp.xyz;
+    vs_out.texCoord  = vs_uv;
+    vs_out.normal    = normalMatrix * vs_normal;
+    vs_out.tangent   = normalMatrix * vs_tangent.xyz;
+    vs_out.bitangent = cross(vs_out.normal, vs_out.tangent) * vs_tangent.w;
 }
 )EOT";
 
@@ -40,23 +43,28 @@ uniform sampler2D diffuseMap;
 uniform sampler2D specularMap;
 uniform sampler2D normalMap;
 // [todo] more? sampleArray?
-in vec3 worldPos;
-in vec2 texCoord;
-in vec3 normal;
-in vec3 tangent;
-in vec3 bitangent;
+in VS_OUT
+{
+    vec3 worldPos;
+    vec2 texCoord;
+    vec3 normal;
+    vec3 tangent;
+    vec3 bitangent;
+} fs_in;
 layout (location=0) out vec4 albedo;
 layout (location=1) out vec4 specular;
-layout (location=2) out vec4 normalDepth;
+layout (location=2) out vec4 normal;
+layout (location=3) out vec4 world;
 void main()
 {
-    mat3 tbn = mat3(tangent, bitangent, normal);
-    vec3 n = 2.0*texture(normalMap, texCoord).xyz - 1.0;
+    mat3 tbn = mat3(fs_in.tangent, fs_in.bitangent, fs_in.normal);
+    vec3 n = 2.0*texture(normalMap, fs_in.texCoord).xyz - 1.0;
     n = normalize(tbn * n);
     
-    albedo      = texture(diffuseMap, texCoord);
-    specular    = texture(specularMap, texCoord);
-    normalDepth = vec4(n, worldPos.z);
+    albedo   = texture(diffuseMap,  fs_in.texCoord);
+    specular = texture(specularMap, fs_in.texCoord);
+    normal   = vec4(n, 1.0f);
+    world    = vec4(fs_in.worldPos, 1.0f);
 }
 )EOT";
 
@@ -64,7 +72,8 @@ static const GLenum g_drawBuffers[GeometryPass::OUTPUT_LAYER_COUNT] =
 {
     GL_COLOR_ATTACHMENT0 + GeometryPass::ALBEDO,
     GL_COLOR_ATTACHMENT0 + GeometryPass::SPECULAR,
-    GL_COLOR_ATTACHMENT0 + GeometryPass::NORMAL_DEPTH
+    GL_COLOR_ATTACHMENT0 + GeometryPass::NORMAL,
+    GL_COLOR_ATTACHMENT0 + GeometryPass::WORLD_POS
 };
 
 /**
@@ -97,6 +106,11 @@ bool GeometryPass::create(glm::ivec2 const& viewportSize)
         Log_Error(Module::Render, "Failed to create geometry pass output texture.");
         return false;
     }
+    _output.bind();
+        _output.setMagFilter(Render::Texture::MagFilter::NEAREST_TEXEL);
+        _output.setMinFilter(Render::Texture::MinFilter::NEAREST_TEXEL);
+        _output.setWrap(Render::Texture::Wrap::CLAMP_TO_EDGE, Render::Texture::Wrap::CLAMP_TO_EDGE);
+    _output.unbind();
 
     ret = _depthbuffer.create(viewportSize, Texture::PixelFormat::DEPTH_24);
     if(false == ret)
@@ -216,7 +230,6 @@ void GeometryPass::render(Material& material, glm::mat4 const& modelMatrix, glm:
         mesh.vertexStream().bind();
         glDrawElements(GL_TRIANGLES, mesh.triangleCount()*3, GL_UNSIGNED_INT, 0);
         mesh.vertexStream().unbind();
-
     material.unbind();
 }
 
