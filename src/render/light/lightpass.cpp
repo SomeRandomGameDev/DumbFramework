@@ -3,75 +3,50 @@
 namespace Framework {
 namespace Render    {
 
+ // [todo] remove 
+static const GLfloat g_AABBVertices[] =
+{
+    -1.0f, -1.0f,  1.0f,
+     1.0f, -1.0f,  1.0f,
+    -1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+    -1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,
+     1.0f,  1.0f, -1.0f
+};
+ // [todo] remove 
+static const uint8_t g_AABBIndices[] =
+{
+    0, 1, 2, 3, 7, 1, 5, 4, 7, 6, 2, 4, 0, 1
+};
+
 static const char* g_spotLightVertexShader = R"EOT(
 #version 410 core
-// x,y,z (position) w (radius)
-layout (location=0) in vec4 vs_position;
-// r,g,b (color) a (intensity)
-layout (location=1) in vec4 vs_color;
+layout (location=0) in vec4 light_position;
+layout (location=1) in vec4 light_color;
+layout (location=2) in vec3 vs_position;
+uniform mat4 viewProjMatrix;
 out VS_OUT
 {
-    noperspective centroid vec4  color;
+    flat vec4  center;
+    flat vec4  color;
 } vs_out;
 void main()
 {
-    vs_out.color = vs_color;
-    gl_Position  = vs_position;
+    vs_out.center = light_position;
+    vs_out.color  = light_color;
+    gl_Position   = viewProjMatrix * vec4(light_position.xyz + vs_position*light_position.w, 1.0);
 }
 )EOT";
-static const char* g_spotLightGeometryShader = R"EOT(
-#version 410 core
-uniform mat4 viewProjMatrix;
-uniform mat4 viewMatrix;
-layout(points) in;
-layout(triangle_strip, max_vertices=4) out;
-in VS_OUT
-{
-    noperspective centroid vec4  color;
-} gs_in[1];
-out GS_OUT
-{
-    noperspective centroid vec4 color;
-    noperspective centroid vec4 center;
-} gs_out;
-void main()
-{
-    // [todo] there's a bug there...
-    vec4 center  = gl_in[0].gl_Position;
-    vec3 right   = vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]);
-    vec3 up      = vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]);
-    vec3 forward = vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]);
 
-    vec3 va       = gl_in[0].gl_Position.xyz - (right + up - forward) * gl_in[0].gl_Position.w;
-    gl_Position   = viewProjMatrix * vec4(va, 1.0);
-    gs_out.color  = gs_in[0].color;
-    gs_out.center = center;
-    EmitVertex();  
-    vec3 vb      = gl_in[0].gl_Position.xyz - (right - up - forward) * gl_in[0].gl_Position.w;
-    gl_Position  = viewProjMatrix * vec4(vb, 1.0);
-    gs_out.color  = gs_in[0].color;
-    gs_out.center = center;
-    EmitVertex();  
-    vec3 vc      = gl_in[0].gl_Position.xyz + (right - up + forward) * gl_in[0].gl_Position.w;
-    gl_Position  = viewProjMatrix * vec4(vc, 1.0);
-    gs_out.color  = gs_in[0].color;
-    gs_out.center = center;
-    EmitVertex();  
-    vec3 vd      = gl_in[0].gl_Position.xyz + (right + up + forward) * gl_in[0].gl_Position.w;
-    gl_Position  = viewProjMatrix * vec4(vd, 1.0);
-    gs_out.color  = gs_in[0].color;
-    gs_out.center = center;
-    EmitVertex();  
-    EndPrimitive();
-}
-)EOT";
 static const char* g_spotLightFragmentShader = R"EOT(
 #version 410 core
 uniform sampler2DArray gbuffer;
-in GS_OUT
+in VS_OUT
 {
-    noperspective centroid vec4  color;
-    noperspective centroid vec4  center;
+    flat vec4  color;
+    flat vec4  center;
 } fs_in;
 layout (location=0) out vec4 lightoutput;
 void main()
@@ -80,12 +55,15 @@ void main()
     vec3 position = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 3), 0).xyz;
     if(distance(position, fs_in.center.xyz) > fs_in.center.w)
     {
-        discard;
+        lightoutput = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 2), 0);
     }
-    vec3 normal   = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 2), 0).xyz;
-    vec3 light    = normalize(fs_in.center.xyz - position);
-    // [todo] BRDF
-    lightoutput = vec4(texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 0), 0).xyz * clamp(dot(normal, light), 0.0, 1.0), 1.0);
+    else
+    {
+        vec3 normal   = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 2), 0).xyz;
+        vec3 light    = normalize(fs_in.center.xyz - position);
+        // [todo] BRDF
+        lightoutput = vec4(texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 0), 0).xyz * clamp(dot(normal, light), 0.0, 1.0), 1.0);
+    }
 }
 )EOT";
 
@@ -153,7 +131,7 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     ret = _program.create( {{Render::Shader::Type::VERTEX_SHADER,   g_spotLightVertexShader  },
-                            {Render::Shader::Type::GEOMETRY_SHADER, g_spotLightGeometryShader},
+//                            {Render::Shader::Type::GEOMETRY_SHADER, g_spotLightGeometryShader},
                             {Render::Shader::Type::FRAGMENT_SHADER, g_spotLightFragmentShader}} );
     if(false == ret)
     {
@@ -183,19 +161,29 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
         Log_Error(Module::Render, "Failed to create vertex buffer.");
         return false;
     }
-            
+    
+    // [todo] Remove
+    ret = _AABBVertexBuffer.create(8 * sizeof(float[3]), (void*)g_AABBVertices, Render::BufferObject::Access::Frequency::STATIC, Render::BufferObject::Access::Type::DRAW);
+    ret = _AABBIndexBuffer.create(14 * sizeof(uint8_t), (void*)g_AABBIndices, Render::BufferObject::Access::Frequency::STATIC, Render::BufferObject::Access::Type::DRAW);
+    
     // Create vertex stream
     _vertexStream.create();
     ret = _vertexStream.add(&_vertexBuffer,
                             {
-                                { 0, Geometry::Attribute(Geometry::ComponentType::FLOAT, 4, false, sizeof(float[8]), 0               , 0)},
-                                { 1, Geometry::Attribute(Geometry::ComponentType::FLOAT, 4, false, sizeof(float[8]), sizeof(float[4]), 0)}
+                                { 0, Geometry::Attribute(Geometry::ComponentType::FLOAT, 4, false, sizeof(float[8]), 0               , 1)},
+                                { 1, Geometry::Attribute(Geometry::ComponentType::FLOAT, 4, false, sizeof(float[8]), sizeof(float[4]), 1)}
                             });
     if(false == ret)
     {
         Log_Error(Module::Render, "Failed to create vertex stream.");
         return false;
     }
+
+    // [todo] Remove
+    ret = _vertexStream.add(&_AABBVertexBuffer,
+                            {{ 2, Geometry::Attribute(Geometry::ComponentType::FLOAT, 3, false, sizeof(float[3]), 0, 0)}});
+    ret = _vertexStream.add(&_AABBIndexBuffer);
+
     ret = _vertexStream.compile();
     if(false == ret)
     {
@@ -264,7 +252,7 @@ void LightPass::draw(Camera const& camera)
     glClear(GL_COLOR_BUFFER_BIT);
     
     renderer.depthBufferWrite(false);
-    renderer.setDepthFunc(DepthFunc::LESS);
+    renderer.setDepthFunc(DepthFunc::LESS_EQUAL);
     renderer.depthTest(true);
     renderer.culling(false);
     renderer.blend(true);
@@ -280,7 +268,8 @@ void LightPass::draw(Camera const& camera)
     _program.uniform(_viewMatrixId,     false, camera.viewMatrix());
 
     _vertexStream.bind();
-        glDrawArrays(GL_POINTS, 0, _count);
+        glDrawElementsInstanced(GL_TRIANGLE_STRIP, 14, GL_UNSIGNED_BYTE, 0, _count);
+//        glDrawArrays(GL_POINTS, 0, _count);
     _vertexStream.unbind();
 
     renderer.setActiveTextureUnit(0);

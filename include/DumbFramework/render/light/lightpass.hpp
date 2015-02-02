@@ -44,14 +44,11 @@ class LightPass
         Render::Program       _program;
         int _viewProjMatrixId;
         int _viewMatrixId;
+        
+        Render::VertexBuffer _AABBVertexBuffer; // [todo] remove 
+        Render::IndexBuffer  _AABBIndexBuffer;  // [todo] remove 
+        
 };
-
-// Generate shadow maps for shadow casting lights
-// Light => screen space quad covering light bounding object
-//          vertex buffer => light position + extra infos depending of lights
-//          vertex/geometry/pixel shader per type of light
-//          geometry shader build screen quad depending of light type
-//          pixel shader => compute brdf
 
 } // Render
 } // Framework
