@@ -147,6 +147,14 @@ class Dummy
             lightpass.add(light);
             light.position  = glm::vec3( 0.0f, 1.2f, 0.0f);
             lightpass.add(light);
+            light.position  = glm::vec3( 1.2f, 1.0f, 0.0f);
+            lightpass.add(light);
+            light.position  = glm::vec3( 1.6f, 1.0f, 0.0f);
+            lightpass.add(light);
+            light.position  = glm::vec3( 0.5f, 1.0f, 1.0f);
+            lightpass.add(light);
+            light.position  = glm::vec3(-1.2f, 1.0f, 1.0f);
+            lightpass.add(light);
 
             lightpass.draw(camera[1]);
 

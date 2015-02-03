@@ -1,69 +1,40 @@
 #include <DumbFramework/render/light/lightpass.hpp>
+#include <DumbFramework/render/dummy.hpp>
 
 namespace Framework {
 namespace Render    {
 
- // [todo] remove 
-static const GLfloat g_AABBVertices[] =
-{
-    -1.0f, -1.0f,  1.0f,
-     1.0f, -1.0f,  1.0f,
-    -1.0f,  1.0f,  1.0f,
-     1.0f,  1.0f,  1.0f,
-    -1.0f, -1.0f, -1.0f,
-     1.0f, -1.0f, -1.0f,
-    -1.0f,  1.0f, -1.0f,
-     1.0f,  1.0f, -1.0f
-};
- // [todo] remove 
-static const uint8_t g_AABBIndices[] =
-{
-    0, 1, 2, 3, 7, 1, 5, 4, 7, 6, 2, 4, 0, 1
-};
-
 static const char* g_spotLightVertexShader = R"EOT(
 #version 410 core
-layout (location=0) in vec4 light_position;
-layout (location=1) in vec4 light_color;
-layout (location=2) in vec3 vs_position;
-uniform mat4 viewProjMatrix;
-out VS_OUT
+void main(void)
 {
-    flat vec4  center;
-    flat vec4  color;
-} vs_out;
-void main()
-{
-    vs_out.center = light_position;
-    vs_out.color  = light_color;
-    gl_Position   = viewProjMatrix * vec4(light_position.xyz + vs_position*light_position.w, 1.0);
+    const vec2 vertices[4] = vec2[4]( vec2(-1.0,-1.0),
+                                      vec2(-1.0, 1.0),
+                                      vec2( 1.0,-1.0),
+                                      vec2( 1.0, 1.0) );
+    gl_Position = vec4(vertices[gl_VertexID], 0.0, 1.0);
 }
 )EOT";
 
 static const char* g_spotLightFragmentShader = R"EOT(
 #version 410 core
 uniform sampler2DArray gbuffer;
-in VS_OUT
+layout (location = 0) out vec4 color_out;
+void main(void)
 {
-    flat vec4  color;
-    flat vec4  center;
-} fs_in;
-layout (location=0) out vec4 lightoutput;
-void main()
-{
+    // [todo] Create uniform buffer
+    vec4 lightPosition = vec4(1.2, 0.0, 0.0, 0.75);
     
+    vec3 accum = vec3(0.0);
     vec3 position = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 3), 0).xyz;
-    if(distance(position, fs_in.center.xyz) > fs_in.center.w)
+    if(distance(position, lightPosition.xyz) > lightPosition.w)
     {
-        lightoutput = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 2), 0);
-    }
-    else
-    {
-        vec3 normal   = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 2), 0).xyz;
-        vec3 light    = normalize(fs_in.center.xyz - position);
+        vec3 normal = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 2), 0).xyz;
+        vec3 light = normalize(lightPosition.xyz - position);
         // [todo] BRDF
-        lightoutput = vec4(texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 0), 0).xyz * clamp(dot(normal, light), 0.0, 1.0), 1.0);
+        accum += vec4(texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 0), 0).xyz * clamp(dot(normal, light), 0.0, 1.0), 1.0);
     }
+    color_out = vec4(accum, 1.0);
 }
 )EOT";
 
@@ -75,12 +46,12 @@ void main()
 LightPass::LightPass()
     : _gbuffer(nullptr)
     , _depthbuffer(nullptr)
+    , _program()
     , _framebuffer(0)
     , _output()
+    , _emptyVao(0)
+    , _buffer()
     , _count(0)
-    , _vertexBuffer()
-    , _vertexStream()
-    , _program()
 {}
 /**
  * Destructor.
@@ -119,7 +90,7 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
 
     glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _output.id(), 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthbuffer->id());
+//    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthbuffer->id());
     GLuint status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if(GL_FRAMEBUFFER_COMPLETE != status)
     {
@@ -131,7 +102,6 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     ret = _program.create( {{Render::Shader::Type::VERTEX_SHADER,   g_spotLightVertexShader  },
-//                            {Render::Shader::Type::GEOMETRY_SHADER, g_spotLightGeometryShader},
                             {Render::Shader::Type::FRAGMENT_SHADER, g_spotLightFragmentShader}} );
     if(false == ret)
     {
@@ -148,55 +118,18 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
 
     int id;
     _program.begin();
-        _viewProjMatrixId = _program.getUniformLocation("viewProjMatrix");
-        _viewMatrixId     = _program.getUniformLocation("viewMatrix");
         id = _program.getUniformLocation("gbuffer");
         _program.uniform(id, 0);
     _program.end();
 
-    // [todo] make MAX_LIGHT_COUNT a parameter
-    ret = _vertexBuffer.create(MAX_LIGHT_COUNT * sizeof(float[8]), nullptr, Render::BufferObject::Access::Frequency::DYNAMIC, Render::BufferObject::Access::Type::DRAW);
-    if(false == ret)
-    {
-        Log_Error(Module::Render, "Failed to create vertex buffer.");
-        return false;
-    }
-    
-    // [todo] Remove
-    ret = _AABBVertexBuffer.create(8 * sizeof(float[3]), (void*)g_AABBVertices, Render::BufferObject::Access::Frequency::STATIC, Render::BufferObject::Access::Type::DRAW);
-    ret = _AABBIndexBuffer.create(14 * sizeof(uint8_t), (void*)g_AABBIndices, Render::BufferObject::Access::Frequency::STATIC, Render::BufferObject::Access::Type::DRAW);
-    
-    // Create vertex stream
-    _vertexStream.create();
-    ret = _vertexStream.add(&_vertexBuffer,
-                            {
-                                { 0, Geometry::Attribute(Geometry::ComponentType::FLOAT, 4, false, sizeof(float[8]), 0               , 1)},
-                                { 1, Geometry::Attribute(Geometry::ComponentType::FLOAT, 4, false, sizeof(float[8]), sizeof(float[4]), 1)}
-                            });
-    if(false == ret)
-    {
-        Log_Error(Module::Render, "Failed to create vertex stream.");
-        return false;
-    }
-
-    // [todo] Remove
-    ret = _vertexStream.add(&_AABBVertexBuffer,
-                            {{ 2, Geometry::Attribute(Geometry::ComponentType::FLOAT, 3, false, sizeof(float[3]), 0, 0)}});
-    ret = _vertexStream.add(&_AABBIndexBuffer);
-
-    ret = _vertexStream.compile();
-    if(false == ret)
-    {
-        Log_Error(Module::Render, "Failed to compile vertex stream.");
-        return false;
-    }
+    glGenVertexArrays(1, &_emptyVao);
 
     return true;
 }
 
 void LightPass::destroy()
 {
-    _gbuffer = nullptr;
+    _gbuffer     = nullptr;
     _depthbuffer = nullptr;
     _count = 0;
     if(_framebuffer)
@@ -206,8 +139,11 @@ void LightPass::destroy()
     }
     _program.destroy();
     _output.destroy();
-    _vertexBuffer.destroy();
-    _vertexStream.destroy();;
+    if(_emptyVao)
+    {
+        glDeleteVertexArrays(1, &_emptyVao);
+        _emptyVao = 0;
+    }
 }
 
 void LightPass::clear()
@@ -217,6 +153,7 @@ void LightPass::clear()
 
 bool LightPass::add(PointLight const& light)
 {
+/*
     float* ptr = (float*)_vertexBuffer.map(BufferObject::Access::Policy::WRITE_ONLY, _count*sizeof(float[8]), sizeof(float[8]));
     if(nullptr == ptr)
     {
@@ -237,47 +174,43 @@ bool LightPass::add(PointLight const& light)
     _vertexBuffer.unmap();
 
     _count++;
-
+*/
     return true;
 }
 
 void LightPass::draw(Camera const& camera)
 {
     Renderer& renderer = Renderer::instance();
+
+    glViewport(0, 0, _output.size().x, _output.size().y);
     
     glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
-    glViewport(0, 0, _output.size().x, _output.size().y);
-    glClearColor(0.0, 0, 0, 0);
+    
+    glClearColor(0.0, 1.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
     
     renderer.depthBufferWrite(false);
-    renderer.setDepthFunc(DepthFunc::LESS_EQUAL);
-    renderer.depthTest(true);
+    renderer.depthTest(false);
     renderer.culling(false);
-    renderer.blend(true);
-    renderer.blendFunc(Render::BlendFunc::SRC_ALPHA, Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
+    renderer.blend(false);
 
+    renderer.texture2D(true);
     renderer.setActiveTextureUnit(0);
     _gbuffer->bind();
-    renderer.texture2D(true);
 
-    _program.begin();
-    glm::mat4 viewProj = camera.projectionMatrix(_output.size()) * camera.viewMatrix();
-    _program.uniform(_viewProjMatrixId, false, viewProj);
-    _program.uniform(_viewMatrixId,     false, camera.viewMatrix());
-
-    _vertexStream.bind();
-        glDrawElementsInstanced(GL_TRIANGLE_STRIP, 14, GL_UNSIGNED_BYTE, 0, _count);
-//        glDrawArrays(GL_POINTS, 0, _count);
-    _vertexStream.unbind();
+    glBindVertexArray(_emptyVao);
+        _program.begin();
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
+        _program.end();
+    glBindVertexArray(0);
 
     renderer.setActiveTextureUnit(0);
     _gbuffer->unbind();
 
-    _program.end();
-
-    renderer.blend(false);
+    renderer.depthBufferWrite(true);
+    renderer.depthTest(true);
+    renderer.culling(true);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDrawBuffer(GL_BACK);
@@ -294,7 +227,7 @@ void LightPass::debug(glm::ivec2 const& pos, glm::ivec2 const& size)
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glDrawBuffer(GL_BACK);
     glReadBuffer(GL_COLOR_ATTACHMENT0);
-    glBlitFramebuffer(0, 0, _output.size().x, _output.size().y, pos.x, pos.y, size.x, size.y, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glBlitFramebuffer(0, 0, _output.size().x, _output.size().y, pos.x, pos.y, size.x, size.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
     glReadBuffer(GL_FRONT);
 }

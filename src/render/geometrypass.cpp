@@ -249,7 +249,7 @@ void GeometryPass::debug(OutputLayer layer, glm::ivec2 const& pos, glm::ivec2 co
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glDrawBuffer(GL_BACK);
     glReadBuffer(GL_COLOR_ATTACHMENT0+layer);
-    glBlitFramebuffer(0, 0, _output.size().x, _output.size().y, pos.x, pos.y, size.x, size.y, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glBlitFramebuffer(0, 0, _output.size().x, _output.size().y, pos.x, pos.y, size.x, size.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
     glReadBuffer(GL_FRONT);
 }

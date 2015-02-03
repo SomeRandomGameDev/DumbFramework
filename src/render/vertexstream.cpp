@@ -178,7 +178,10 @@ bool VertexStream::compile()
     unbind();
     VertexBuffer::unbindAll();
     IndexBuffer::unbindAll();
-
+    for(size_t i=0; i<_attributes.size(); i++)
+    {
+        glDisableVertexAttribArray(i);
+    }
     GLenum err = glGetError();
     if(GL_NO_ERROR != err)
     {
