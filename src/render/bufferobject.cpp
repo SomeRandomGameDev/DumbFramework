@@ -31,6 +31,15 @@ BufferObject::Detail<BufferObject::UNIFORM_BUFFER>::_infos =
     GL_UNIFORM_BUFFER_BINDING
 };
 
+template<>
+const BufferObject::Detail<BufferObject::TEXTURE_BUFFER>::Infos
+BufferObject::Detail<BufferObject::TEXTURE_BUFFER>::_infos = 
+{
+    "texture",
+    GL_TEXTURE_BUFFER,
+    GL_TEXTURE_BUFFER_DATA_STORE_BINDING
+};
+
 namespace Access {
 /**
  * Convert access frequency and type to buffer data usage.

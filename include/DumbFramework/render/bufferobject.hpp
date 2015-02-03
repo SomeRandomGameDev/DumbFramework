@@ -164,7 +164,9 @@ enum Type
     /** Index buffer. **/
     INDEX_BUFFER,
     /** Uniform buffer. **/
-    UNIFORM_BUFFER
+    UNIFORM_BUFFER,
+    /** Texture buffer. **/
+    TEXTURE_BUFFER
 };
 
 /**
