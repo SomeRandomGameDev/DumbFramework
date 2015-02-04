@@ -479,10 +479,12 @@ namespace Sprite {
             renderer.setActiveTextureUnit(0);
             _texture->bind();
 
-            GLfloat *ptr = (GLfloat *) _buffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY);
-            memcpy(ptr, _cell, VBO_STRIDE * _count);
-            _buffer.unmap();
-
+            _buffer.bind();
+                GLfloat *ptr = (GLfloat *) _buffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY);
+                memcpy(ptr, _cell, VBO_STRIDE * _count);
+                _buffer.unmap();
+            _buffer.unbind();
+            
             // Send VAO.
             _stream.bind();
                 glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, _count);

@@ -204,7 +204,6 @@ void* Detail<t>::map(BufferObject::Access::Policy policy) const
 #endif // SANITY_CHECK
 
     GLvoid* ptr;
-    bind();
     ptr = glMapBuffer(_infos.target, GL_WRITE_ONLY);
     if(NULL == ptr)
     {
@@ -232,7 +231,6 @@ void* Detail<t>::map(BufferObject::Access::Policy policy, off_t offset, size_t l
         Log_Warning(Framework::Module::Render, "The buffer is alread mapped. Current mapping operation will fail!");
     }
 #endif // SANITY_CHECK
-    bind();
     
     GLbitfield access;
     switch(policy.value)
@@ -266,7 +264,6 @@ void* Detail<t>::map(BufferObject::Access::Policy policy, off_t offset, size_t l
 template <Type t>
 bool Detail<t>::unmap() const
 {
-    bind();
 #if defined(SANITY_CHECK)
     // Warning! This may spam your logs!
     if(!isMapped())
@@ -283,7 +280,6 @@ bool Detail<t>::unmap() const
         Log_Error(Framework::Module::Render, "An error occured while unmapping buffer %d: %s", _id, gluErrorString(err));
         return false;
     }
-    unbind();
     return true;
 }
 /**
@@ -294,9 +290,7 @@ template <Type t>
 bool Detail<t>::isMapped() const
 {
     GLint ret;
-    bind();
-        glGetBufferParameteriv(_infos.target, GL_BUFFER_MAPPED, &ret);
-    unbind();
+    glGetBufferParameteriv(_infos.target, GL_BUFFER_MAPPED, &ret);
     return (GL_TRUE == ret);
 }
 /**

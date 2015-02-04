@@ -180,7 +180,7 @@ class Detail
         /** Constructor. **/
         Detail();
         /**Destructor. **/
-        ~Detail();
+        virtual ~Detail();
         /**
          * Create a buffer.
          * @param [in] size  Size in bytes of the buffer data storage.
@@ -276,7 +276,7 @@ class Detail
          */
         Access::Type accessType() const;
         
-    private:
+    protected:
         struct Infos
         {
             char const* name;   /**< Type name. **/

@@ -319,6 +319,7 @@ void ImGuiDelegate<T>::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lis
         delegate->_vertexBuffer.resize(neededBufferSize + 5000);
     }
 
+    delegate->_vertexBuffer.bind();
     uint8_t *data = (uint8_t*)delegate->_vertexBuffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY, 0, totalVertexCount*sizeof(ImDrawVert));
     for (int n = 0; n < cmd_lists_count; n++)
     {
@@ -329,6 +330,7 @@ void ImGuiDelegate<T>::renderDrawLists(ImDrawList** const cmd_lists, int cmd_lis
         data += vertexCount;
     }
     delegate->_vertexBuffer.unmap();
+    delegate->_vertexBuffer.bind();
 
     // Setup texture
     renderer.setActiveTextureUnit(0);

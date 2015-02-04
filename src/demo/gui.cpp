@@ -135,26 +135,50 @@ class Dummy
             geometrypass.end();
 
             Render::PointLight light;
-            light.radius    = 0.75f;
+            light.radius    = 0.825f;
             light.color     = glm::vec3(1.0f);
             light.intensity = 1.0f;
 
             lightpass.clear();
  
-            light.position  = glm::vec3( 0.0f, 0.0f, 1.2f);
+            light.position  = glm::vec3(-1.2f, 1.2f, 1.2f);
             lightpass.add(light);
-            light.position  = glm::vec3( 1.2f, 0.0f, 0.0f);
+            light.position  = glm::vec3( 0.0f, 1.2f, 1.2f);
             lightpass.add(light);
-            light.position  = glm::vec3( 0.0f, 1.2f, 0.0f);
+            light.position  = glm::vec3( 1.2f, 1.2f, 1.2f);
             lightpass.add(light);
-            light.position  = glm::vec3( 1.2f, 1.0f, 0.0f);
+            light.position  = glm::vec3( 1.2f, 1.2f, 0.0f);
             lightpass.add(light);
-            light.position  = glm::vec3( 1.6f, 1.0f, 0.0f);
+            light.position  = glm::vec3( 0.2f, 1.2f, 0.0f);
             lightpass.add(light);
-            light.position  = glm::vec3( 0.5f, 1.0f, 1.0f);
+            light.position  = glm::vec3(-1.2f, 1.2f, 0.0f);
             lightpass.add(light);
-            light.position  = glm::vec3(-1.2f, 1.0f, 1.0f);
+            light.position  = glm::vec3( 1.2f, 1.2f,-1.2f);
             lightpass.add(light);
+            light.position  = glm::vec3( 0.2f, 1.2f,-1.2f);
+            lightpass.add(light);
+            light.position  = glm::vec3(-1.2f, 1.2f,-1.2f);
+            lightpass.add(light);
+
+            light.position  = glm::vec3(-1.2f,-1.2f, 1.2f);
+            lightpass.add(light);
+            light.position  = glm::vec3( 0.0f,-1.2f, 1.2f);
+            lightpass.add(light);
+            light.position  = glm::vec3( 1.2f,-1.2f, 1.2f);
+            lightpass.add(light);
+            light.position  = glm::vec3( 1.2f,-1.2f, 0.0f);
+            lightpass.add(light);
+            light.position  = glm::vec3( 0.2f,-1.2f, 0.0f);
+            lightpass.add(light);
+            light.position  = glm::vec3(-1.2f,-1.2f, 0.0f);
+            lightpass.add(light);
+            light.position  = glm::vec3( 1.2f,-1.2f,-1.2f);
+            lightpass.add(light);
+            light.position  = glm::vec3( 0.2f,-1.2f,-1.2f);
+            lightpass.add(light);
+            light.position  = glm::vec3(-1.2f,-1.2f,-1.2f);
+            lightpass.add(light);
+
 
             lightpass.draw(camera[1]);
 

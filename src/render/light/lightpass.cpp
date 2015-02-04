@@ -4,35 +4,48 @@
 namespace Framework {
 namespace Render    {
 
+static const float g_fsVertexData[] =
+{
+    -1.0f,-1.0f,
+    -1.0f, 1.0f,
+     1.0f,-1.0f,
+     1.0f, 1.0f
+};
+
 static const char* g_spotLightVertexShader = R"EOT(
 #version 410 core
+layout (location = 0) in vec2 vs_position;
 void main(void)
 {
-    const vec2 vertices[4] = vec2[4]( vec2(-1.0,-1.0),
-                                      vec2(-1.0, 1.0),
-                                      vec2( 1.0,-1.0),
-                                      vec2( 1.0, 1.0) );
-    gl_Position = vec4(vertices[gl_VertexID], 0.0, 1.0);
+    gl_Position = vec4(vs_position, 0.0, 1.0);
 }
 )EOT";
 
 static const char* g_spotLightFragmentShader = R"EOT(
 #version 410 core
-uniform sampler2DArray gbuffer;
-layout (location = 0) out vec4 color_out;
+#define MAX_POINT_LIGHTS 128
+layout (binding=0) uniform sampler2DArray gbuffer;
+layout (std140, binding=1) uniform UPointLights
+{
+    vec4 pointLights[128]; // [todo]
+};
+uniform unsigned int pointLightCount;
+layout (location=0) out vec4 color_out;
 void main(void)
 {
-    // [todo] Create uniform buffer
-    vec4 lightPosition = vec4(1.2, 0.0, 0.0, 0.75);
-    
     vec3 accum = vec3(0.0);
     vec3 position = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 3), 0).xyz;
-    if(distance(position, lightPosition.xyz) > lightPosition.w)
+    vec3 normal = texelFetch(gbuffer,   ivec3(gl_FragCoord.xy, 2), 0).xyz;
+    vec3 albedo = texelFetch(gbuffer,   ivec3(gl_FragCoord.xy, 0), 0).xyz;
+    for(unsigned int i=0; i<pointLightCount; i++)
     {
-        vec3 normal = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 2), 0).xyz;
-        vec3 light = normalize(lightPosition.xyz - position);
-        // [todo] BRDF
-        accum += vec4(texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 0), 0).xyz * clamp(dot(normal, light), 0.0, 1.0), 1.0);
+        vec4 lightPosition = pointLights[i];
+        if(distance(position, lightPosition.xyz) <= lightPosition.w)
+        {
+            vec3 light = normalize(lightPosition.xyz - position);
+            // [todo] BRDF
+            accum += vec4(albedo * clamp(dot(normal, light), 0.0, 1.0), 1.0);
+        }
     }
     color_out = vec4(accum, 1.0);
 }
@@ -49,9 +62,11 @@ LightPass::LightPass()
     , _program()
     , _framebuffer(0)
     , _output()
-    , _emptyVao(0)
+    , _fsQuad()
+    , _fsQuadBuffer()
     , _buffer()
     , _count(0)
+    , _countId(0)
 {}
 /**
  * Destructor.
@@ -101,6 +116,39 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    ret = _fsQuadBuffer.create(4*sizeof(float[2]), (void*)g_fsVertexData, BufferObject::Access::Frequency::STATIC, BufferObject::Access::Type::DRAW);
+    if(false == ret)
+    {
+        Log_Error(Module::Render, "Failed to create fullscreen quad buffer!");
+        return false;
+    }
+
+    ret = _fsQuad.create();
+    if(false == ret)
+    {
+        Log_Error(Module::Render, "Failed to create fullscreen quad stream!");
+        return false;
+    }
+    ret = _fsQuad.add(&_fsQuadBuffer, 0, Geometry::ComponentType::FLOAT, 2, sizeof(float[2]), 0, 0);
+    if(false == ret)
+    {
+        Log_Error(Module::Render, "Failed to set fullscreen quad attribute.");
+        return false;
+    }
+    ret = _fsQuad.compile();
+    if(false == ret)
+    {
+        Log_Error(Module::Render, "Failed to compile fullscreen quad stream.");
+        return false;
+    }
+    
+    ret = _buffer.create(128*sizeof(float[4]), nullptr, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
+    if(false == ret)
+    {
+        Log_Error(Module::Render, "Failed to create point light data buffer.");
+        return false;
+    }
+    
     ret = _program.create( {{Render::Shader::Type::VERTEX_SHADER,   g_spotLightVertexShader  },
                             {Render::Shader::Type::FRAGMENT_SHADER, g_spotLightFragmentShader}} );
     if(false == ret)
@@ -115,15 +163,11 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
         Log_Error(Module::Render, "Failed to link program.");
         return false;
     }
-
-    int id;
+    
     _program.begin();
-        id = _program.getUniformLocation("gbuffer");
-        _program.uniform(id, 0);
+        _countId = _program.getUniformLocation("pointLightCount");
     _program.end();
-
-    glGenVertexArrays(1, &_emptyVao);
-
+    
     return true;
 }
 
@@ -132,6 +176,7 @@ void LightPass::destroy()
     _gbuffer     = nullptr;
     _depthbuffer = nullptr;
     _count = 0;
+    _countId = 0;
     if(_framebuffer)
     {
         glDeleteFramebuffers(1, &_framebuffer);
@@ -139,11 +184,9 @@ void LightPass::destroy()
     }
     _program.destroy();
     _output.destroy();
-    if(_emptyVao)
-    {
-        glDeleteVertexArrays(1, &_emptyVao);
-        _emptyVao = 0;
-    }
+    _fsQuad.destroy();
+    _fsQuadBuffer.destroy();
+    _buffer.destroy();
 }
 
 void LightPass::clear()
@@ -153,29 +196,24 @@ void LightPass::clear()
 
 bool LightPass::add(PointLight const& light)
 {
-/*
-    float* ptr = (float*)_vertexBuffer.map(BufferObject::Access::Policy::WRITE_ONLY, _count*sizeof(float[8]), sizeof(float[8]));
-    if(nullptr == ptr)
+    _buffer.bindTarget(1);
+    float* ptr = (float*)_buffer.map(BufferObject::Access::Policy::WRITE_ONLY, _count*sizeof(float[4]), sizeof(float[4]));
+    bool ret = (nullptr != ptr);
+    if(ret)
+    {
+        ptr[0] = light.position.x;
+        ptr[1] = light.position.y;
+        ptr[2] = light.position.z;
+        ptr[3] = light.radius;
+        _buffer.unmap();
+        _count++;
+    }
+    else
     {
         Log_Error(Module::Render, "[todo]");
-        return false;
     }
-
-    ptr[0] = light.position.x;
-    ptr[1] = light.position.y;
-    ptr[2] = light.position.z;
-    ptr[3] = light.radius;
-
-    ptr[4] = light.color.x;
-    ptr[5] = light.color.y;
-    ptr[6] = light.color.z;
-    ptr[7] = light.intensity;
-
-    _vertexBuffer.unmap();
-
-    _count++;
-*/
-    return true;
+    _buffer.unbind();
+    return ret;
 }
 
 void LightPass::draw(Camera const& camera)
@@ -199,11 +237,14 @@ void LightPass::draw(Camera const& camera)
     renderer.setActiveTextureUnit(0);
     _gbuffer->bind();
 
-    glBindVertexArray(_emptyVao);
-        _program.begin();
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
-        _program.end();
-    glBindVertexArray(0);
+    _program.begin();
+    _buffer.bindTarget(1);
+    _program.uniform(_countId, _count);
+        _fsQuad.bind();
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        _fsQuad.unbind();
+    _buffer.unbind();
+    _program.end();
 
     renderer.setActiveTextureUnit(0);
     _gbuffer->unbind();

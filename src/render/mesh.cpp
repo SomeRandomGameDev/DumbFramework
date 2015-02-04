@@ -64,6 +64,7 @@ bool Mesh::create(size_t vertexCount, size_t triangleCount, uint32_t mask, void*
     }
 
     float* src = (float*)vertexData;
+    _vertexBuffer.bind();
     uint8_t* data = (uint8_t*)_vertexBuffer.map(BufferObject::Access::Policy::WRITE_ONLY);
     for(int i=0; i<AttributeCount; i++)
     {
@@ -79,6 +80,7 @@ bool Mesh::create(size_t vertexCount, size_t triangleCount, uint32_t mask, void*
         }
     }
     _vertexBuffer.unmap();
+    _vertexBuffer.unbind();
     
     update(mask);
     return createVertexStream();
@@ -97,7 +99,8 @@ bool Mesh::setAttribute(AttributeId id, uint8_t* ptr)
         Log_Error(Module::Render, "Invalid data pointer.");
         return false;
     }
-    
+    bool ret;
+    _vertexBuffer.bind();
     uint8_t* data = (uint8_t*)_vertexBuffer.map(BufferObject::Access::Policy::WRITE_ONLY);
     data += attributes[id].offset;
     size_t size   = attributes[id].bytes();
@@ -108,7 +111,9 @@ bool Mesh::setAttribute(AttributeId id, uint8_t* ptr)
         ptr  += size;
         data += stride;
     }
-    return _vertexBuffer.unmap();
+    ret = _vertexBuffer.unmap();
+    _vertexBuffer.unbind();
+    return ret;
 }
 /**
  * Update mesh.
@@ -138,13 +143,17 @@ void Mesh::destroy()
 /** Compute vertex normals. **/
 void Mesh::computeNormals()
 {
-    const uint8_t* vertex = (uint8_t*)_vertexBuffer.map(BufferObject::Access::Policy::READ_WRITE);
+    _vertexBuffer.bind();
+        const uint8_t* vertex = (uint8_t*)_vertexBuffer.map(BufferObject::Access::Policy::READ_WRITE);
+    _vertexBuffer.unbind();
     if(nullptr == vertex)
     {
         return;
     }
 
-    const GLuint* face = (GLuint*)_indexBuffer.map(BufferObject::Access::Policy::READ_ONLY);
+    _indexBuffer.bind();
+        const GLuint* face = (GLuint*)_indexBuffer.map(BufferObject::Access::Policy::READ_ONLY);
+    _indexBuffer.unbind();
     if(nullptr == face)
     {
         return;
@@ -190,21 +199,29 @@ void Mesh::computeNormals()
         ptr[1] = n.y;
         ptr[2] = n.z;
     }
-    _indexBuffer.unmap();
+    _indexBuffer.bind();
+        _indexBuffer.unmap();
+    _indexBuffer.unbind();
     
-    _vertexBuffer.unmap();
+    _vertexBuffer.bind();
+        _vertexBuffer.unmap();
+    _vertexBuffer.unbind();
 }
 
 /** Compute vertex tangents. **/
 void Mesh::computeTangents()
 {
-    const uint8_t* vertex = (uint8_t*)_vertexBuffer.map(BufferObject::Access::Policy::READ_WRITE);
+    _vertexBuffer.bind();
+        const uint8_t* vertex = (uint8_t*)_vertexBuffer.map(BufferObject::Access::Policy::READ_WRITE);
+    _vertexBuffer.unbind();
     if(nullptr == vertex)
     {
         return;
     }
 
-    const GLuint* face = (GLuint*)_indexBuffer.map(BufferObject::Access::Policy::READ_ONLY);
+    _indexBuffer.bind();
+        const GLuint* face = (GLuint*)_indexBuffer.map(BufferObject::Access::Policy::READ_ONLY);
+    _indexBuffer.unbind();
     if(nullptr == face)
     {
         return;
@@ -252,7 +269,9 @@ void Mesh::computeTangents()
         }
         face += 3;
     }
-    _indexBuffer.unmap();
+    _indexBuffer.bind();
+        _indexBuffer.unmap();
+    _indexBuffer.unbind();
     
     for(size_t i=0; i<_vertexCount; i++)
     {
@@ -271,21 +290,27 @@ void Mesh::computeTangents()
         ptr[2] = ft.z;
         ptr[3] = (glm::dot(glm::cross(n,t), tangent[1][i]) < 0.0f) ? -1.0f : 1.0f;
     }
-    _vertexBuffer.unmap();
+    _vertexBuffer.bind();
+        _vertexBuffer.unmap();
+    _vertexBuffer.unbind();
 
     delete [] tangent[0];
 }
 /** Compute axis aligned bounding box and bounding sphere. **/
 void Mesh::computeBoundingObjects()
 {
-    const uint8_t *ptr = (uint8_t*)_vertexBuffer.map(BufferObject::Access::Policy::READ_ONLY);
+    _vertexBuffer.bind();
+        const uint8_t *ptr = (uint8_t*)_vertexBuffer.map(BufferObject::Access::Policy::READ_ONLY);
+    _vertexBuffer.unbind();
     if(nullptr == ptr)
     {
         return;
     }
     _aabb = BoundingBox(ptr+attributes[Position].offset, _vertexCount, attributes[Position].stride);
-    _vertexBuffer.unmap();
-    
+    _vertexBuffer.bind();
+        _vertexBuffer.unmap();
+    _vertexBuffer.unbind();
+
     _sphere = BoundingSphere(_aabb.getCenter(), glm::distance(_aabb.getMin(), _aabb.getMax()) / 2.0f);
 }
 /** Create vertex stream. **/

@@ -4,7 +4,7 @@
 #include <memory>
 
 #include <DumbFramework/render/vertexbuffer.hpp>
-#include <DumbFramework/render/texturebuffer.hpp>
+#include <DumbFramework/render/uniformbuffer.hpp>
 #include <DumbFramework/render/vertexstream.hpp>
 #include <DumbFramework/render/geometrypass.hpp>
 #include <DumbFramework/render/light/pointlight.hpp>
@@ -39,11 +39,13 @@ class LightPass
         GLuint        _framebuffer;
         Texture2D     _output;
 
-        GLuint _emptyVao;
-
+        VertexStream _fsQuad;
+        VertexBuffer _fsQuadBuffer;
+        
         // [todo] one per light type
-        Render::UniformBuffer _buffer;
-        size_t _count;
+        UniformBuffer _buffer;
+        unsigned int _count;
+        GLuint _countId;
 };
 
 } // Render

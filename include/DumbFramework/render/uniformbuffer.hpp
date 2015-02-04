@@ -13,7 +13,39 @@ namespace Render    {
  * @see Framework::BufferObject::Detail
  * [todo] description
  */
-typedef BufferObject::Detail<BufferObject::UNIFORM_BUFFER> UniformBuffer;
+class UniformBuffer : public BufferObject::Detail<BufferObject::UNIFORM_BUFFER>
+{
+    public:
+        /** Constructor. **/
+        UniformBuffer() : BufferObject::Detail<BufferObject::UNIFORM_BUFFER>() {}
+        /** Destructor. **/
+        virtual ~UniformBuffer() {}
+        /** 
+         * Bind buffer to indexed buffer target.
+         * @param [in] index Binding point index.
+         */
+        inline void bindTarget(unsigned int index)
+        {
+#if defined(SANITY_CHECK)
+            // Warning! This may spam your logs!
+            if(!isValid())
+            {
+                Log_Warning(Module::Render, "You are trying to bind an invalid %s buffer!", _infos.name);
+            }
+            else
+            {
+                GLuint bufferId;
+                glGetIntegerv(_infos.query, (GLint*)&bufferId);
+                if(bufferId && (bufferId != _id))
+                {
+                    Log_Warning(Module::Render, "%s buffer %d is currently bound.", _infos.name);
+                }
+            }
+#endif // SANITY_CHECK
+            glBindBufferBase(_infos.target, index, _id);
+        }
+
+};
 
 } // Render
 } // Framework
