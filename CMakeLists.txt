@@ -64,6 +64,7 @@ set(IMGUI_SOURCES
 set(DUMB_FRAMEWORK_RENDER_SOURCES
     src/render/renderer.cpp
     src/render/bufferobject.cpp
+    src/render/uniformbuffer.cpp
     src/render/geometry.cpp
     src/render/vertexstream.cpp
     src/render/mesh.cpp
