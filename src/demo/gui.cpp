@@ -1,6 +1,7 @@
 #include <DumbFramework/config.hpp>
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/random.hpp>
 
 #include <DumbFramework/log.hpp>
 #include <DumbFramework/wrapper.hpp>
@@ -136,47 +137,64 @@ class Dummy
 
             Render::PointLight light;
             light.radius    = 0.825f;
-            light.color     = glm::vec3(1.0f);
             light.intensity = 1.0f;
 
             lightpass.clear();
  
             light.position  = glm::vec3(-1.2f, 1.2f, 1.2f);
+            light.color = glm::vec3(1.0f, 0.0f, 0.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 0.0f, 1.2f, 1.2f);
+            light.color = glm::vec3(0.0f, 1.0f, 0.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 1.2f, 1.2f, 1.2f);
+            light.color = glm::vec3(0.0f, 0.0f, 1.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 1.2f, 1.2f, 0.0f);
+            light.color = glm::vec3(1.0f, 1.0f, 0.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 0.2f, 1.2f, 0.0f);
+            light.color = glm::vec3(1.0f, 0.0f, 1.0f);
             lightpass.add(light);
             light.position  = glm::vec3(-1.2f, 1.2f, 0.0f);
+            light.color = glm::vec3(1.0f, 1.0f, 1.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 1.2f, 1.2f,-1.2f);
+            light.color = glm::vec3(0.0f, 1.0f, 1.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 0.2f, 1.2f,-1.2f);
+            light.color = glm::vec3(1.0f, 0.5f, 0.5f);
             lightpass.add(light);
             light.position  = glm::vec3(-1.2f, 1.2f,-1.2f);
+            light.color = glm::vec3(1.0f, 0.5f, 1.0f);
             lightpass.add(light);
 
             light.position  = glm::vec3(-1.2f,-1.2f, 1.2f);
+            light.color = glm::vec3(0.5f, 0.5f, 1.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 0.0f,-1.2f, 1.2f);
+            light.color = glm::vec3(0.5f, 1.0f, 1.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 1.2f,-1.2f, 1.2f);
+            light.color = glm::vec3(0.5f, 1.0f, 0.5f);
             lightpass.add(light);
             light.position  = glm::vec3( 1.2f,-1.2f, 0.0f);
+            light.color = glm::vec3(1.0f, 0.25f, 0.5f);
             lightpass.add(light);
             light.position  = glm::vec3( 0.2f,-1.2f, 0.0f);
+            light.color = glm::vec3(1.0f, 0.5f, 0.25f);
             lightpass.add(light);
             light.position  = glm::vec3(-1.2f,-1.2f, 0.0f);
+            light.color = glm::vec3(0.0f, 1.0f, 0.5f);
             lightpass.add(light);
             light.position  = glm::vec3( 1.2f,-1.2f,-1.2f);
+            light.color = glm::vec3(0.5f, 0.25f, 1.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 0.2f,-1.2f,-1.2f);
+            light.color = glm::vec3(1.0f, 0.5f, 0.25f);
             lightpass.add(light);
             light.position  = glm::vec3(-1.2f,-1.2f,-1.2f);
+            light.color = glm::vec3(0.5f, 1.0f, 0.25f);
             lightpass.add(light);
 
 

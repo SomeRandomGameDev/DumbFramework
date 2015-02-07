@@ -21,13 +21,20 @@ void main(void)
 }
 )EOT";
 
+// [todo] one per light type
 static const char* g_spotLightFragmentShader = R"EOT(
 #version 410 core
 #define MAX_POINT_LIGHTS 128
+#define PI 3.1415926535897932384626433832795
+struct PointLight
+{
+    vec4 position;
+    vec4 color;
+};
 layout (binding=0) uniform sampler2DArray gbuffer;
 layout (std140, binding=1) uniform UPointLights
 {
-    vec4 pointLights[128]; // [todo]
+    PointLight pointLights[128]; // [todo]
 };
 uniform unsigned int pointLightCount;
 layout (location=0) out vec4 color_out;
@@ -37,21 +44,31 @@ void main(void)
     vec3 position = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 3), 0).xyz;
     vec3 normal = texelFetch(gbuffer,   ivec3(gl_FragCoord.xy, 2), 0).xyz;
     vec3 albedo = texelFetch(gbuffer,   ivec3(gl_FragCoord.xy, 0), 0).xyz;
+// [todo]    compute view vector
+// [todo]    float vdotn = dot(view, normal);
+// [todo]    float clamped_vdotn = max(vdotn, 0.0);
     for(unsigned int i=0; i<pointLightCount; i++)
     {
-        vec4 lightPosition = pointLights[i];
-        if(distance(position, lightPosition.xyz) <= lightPosition.w)
+        vec4  lightPosition = pointLights[i].position;
+        float lightDistance = distance(position, lightPosition.xyz);
+        if(lightDistance <= lightPosition.w)
         {
             vec3 light = normalize(lightPosition.xyz - position);
-            // [todo] BRDF
-            accum += vec4(albedo * clamp(dot(normal, light), 0.0, 1.0), 1.0);
+            float ldotn = dot(light, normal);
+            float clamped_ldotn = max(ldotn, 0.0);
+// [todo] Check if the applied clamping is correct.
+            float attenuation   = min(1.0 / (lightDistance*lightDistance), 1.0);
+// [todo] environment diffuse with spherical harmonics
+// [todo] specular
+// [todo] light color + more complex brdf
+            accum += albedo * pointLights[i].color * clamped_ldotn * attenuation;
         }
     }
     color_out = vec4(accum, 1.0);
 }
 )EOT";
 
-#define MAX_LIGHT_COUNT 8
+#define MAX_LIGHT_COUNT 128
 
 /**
  * Default constructor.
@@ -75,9 +92,15 @@ LightPass::~LightPass()
 {
     destroy();
 }
-
+/**
+ * Create light pass.
+ * @param [in] gbuffer     Geometry pass output.
+ * @param [in] depthbuffer Depth buffer build by geometry pass.
+ * @return false if an error occured.
+ */
 bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
 {
+// [todo] Cut init into smaller methods (one for textures, one for buffer...)
     bool ret;
     // [todo] Sanity check
     _gbuffer = gbuffer;
@@ -142,7 +165,7 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
         return false;
     }
     
-    ret = _buffer.create(128*sizeof(float[4]), nullptr, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
+    ret = _buffer.create(128*sizeof(float[8]), nullptr, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
         Log_Error(Module::Render, "Failed to create point light data buffer.");
@@ -197,7 +220,7 @@ void LightPass::clear()
 bool LightPass::add(PointLight const& light)
 {
     _buffer.bindTarget(1);
-    float* ptr = (float*)_buffer.map(BufferObject::Access::Policy::WRITE_ONLY, _count*sizeof(float[4]), sizeof(float[4]));
+    float* ptr = (float*)_buffer.map(BufferObject::Access::Policy::WRITE_ONLY, _count*sizeof(float[8]), sizeof(float[8]));
     bool ret = (nullptr != ptr);
     if(ret)
     {
@@ -205,6 +228,10 @@ bool LightPass::add(PointLight const& light)
         ptr[1] = light.position.y;
         ptr[2] = light.position.z;
         ptr[3] = light.radius;
+        ptr[4] = light.color.x;
+        ptr[5] = light.color.y;
+        ptr[6] = light.color.z;
+        ptr[7] = 0.0f;
         _buffer.unmap();
         _count++;
     }

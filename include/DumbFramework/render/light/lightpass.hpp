@@ -12,18 +12,38 @@
 namespace Framework {
 namespace Render    {
 
+/**
+ * Compute per pixel lighting.
+ */
 class LightPass
 {
     public:
+        /**
+         * Constructor.
+         */
         LightPass();
+        /**
+         * Destructor.
+         */
         ~LightPass();
-        
+        /**
+         * Create light pass.
+         * @param [in] gbuffer     Geometry pass output.
+         * @param [in] depthbuffer Depth buffer build by geometry pass.
+         * @return false if an error occured.
+         */
         bool create(Texture2D* gbuffer, Renderbuffer* depthbuffer);
+        /**
+         * Destroy light pass.
+         */
         void destroy();
-        
+        /**
+         * 
+         */
         void clear();
         
-        // [todo] one per light
+        // [todo] add multiple lights at once
+        // [todo] other light types
         bool add(PointLight const& light);
         
         void draw(Camera const& camera);
@@ -42,7 +62,7 @@ class LightPass
         VertexStream _fsQuad;
         VertexBuffer _fsQuadBuffer;
         
-        // [todo] one per light type
+        // [todo] one per light.
         UniformBuffer _buffer;
         unsigned int _count;
         GLuint _countId;
