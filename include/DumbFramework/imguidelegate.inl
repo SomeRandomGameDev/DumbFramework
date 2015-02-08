@@ -84,8 +84,6 @@ void ImGuiDelegate<T>::init()
     io.DisplaySize = ImVec2((float)fbWidth, (float)fbHeight);
     // Time elapsed since last frame, in seconds (in this sample app we'll override this every frame because our timestep is variable)
     io.DeltaTime = 1.0f/60.0f;
-    // Align OpenGL texels
-    io.PixelCenterOffset = 0.0f;
     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
     io.KeyMap[ImGuiKey_Tab]        = GLFW_KEY_TAB;
     io.KeyMap[ImGuiKey_LeftArrow]  = GLFW_KEY_LEFT;
@@ -110,26 +108,21 @@ void ImGuiDelegate<T>::init()
     io.GetClipboardTextFn = ImGuiDelegate<T>::getClipboardText;
 
     // Default font (embedded in code)
-    const void* png_data;
-    unsigned int png_size;
-    ImGui::GetDefaultFontData(NULL, NULL, &png_data, &png_size);
-    int tex_x, tex_y, tex_comp;
-    void* tex_data = stbi_load_from_memory((const unsigned char*)png_data, (int)png_size, &tex_x, &tex_y, &tex_comp, 0);
-    IM_ASSERT(tex_data != NULL);
-
-    bool ret = _fontTexture.create(glm::ivec2(tex_x, tex_y), Render::Texture::PixelFormat::RGBA_8);
+    int width, height;
+    unsigned char* pixels;
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+    bool ret = _fontTexture.create(glm::ivec2(width, height), Render::Texture::PixelFormat::RGBA_8);
     if(false == ret)
     {
         return;
     }
     
-    _fontTexture.setData(tex_data);
+    _fontTexture.setData(pixels);
     _fontTexture.bind();
         _fontTexture.setMagFilter(Render::Texture::MagFilter::NEAREST_TEXEL);
         _fontTexture.setMinFilter(Render::Texture::MinFilter::NEAREST_TEXEL);
     _fontTexture.unbind();
-        
-    stbi_image_free(tex_data);
+    io.Fonts->TexID = (void *)(intptr_t)_fontTexture.id();
     
     // Create vertex buffer
     ret = _vertexBuffer.create(sizeof(ImDrawVert) * 10000, nullptr, Render::BufferObject::Access::Frequency::STREAM, Render::BufferObject::Access::Type::DRAW);
