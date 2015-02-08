@@ -81,12 +81,15 @@ class Dummy
 
             rot = 0.0f;
             
+            debug = false;
+            
             //glfwSwapInterval(1); // vsync
         }
         
         void gui()
         {
             ImGui::Begin("DumbFramework + ImGui Test", &open, ImVec2(640, 360), alpha, 0);
+                ImGui::Checkbox("Debug mode", &debug); 
                 back = ImGui::Button("Back");
                 ImGui::SameLine();
                 forward = ImGui::Button("Forward");
@@ -136,67 +139,71 @@ class Dummy
             geometrypass.end();
 
             Render::PointLight light;
-            light.radius    = 0.825f;
+            light.radius    = 1.25f;
             light.intensity = 1.0f;
 
             lightpass.clear();
- 
-            light.position  = glm::vec3(-1.2f, 1.2f, 1.2f);
+
+            light.position  = glm::vec3(-1.4f, 1.2f, 1.4f);
             light.color = glm::vec3(1.0f, 0.0f, 0.0f);
             lightpass.add(light);
-            light.position  = glm::vec3( 0.0f, 1.2f, 1.2f);
+            light.position  = glm::vec3( 0.0f, 1.2f, 1.4f);
             light.color = glm::vec3(0.0f, 1.0f, 0.0f);
             lightpass.add(light);
-            light.position  = glm::vec3( 1.2f, 1.2f, 1.2f);
+            light.position  = glm::vec3( 1.4f, 1.2f, 1.4f);
             light.color = glm::vec3(0.0f, 0.0f, 1.0f);
             lightpass.add(light);
-            light.position  = glm::vec3( 1.2f, 1.2f, 0.0f);
+            light.position  = glm::vec3( 1.4f, 1.2f, 0.0f);
             light.color = glm::vec3(1.0f, 1.0f, 0.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 0.2f, 1.2f, 0.0f);
             light.color = glm::vec3(1.0f, 0.0f, 1.0f);
             lightpass.add(light);
-            light.position  = glm::vec3(-1.2f, 1.2f, 0.0f);
+            light.position  = glm::vec3(-1.4f, 1.2f, 0.0f);
             light.color = glm::vec3(1.0f, 1.0f, 1.0f);
             lightpass.add(light);
-            light.position  = glm::vec3( 1.2f, 1.2f,-1.2f);
+            light.position  = glm::vec3( 1.4f, 1.2f,-1.4f);
             light.color = glm::vec3(0.0f, 1.0f, 1.0f);
             lightpass.add(light);
-            light.position  = glm::vec3( 0.2f, 1.2f,-1.2f);
+            light.position  = glm::vec3( 0.2f, 1.2f,-1.4f);
             light.color = glm::vec3(1.0f, 0.5f, 0.5f);
             lightpass.add(light);
-            light.position  = glm::vec3(-1.2f, 1.2f,-1.2f);
+            light.position  = glm::vec3(-1.4f, 1.2f,-1.4f);
             light.color = glm::vec3(1.0f, 0.5f, 1.0f);
             lightpass.add(light);
 
-            light.position  = glm::vec3(-1.2f,-1.2f, 1.2f);
+            light.position  = glm::vec3(-1.4f,-1.2f, 1.4f);
             light.color = glm::vec3(0.5f, 0.5f, 1.0f);
             lightpass.add(light);
-            light.position  = glm::vec3( 0.0f,-1.2f, 1.2f);
+            light.position  = glm::vec3( 0.0f,-1.2f, 1.4f);
             light.color = glm::vec3(0.5f, 1.0f, 1.0f);
             lightpass.add(light);
-            light.position  = glm::vec3( 1.2f,-1.2f, 1.2f);
+            light.position  = glm::vec3( 1.4f,-1.2f, 1.4f);
             light.color = glm::vec3(0.5f, 1.0f, 0.5f);
             lightpass.add(light);
-            light.position  = glm::vec3( 1.2f,-1.2f, 0.0f);
+            light.position  = glm::vec3( 1.4f,-1.2f, 0.0f);
             light.color = glm::vec3(1.0f, 0.25f, 0.5f);
             lightpass.add(light);
             light.position  = glm::vec3( 0.2f,-1.2f, 0.0f);
             light.color = glm::vec3(1.0f, 0.5f, 0.25f);
             lightpass.add(light);
-            light.position  = glm::vec3(-1.2f,-1.2f, 0.0f);
+            light.position  = glm::vec3(-1.4f,-1.2f, 0.0f);
             light.color = glm::vec3(0.0f, 1.0f, 0.5f);
             lightpass.add(light);
-            light.position  = glm::vec3( 1.2f,-1.2f,-1.2f);
+            light.position  = glm::vec3( 1.4f,-1.2f,-1.4f);
             light.color = glm::vec3(0.5f, 0.25f, 1.0f);
             lightpass.add(light);
-            light.position  = glm::vec3( 0.2f,-1.2f,-1.2f);
+            light.position  = glm::vec3( 0.2f,-1.2f,-1.4f);
             light.color = glm::vec3(1.0f, 0.5f, 0.25f);
             lightpass.add(light);
-            light.position  = glm::vec3(-1.2f,-1.2f,-1.2f);
+            light.position  = glm::vec3(-1.4f,-1.2f,-1.4f);
             light.color = glm::vec3(0.5f, 1.0f, 0.25f);
             lightpass.add(light);
 
+            light.color = glm::vec3(1.0f);
+            light.position = glm::vec3(2.0, 0.0, 2.0);
+            light.radius = 5.0f;
+            lightpass.add(light);
 
             lightpass.draw(camera[1]);
 
@@ -204,11 +211,18 @@ class Dummy
             glClearColor(0, 0, 0, 0);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            glm::ivec2 halfSize(io.DisplaySize.x/2, io.DisplaySize.y/2);
-            geometrypass.debug(Framework::Render::GeometryPass::ALBEDO,   glm::ivec2(0),             halfSize);
-            geometrypass.debug(Framework::Render::GeometryPass::SPECULAR, glm::ivec2(halfSize.x, 0), glm::ivec2(halfSize.x, 0)+halfSize);
-            geometrypass.debug(Framework::Render::GeometryPass::NORMAL,   glm::ivec2(0, halfSize.y), glm::ivec2(0, halfSize.y)+halfSize);
-            lightpass.debug   (glm::ivec2(halfSize.x, halfSize.y), glm::ivec2(halfSize.x, halfSize.y)+halfSize);
+            if(debug)
+            {
+                glm::ivec2 halfSize(io.DisplaySize.x/2, io.DisplaySize.y/2);
+                geometrypass.debug(Framework::Render::GeometryPass::ALBEDO,   glm::ivec2(0),             halfSize);
+                geometrypass.debug(Framework::Render::GeometryPass::SPECULAR, glm::ivec2(halfSize.x, 0), glm::ivec2(halfSize.x, 0)+halfSize);
+                geometrypass.debug(Framework::Render::GeometryPass::NORMAL,   glm::ivec2(0, halfSize.y), glm::ivec2(0, halfSize.y)+halfSize);
+                lightpass.debug   (glm::ivec2(halfSize.x, halfSize.y), glm::ivec2(halfSize.x, halfSize.y)+halfSize);
+            }
+            else
+            {
+                lightpass.debug(glm::ivec2(0.0), glm::ivec2(io.DisplaySize.x, io.DisplaySize.y));
+            }
         }
         
         void destroy()
@@ -240,6 +254,7 @@ class Dummy
         float msPerFrame[120];
         int   currentFrame;
         float msPerFrameAccum;
+        bool  debug;
 };
 
 int main()
