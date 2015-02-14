@@ -35,7 +35,7 @@ struct PointLight
 layout (binding=0) uniform sampler2DArray gbuffer;
 layout (std140, binding=1) uniform UPointLights
 {
-    PointLight pointLights[128]; // [todo]
+    PointLight pointLights[128];
 };
 uniform unsigned int pointLightCount;
 uniform vec3 eye;

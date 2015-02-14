@@ -98,10 +98,6 @@ class Mesh
          */
         inline size_t triangleCount() const;
         
-        // [todo] map vertex buffer
-        // [todo] map index buffer
-        // [todo] draw command
-        
         /**
          * Get mesh bounding sphere.
          * @return Bounding sphere.
@@ -153,7 +149,6 @@ class Mesh
          * triangular face.
          */
         IndexBuffer  _indexBuffer;
-        
         /** Number of vertices. **/
         size_t _vertexCount;
         /** triangle count. **/

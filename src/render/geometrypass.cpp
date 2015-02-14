@@ -14,9 +14,15 @@ layout (location=0) in vec3 vs_position;
 layout (location=1) in vec2 vs_uv;
 layout (location=2) in vec3 vs_normal;
 layout (location=3) in vec4 vs_tangent;
-uniform mat4 modelMatrix;
-uniform mat3 normalMatrix;
-uniform mat4 viewProjMatrix;
+
+layout (std140, binding=0) uniform View
+{
+    mat4 viewProjMatrix;
+};
+
+uniform mat4 modelMatrix;       // [todo] Find a way to do both single and multiple instances
+uniform mat3 normalMatrix;      // [todo] Find a way to do both single and multiple instances
+
 out VS_OUT
 {
     vec3 worldPos;
@@ -161,18 +167,23 @@ bool GeometryPass::create(glm::ivec2 const& viewportSize)
         return false;
     }
 
+    _view.create(sizeof(float[16]), nullptr, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
+    if(false == ret)
+    {
+        Log_Error(Module::Render, "Failed to create point view matrices buffer.");
+        return false;
+    }
+
     int id;
     _program.begin();
         _modelMatrixId    = _program.getUniformLocation("modelMatrix");
         _normalMatrixId   = _program.getUniformLocation("normalMatrix");
-        _viewProjMatrixId = _program.getUniformLocation("viewProjMatrix");
         id = _program.getUniformLocation("diffuseMap");
         _program.uniform(id, (int)Material::DIFFUSE);
         id = _program.getUniformLocation("specularMap");
         _program.uniform(id, (int)Material::SPECULAR);
         id = _program.getUniformLocation("normalMap");
         _program.uniform(id, (int)Material::NORMAL);
-// [todo] normal Map etc...
     _program.end();
 
     return true;
@@ -191,6 +202,7 @@ void GeometryPass::destroy()
     _program.destroy();
     _output.destroy();
     _depthbuffer.destroy();
+    _view.destroy();
 }
 
 void GeometryPass::begin(Camera const& camera)
@@ -208,12 +220,16 @@ void GeometryPass::begin(Camera const& camera)
     renderer.depthTest(true);
 
     _program.begin();
-    glm::mat4 viewProj = camera.projectionMatrix(_viewportSize) * camera.viewMatrix();
-    _program.uniform(_viewProjMatrixId, false, viewProj);
+    _view.bindTarget(0);
+        float* ptr = (float*)_view.map(BufferObject::Access::Policy::WRITE_ONLY, 0, sizeof(float[16]));
+            glm::mat4 viewProj = camera.projectionMatrix(_viewportSize) * camera.viewMatrix();
+            memcpy(ptr, glm::value_ptr(viewProj), sizeof(glm::mat4));
+        _view.unmap();
 }
 
 void GeometryPass::end()
 {
+    _view.unbind();
     _program.end();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDrawBuffer(GL_BACK);

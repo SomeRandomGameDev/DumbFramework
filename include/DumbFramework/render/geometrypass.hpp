@@ -52,7 +52,7 @@ class GeometryPass
         glm::ivec2 _viewportSize;
         int _modelMatrixId;
         int _normalMatrixId;
-        int _viewProjMatrixId;
+        UniformBuffer _view;
 };
 
 } // Render

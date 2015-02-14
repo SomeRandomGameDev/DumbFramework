@@ -21,7 +21,7 @@ class Material
             DIFFUSE  = 0,
             SPECULAR = 1,
             NORMAL   = 2
-            // [todo] more...
+            // [todo] more ?
         };
     public:
         Material();
@@ -52,8 +52,8 @@ class Material
         Texture2D   specularMap;
         Texture2D   normalMap;
 
-        // [todo] normal map, etc...
-        
+        // [todo] more ?
+
     private:
         std::string _name;
 };
