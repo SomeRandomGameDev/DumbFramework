@@ -18,7 +18,7 @@ namespace Render    {
  */
 namespace Texture   {
 /** 
- * @brief Pixel format. 
+ * Pixel format. 
  * @ingroup DUMB_FW_TEXTURE
  */
 struct PixelFormat
@@ -130,7 +130,7 @@ inline bool operator!= (PixelFormat::Value const& v, PixelFormat const& p0);
 inline bool operator!= (PixelFormat const& p0, PixelFormat::Value const& v);
 
 /** 
- * @brief Texel minification filter. 
+ * Texel minification filter. 
  * @ingroup DUMB_FW_TEXTURE
  */
 struct MinFilter
@@ -203,7 +203,7 @@ inline bool operator!= (MinFilter const& f0, MinFilter const& f1);
 inline bool operator!= (MinFilter::Value const& v, MinFilter const& f0);
 inline bool operator!= (MinFilter const& f0, MinFilter::Value const& v);
 /** 
- * @brief Texel magnification filter. 
+ * Texel magnification filter. 
  * @ingroup DUMB_FW_TEXTURE
  */
 struct MagFilter
@@ -246,7 +246,7 @@ inline bool operator!= (MagFilter const& f0, MagFilter const& f1);
 inline bool operator!= (MagFilter::Value const& v, MagFilter const& f0);
 inline bool operator!= (MagFilter const& f0, MagFilter::Value const& v);
 /** 
- * @brief Texture wrap. 
+ * Texture wrap. 
  * @ingroup DUMB_FW_TEXTURE
  */
 struct Wrap

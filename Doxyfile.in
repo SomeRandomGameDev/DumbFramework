@@ -1,5 +1,6 @@
 PROJECT_NAME           = "@CMAKE_PROJECT_NAME@"
 PROJECT_NUMBER         = @DUMB_FW_VERSION@
+PROJECT_BRIEF          = "Simple C++ framework for games."
 OUTPUT_DIRECTORY       = doc
 STRIP_FROM_PATH        = @CMAKE_SOURCE_DIR@
 INPUT                  = @CMAKE_SOURCE_DIR@ 
@@ -8,9 +9,15 @@ RECURSIVE              = YES
 GENERATE_LATEX         = NO
 EXCLUDE_PATTERNS       = */.git/*
 EXCLUDE_PATTERNS      += */build/*
-EXCLUDE_PATTERNS      += */externals/*
+EXCLUDE_PATTERNS      += */external/*
 EXCLUDE_PATTERNS      += */resources/*
 EXCLUDE_PATTERNS      += */cmake/*
 EXCLUDE_PATTERNS      += */doc/*
 EXCLUDE_PATTERNS      += */tools/*
-
+EXCLUDE                = *.inl
+JAVADOC_AUTOBRIEF      = YES
+MARKDOWN_SUPPORT       = YES
+BUILTIN_STL_SUPPORT    = YES
+SUBGROUPING            = YES
+EXTRACT_LOCAL_CLASSES  = YES
+SHOW_INCLUDE_FILES     = YES

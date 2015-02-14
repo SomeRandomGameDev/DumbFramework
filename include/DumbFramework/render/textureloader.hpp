@@ -10,9 +10,9 @@
 namespace Framework {
 namespace Render    {
 namespace Texture   {
-
 /**
  * Create texture from file.
+ * @ingroup DUMB_FW_TEXTURE
  * @param [out] out     Output texture.
  * @param [in]  filname Image filename.
  * @param [in]  format  (Optional) Expected pixel format. If set to
@@ -24,6 +24,7 @@ namespace Texture   {
 bool load(Texture2D& out, std::string const& filename, PixelFormat const& format = PixelFormat::UNKNOWN, glm::ivec2 const& size = glm::ivec2(-1));
 /**
  * Load a single texture layer from file.
+ * @ingroup DUMB_FW_TEXTURE
  * @param [out] out      Output texture.
  * @param [in]  filename Image filename.
  * @param [in]  layer    Layer in which the image will be loaded (default = 0).
@@ -34,6 +35,7 @@ bool load(Texture2D& out, std::string const& filename, PixelFormat const& format
 bool loadLayer(Texture2D& out, std::string const& filename, int layer=0);
 /**
  * Create texture array from files.
+ * @ingroup DUMB_FW_TEXTURE
  * @param [out] out          Output texture.
  * @param [in]  filenameList Image filenames.
  * @param [in]  format  (Optional) Expected pixel format. If set to
@@ -48,6 +50,7 @@ bool loadLayer(Texture2D& out, std::string const& filename, int layer=0);
 bool load(Texture2D& out, std::initializer_list<std::string> filenameList, PixelFormat const& format = PixelFormat::UNKNOWN, glm::ivec2 const& size = glm::ivec2(-1));
 /**
  * Create texture array from files.
+ * @ingroup DUMB_FW_TEXTURE
  * @param [out] out          Output texture.
  * @param [in]  filenameList Image filenames.
  * @param [in]  format  (Optional) Expected pixel format. If set to

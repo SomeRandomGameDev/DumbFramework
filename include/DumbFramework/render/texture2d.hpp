@@ -8,8 +8,51 @@ namespace Framework {
 namespace Render    {
 
 /**
- * Texture 2D Wrapper.
+ * 2D Texture.
  * @ingroup DUMB_FW_TEXTURE
+ * 
+ * The following example shows how to create a simple texture.
+ * @code
+ * bool ret;
+ * Render::Texture2D texture;
+ *
+ * // Create a 256x256xRGBA_32F texture.
+ * ret = texture.create(glm::ivec2(256), Render::Texture::PixelFormat::RGBA_32F);
+ * if(false == ret)
+ *  {
+ *      Log_Error(Module::Render, "Failed to create texture!");
+ *      return false;
+ *  }
+ *  // Set min, mag filters and wrap mode.
+ *  texture.bind();    // Do not forget to bind texture before setting filters or wrap modes.
+ *      texture.setMinFilter(Render::Texture::MinFilter::LINEAR_TEXEL);
+ *      texture.setMagFilter(Render::Texture::MagFilter::LINEAR_TEXEL);
+ *      texture.setWrap(Render::Texture::Wrap::CLAMP_TO_EDGE, Render::Texture::Wrap::CLAMP_TO_EDGE);
+ *  texture.unbind();
+ * @endcode
+ * 
+ * Additionally you can create a texture with multiple layers. Each
+ * layer data can be set individually.
+ * @code
+ * bool ret;
+ * Render::Texture2D layeredTexture;
+ * // Create a 2D texture with 4 layers.
+ * size_t layers = 4;
+ * ret = layeredTexture.create(glm::ivec2(512,256), Render::Texture::PixelFormat::RGB_8, layers);
+ * if(false == ret)
+ * {
+ *     Log_Error(Module::Render, "Failed to create texture!");
+ *     return false;
+ * }
+ * // Set data for each layer.
+ * for(int i=0; i<layeredTexture.layerCount(); i++)
+ * {
+ *     uint8_t *buffer = // load image from file or whatever... 
+ *     layeredTexture.setData(buffer, i);
+ *     // destroy buffer.
+ * }
+ * // Set filters etc...
+ * @endcode
  */
 class Texture2D
 {

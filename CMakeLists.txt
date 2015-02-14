@@ -43,6 +43,7 @@ find_package(OpenGL)
 find_package(GLEW)
 find_package(GLFW)
 find_package(GLM ${GLM_MINIMUM_VERSION} REQUIRED)
+find_package(Doxygen)
 # find_package(BOX2D)
 # find_package(Freetype-gl)
 
@@ -167,12 +168,14 @@ add_executable(gui src/demo/gui.cpp)
 add_dependencies(resources gui)
 target_link_libraries(gui DumbFramework)
 
-# [todo] Doxygen
-# set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
-# set(DOXYFILE ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-# configure_file(${DOXYFILE_IN} ${DOXYFILE} @ONLY)
-# add_custom_target(doc
-#         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE}
-#         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-#         COMMENT "Generating API documentation with Doxygen"
-#         VERBATIM )
+set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+set(DOXYFILE ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+configure_file(${DOXYFILE_IN} ${DOXYFILE} @ONLY IMMEDIATE)
+
+add_custom_target(doc
+         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE}
+         SOURCES ${DOXYFILE}
+         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+         COMMENT "Generating API documentation with Doxygen"
+         VERBATIM )
