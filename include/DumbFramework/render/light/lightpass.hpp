@@ -38,7 +38,8 @@ class LightPass
          */
         void destroy();
         /**
-         * 
+         * Clear light buffer.
+         * [todo] add enum for light type?
          */
         void clear();
         
@@ -58,6 +59,8 @@ class LightPass
         
         GLuint        _framebuffer;
         Texture2D     _output;
+
+        GLint _viewlMatrixId;
 
         VertexStream _fsQuad;
         VertexBuffer _fsQuadBuffer;

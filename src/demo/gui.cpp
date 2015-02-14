@@ -44,10 +44,12 @@ class Dummy
             
             ret = Render::createCube(mesh);
 
+            std::string texPath = Framework::File::executableDirectory() + "/resources/textures/";
+            
             ret = material.create("dummy");
-            Render::Texture::load(material.diffuseMap,  "cubeTex.png");
-            Render::Texture::load(material.specularMap, "cubeTexSpec.png");
-            Render::Texture::load(material.normalMap,   "cubeTexNormal.png");
+            Render::Texture::load(material.diffuseMap,  texPath + "cubeTex.png");
+            Render::Texture::load(material.specularMap, texPath + "cubeTexSpec.png");
+            Render::Texture::load(material.normalMap,   texPath + "cubeTexNormal.png");
             material.diffuseMap.bind();
                 material.diffuseMap.setMagFilter(Render::Texture::MagFilter::LINEAR_TEXEL);
                 material.diffuseMap.setMinFilter(Render::Texture::MinFilter::LINEAR_TEXEL);
@@ -145,62 +147,44 @@ class Dummy
             lightpass.clear();
 
             light.position  = glm::vec3(-1.4f, 1.2f, 1.4f);
-            light.color = glm::vec3(1.0f, 0.0f, 0.0f);
+            light.color = glm::vec3(1.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 0.0f, 1.2f, 1.4f);
-            light.color = glm::vec3(0.0f, 1.0f, 0.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 1.4f, 1.2f, 1.4f);
-            light.color = glm::vec3(0.0f, 0.0f, 1.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 1.4f, 1.2f, 0.0f);
-            light.color = glm::vec3(1.0f, 1.0f, 0.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 0.2f, 1.2f, 0.0f);
-            light.color = glm::vec3(1.0f, 0.0f, 1.0f);
             lightpass.add(light);
             light.position  = glm::vec3(-1.4f, 1.2f, 0.0f);
-            light.color = glm::vec3(1.0f, 1.0f, 1.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 1.4f, 1.2f,-1.4f);
-            light.color = glm::vec3(0.0f, 1.0f, 1.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 0.2f, 1.2f,-1.4f);
-            light.color = glm::vec3(1.0f, 0.5f, 0.5f);
             lightpass.add(light);
             light.position  = glm::vec3(-1.4f, 1.2f,-1.4f);
-            light.color = glm::vec3(1.0f, 0.5f, 1.0f);
             lightpass.add(light);
 
             light.position  = glm::vec3(-1.4f,-1.2f, 1.4f);
-            light.color = glm::vec3(0.5f, 0.5f, 1.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 0.0f,-1.2f, 1.4f);
-            light.color = glm::vec3(0.5f, 1.0f, 1.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 1.4f,-1.2f, 1.4f);
-            light.color = glm::vec3(0.5f, 1.0f, 0.5f);
             lightpass.add(light);
             light.position  = glm::vec3( 1.4f,-1.2f, 0.0f);
-            light.color = glm::vec3(1.0f, 0.25f, 0.5f);
             lightpass.add(light);
             light.position  = glm::vec3( 0.2f,-1.2f, 0.0f);
-            light.color = glm::vec3(1.0f, 0.5f, 0.25f);
             lightpass.add(light);
             light.position  = glm::vec3(-1.4f,-1.2f, 0.0f);
-            light.color = glm::vec3(0.0f, 1.0f, 0.5f);
             lightpass.add(light);
             light.position  = glm::vec3( 1.4f,-1.2f,-1.4f);
-            light.color = glm::vec3(0.5f, 0.25f, 1.0f);
             lightpass.add(light);
             light.position  = glm::vec3( 0.2f,-1.2f,-1.4f);
-            light.color = glm::vec3(1.0f, 0.5f, 0.25f);
             lightpass.add(light);
             light.position  = glm::vec3(-1.4f,-1.2f,-1.4f);
-            light.color = glm::vec3(0.5f, 1.0f, 0.25f);
             lightpass.add(light);
 
-            light.color = glm::vec3(1.0f);
             light.position = glm::vec3(2.0, 0.0, 2.0);
             light.radius = 5.0f;
             lightpass.add(light);

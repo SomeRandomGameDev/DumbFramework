@@ -1,0 +1,16 @@
+PROJECT_NAME           = "@CMAKE_PROJECT_NAME@"
+PROJECT_NUMBER         = @DUMB_FW_VERSION@
+OUTPUT_DIRECTORY       = doc
+STRIP_FROM_PATH        = @CMAKE_SOURCE_DIR@
+INPUT                  = @CMAKE_SOURCE_DIR@ 
+FILE_PATTERNS          = *.hpp *.cpp
+RECURSIVE              = YES
+GENERATE_LATEX         = NO
+EXCLUDE_PATTERNS       = */.git/*
+EXCLUDE_PATTERNS      += */build/*
+EXCLUDE_PATTERNS      += */externals/*
+EXCLUDE_PATTERNS      += */resources/*
+EXCLUDE_PATTERNS      += */cmake/*
+EXCLUDE_PATTERNS      += */doc/*
+EXCLUDE_PATTERNS      += */tools/*
+

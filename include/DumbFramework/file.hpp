@@ -217,6 +217,17 @@ class File
          * @return true if we reached the end of the file.
          */
         bool eof();
+    
+        /**
+         * @brief Return the current working directory.
+         * @return Current working directory.
+         */
+        static std::string currentWorkingDirectory();
+        /**
+         * @brief Return the executable directory.
+         * @return Executable directory.
+         */
+        static std::string executableDirectory();
         
     protected:
         FILE *_handle;         /**< Handle. */

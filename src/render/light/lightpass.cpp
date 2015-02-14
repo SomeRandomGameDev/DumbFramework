@@ -50,17 +50,16 @@ float SchlickFresnel(float u)
 }
 float GTR2(float ndoth, float a)
 {
-    float a2 = a*a;
+    float a2 = a * a;
     float t  = ndoth*ndoth*(a2-1.0) + 1.0;
     return a2 / (PI * t*t);
 }
 float G1V(float v, float k)
 {
-    return 1.0/(v*(1.0-k) + k);
+    return v/(v*(1.0-k) + k);
 }
 vec3 brdf(float dotNV, float dotNL, float dotNH, float dotLH, float dotVH, vec3 diffColor, vec4 specColor)
 {        
-// [todo] indirect env with spherical harmonics
     if(dotNV < 0 || dotNL < 0)
     { return vec3(0.0); }
 
@@ -75,10 +74,11 @@ vec3 brdf(float dotNV, float dotNL, float dotNH, float dotLH, float dotVH, vec3 
     vec3 diffuse = fd * diffColor / PI;
 
     // Specular
+    float k  = (roughness+1.0) * (roughness+1.0) / 8.0;
     float fh = SchlickFresnel(dotVH);
     vec3  fresnel      = mix(specColor.rgb, vec3(1.0), fh);
-    float visibility   = G1V(dotNL, sqrRoughness) * G1V(dotNV, sqrRoughness);
-    float distribution = GTR2(dotNH, sqrRoughness*sqrRoughness);
+    float visibility   = G1V(dotNL, k) * G1V(dotNV, k);
+    float distribution = GTR2(dotNH, sqrRoughness);
     vec3 specular  = fresnel * visibility * distribution;
 
     return (specular + diffuse);
@@ -106,8 +106,8 @@ void main(void)
             float dotVH = dot(halfL, view);
             float dotLH = dot(light, halfL);
             
-// [todo] Check if the applied clamping is correct.
-            float attenuation   = min(1.0 / (lightDistance*lightDistance), 1.0);
+            float attNum = clamp(1.0 - pow(lightDistance/lightPosition.w, 4), 0.0, 1.0);
+            float attenuation   = attNum * attNum / (lightDistance*lightDistance + 1.0);
 
             accum += clamp(brdf(dotNV, dotNL, dotNH, dotLH, dotVH, albedo, specular) * pointLights[i].color * dotNL * attenuation, 0.0, 1.0);
         }

@@ -3,11 +3,15 @@ include(CheckCXXSymbolExists)
 
 project(DumbFramework)
 
+set(DUMB_FW_MAJOR_VERSION 0)
+set(DUMB_FW_MINOR_VERSION 0)
+set(DUMB_FW_PATCH_VERSION 1)
+set(DUMB_FW_VERSION "${DUMB_FW_MAJOR_VERSION}.${DUMB_FW_MINOR_VERSION}.${DUMB_FW_PATCH_VERSION}")
+
 # Force build type to Debug if none was specified.
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
-
 
 option(BUILD_TESTS "Build unit tests." OFF)
 option(SANITY_CHECK "Enable sanity checks. WARNING: performance loss + large logs." OFF)
@@ -108,6 +112,18 @@ set(DUMB_FRAMEWORK_SOURCES
     src/joystick.cpp
     src/mouse.cpp)
 
+if(MSVC)
+set(DUMB_FRAMEWORK_SOURCES
+    ${DUMB_FRAMEWORK_SOURCES}
+    src/platform/msvc/file.cpp)
+endif(MSVC)
+
+if(UNIX)
+set(DUMB_FRAMEWORK_SOURCES
+    ${DUMB_FRAMEWORK_SOURCES}
+    src/platform/unix/file.cpp)
+endif(UNIX)
+
 add_library(DumbFramework STATIC ${DUMB_FRAMEWORK_SOURCES} ${IMGUI_SOURCES})
 target_link_libraries(DumbFramework ${TINYXML2_LIBRARY} )
 target_link_libraries(DumbFramework ${OPENGL_LIBRARIES} )
@@ -139,8 +155,24 @@ if(BUILD_TESTS)
     target_link_libraries(RunTests ${UNITTEST++_LIBRARY})
 endif()
 
+add_custom_target( resources ALL
+#    COMMAND ${CMAKE_COMMAND} -E make_directory "${EXECUTABLE_OUTPUT_PATH}"
+    COMMAND rsync -r "${CMAKE_SOURCE_DIR}/resources" "${EXECUTABLE_OUTPUT_PATH}/")
+
 add_executable(flatengine src/demo/flatengine.cpp)
+add_dependencies(resources flatengine)
 target_link_libraries(flatengine DumbFramework)
 
 add_executable(gui src/demo/gui.cpp)
+add_dependencies(resources gui)
 target_link_libraries(gui DumbFramework)
+
+# [todo] Doxygen
+# set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+# set(DOXYFILE ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+# configure_file(${DOXYFILE_IN} ${DOXYFILE} @ONLY)
+# add_custom_target(doc
+#         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE}
+#         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+#         COMMENT "Generating API documentation with Doxygen"
+#         VERBATIM )

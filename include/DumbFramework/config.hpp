@@ -7,7 +7,7 @@
 #if defined(_MSC_VER)
 #include <DumbFramework/platform/msvc/config.hpp>
 #else
-	// nothing atm
+#include <DumbFramework/platform/unix/config.hpp>
 #endif
 
 #endif /* _DUMB_FW_CONFIG_ */
