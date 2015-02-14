@@ -111,7 +111,7 @@ bool Renderer::isDepthBufferWriteEnabled()
  */
 void Renderer::setDepthFunc(DepthFunc test)
 {
-    GLenum func;
+    GLenum func = GL_LESS;
     
     switch(test.value)
     {
@@ -272,7 +272,7 @@ bool Renderer::isCullingEnabled()
  */
 void Renderer::cullingMode(CullFace mode)
 {
-    GLenum glMode;
+    GLenum glMode = GL_BACK;
     switch(mode)
     {
         case CullFace::BACK:
