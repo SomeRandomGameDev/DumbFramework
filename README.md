@@ -32,6 +32,7 @@ Complete examples are available in the git repository, under the 'demo' director
 Not concerned about scene management and all that stuff ?
 Just use the Wrapper.
 What you've got to do is just to create a class that implement the following methods:
+
 ```cpp
 GLFWwindow *createWindow();
 void destroyWindow(GLFWwindow *);
@@ -45,7 +46,9 @@ void handleWindowSize(int x, int y);
 void handleChar(unsigned int unicodeChar);
 void handleCursorEnter(int flag);
 ```
+
 And that's about it. Then, merges it with the wrapper using the magic of the templates like this:
+
 ```cpp
 // Include GLFW/GLEW stuff
 #include <wrapper.hpp>
@@ -78,7 +81,8 @@ The way to flat happiness is short with this dumb framework.
 #### Under Linux
 
 Make sure to have **cmake** and proceed like this:
-```
+
+```sh
 $ cd DumbFrameworkRoot
 $ mkdir build
 $ cd build
@@ -95,14 +99,14 @@ cmake -DCMAKE_CXX_COMPILER=/usr/bin/clang++ ..
 #### What you'll need ...
 
 In order to compile, the librarie needs the following:
-```
-cmake >= 2.6
-GLM >= 0.9.5.4
-SOIL
-GLEW
-GLFW >= 3
-Box2D (in some cases)
-SOIL
-```
+
+- cmake >= 2.6
+- GLM >= 0.9.5.4
+- SOIL
+- GLEW
+- GLFW >= 3
+- Box2D (in some cases)
+- SOIL
+
 
 *SomeRandomGameDev* and *BlockoS/MooZ*
