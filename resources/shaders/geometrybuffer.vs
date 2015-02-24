@@ -4,14 +4,13 @@ layout (location=0) in vec3 vs_position;
 layout (location=1) in vec2 vs_uv;
 layout (location=2) in vec3 vs_normal;
 layout (location=3) in vec4 vs_tangent;
+layout (location=4) in mat4 vs_modelMatrix;
+layout (location=8) in mat3 vs_normalMatrix;
 
 layout (std140, binding=0) uniform View
 {
     mat4 viewProjMatrix;
 };
-
-uniform mat4 modelMatrix;       // [todo] Find a way to do both single and multiple instances
-uniform mat3 normalMatrix;      // [todo] Find a way to do both single and multiple instances
 
 out VS_OUT
 {
