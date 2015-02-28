@@ -1,4 +1,4 @@
-#include <DumbFramework/render/light/lightpass.hpp>
+#include <DumbFramework/render/lightpass.hpp>
 #include <DumbFramework/render/dummy.hpp>
 
 namespace Framework {
@@ -25,6 +25,8 @@ void main(void)
 static const char* g_spotLightFragmentShader = R"EOT(
 #version 410 core
 #define MAX_POINT_LIGHTS 128
+#define MAX_SPOT_LIGHTS 128
+#define MAX_DIRECTIONAL_LIGHTS 8
 #define PI 3.1415926535897932384626433832795
 struct PointLight
 {
@@ -33,11 +35,14 @@ struct PointLight
 };
 
 layout (binding=0) uniform sampler2DArray gbuffer;
-layout (std140, binding=1) uniform UPointLights
+layout (std140, binding=1) uniform ULights
 {
-    PointLight pointLights[128];
+    unsigned int lightCount[3];
+    unsigned int padding[5];
+    PointLight pointLights[MAX_POINT_LIGHTS];
+// [todo]    PointLight spotLights[MAX_SPOT_LIGHTS];
+// [todo]    PointLight directionalLights[MAX_DIRECTIONAL_LIGHTS];
 };
-uniform unsigned int pointLightCount;
 uniform vec3 eye;
 
 layout (location=0) out vec4 color_out;
@@ -93,7 +98,7 @@ void main(void)
     vec3 view     = normalize(eye - position);
     float dotNV = dot(view, normal);
     
-    for(unsigned int i=0; i<pointLightCount; i++)
+    for(unsigned int i=0; i<lightCount[0]; i++)
     {
         vec4  lightPosition = pointLights[i].position;
         float lightDistance = distance(position, lightPosition.xyz);
@@ -116,7 +121,9 @@ void main(void)
 }
 )EOT";
 
-#define MAX_LIGHT_COUNT 128
+#define MAX_POINT_LIGHTS 128
+#define MAX_SPOT_LIGHTS 128
+#define MAX_DIRECTIONAL_LIGHTS 8
 
 /**
  * Default constructor.
@@ -131,8 +138,6 @@ LightPass::LightPass()
     , _fsQuad()
     , _fsQuadBuffer()
     , _buffer()
-    , _count(0)
-    , _countId(-1)
 {}
 /**
  * Destructor.
@@ -213,13 +218,18 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
         Log_Error(Module::Render, "Failed to compile fullscreen quad stream.");
         return false;
     }
-    
-    ret = _buffer.create(128*sizeof(float[8]), nullptr, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
+
+    size_t bufferSize = 8 * sizeof(unsigned int)
+                      + MAX_POINT_LIGHTS*sizeof(float[8]);
+    // [todo]         + MAX_SPOT_LIGHTS*sizeof(float[?]) 
+    // [todo]         + MAX_DIRECTIONAL_LIGHTS*sizeof(float[?]);
+    ret = _buffer.create(bufferSize, nullptr, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create point light data buffer.");
+        Log_Error(Module::Render, "Failed to create light buffer.");
         return false;
     }
+    clear();
     
     ret = _program.create( {{Render::Shader::Type::VERTEX_SHADER,   g_spotLightVertexShader  },
                             {Render::Shader::Type::FRAGMENT_SHADER, g_spotLightFragmentShader}} );
@@ -237,7 +247,6 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
     }
     
     _program.begin();
-        _countId = _program.getUniformLocation("pointLightCount");
         _viewlMatrixId = _program.getUniformLocation("eye");
     _program.end();
     
@@ -248,8 +257,6 @@ void LightPass::destroy()
 {
     _gbuffer     = nullptr;
     _depthbuffer = nullptr;
-    _count = 0;
-    _countId = -1;
     _viewlMatrixId = -1;
     if(_framebuffer)
     {
@@ -265,33 +272,60 @@ void LightPass::destroy()
 
 void LightPass::clear()
 {
-    _count = 0;
+    _buffer.bindTarget(1);
+    unsigned int* count = (unsigned int*)_buffer.map(BufferObject::Access::Policy::WRITE_ONLY, 0, LightType::COUNT*sizeof(unsigned int));
+    if(nullptr == count)
+    {
+        _buffer.unbind();
+        Log_Error(Module::Render, "Failed to map light buffer.");
+        return;
+    }
+    memset(count, 0, LightType::COUNT * sizeof(unsigned int));
+    _buffer.unmap();
+    _buffer.unbind();
 }
 
 bool LightPass::add(PointLight const& light)
 {
     _buffer.bindTarget(1);
-    float* ptr = (float*)_buffer.map(BufferObject::Access::Policy::WRITE_ONLY, _count*sizeof(float[8]), sizeof(float[8]));
-    bool ret = (nullptr != ptr);
-    if(ret)
+    unsigned int* count = (unsigned int*)_buffer.map(BufferObject::Access::Policy::READ_WRITE, LightType::POINT_LIGHT * sizeof(unsigned int), sizeof(unsigned int));
+    if(nullptr == count)
     {
-        ptr[0] = light.position.x;
-        ptr[1] = light.position.y;
-        ptr[2] = light.position.z;
-        ptr[3] = light.radius;
-        ptr[4] = light.color.x;
-        ptr[5] = light.color.y;
-        ptr[6] = light.color.z;
-        ptr[7] = 0.0f;
+        _buffer.unbind();
+        Log_Error(Module::Render, "Failed to map current light buffer.");
+        return false;
+    }
+    unsigned int offset = *count;
+    if(offset >= MAX_POINT_LIGHTS)
+    {
         _buffer.unmap();
-        _count++;
+        _buffer.unbind();
+        Log_Error(Module::Render, "Max point light count reached!");
+        return false;
     }
-    else
+    *count = offset+1;
+    _buffer.unmap();
+
+    float* ptr = (float*)_buffer.map(BufferObject::Access::Policy::WRITE_ONLY, sizeof(unsigned int[8]) + offset*sizeof(float[8]), sizeof(float[8]));
+    if(nullptr == ptr)
     {
-        Log_Error(Module::Render, "[todo]");
+        _buffer.unbind();
+        Log_Error(Module::Render, "Failed to add point light.");
+        return false;
     }
+    
+    ptr[0] = light.position.x;
+    ptr[1] = light.position.y;
+    ptr[2] = light.position.z;
+    ptr[3] = light.radius;
+    ptr[4] = light.color.x;
+    ptr[5] = light.color.y;
+    ptr[6] = light.color.z;
+    ptr[7] = 0.0f;
+
+    _buffer.unmap();
     _buffer.unbind();
-    return ret;
+    return true;
 }
 
 void LightPass::draw(Camera const& camera)
@@ -318,7 +352,6 @@ void LightPass::draw(Camera const& camera)
     _program.begin();
     _buffer.bindTarget(1);
     _program.uniform(_viewlMatrixId, camera.eye);
-    _program.uniform(_countId, _count);
         _fsQuad.bind();
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         _fsQuad.unbind();

@@ -7,7 +7,7 @@
 #include <DumbFramework/render/uniformbuffer.hpp>
 #include <DumbFramework/render/vertexstream.hpp>
 #include <DumbFramework/render/geometrypass.hpp>
-#include <DumbFramework/render/light/pointlight.hpp>
+#include <DumbFramework/render/light.hpp>
 
 namespace Framework {
 namespace Render    {
@@ -38,14 +38,14 @@ class LightPass
          */
         void destroy();
         /**
-         * Clear light buffer.
-         * [todo] add enum for light type?
+         * Clear light count.
          */
         void clear();
         
         // [todo] add multiple lights at once
-        // [todo] other light types
-        bool add(PointLight const& light);
+        bool add(PointLight       const& light);
+        // [todo] bool add(SpotLight        const& light);
+        // [todo] bool add(DirectionalLight const& light);
         
         void draw(Camera const& camera);
         Texture2D* output();
@@ -64,11 +64,8 @@ class LightPass
 
         VertexStream _fsQuad;
         VertexBuffer _fsQuadBuffer;
-        
-        // [todo] one per light.
+
         UniformBuffer _buffer;
-        unsigned int _count;
-        GLuint _countId;
 };
 
 } // Render

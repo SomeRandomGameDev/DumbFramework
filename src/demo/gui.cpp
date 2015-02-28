@@ -16,7 +16,7 @@
 #include <DumbFramework/render/mesh.hpp>
 #include <DumbFramework/render/dummy.hpp>
 #include <DumbFramework/render/geometrypass.hpp>
-#include <DumbFramework/render/light/lightpass.hpp>
+#include <DumbFramework/render/lightpass.hpp>
 
 using namespace Framework;
 
@@ -142,8 +142,7 @@ class Dummy
 
             Render::PointLight light;
             light.radius    = 1.25f;
-            light.intensity = 1.0f;
-
+            
             lightpass.clear();
 
             light.position  = glm::vec3(-1.4f, 1.2f, 1.4f);
