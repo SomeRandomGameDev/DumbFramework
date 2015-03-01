@@ -39,7 +39,7 @@ int main()
 
 	File input;
 
-	input.open("resources/std.vs", File::READ_ONLY);
+	input.open("resources/shaders/std.vs", File::READ_ONLY);
 	data.resize(input.size()+1);
 	input.read(&data[0], data.size());
 	input.close();
@@ -48,8 +48,8 @@ int main()
 
 	data.clear();
 
-	input.open("resources/materialTest.fs", File::READ_ONLY);
-//	input.open("resources/std.fs", File::READ_ONLY);
+//	input.open("resources/materialTest.fs", File::READ_ONLY);
+	input.open("resources/shaders/std.fs", File::READ_ONLY);
 	data.resize(input.size()+1);
 	input.read(&data[0], data.size());
 	input.close();
