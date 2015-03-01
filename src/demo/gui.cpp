@@ -66,7 +66,8 @@ class Dummy
                 material.normalMap.setWrap(Render::Texture::Wrap::CLAMP_TO_EDGE, Render::Texture::Wrap::CLAMP_TO_EDGE);
             material.normalMap.unbind();
             
-            material.culling = false;
+            material.culling = true;
+            material.cullingMode = Render::CullFace::BACK;
             
             camera[0].lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f));
             camera[0].perspective(45.0f, 0.1f, 10.0f);
@@ -141,7 +142,7 @@ class Dummy
             geometrypass.end();
 
             Render::PointLight light;
-            light.radius    = 1.25f;
+            light.radius    = 1.5f;
             
             lightpass.clear();
 
@@ -185,7 +186,7 @@ class Dummy
             lightpass.add(light);
 
             light.position = glm::vec3(2.0, 0.0, 2.0);
-            light.radius = 5.0f;
+            light.radius = 1.0f;
             lightpass.add(light);
 
             lightpass.draw(camera[1]);
