@@ -41,9 +41,9 @@ class Material
         bool      blend;
         BlendFunc srcBLend, dstBlend;
 
-        bool      depthWrite;
-        bool      depthTest;
-        DepthFunc depthFunc;
+        bool     depthWrite;
+        bool     depthTest;
+        TestFunc depthFunc;
         
         bool     culling;
         CullFace cullingMode;

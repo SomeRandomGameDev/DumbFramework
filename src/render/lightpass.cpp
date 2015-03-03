@@ -111,7 +111,7 @@ void main(void)
         float attNum = clamp(1.0 - pow(lightDistance/lightPosition.w, 4), 0.0, 1.0);
         float attenuation   = attNum * attNum / (lightDistance*lightDistance + 1.0);
 
-        color_out = vec4(clamp(brdf(dotNV, dotNL, dotNH, dotLH, dotVH, albedo, specular) * pointLight.color * dotNL * attenuation, 0.0, 1.0), 1.0);
+        color_out = vec4(clamp(brdf(dotNV, dotNL, dotNH, dotLH, dotVH, albedo, specular) * pointLight.color.rgb * dotNL * attenuation, 0.0, 1.0), 1.0);
     }
     else
     {

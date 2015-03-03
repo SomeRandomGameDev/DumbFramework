@@ -218,7 +218,7 @@ void GeometryPass::begin(Camera const& camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     renderer.depthBufferWrite(true);
-    renderer.setDepthFunc(DepthFunc::LESS);
+    renderer.setDepthFunc(TestFunc::LESS);
     renderer.depthTest(true);
     
     _program.begin();

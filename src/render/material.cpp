@@ -11,7 +11,7 @@ Material::Material()
     , dstBlend(BlendFunc::DST_COLOR)
     , depthWrite(true)
     , depthTest(true)
-    , depthFunc(DepthFunc::LESS)
+    , depthFunc(TestFunc::LESS)
     , culling(true)
     , cullingMode(CullFace::BACK)
     , _name(g_defaultMaterialName)
@@ -34,7 +34,7 @@ bool Material::create(std::string const& name)
     
     depthWrite = true;
     depthTest  = true;
-    depthFunc  = DepthFunc::LESS;
+    depthFunc  = TestFunc::LESS;
     
     // [todo]
     return true;
