@@ -256,8 +256,8 @@ bool LightPass::createOccluders()
     }
 
     // [todo] do the same for spot light and directional light
-    ret = ret && _occluders[LightType::POINT_LIGHT].add(&_buffer[LightType::POINT_LIGHT], 1, Geometry::ComponentType::FLOAT, 4, sizeof(float[8]),                0, 1);
-    ret = ret && _occluders[LightType::POINT_LIGHT].add(&_buffer[LightType::POINT_LIGHT], 2, Geometry::ComponentType::FLOAT, 4, sizeof(float[8]), sizeof(float[4]), 1);
+    ret = ret && _occluders[LightType::POINT_LIGHT].add(&_buffer[LightType::POINT_LIGHT], 1, Geometry::ComponentType::FLOAT, 4, false, sizeof(float[8]),                0, 1);
+    ret = ret && _occluders[LightType::POINT_LIGHT].add(&_buffer[LightType::POINT_LIGHT], 2, Geometry::ComponentType::FLOAT, 4, false, sizeof(float[8]), sizeof(float[4]), 1);
     if(false == ret)
     {
         Log_Error(Module::Render, "Failed to create occluder stream.");
