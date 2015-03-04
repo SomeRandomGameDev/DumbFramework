@@ -88,6 +88,7 @@ set(DUMB_FRAMEWORK_RENDER_SOURCES
     src/render/texture2d.cpp
     src/render/textureloader.cpp
     src/render/light.cpp
+    src/render/light/occluders.cpp
     src/render/lightpass.cpp
     src/render/geometrypass.cpp)
 

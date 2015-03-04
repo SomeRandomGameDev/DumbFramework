@@ -6,6 +6,10 @@
 namespace Framework {
 namespace Render    {
 
+#define MAX_POINT_LIGHTS 128
+#define MAX_SPOT_LIGHTS 128
+#define MAX_DIRECTIONAL_LIGHTS 8
+
 /**
  * Light type.
  */
@@ -19,6 +23,10 @@ struct LightType
         COUNT
     };
     Value value; /**< Light type value. **/
+    
+    static const unsigned int maxCount[LightType::COUNT];
+    static const unsigned int elementCount[LightType::COUNT];
+    
     /**
      * @brief Default constructor.
      * POINT_LIGHT is the default light type.

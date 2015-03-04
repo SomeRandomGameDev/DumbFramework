@@ -65,7 +65,7 @@ void VertexStream::destroy()
  */
 bool VertexStream::add(VertexBuffer const* vertexBuffer, unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset, unsigned int divisor)
 {
-    return add(vertexBuffer, index, Geometry::Attribute(type, size, stride, offset, divisor));
+    return add(vertexBuffer, index, Geometry::Attribute(type, size, false, stride, offset, divisor));
 }
 /**
  * Add attribute to vertex stream.

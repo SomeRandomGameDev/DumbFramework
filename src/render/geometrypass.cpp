@@ -5,6 +5,8 @@
 namespace Framework {
 namespace Render    {
 
+// [todo] add stencil buffer.
+
 // tangent and bitangent are useless if the technique described in the
 // following link is used (from three.js):
 // http://mmikkelsen3d.blogspot.sk/2012/02/parallaxpoc-mapping-and-no-tangent.html
@@ -167,7 +169,7 @@ bool GeometryPass::create(glm::ivec2 const& viewportSize)
         return false;
     }
 
-    _view.create(sizeof(float[16]), nullptr, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
+    ret = _view.create(sizeof(float[16]), nullptr, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
         Log_Error(Module::Render, "Failed to create point view matrices buffer.");
@@ -216,9 +218,9 @@ void GeometryPass::begin(Camera const& camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     renderer.depthBufferWrite(true);
-    renderer.setDepthFunc(DepthFunc::LESS);
+    renderer.setDepthFunc(TestFunc::LESS);
     renderer.depthTest(true);
-
+    
     _program.begin();
     _view.bindTarget(0);
         float* ptr = (float*)_view.map(BufferObject::Access::Policy::WRITE_ONLY, 0, sizeof(float[16]));

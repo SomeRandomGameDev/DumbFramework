@@ -109,70 +109,19 @@ bool Renderer::isDepthBufferWriteEnabled()
  * Set depth test comparaison function.
  * @param [in] test Depth test comparaison function.
  */
-void Renderer::setDepthFunc(DepthFunc test)
+void Renderer::setDepthFunc(TestFunc test)
 {
-    GLenum func = GL_LESS;
-    
-    switch(test.value)
-    {
-        case DepthFunc::NEVER:
-            func = GL_NEVER;
-            break;
-        case DepthFunc::LESS:
-            func = GL_LESS;
-            break;
-        case DepthFunc::EQUAL:
-            func = GL_EQUAL;
-            break;
-        case DepthFunc::LESS_EQUAL: 
-            func = GL_LEQUAL;
-            break;
-        case DepthFunc::GREATER:
-            func = GL_GREATER;
-            break;
-        case DepthFunc::NOT_EQUAL:
-            func = GL_NOTEQUAL;
-            break;
-        case DepthFunc::GREATER_EQUAL:
-            func = GL_GEQUAL;
-            break;
-        case DepthFunc::ALWAYS:
-            func = GL_ALWAYS;
-            break;
-    }
-    
-    glDepthFunc(func);
+    glDepthFunc(test.to());
 }
 /**
  * Retrieve current depth test comparaison function.
  * @return Depth test comparaison function currently used.
  */
-DepthFunc Renderer::getDepthFunc()
+TestFunc Renderer::getDepthFunc()
 {
     GLenum func;
-    
     glGetIntegerv(GL_DEPTH_FUNC, (GLint*)&func);
-    
-    switch(func)
-    {
-        case GL_NEVER:
-            return DepthFunc::NEVER;
-        case GL_LESS:
-            return DepthFunc::LESS;
-        case GL_EQUAL:
-            return DepthFunc::EQUAL;
-        case GL_LEQUAL:
-            return DepthFunc::LESS_EQUAL;
-        case GL_GREATER:
-            return DepthFunc::GREATER;
-        case GL_NOTEQUAL:
-            return DepthFunc::NOT_EQUAL;
-        case GL_GEQUAL:
-            return DepthFunc::GREATER_EQUAL;
-        case GL_ALWAYS:
-            return DepthFunc::ALWAYS;
-    }
-    return DepthFunc::ALWAYS;
+    return TestFunc::from(func);
 }
 /**
  * Enable of disable depth testing.
@@ -190,6 +139,74 @@ bool Renderer::isDepthTestEnabled()
 {
     return (GL_TRUE == glIsEnabled(GL_DEPTH_TEST));
 }
+
+/**
+ * Set stencil plane writemask.
+ * @param [in] face Specify the front and/or back stencil state.
+ * @param [in] mask Bit mask disabling or enabling writing to
+ *                  stencil planes.
+ */
+void Renderer::setStencilMask(CullFace face, unsigned int mask)
+{
+    glStencilMaskSeparate(face.to(), mask);
+}
+
+/**
+ * Enable or disable stencil test.
+ * @param [in] enable If true, enable stencil test is enabled.
+ */
+void Renderer::stencilTest(bool enable)
+{
+    (enable ? glEnable : glDisable)(GL_STENCIL_TEST);
+}
+
+/**
+ * Set stencil function and reference value.
+ * @param [in] face      Specify the front and/or back stencil state.
+ * @param [in] function  Test function.
+ * @param [in] ref       Reference value for test.
+ * @param [in] mask      Mask value.
+ * Test function | Result
+ * --------------| -----------------------------------------------
+ * NEVER         | Always fails. 
+ * LESS          | Passes if ( ref & mask ) <  ( stencil & mask )
+ * LESS_EQUAL    | Passes if ( ref & mask ) <= ( stencil & mask )
+ * GREATER       | Passes if ( ref & mask ) >  ( stencil & mask )
+ * GREATER_EQUAL | Passes if ( ref & mask ) >= ( stencil & mask )
+ * EQUAL         | Passes if ( ref & mask ) =  ( stencil & mask )
+ * NOT_EQUAL     | Passes if ( ref & mask ) != ( stencil & mask )
+ * ALWAYS        | Always passes. 
+ */
+void Renderer::stencilFunc(CullFace face, TestFunc function, int ref, unsigned int mask)
+{
+    glStencilFuncSeparate(face.to(), function.to(), ref, mask);
+}
+
+/**
+ * Specify the ooperation performed on the associated value for
+ * a given test.
+ * @param [in] face         Specify the front and/or back stencil state.
+ * @param [in] stencilFail  Action performed when the stencil test fails.
+ * @param [in] depthFail    Action performed when the depth test fails.
+ * @param [in] depthPass    Action performed when both the depth
+ *                          and stencil test pass, or when there is
+ *                          no depth buffer attached or depth test
+ *                          is disabled and stencil test passes.
+ */
+void Renderer::stencilOp(CullFace face, Operation stencilFail, Operation depthFail, Operation depthPass)
+{
+    glStencilOpSeparate(face.to(), stencilFail.to(), depthFail.to(), depthPass.to());
+}
+
+/**
+ * Check if stencil test is enabled.
+ * @return true if stencil test is enabled.
+ */
+bool Renderer::isStencilTestEnabled()
+{
+    return (GL_TRUE == glIsEnabled(GL_STENCIL_TEST));
+}
+
 /**
  * Enable or disable blending.
  * @param [in] enable If true, enable blending.
@@ -199,53 +216,13 @@ void Renderer::blend(bool enable)
     (enable ? glEnable : glDisable)(GL_BLEND);
 }
 /**
- * Convert blend function to OpenGL enum.
- */
-GLenum convert(BlendFunc func)
-{
-    switch(func.value)
-    {
-        case BlendFunc::ZERO:
-            return GL_ZERO;
-        case BlendFunc::ONE:
-            return GL_ONE;
-        case BlendFunc::SRC_COLOR:
-            return GL_SRC_COLOR;
-        case BlendFunc::ONE_MINUS_SRC_COLOR:
-            return GL_ONE_MINUS_SRC_COLOR;
-        case BlendFunc::DST_COLOR:
-            return GL_DST_COLOR;
-        case BlendFunc::ONE_MINUS_DST_COLOR:
-            return GL_ONE_MINUS_DST_COLOR;
-        case BlendFunc::SRC_ALPHA:
-            return GL_SRC_ALPHA;
-        case BlendFunc::ONE_MINUS_SRC_ALPHA:
-            return GL_ONE_MINUS_SRC_ALPHA;
-        case BlendFunc::DST_ALPHA:
-            return GL_DST_ALPHA;
-        case BlendFunc::ONE_MINUS_DST_ALPHA:
-            return GL_ONE_MINUS_DST_ALPHA;
-        case BlendFunc::CONSTANT_COLOR:
-            return GL_CONSTANT_COLOR;
-        case BlendFunc::ONE_MINUS_CONSTANT_COLOR:
-            return GL_ONE_MINUS_CONSTANT_COLOR;
-        case BlendFunc::CONSTANT_ALPHA:
-            return GL_CONSTANT_COLOR;
-        case BlendFunc::ONE_MINUS_CONSTANT_ALPHA:
-            return GL_ONE_MINUS_CONSTANT_ALPHA;
-        case BlendFunc::SRC_ALPHA_SATURATE:
-            return GL_SRC_ALPHA_SATURATE;
-    }
-    return GL_ONE;
-}
-/**
  * Set blending functions.
  * @param [in] src Source blending function.
  * @param [in] dst Destination blending function.
  */
 void Renderer::blendFunc(BlendFunc src, BlendFunc dst)
 {
-    glBlendFunc(convert(src), convert(dst));
+    glBlendFunc(src.to(), dst.to());
 }
 
 /**
@@ -272,20 +249,7 @@ bool Renderer::isCullingEnabled()
  */
 void Renderer::cullingMode(CullFace mode)
 {
-    GLenum glMode = GL_BACK;
-    switch(mode)
-    {
-        case CullFace::BACK:
-            glMode = GL_BACK;
-            break;
-        case CullFace::FRONT:
-            glMode = GL_FRONT;
-            break;
-        case CullFace::FRONT_AND_BACK:
-            glMode = GL_FRONT_AND_BACK;
-            break;
-    }
-    glCullFace(glMode);
+    glCullFace(mode.to());
 }
 
 /**

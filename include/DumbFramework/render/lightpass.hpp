@@ -5,6 +5,7 @@
 
 #include <DumbFramework/render/vertexbuffer.hpp>
 #include <DumbFramework/render/uniformbuffer.hpp>
+#include <DumbFramework/render/indexbuffer.hpp>
 #include <DumbFramework/render/vertexstream.hpp>
 #include <DumbFramework/render/geometrypass.hpp>
 #include <DumbFramework/render/light.hpp>
@@ -52,6 +53,9 @@ class LightPass
 
         void debug(glm::ivec2 const& pos, glm::ivec2 const& size);
 
+    private:
+        bool createOccluders();
+
     protected:
         Texture2D* _gbuffer;
         Renderbuffer* _depthbuffer;
@@ -60,12 +64,14 @@ class LightPass
         GLuint        _framebuffer;
         Texture2D     _output;
 
-        GLint _viewlMatrixId;
+        UniformBuffer _view;
 
-        VertexStream _fsQuad;
-        VertexBuffer _fsQuadBuffer;
+        VertexBuffer _occludersVertexBuffer;
+        IndexBuffer  _occludersIndexBuffer;
 
-        UniformBuffer _buffer;
+        VertexStream _occluders[LightType::COUNT];
+        VertexBuffer _buffer[LightType::COUNT];
+        unsigned int _count[LightType::COUNT];
 };
 
 } // Render

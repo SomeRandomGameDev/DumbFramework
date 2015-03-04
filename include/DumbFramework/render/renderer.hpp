@@ -12,68 +12,71 @@ namespace Render    {
  */
 
 /**
- * Depth tests comparaison function.
+ * Test function.
+ * Used in depth and stencil tests.
  * @ingroup DUMB_FW_RENDERING
  */
-struct DepthFunc
+struct TestFunc
 {
     /**
-     * Depth test comparaison function values.
+     * Test function values.
      */
     enum Value
     {
         /**
-         * Depth test never passes. 
+         * Test never passes. 
          */
         NEVER,
         /**
-         * Depth test passes if the new depth value is less than the 
-         * stored value.
+         * Test passes if the new value is less than the stored value.
          */
         LESS,
         /**
-         * Depth test passes if the new depth value is equal to the
-         * stored value.
+         * Test passes if the new value is equal to the stored value.
          */
         EQUAL,
         /**
-         * Depth test passes if the new depth value is less than or 
-         * equal to the stored value.
+         * Test passes if the new value is less than or equal to the
+         * stored value.
          */
         LESS_EQUAL,
         /**
-         * Depth test passes if the new depth value is greather than the 
-         * stored value.
+         * Test passes if the new value is greather than the stored
+         * value.
          */
         GREATER,
         /**
-         * Depth test passes if the new depth value is not equal to the 
-         * stored value.
+         * Test passes if the new value is not equal to the stored
+         * value.
          */
         NOT_EQUAL,
         /**
-         * Depth test passes if the new depth value is greather than 
-         * or equal to the stored value.
+         * Test passes if the new value is greather than or equal to the
+         * stored value.
          */
         GREATER_EQUAL,
         /**
-         * Depth test always passes.
+         * Test always passes.
          */
         ALWAYS 
     };
-    /** Current depth test comparaison function. **/
+    /** Current test function. **/
     Value value;
     /**
      * Default constructor.
-     * By default the depth test comparaison function is set to LESS.
+     * By default the test function is set to LESS.
      */
-    inline DepthFunc() : value(LESS) {}
+    inline TestFunc() : value(LESS) {}
     /**
      * Constructor.
-     * @param [in] v Depth test comparaison function.
+     * @param [in] v Test function.
      */
-    inline DepthFunc(Value v) : value(v) {}
+    inline TestFunc(Value v) : value(v) {}
     inline operator Value() { return value; }
+    /** Convert to OpenGL compliant value. **/
+    inline GLenum to() const;
+    /** Create from OpenGL value. **/
+    inline static TestFunc from(GLenum test);
 };
 
 /**
@@ -192,10 +195,14 @@ struct BlendFunc
      */
     inline BlendFunc(Value v) : value(v) {}
     inline operator Value() { return value; }
+    /** Convert to OpenGL compliant value. **/
+    inline GLenum to() const;
+    /** Create from OpenGL value. **/
+    inline static BlendFunc from(GLenum mode);
 };
 
 /**
- * Facet culling modes. 
+ * Face culling modes. 
  * @ingroup DUMB_FW_RENDERING
  */
 struct CullFace
@@ -230,6 +237,72 @@ struct CullFace
      */
     inline CullFace(Value v) : value(v) {}
     inline operator Value() { return value; }
+    /** Convert to OpenGL compliant value. **/
+    inline GLenum to() const;
+    /** Create from OpenGL value. **/
+    inline static CullFace from(GLenum test);
+};
+
+/**
+ * Value operation.
+ * @ingroup DUMB_FW_RENDERING
+ */
+struct Operation
+{
+    /**
+     *Operation values.
+     */
+    enum Value
+    {
+        /**
+         * Keep current value.
+         */
+        KEEP,
+        /**
+         * Set value to 0.
+         */
+        ZERO,
+        /**
+         * Replace value.
+         */
+        REPLACE,
+        /**
+         * Increments current value and clamp to the maximum unsigned value.
+         */
+        INCREMENT,
+        /**
+         * Increments current value and wraps to zero on overflow.
+         */
+        INCREMENT_WRAP,
+        /**
+         * Decrements current value and clamp to zero.
+         */
+        DECREMENT,
+        /**
+         * decrements current value and wraps to the maximum unsigned value on overflow.
+         */
+        DECREMENT_WRAP,
+        /**
+         * Bitwise inverts current value.
+         */
+        INVERT
+    };
+    /**  **/
+    Value value;
+    /**
+     * Default constructor.
+     */
+    inline Operation() : value(KEEP) {}
+    /**
+     * Constructor.
+     * @param [in] v 
+     */
+    inline Operation(Value v) : value(v) {}
+    inline operator Value() { return value; }
+    /** Convert to OpenGL compliant value. **/
+    inline GLenum to() const;
+    /** Create from OpenGL value. **/
+    inline static Operation from(GLenum test);
 };
 
 /**
@@ -288,13 +361,13 @@ class Renderer
          * Set depth test comparaison function.
          * @param [in] test Depth test comparaison function.
          */
-        void setDepthFunc(DepthFunc test);
+        void setDepthFunc(TestFunc test);
         
         /**
          * Retrieve current depth test comparaison function.
          * @return Depth test comparaison function currently used.
          */
-        DepthFunc getDepthFunc();
+        TestFunc getDepthFunc();
         
         /**
          * Enable or disable depth testing.
@@ -307,6 +380,58 @@ class Renderer
          * @return true if depth testing is enabled.
          */
         bool isDepthTestEnabled();
+        
+        /**
+         * Set stencil plane writemask.
+         * @param [in] face Specify the front and/or back stencil state.
+         * @param [in] mask Bit mask disabling or enabling writing to
+         *                  stencil planes.
+         */
+        void setStencilMask(CullFace face, unsigned int mask);
+        
+        /**
+         * Enable or disable stencil test.
+         * @param [in] enable If true, enable stencil test is enabled.
+         */
+        void stencilTest(bool enable);
+        
+        /**
+         * Set stencil function and reference value.
+         * @param [in] face      Specify the front and/or back stencil state.
+         * @param [in] function  Test function.
+         * @param [in] ref       Reference value for test.
+         * @param [in] mask      Mask value.
+         * Test function | Result
+         * --------------| -----------------------------------------------
+         * NEVER         | Always fails. 
+         * LESS          | Passes if ( ref & mask ) <  ( stencil & mask )
+         * LESS_EQUAL    | Passes if ( ref & mask ) <= ( stencil & mask )
+         * GREATER       | Passes if ( ref & mask ) >  ( stencil & mask )
+         * GREATER_EQUAL | Passes if ( ref & mask ) >= ( stencil & mask )
+         * EQUAL         | Passes if ( ref & mask ) =  ( stencil & mask )
+         * NOT_EQUAL     | Passes if ( ref & mask ) != ( stencil & mask )
+         * ALWAYS        | Always passes. 
+         */
+        void stencilFunc(CullFace face, TestFunc function, int ref, unsigned int mask);
+        
+        /**
+         * Specify the ooperation performed on the associated value for
+         * a given test.
+         * @param [in] face         Specify the front and/or back stencil state.
+         * @param [in] stencilFail  Action performed when the stencil test fails.
+         * @param [in] depthFail    Action performed when the depth test fails.
+         * @param [in] depthPass    Action performed when both the depth
+         *                          and stencil test pass, or when there is
+         *                          no depth buffer attached or depth test
+         *                          is disabled and stencil test passes.
+         */
+        void stencilOp(CullFace face, Operation stencilFail, Operation depthFail, Operation depthPass);
+        
+        /**
+         * Check if stencil test is enabled.
+         * @return true if stencil test is enabled.
+         */
+        bool isStencilTestEnabled();
         
         /**
          * Enable or disable blending.
@@ -374,5 +499,7 @@ class Renderer
 
 } // Render
 } // Framework
+
+#include "renderer.inl"
 
 #endif // _DUMB_FW_RENDERER_
