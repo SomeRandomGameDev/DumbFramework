@@ -161,6 +161,44 @@ void Renderer::stencilTest(bool enable)
 }
 
 /**
+ * Set stencil function and reference value.
+ * @param [in] face      Specify the front and/or back stencil state.
+ * @param [in] function  Test function.
+ * @param [in] ref       Reference value for test.
+ * @param [in] mask      Mask value.
+ * Test function | Result
+ * --------------| -----------------------------------------------
+ * NEVER         | Always fails. 
+ * LESS          | Passes if ( ref & mask ) <  ( stencil & mask )
+ * LESS_EQUAL    | Passes if ( ref & mask ) <= ( stencil & mask )
+ * GREATER       | Passes if ( ref & mask ) >  ( stencil & mask )
+ * GREATER_EQUAL | Passes if ( ref & mask ) >= ( stencil & mask )
+ * EQUAL         | Passes if ( ref & mask ) =  ( stencil & mask )
+ * NOT_EQUAL     | Passes if ( ref & mask ) != ( stencil & mask )
+ * ALWAYS        | Always passes. 
+ */
+void Renderer::stencilFunc(CullFace face, TestFunc function, int ref, unsigned int mask)
+{
+    glStencilFuncSeparate(face.to(), function.to(), ref, mask);
+}
+
+/**
+ * Specify the ooperation performed on the associated value for
+ * a given test.
+ * @param [in] face         Specify the front and/or back stencil state.
+ * @param [in] stencilFail  Action performed when the stencil test fails.
+ * @param [in] depthFail    Action performed when the depth test fails.
+ * @param [in] depthPass    Action performed when both the depth
+ *                          and stencil test pass, or when there is
+ *                          no depth buffer attached or depth test
+ *                          is disabled and stencil test passes.
+ */
+void Renderer::stencilOp(CullFace face, Operation stencilFail, Operation depthFail, Operation depthPass)
+{
+    glStencilOpSeparate(face.to(), stencilFail.to(), depthFail.to(), depthPass.to());
+}
+
+/**
  * Check if stencil test is enabled.
  * @return true if stencil test is enabled.
  */

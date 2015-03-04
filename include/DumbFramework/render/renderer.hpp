@@ -202,7 +202,7 @@ struct BlendFunc
 };
 
 /**
- * Facet culling modes. 
+ * Face culling modes. 
  * @ingroup DUMB_FW_RENDERING
  */
 struct CullFace
@@ -241,6 +241,68 @@ struct CullFace
     inline GLenum to() const;
     /** Create from OpenGL value. **/
     inline static CullFace from(GLenum test);
+};
+
+/**
+ * Value operation.
+ * @ingroup DUMB_FW_RENDERING
+ */
+struct Operation
+{
+    /**
+     *Operation values.
+     */
+    enum Value
+    {
+        /**
+         * Keep current value.
+         */
+        KEEP,
+        /**
+         * Set value to 0.
+         */
+        ZERO,
+        /**
+         * Replace value.
+         */
+        REPLACE,
+        /**
+         * Increments current value and clamp to the maximum unsigned value.
+         */
+        INCREMENT,
+        /**
+         * Increments current value and wraps to zero on overflow.
+         */
+        INCREMENT_WRAP,
+        /**
+         * Decrements current value and clamp to zero.
+         */
+        DECREMENT,
+        /**
+         * decrements current value and wraps to the maximum unsigned value on overflow.
+         */
+        DECREMENT_WRAP,
+        /**
+         * Bitwise inverts current value.
+         */
+        INVERT
+    };
+    /**  **/
+    Value value;
+    /**
+     * Default constructor.
+     */
+    inline Operation() : value(KEEP) {}
+    /**
+     * Constructor.
+     * @param [in] v 
+     */
+    inline Operation(Value v) : value(v) {}
+    inline operator Value() { return value; }
+    /** Convert to OpenGL compliant value. **/
+    inline GLenum to() const;
+    /** Create from OpenGL value. **/
+    inline static Operation from(GLenum test);
 };
 
 /**
@@ -333,8 +395,37 @@ class Renderer
          */
         void stencilTest(bool enable);
         
-        // [todo] set stencil function and reference value
-        // [todo] set stencil test actions
+        /**
+         * Set stencil function and reference value.
+         * @param [in] face      Specify the front and/or back stencil state.
+         * @param [in] function  Test function.
+         * @param [in] ref       Reference value for test.
+         * @param [in] mask      Mask value.
+         * Test function | Result
+         * --------------| -----------------------------------------------
+         * NEVER         | Always fails. 
+         * LESS          | Passes if ( ref & mask ) <  ( stencil & mask )
+         * LESS_EQUAL    | Passes if ( ref & mask ) <= ( stencil & mask )
+         * GREATER       | Passes if ( ref & mask ) >  ( stencil & mask )
+         * GREATER_EQUAL | Passes if ( ref & mask ) >= ( stencil & mask )
+         * EQUAL         | Passes if ( ref & mask ) =  ( stencil & mask )
+         * NOT_EQUAL     | Passes if ( ref & mask ) != ( stencil & mask )
+         * ALWAYS        | Always passes. 
+         */
+        void stencilFunc(CullFace face, TestFunc function, int ref, unsigned int mask);
+        
+        /**
+         * Specify the ooperation performed on the associated value for
+         * a given test.
+         * @param [in] face         Specify the front and/or back stencil state.
+         * @param [in] stencilFail  Action performed when the stencil test fails.
+         * @param [in] depthFail    Action performed when the depth test fails.
+         * @param [in] depthPass    Action performed when both the depth
+         *                          and stencil test pass, or when there is
+         *                          no depth buffer attached or depth test
+         *                          is disabled and stencil test passes.
+         */
+        void stencilOp(CullFace face, Operation stencilFail, Operation depthFail, Operation depthPass);
         
         /**
          * Check if stencil test is enabled.

@@ -6,21 +6,21 @@ inline GLenum TestFunc::to() const
 {
     switch(value)
     {
-        case TestFunc::NEVER:
+        case NEVER:
             return GL_NEVER;
-        case TestFunc::LESS:
+        case LESS:
             return GL_LESS;
-        case TestFunc::EQUAL:
+        case EQUAL:
             return GL_EQUAL;
-        case TestFunc::LESS_EQUAL: 
+        case LESS_EQUAL: 
             return GL_LEQUAL;
-        case TestFunc::GREATER:
+        case GREATER:
             return GL_GREATER;
-        case TestFunc::NOT_EQUAL:
+        case NOT_EQUAL:
             return GL_NOTEQUAL;
-        case TestFunc::GREATER_EQUAL:
+        case GREATER_EQUAL:
             return GL_GEQUAL;
-        case TestFunc::ALWAYS:
+        case ALWAYS:
             return GL_ALWAYS;
         default:
             return GL_ALWAYS;
@@ -30,38 +30,27 @@ inline GLenum TestFunc::to() const
 /** Create from OpenGL value. **/
 inline TestFunc TestFunc::from(GLenum test)
 {
-    TestFunc func;
     switch(test)
     {
         case GL_NEVER:
-            func.value = TestFunc::NEVER;
-            break;
+            return TestFunc(NEVER);
         case GL_LESS:
-            func.value = TestFunc::LESS;
-            break;
+            return TestFunc(LESS);
         case GL_EQUAL:
-            func.value = TestFunc::EQUAL;
-            break;
+            return TestFunc(EQUAL);
         case GL_LEQUAL:
-            func.value = TestFunc::LESS_EQUAL;
-            break;
+            return TestFunc(LESS_EQUAL);
         case GL_GREATER:
-            func.value = TestFunc::GREATER;
-            break;
+            return TestFunc(GREATER);
         case GL_NOTEQUAL:
-            func.value = TestFunc::NOT_EQUAL;
-            break;
+            return TestFunc(NOT_EQUAL);
         case GL_GEQUAL:
-            func.value = TestFunc::GREATER_EQUAL;
-            break;
+            return TestFunc(GREATER_EQUAL);
         case GL_ALWAYS:
-            func.value = TestFunc::ALWAYS;
-            break;
+            return TestFunc(ALWAYS);
         default:
-            func.value = TestFunc::ALWAYS;
-            break;
+            return TestFunc(ALWAYS);
     }
-    return func;
 }
 
 /** Convert to OpenGL compliant value. **/
@@ -69,11 +58,11 @@ inline GLenum CullFace::to() const
 {
     switch(value)
     {
-        case CullFace::BACK:
+        case BACK:
             return GL_BACK;
-        case CullFace::FRONT:
+        case FRONT:
             return GL_FRONT;
-        case CullFace::FRONT_AND_BACK:
+        case FRONT_AND_BACK:
             return GL_FRONT_AND_BACK;
         default:
             return GL_BACK;
@@ -83,23 +72,17 @@ inline GLenum CullFace::to() const
 /** Create from OpenGL value. **/
 inline CullFace CullFace::from(GLenum mode)
 {
-    CullFace face;
     switch(mode)
     {
         case GL_BACK:
-            face.value = CullFace::BACK;
-            break;
+            return CullFace(BACK);
         case GL_FRONT:
-            face.value = CullFace::FRONT;
-            break;
+            return CullFace(FRONT);
         case GL_FRONT_AND_BACK:
-            face.value = CullFace::FRONT_AND_BACK;
-            break;
+            return CullFace(FRONT_AND_BACK);
         default:
-            face.value = CullFace::FRONT;
-            break;
+            return CullFace(FRONT);
     }
-    return face;
 }
 
 /** Convert to OpenGL compliant value. **/
@@ -107,35 +90,35 @@ inline GLenum BlendFunc::to() const
 {
     switch(value)
     {
-        case BlendFunc::ZERO:
+        case ZERO:
             return GL_ZERO;
-        case BlendFunc::ONE:
+        case ONE:
             return GL_ONE;
-        case BlendFunc::SRC_COLOR:
+        case SRC_COLOR:
             return GL_SRC_COLOR;
-        case BlendFunc::ONE_MINUS_SRC_COLOR:
+        case ONE_MINUS_SRC_COLOR:
             return GL_ONE_MINUS_SRC_COLOR;
-        case BlendFunc::DST_COLOR:
+        case DST_COLOR:
             return GL_DST_COLOR;
-        case BlendFunc::ONE_MINUS_DST_COLOR:
+        case ONE_MINUS_DST_COLOR:
             return GL_ONE_MINUS_DST_COLOR;
-        case BlendFunc::SRC_ALPHA:
+        case SRC_ALPHA:
             return GL_SRC_ALPHA;
-        case BlendFunc::ONE_MINUS_SRC_ALPHA:
+        case ONE_MINUS_SRC_ALPHA:
             return GL_ONE_MINUS_SRC_ALPHA;
-        case BlendFunc::DST_ALPHA:
+        case DST_ALPHA:
             return GL_DST_ALPHA;
-        case BlendFunc::ONE_MINUS_DST_ALPHA:
+        case ONE_MINUS_DST_ALPHA:
             return GL_ONE_MINUS_DST_ALPHA;
-        case BlendFunc::CONSTANT_COLOR:
+        case CONSTANT_COLOR:
             return GL_CONSTANT_COLOR;
-        case BlendFunc::ONE_MINUS_CONSTANT_COLOR:
+        case ONE_MINUS_CONSTANT_COLOR:
             return GL_ONE_MINUS_CONSTANT_COLOR;
-        case BlendFunc::CONSTANT_ALPHA:
+        case CONSTANT_ALPHA:
             return GL_CONSTANT_ALPHA;
-        case BlendFunc::ONE_MINUS_CONSTANT_ALPHA:
+        case ONE_MINUS_CONSTANT_ALPHA:
             return GL_ONE_MINUS_CONSTANT_ALPHA;
-        case BlendFunc::SRC_ALPHA_SATURATE:
+        case SRC_ALPHA_SATURATE:
             return GL_SRC_ALPHA_SATURATE;
         default:
             return GL_ONE;
@@ -149,55 +132,92 @@ inline BlendFunc BlendFunc::from(GLenum mode)
     switch(mode)
     {
         case GL_ZERO:
-            blend.value = BlendFunc::ZERO;
-            break;
+            return BlendFunc(ZERO);
         case GL_ONE:
-            blend.value = BlendFunc::ONE;
-            break;
+            return BlendFunc(ONE);
         case GL_SRC_COLOR:
-            blend.value = BlendFunc::SRC_COLOR;
-            break;
+            return BlendFunc(SRC_COLOR);
         case GL_ONE_MINUS_SRC_COLOR:
-            blend.value = BlendFunc::ONE_MINUS_SRC_COLOR;
-            break;
+            return BlendFunc(ONE_MINUS_SRC_COLOR);
         case GL_DST_COLOR:
-            blend.value = BlendFunc::DST_COLOR;
-            break;
+            return BlendFunc(DST_COLOR);
         case GL_ONE_MINUS_DST_COLOR:
-            blend.value = BlendFunc::ONE_MINUS_DST_COLOR;
-            break;
+            return BlendFunc(ONE_MINUS_DST_COLOR);
         case GL_SRC_ALPHA:
-            blend.value = BlendFunc::SRC_ALPHA;
-            break;
+            return BlendFunc(SRC_ALPHA);
         case GL_ONE_MINUS_SRC_ALPHA:
-            blend.value = BlendFunc::ONE_MINUS_SRC_ALPHA;
-            break;
+            return BlendFunc(ONE_MINUS_SRC_ALPHA);
         case GL_DST_ALPHA:
-            blend.value = BlendFunc::DST_ALPHA;
-            break;
+            return BlendFunc(DST_ALPHA);
         case GL_ONE_MINUS_DST_ALPHA:
-            blend.value = BlendFunc::ONE_MINUS_DST_ALPHA;
-            break;
+            return BlendFunc(ONE_MINUS_DST_ALPHA);
         case GL_CONSTANT_COLOR:
-            blend.value = BlendFunc::CONSTANT_COLOR;
-            break;
+            return BlendFunc(CONSTANT_COLOR);
         case GL_ONE_MINUS_CONSTANT_COLOR:
-            blend.value = BlendFunc::ONE_MINUS_CONSTANT_COLOR;
-            break;
+            return BlendFunc(ONE_MINUS_CONSTANT_COLOR);
         case GL_CONSTANT_ALPHA:
-            blend.value = BlendFunc::CONSTANT_ALPHA;
-            break;
+            return BlendFunc(CONSTANT_ALPHA);
         case GL_ONE_MINUS_CONSTANT_ALPHA:
-            blend.value = BlendFunc::ONE_MINUS_CONSTANT_ALPHA;
-            break;
+            return BlendFunc(ONE_MINUS_CONSTANT_ALPHA);
         case GL_SRC_ALPHA_SATURATE:
-            blend.value = BlendFunc::SRC_ALPHA_SATURATE;
+            return BlendFunc(SRC_ALPHA_SATURATE);
             break;
         default:
-            blend.value = BlendFunc::ONE;
-            break;
+            return BlendFunc(ONE);
     }
-    return blend;
+}
+
+/** Convert to OpenGL compliant value. **/
+GLenum Operation::to() const
+{
+    switch(value)
+    {
+        case KEEP:
+            return GL_KEEP;
+        case ZERO:
+            return GL_ZERO;
+        case REPLACE:
+            return GL_REPLACE;
+        case INCREMENT:
+            return GL_INCR;
+        case INCREMENT_WRAP:
+            return GL_INCR_WRAP;
+        case DECREMENT:
+            return GL_DECR;
+        case DECREMENT_WRAP:
+            return GL_DECR_WRAP;
+        case INVERT:
+            return GL_INVERT;
+        default:
+            return GL_KEEP;
+    }
+}
+
+/** Create from OpenGL value. **/
+Operation Operation::from(GLenum test)
+{
+    switch(test)
+    {
+        case GL_KEEP:
+            return Operation(KEEP);
+        case GL_ZERO:
+            return Operation(ZERO);
+        case GL_REPLACE:
+            return Operation(REPLACE);
+        case GL_INCR:
+            return Operation(INCREMENT);
+        case GL_INCR_WRAP:
+            return Operation(INCREMENT_WRAP);
+        case GL_DECR:
+            return Operation(DECREMENT);
+        case GL_DECR_WRAP:
+            return Operation(DECREMENT_WRAP);
+        case GL_INVERT:
+            return Operation(INVERT);
+        default:
+            return Operation(KEEP);
+
+    }
 }
 
 } // Render
