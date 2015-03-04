@@ -55,17 +55,18 @@ void VertexStream::destroy()
  * Add attribute to vertex stream.
  * @param [in] vertexBuffer Vertex buffer that will be associated
  *                          with the current attribute.
- * @param [in] index   Attribute index (starts at 0).
- * @param [in] type    Type of the attribute components.
- * @param [in] size    Number of components.
- * @param [in] stride  Number of bytes between 2 consecutives attributes.
- * @param [in] offset  Offset of the first attribute of the first vertex.
- * @param [in] divisor (default=0). 
+ * @param [in] index      Attribute index (starts at 0).
+ * @param [in] type       Type of the attribute components.
+ * @param [in] size       Number of components.
+ * @param [in] normalize  Specify if the data should be normalized or not.
+ * @param [in] stride     Number of bytes between 2 consecutives attributes.
+ * @param [in] offset     Offset of the first attribute of the first vertex.
+ * @param [in] divisor    Attribute divisor (default=0). 
  * @return true if the attribute was successfully set.
  */
-bool VertexStream::add(VertexBuffer const* vertexBuffer, unsigned int index, Geometry::ComponentType type, size_t size, size_t stride, size_t offset, unsigned int divisor)
+bool VertexStream::add(VertexBuffer const* vertexBuffer, unsigned int index, Geometry::ComponentType type, size_t size, bool normalize, size_t stride, size_t offset, unsigned int divisor)
 {
-    return add(vertexBuffer, index, Geometry::Attribute(type, size, false, stride, offset, divisor));
+    return add(vertexBuffer, index, Geometry::Attribute(type, size, normalize, stride, offset, divisor));
 }
 /**
  * Add attribute to vertex stream.
