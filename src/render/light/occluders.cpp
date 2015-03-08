@@ -137,6 +137,13 @@ bool createOccluders(VertexBuffer &buffer, IndexBuffer &index, std::array<Geomet
     return true;
 }
 
+const std::function<void(int)> drawOccluders[LightType::COUNT] =
+{
+    [](unsigned int count) { glDrawElementsInstanced(GL_TRIANGLES,    g_cubeTriangleCount*3, GL_UNSIGNED_BYTE, 0, count); },
+    [](unsigned int count) { glDrawElementsInstanced(GL_TRIANGLES, g_pyramidTriangleCount*3, GL_UNSIGNED_BYTE, 0, count); },
+    [](unsigned int count) { glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, count); }
+};
+
 } // Light
 } // Render
 } // Framework

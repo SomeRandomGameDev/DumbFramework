@@ -12,8 +12,8 @@ layout (std140, binding=1) uniform View
 
 out VS_OUT
 {
-    flat vec4 position;
     flat vec4 color;
+    flat vec4 position;
 } pointLight;
 
 void main(void)

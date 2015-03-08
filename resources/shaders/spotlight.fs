@@ -14,7 +14,8 @@ in VS_OUT
 {
     flat vec4 color;
     flat vec4 position;
-} pointLight;
+    flat vec4 direction;
+} spotLight;
 
 float SchlickFresnel(float u)
 {
@@ -65,8 +66,9 @@ vec3 brdf(float dotNV, float dotNL, float dotNH, float dotLH, float dotVH, vec3 
 void main(void)
 {
     vec3 position = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 3), 0).xyz;
-    vec4  lightPosition = pointLight.position;
+    vec4  lightPosition = spotLight.position;
     float lightDistance = distance(position, lightPosition.xyz);
+    // [todo] Compute the angle between the lit point and the light direction ray.
     if(lightDistance > lightPosition.w)
     {
         discard;
@@ -87,5 +89,5 @@ void main(void)
     float attNum = clamp(1.0 - pow(lightDistance/lightPosition.w, 4), 0.0, 1.0);
     float attenuation   = attNum * attNum / (lightDistance*lightDistance + 1.0);
 
-    color_out = vec4(clamp(brdf(dotNV, dotNL, dotNH, dotLH, dotVH, albedo, specular) * pointLight.color.rgb * dotNL * attenuation, 0.0, 1.0), 1.0);
+    color_out = vec4(clamp(brdf(dotNV, dotNL, dotNH, dotLH, dotVH, albedo, specular) * spotLight.color.rgb * dotNL * attenuation, 0.0, 1.0), 1.0);
 }

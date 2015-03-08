@@ -47,10 +47,11 @@ struct PointLight
 {
     /** Light color. **/
     glm::vec3 color;
-    /** Light position. **/
-    glm::vec3 position;
     /** Light radius. **/
     float radius;
+    /** Light position. **/
+    glm::vec3 position;
+    // [todo] add padding float?
 };
 
 /**
@@ -61,12 +62,14 @@ struct SpotLight
 {
     /** Light color. **/
     glm::vec3 color;
+    /** Light radius. **/
+    float radius;
     /** Light position. **/
     glm::vec3 position;
-    /** Light direction. **/
-    glm::vec3 direction;
     /** Inner cone angle. **/
     float innerConeAngle;
+    /** Light direction. **/
+    glm::vec3 direction;
     /** Outer cone angle. **/
     float outerConeAngle;
 };

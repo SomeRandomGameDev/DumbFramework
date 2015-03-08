@@ -78,9 +78,15 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
         return false;
     }
 
-    ret = createProgram(LightType::POINT_LIGHT,
-                        Framework::File::executableDirectory() + "/resources/shaders/pointlight.vs",
-                        Framework::File::executableDirectory() + "/resources/shaders/pointlight.fs");
+    // [todo] Don't forget to make a lovely loop?
+    ret = createProgram(LightType::POINT_LIGHT, "/resources/shaders/pointlight.vs", "/resources/shaders/pointlight.fs");
+    if(false == ret)
+    {
+        Log_Error(Module::Render, "Failed to create point light shader.");
+        return false;
+    }
+
+    ret = createProgram(LightType::SPOT_LIGHT, "/resources/shaders/spotlight.vs", "/resources/shaders/spotlight.fs");
     if(false == ret)
     {
         Log_Error(Module::Render, "Failed to create point light shader.");
@@ -101,10 +107,13 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
 
 bool LightPass::createProgram(LightType type, std::string const& vertexShaderFilename, std::string const& fragmentShaderFilename)
 {
-
     std::string shaderData[2];
-    const char* filename[2] = { vertexShaderFilename.c_str(), fragmentShaderFilename.c_str() };
-    
+    std::string filename[2] =
+    {
+        Framework::File::executableDirectory() + vertexShaderFilename,
+        Framework::File::executableDirectory() + fragmentShaderFilename
+    };
+
     bool ret;
     for(size_t i=0; i<2; i++)
     {
@@ -114,7 +123,7 @@ bool LightPass::createProgram(LightType type, std::string const& vertexShaderFil
         ret = input.open(filename[i], File::READ_ONLY);
         if(false == ret)
         {
-            Log_Error(Module::Render, "Failed to open shader %s", filename[i]);
+            Log_Error(Module::Render, "Failed to open shader %s", filename[i].c_str());
             return false;
         }
         shaderData[i].resize(input.size());
@@ -122,7 +131,7 @@ bool LightPass::createProgram(LightType type, std::string const& vertexShaderFil
         input.close();
         if(nRead != shaderData[i].size())
         {
-            Log_Error(Module::Render, "Failed to read shader %s", filename[i]);
+            Log_Error(Module::Render, "Failed to read shader %s", filename[i].c_str());
             return false;
         }
     }
@@ -287,18 +296,18 @@ bool LightPass::add(SpotLight const& light)
         return false;
     }
 
-    ptr[0] = light.color.x;
-    ptr[1] = light.color.y;
-    ptr[2] = light.color.z;
-    ptr[3] = 0.0f;
-    ptr[4] = light.position.x;
-    ptr[5] = light.position.y;
-    ptr[6] = light.position.z;
-    ptr[7] = light.innerConeAngle;
-    ptr[4] = light.direction.x;
-    ptr[5] = light.direction.y;
-    ptr[6] = light.direction.z;
-    ptr[7] = light.outerConeAngle;
+    ptr[ 0] = light.color.x;
+    ptr[ 1] = light.color.y;
+    ptr[ 2] = light.color.z;
+    ptr[ 3] = light.radius;
+    ptr[ 4] = light.position.x;
+    ptr[ 5] = light.position.y;
+    ptr[ 6] = light.position.z;
+    ptr[ 7] = light.innerConeAngle;
+    ptr[ 8] = light.direction.x;
+    ptr[ 9] = light.direction.y;
+    ptr[10] = light.direction.z;
+    ptr[11] = light.outerConeAngle;
 
     _buffer[LightType::SPOT_LIGHT].unmap();
     _buffer[LightType::SPOT_LIGHT].unbind();
@@ -328,18 +337,24 @@ void LightPass::draw(Camera const& camera)
     renderer.setActiveTextureUnit(0);
     _gbuffer->bind();
 
-    _program[LightType::POINT_LIGHT].begin();
-        _view.bindTarget(1);
-        float* ptr = (float*)_view.map(BufferObject::Access::Policy::WRITE_ONLY);
-            glm::mat4 viewProjMatrix = camera.projectionMatrix(_output.size()) * camera.viewMatrix();
-            memcpy(ptr,    glm::value_ptr(viewProjMatrix), sizeof(glm::mat4));
-            memcpy(ptr+16, glm::value_ptr(camera.eye),     sizeof(glm::vec3));
-        _view.unmap();
-        _occluders[LightType::POINT_LIGHT].bind();
-            glDrawElementsInstanced(GL_TRIANGLES, 12*3, GL_UNSIGNED_BYTE, 0, _count[LightType::POINT_LIGHT]);
-        _occluders[LightType::POINT_LIGHT].unbind();
-        _view.unbind();
-    _program[LightType::POINT_LIGHT].end();
+    for(size_t i=0; i<LightType::COUNT; i++)
+    {
+        if(_count[i])
+        {
+            _program[i].begin();
+                _view.bindTarget(1);
+                float* ptr = (float*)_view.map(BufferObject::Access::Policy::WRITE_ONLY);
+                    glm::mat4 viewProjMatrix = camera.projectionMatrix(_output.size()) * camera.viewMatrix();
+                    memcpy(ptr,    glm::value_ptr(viewProjMatrix), sizeof(glm::mat4));
+                    memcpy(ptr+16, glm::value_ptr(camera.eye),     sizeof(glm::vec3));
+                _view.unmap();
+                _occluders[i].bind();
+                    Light::drawOccluders[i](_count[i]);//glDrawElementsInstanced(GL_TRIANGLES, 12*3, GL_UNSIGNED_BYTE, 0, _count[i]);
+                _occluders[i].unbind();
+                _view.unbind();
+            _program[i].end();
+        }
+    }
 
     renderer.setActiveTextureUnit(0);
     _gbuffer->unbind();

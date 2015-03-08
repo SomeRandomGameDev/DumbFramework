@@ -86,7 +86,7 @@ class Dummy
             
             debug = false;
             
-            //glfwSwapInterval(1); // vsync
+            // glfwSwapInterval(1); // vsync
         }
         
         void gui()

@@ -13,8 +13,8 @@ const unsigned int LightType::maxCount[LightType::COUNT] =
 const unsigned int LightType::elementCount[LightType::COUNT] = 
 {
     8,
-    8,
     12,
+    8,
 };
 
 } // Render
