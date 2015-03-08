@@ -1,124 +1,9 @@
 #include <DumbFramework/render/lightpass.hpp>
+#include <DumbFramework/file.hpp>
 #include "light/occluders.hpp"
 
 namespace Framework {
 namespace Render    {
-
-static const char* g_spotLightVertexShader = R"EOT(
-#version 410 core
-
-// [todo] spot and directional light
-layout (location = 0) in vec3 vs_position;
-layout (location = 1) in vec4 vs_pointLightPosition;
-layout (location = 2) in vec4 vs_pointLightColor;
-layout (std140, binding=1) uniform View
-{
-    mat4 viewProjMatrix;
-    vec3 eye;
-};
-out flat VS_OUT
-{
-    vec4 position;
-    vec4 color;
-} pointLight;
-void main(void)
-{
-    vec4 position = viewProjMatrix * vec4(vs_pointLightPosition.w * vs_position + vs_pointLightPosition.xyz, 1.0);
-    pointLight.position = vs_pointLightPosition;
-    pointLight.color = vs_pointLightColor;
-    gl_Position = position;
-}
-)EOT";
-
-// [todo] one per light type
-static const char* g_spotLightFragmentShader = R"EOT(
-#version 410 core
-#define PI 3.1415926535897932384626433832795
-layout (binding=0) uniform sampler2DArray gbuffer;
-layout (std140, binding=1) uniform View
-{
-    mat4 viewProjMatrix;
-    vec3 eye;
-};
-layout (location=0) out vec4 color_out;
-in flat VS_OUT
-{
-    vec4 position;
-    vec4 color;
-} pointLight;
-
-float SchlickFresnel(float u)
-{
-    float m = max(1.0-u, 0.0);
-    float m2 = m*m;
-    return m2*m2*m;
-}
-float GTR2(float ndoth, float a)
-{
-    float a2 = a * a;
-    float t  = ndoth*ndoth*(a2-1.0) + 1.0;
-    return a2 / (PI * t*t);
-}
-float G1V(float v, float k)
-{
-    return v/(v*(1.0-k) + k);
-}
-vec3 brdf(float dotNV, float dotNL, float dotNH, float dotLH, float dotVH, vec3 diffColor, vec4 specColor)
-{        
-    if(dotNV < 0 || dotNL < 0)
-    { return vec3(0.0); }
-
-    float roughness    = specColor.a;
-    float sqrRoughness = roughness * roughness;
-    
-    // Diffuse
-    float fl   = SchlickFresnel(dotNL);
-    float fv   = SchlickFresnel(dotNV);
-    float fd90 = 0.5 + 2.0*dotLH*dotLH*roughness;
-    float fd   = mix(1.0, fd90, fl) * mix(1.0, fd90, fv);
-    vec3 diffuse = fd * diffColor / PI;
-
-    // Specular
-    float k  = (roughness+1.0) * (roughness+1.0) / 8.0;
-    float fh = SchlickFresnel(dotVH);
-    vec3  fresnel      = mix(specColor.rgb, vec3(1.0), fh);
-    float visibility   = G1V(dotNL, k) * G1V(dotNV, k);
-    float distribution = GTR2(dotNH, sqrRoughness);
-    vec3 specular  = fresnel * visibility * distribution;
-
-    return (specular + diffuse);
-}
-void main(void)
-{
-    vec3 position = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 3), 0).xyz;    
-    vec4  lightPosition = pointLight.position;
-    float lightDistance = distance(position, lightPosition.xyz);
-    if(lightDistance <= lightPosition.w)
-    {
-        vec3 albedo   = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 0), 0).xyz;
-        vec4 specular = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 1), 0);
-        vec3 normal   = texelFetch(gbuffer, ivec3(gl_FragCoord.xy, 2), 0).xyz;
-        vec3 view     = normalize(eye - position);
-        float dotNV = dot(view, normal);
-        
-        vec3 light = normalize(lightPosition.xyz - position);
-        vec3 halfL = normalize(light + view);
-        float dotNL = dot(light, normal);
-        float dotNH = dot(halfL, normal);
-        float dotVH = dot(halfL, view);
-        float dotLH = dot(light, halfL);
-        
-        float attNum = clamp(1.0 - pow(lightDistance/lightPosition.w, 4), 0.0, 1.0);
-        float attenuation   = attNum * attNum / (lightDistance*lightDistance + 1.0);
-
-        color_out = vec4(clamp(brdf(dotNV, dotNL, dotNH, dotLH, dotVH, albedo, specular) * pointLight.color.rgb * dotNL * attenuation, 0.0, 1.0), 1.0);
-    }
-    else
-    {
-        discard;
-    }
-}
-)EOT";
 
 /**
  * Default constructor.
@@ -126,7 +11,6 @@ void main(void)
 LightPass::LightPass()
     : _gbuffer(nullptr)
     , _depthbuffer(nullptr)
-    , _program()
     , _framebuffer(0)
     , _output()
     , _view()
@@ -193,30 +77,70 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
         Log_Error(Module::Render, "Failed to create occluders.");
         return false;
     }
-    clear();
-    
-    ret = _program.create( {{Render::Shader::Type::VERTEX_SHADER,   g_spotLightVertexShader  },
-                            {Render::Shader::Type::FRAGMENT_SHADER, g_spotLightFragmentShader}} );
+
+    ret = createProgram(LightType::POINT_LIGHT,
+                        Framework::File::executableDirectory() + "/resources/shaders/pointlight.vs",
+                        Framework::File::executableDirectory() + "/resources/shaders/pointlight.fs");
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create program.");
+        Log_Error(Module::Render, "Failed to create point light shader.");
         return false;
     }
 
-    ret = _program.link();
-    if(false == ret)
-    {
-        Log_Error(Module::Render, "Failed to link program.");
-        return false;
-    }
-    
     ret = _view.create(2 * sizeof(float[16]), nullptr, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
         Log_Error(Module::Render, "Failed to create point view matrices buffer.");
         return false;
     }
+
+    clear();
+
+    return true;
+}
+
+bool LightPass::createProgram(LightType type, std::string const& vertexShaderFilename, std::string const& fragmentShaderFilename)
+{
+
+    std::string shaderData[2];
+    const char* filename[2] = { vertexShaderFilename.c_str(), fragmentShaderFilename.c_str() };
     
+    bool ret;
+    for(size_t i=0; i<2; i++)
+    {
+        File input;
+        size_t nRead;
+
+        ret = input.open(filename[i], File::READ_ONLY);
+        if(false == ret)
+        {
+            Log_Error(Module::Render, "Failed to open shader %s", filename[i]);
+            return false;
+        }
+        shaderData[i].resize(input.size());
+        nRead = input.read(&shaderData[i][0], input.size());
+        input.close();
+        if(nRead != shaderData[i].size())
+        {
+            Log_Error(Module::Render, "Failed to read shader %s", filename[i]);
+            return false;
+        }
+    }
+
+    ret = _program[type].create( {{Render::Shader::Type::VERTEX_SHADER,   shaderData[0].c_str() },
+                                  {Render::Shader::Type::FRAGMENT_SHADER, shaderData[1].c_str()}} );
+    if(false == ret)
+    {
+        Log_Error(Module::Render, "Failed to create program.");
+        return false;
+    }
+
+    ret = _program[type].link();
+    if(false == ret)
+    {
+        Log_Error(Module::Render, "Failed to link program.");
+        return false;
+    }
     return true;
 }
 
@@ -289,7 +213,6 @@ void LightPass::destroy()
         glDeleteFramebuffers(1, &_framebuffer);
         _framebuffer = 0;
     }
-    _program.destroy();
     _output.destroy();
     
     _view.destroy();
@@ -299,6 +222,7 @@ void LightPass::destroy()
     
     for(size_t i=0; i<LightType::COUNT; i++)
     {
+        _program[i].destroy();
         _occluders[i].destroy();
         _buffer[i].destroy();
     }
@@ -329,18 +253,56 @@ bool LightPass::add(PointLight const& light)
         Log_Error(Module::Render, "Failed to add point light.");
         return false;
     }
-    ptr[0] = light.position.x;
-    ptr[1] = light.position.y;
-    ptr[2] = light.position.z;
-    ptr[3] = light.radius;
-    ptr[4] = light.color.x;
-    ptr[5] = light.color.y;
-    ptr[6] = light.color.z;
-    ptr[7] = 0.0f;
+
+    ptr[0] = light.color.x;
+    ptr[1] = light.color.y;
+    ptr[2] = light.color.z;
+    ptr[3] = 0.0f;
+    ptr[4] = light.position.x;
+    ptr[5] = light.position.y;
+    ptr[6] = light.position.z;
+    ptr[7] = light.radius;
 
     _buffer[LightType::POINT_LIGHT].unmap();
     _buffer[LightType::POINT_LIGHT].unbind();
     _count[LightType::POINT_LIGHT]++;
+    return true;
+}
+
+bool LightPass::add(SpotLight const& light)
+{
+    if(_count[LightType::SPOT_LIGHT] >= LightType::maxCount[LightType::SPOT_LIGHT])
+    {
+        Log_Error(Module::Render, "Reached maximum number of spot lights.");
+        return false;
+    }
+    
+    _buffer[LightType::SPOT_LIGHT].bind();
+    size_t elementSize = LightType::elementCount[LightType::SPOT_LIGHT] * sizeof(float);
+    float* ptr = (float*)_buffer[LightType::SPOT_LIGHT].map(BufferObject::Access::Policy::WRITE_ONLY, elementSize * _count[LightType::SPOT_LIGHT], elementSize);
+    if(nullptr == ptr)
+    {
+        _buffer[LightType::SPOT_LIGHT].unbind();
+        Log_Error(Module::Render, "Failed to add spot light.");
+        return false;
+    }
+
+    ptr[0] = light.color.x;
+    ptr[1] = light.color.y;
+    ptr[2] = light.color.z;
+    ptr[3] = 0.0f;
+    ptr[4] = light.position.x;
+    ptr[5] = light.position.y;
+    ptr[6] = light.position.z;
+    ptr[7] = light.innerConeAngle;
+    ptr[4] = light.direction.x;
+    ptr[5] = light.direction.y;
+    ptr[6] = light.direction.z;
+    ptr[7] = light.outerConeAngle;
+
+    _buffer[LightType::SPOT_LIGHT].unmap();
+    _buffer[LightType::SPOT_LIGHT].unbind();
+    _count[LightType::SPOT_LIGHT]++;
     return true;
 }
 
@@ -366,7 +328,7 @@ void LightPass::draw(Camera const& camera)
     renderer.setActiveTextureUnit(0);
     _gbuffer->bind();
 
-    _program.begin();
+    _program[LightType::POINT_LIGHT].begin();
         _view.bindTarget(1);
         float* ptr = (float*)_view.map(BufferObject::Access::Policy::WRITE_ONLY);
             glm::mat4 viewProjMatrix = camera.projectionMatrix(_output.size()) * camera.viewMatrix();
@@ -377,7 +339,7 @@ void LightPass::draw(Camera const& camera)
             glDrawElementsInstanced(GL_TRIANGLES, 12*3, GL_UNSIGNED_BYTE, 0, _count[LightType::POINT_LIGHT]);
         _occluders[LightType::POINT_LIGHT].unbind();
         _view.unbind();
-    _program.end();
+    _program[LightType::POINT_LIGHT].end();
 
     renderer.setActiveTextureUnit(0);
     _gbuffer->unbind();

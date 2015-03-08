@@ -5,13 +5,11 @@
 namespace Framework {
 namespace Render    {
 
-// [todo] add stencil buffer.
-
 // tangent and bitangent are useless if the technique described in the
 // following link is used (from three.js):
 // http://mmikkelsen3d.blogspot.sk/2012/02/parallaxpoc-mapping-and-no-tangent.html
 static const char* g_vertexShader = R"EOT(
-#version 410 core
+#version 420 core
 layout (location=0) in vec3 vs_position;
 layout (location=1) in vec2 vs_uv;
 layout (location=2) in vec3 vs_normal;
@@ -46,7 +44,7 @@ void main()
 )EOT";
 
 static const char* g_fragmentShader = R"EOT(
-#version 410 core
+#version 420 core
 uniform sampler2D diffuseMap;
 uniform sampler2D specularMap;
 uniform sampler2D normalMap;

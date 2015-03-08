@@ -44,8 +44,8 @@ class LightPass
         void clear();
         
         // [todo] add multiple lights at once
-        bool add(PointLight       const& light);
-        // [todo] bool add(SpotLight        const& light);
+        bool add(PointLight const& light);
+        bool add(SpotLight  const& light);
         // [todo] bool add(DirectionalLight const& light);
         
         void draw(Camera const& camera);
@@ -55,12 +55,12 @@ class LightPass
 
     private:
         bool createOccluders();
-
+        bool createProgram(LightType type, std::string const& vertexShaderFilename, std::string const& fragmentShaderFilename);
+        
     protected:
         Texture2D* _gbuffer;
         Renderbuffer* _depthbuffer;
-        Program _program;
-        
+
         GLuint        _framebuffer;
         Texture2D     _output;
 
@@ -69,6 +69,7 @@ class LightPass
         VertexBuffer _occludersVertexBuffer;
         IndexBuffer  _occludersIndexBuffer;
 
+        Program _program[LightType::COUNT];
         VertexStream _occluders[LightType::COUNT];
         VertexBuffer _buffer[LightType::COUNT];
         unsigned int _count[LightType::COUNT];
