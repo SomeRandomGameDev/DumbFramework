@@ -15,6 +15,225 @@ static void Log_GLFWErrorCallback(int errorCode, const char* description)
      Log_Error(Framework::Module::Base, "GLFW failed with error code %d: %s", errorCode, description);
 }
 
+
+namespace Framework {
+  namespace Core {
+    
+     /**
+      * Video mode information. Un-mutable set of information about an avaiable video mode.
+      */
+     class VideoMode {
+         public:
+             /**
+              * Constructor.
+              * @param [in] width Width (in pixels).
+              * @param [in] height Height (in pixels).
+              * @param [in] rate Refresh rate (in Hz).
+              * @param [in] rbits Red Channel Depth (in bits).
+              * @param [in] gbits Green Channel Depth (in bits).
+              * @param [in] bbits Blue Channel Depth (in bits).
+              */
+             VideoMode(int width, int height, int rate, int rbits, int gbits, int bbits) :
+                 _width(width), _height(height), _rate(rate),
+                 _rbits(rbits), _gbits(gbits), _bbits(bbits) {}
+
+             /**
+              * Retrieve video mode information.
+              * @param [out] width Width (in pixels).
+              * @param [out] height Height (in pixels).
+              * @param [out] rate Refresh rate (in Hz).
+              * @param [out] rbits Red Channel Depth (in bits).
+              * @param [out] gbits Green Channel Depth (in bits).
+              * @param [out] bbits Blue Channel Depth (in bits).
+              */
+             inline void get(int *width, int *height, int *rate, int *rbits, int *gbits, int *bbits) {
+                 if(0 != width) {
+                     *width = _width;
+                 }
+                 if(0 != height) {
+                     *height = _height;
+                 }
+                 if(0 != rate) {
+                     *rate = _rate;
+                 }
+                 if(0 != rbits) {
+                     *rbits = _rbits;
+                 }
+                 if(0 != gbits) {
+                     *gbits = _gbits;
+                 }
+                 if(0 != bbits) {
+                     *bbits = _bbits;
+                 }
+             }
+
+         private:
+             /**
+              * Width (in pixels).
+              */
+             int _width;
+             /**
+              * Height (in pixels).
+              */
+             int _height;
+             /**
+              * Refresh rate (in Hz).
+              */
+             int _rate;
+             /**
+              * Red color depth (in bits).
+              */
+             int _rbits;
+             /**
+              * Green color depth (in bits).
+              */
+             int _gbits;
+             /**
+              * Blue color depth (in bits).
+              */
+             int _bbits;
+     };
+
+     /**
+      * Monitor Information. Unmutable set of information about a specific monitor.
+      */
+     class Monitor {
+         public:
+
+             /**
+              * Constructor.
+              */
+             Monitor(int width, int height, int x, int y,
+                     std::string name, unsigned int size,
+                     VideoMode *modes, unsigned int current) :
+                         _width(width), _height(height),
+                         _xpos(x), _ypos(y), _currentMode(current) {
+                 _modeCount = size;
+                 _modes = new VideoMode[size];  // FIXME No default constructor.
+                 for(int i = 0; i < size; ++i) {
+                    _modes[i] = modes[i];
+                 }
+             }
+
+             /**
+              * Destructor.
+              */
+             ~Monitor() {
+                 delete []_modes;
+             }
+
+             /**
+              * Retrieve physical size.
+              * @param [out] width Width in mm.
+              * @param [out] height Height in mm.
+              */
+             inline void getPhysicalSize(int *width, int *height) {
+                 *width = _width;
+                 *height = _height;
+             }
+
+             /**
+              * Retrieve monitor name.
+              * @param [out] name String instance in which to copy the name.
+              */
+             inline void getName(std::string *name) {
+                 *name = _name;
+             }
+
+             /**
+              * Retrieve the monitor position.
+              * @param [out] x Position on the X-axis in pixels.
+              * @param [out] y Position on the Y-axis in pixels.
+              */
+             inline void getPosition(int *x, int *y) {
+                 *x = _xpos;
+                 *y = _ypos;
+             }
+
+             /**
+              * Retrieve current video mode.
+              * @param [out] mode Current video mode instance in which to copy the data.
+              */
+             inline void getCurrentVideoMode(VideoMode *mode) {
+                 *mode = _modes[_currentMode];
+             }
+
+             /**
+              * Retrieve the number of available video modes.
+              * @return Number video modes.
+              */
+             inline unsigned int getVideoModeCount() {
+                 return _modeCount;
+             }
+
+             /**
+              * Retrieve video modes.
+              * @param [in] size Size of the fetch buffer.
+              * @param [out] buffer Buffer in which to copy video modes.
+              */
+             inline void getModes(int size, VideoMode *buffer) {
+                 if(size >= _modeCount) {
+                   for(int i = 0; i < _modeCount; ++i) {
+                     buffer[i] = _modes[i];
+                   }
+                 }
+             }
+
+         private:
+             /**
+              * Physical width (in millimeters).
+              */
+             int _width;
+
+             /**
+              * Physical height (in millimeters).
+              */
+             int _height;
+
+             /**
+              * Position on the X-Axis in the workspace (in pixels).
+              */
+             int _xpos;
+
+             /**
+              * Position on the Y-Axis in the workspace (in pixels).
+              */
+             int _ypos;
+
+             /**
+              * Name.
+              */
+             std::string _name;
+
+             /**
+              * Number of available video modes.
+              */
+             unsigned int _modeCount;
+
+             /**
+              * List of available video modes.
+              */
+             VideoMode *_modes;
+
+             /**
+              * Current video mode.
+              */
+             unsigned int _currentMode;
+     };
+
+     // TODO MONITOR CLASS (Unmutable Physical Information + List of Video Modes)
+
+     // TODO VIDEO INFORMATION CLASS (Unmutable List of available Monitors)
+
+     // TODO WINDOW CREATION ADVISOR CLASS (Returned by the 'developper' to instruct which kind of window to create)
+
+     // TODO -- The Window Creation Advisor will be part of the Application Creation Advisor class.
+
+     // TODO APPLICATION CONTEXT CLASS (Provide access to Output capacities and current context informations)
+  }
+}
+
+
 /* The delegated concept shall implement:
    GLFWwindow *createWindow();
    void destroyWindow(GLFWwindow *);
