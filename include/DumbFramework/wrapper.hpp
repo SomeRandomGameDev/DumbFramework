@@ -25,6 +25,11 @@ namespace Framework {
      class VideoMode {
          public:
              /**
+              * Empty Constructor.
+              */
+             VideoMode() {}
+
+             /**
               * Constructor.
               * @param [in] width Width (in pixels).
               * @param [in] height Height (in pixels).
