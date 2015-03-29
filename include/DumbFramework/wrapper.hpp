@@ -111,13 +111,41 @@ namespace Framework {
              Monitor(int width, int height, int x, int y,
                      std::string name, unsigned int size,
                      VideoMode *modes, unsigned int current) :
-                         _width(width), _height(height),
+                         _width(width), _height(height), _name(name),
                          _xpos(x), _ypos(y), _currentMode(current) {
                  _modeCount = size;
                  _modes = new VideoMode[size];  // FIXME No default constructor.
                  for(int i = 0; i < size; ++i) {
                     _modes[i] = modes[i];
                  }
+             }
+
+             /**
+              * Empty Constructor.
+              */
+             Monitor() : _modeCount(0), _modes(0), _currentMode(-1) {
+             }
+
+             /**
+              * Affectation operator.
+              */
+             const Monitor &operator=(Monitor &orig) {
+                 _width = orig._width;
+                 _height = orig._height;
+                 _name = orig._name;
+                 _xpos = orig._xpos;
+                 _ypos = orig._ypos;
+                 _currentMode = orig._currentMode;
+                 _modeCount = orig._modeCount;
+                 _currentMode = orig.currentMode;
+                 if(0 != _modes) {
+                     delete [] _modes;
+                 }
+                 _modes = new VideoMode(_modeCount);
+                 for(int i = 0; i < _modeCount; ++i) {
+                     _modes[i] = orig._modes[i];
+                 }
+                 return *this;
              }
 
              /**
@@ -226,7 +254,6 @@ namespace Framework {
              unsigned int _currentMode;
      };
 
-     // TODO MONITOR CLASS (Unmutable Physical Information + List of Video Modes)
 
      // TODO VIDEO INFORMATION CLASS (Unmutable List of available Monitors)
 
