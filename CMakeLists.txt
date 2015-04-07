@@ -100,7 +100,7 @@ set(DUMB_FRAMEWORK_SOURCES
     src/rect.cpp
     src/boundingbox.cpp
     src/boundingsphere.cpp
-    src/boundingfrustum.cpp
+    src/frustum.cpp
     src/boundingcircle.cpp
     src/boundingquad.cpp
     src/line2d.cpp

@@ -111,11 +111,12 @@ namespace Framework {
              Monitor(int width, int height, int x, int y,
                      std::string name, unsigned int size,
                      VideoMode *modes, unsigned int current) :
-                         _width(width), _height(height), _name(name),
-                         _xpos(x), _ypos(y), _currentMode(current) {
+                         _width(width), _height(height),
+                         _xpos(x), _ypos(y),
+                         _name(name), _currentMode(current) {
                  _modeCount = size;
                  _modes = new VideoMode[size];  // FIXME No default constructor.
-                 for(int i = 0; i < size; ++i) {
+                 for(unsigned int i = 0; i < size; ++i) {
                     _modes[i] = modes[i];
                  }
              }
@@ -123,7 +124,11 @@ namespace Framework {
              /**
               * Empty Constructor.
               */
-             Monitor() : _modeCount(0), _modes(0), _currentMode(-1) {
+             Monitor() : 
+                _width(0), _height(0),
+                _xpos(0), _ypos(0),
+                _name(), _modeCount(0),
+                _modes(nullptr), _currentMode(-1) {
              }
 
              /**
@@ -137,12 +142,12 @@ namespace Framework {
                  _ypos = orig._ypos;
                  _currentMode = orig._currentMode;
                  _modeCount = orig._modeCount;
-                 _currentMode = orig.currentMode;
+                 _currentMode = orig._currentMode;
                  if(0 != _modes) {
                      delete [] _modes;
                  }
-                 _modes = new VideoMode(_modeCount);
-                 for(int i = 0; i < _modeCount; ++i) {
+                 _modes = new VideoMode[_modeCount];
+                 for(unsigned int i = 0; i < _modeCount; ++i) {
                      _modes[i] = orig._modes[i];
                  }
                  return *this;
@@ -204,9 +209,9 @@ namespace Framework {
               * @param [in] size Size of the fetch buffer.
               * @param [out] buffer Buffer in which to copy video modes.
               */
-             inline void getModes(int size, VideoMode *buffer) {
+             inline void getModes(unsigned int size, VideoMode *buffer) {
                  if(size >= _modeCount) {
-                   for(int i = 0; i < _modeCount; ++i) {
+                   for(unsigned int i = 0; i < _modeCount; ++i) {
                      buffer[i] = _modes[i];
                    }
                  }

@@ -6,7 +6,7 @@
 
 using namespace Framework;
 
-SUITE(BoundingFrustum)
+SUITE(Frustum)
 {
     TEST(ContainsSphere)
     {
@@ -22,7 +22,7 @@ SUITE(BoundingFrustum)
         
         ContainmentType::Value ret;
         
-        BoundingFrustum frustum(camera, projection);
+        Frustum frustum(camera, projection);
         
         BoundingSphere sphere(eye + frustum.getNear().getNormal() * 4.0f, 0.5f);
         
@@ -62,7 +62,7 @@ SUITE(BoundingFrustum)
         camera     = glm::lookAt(eye, target, up);
         projection = glm::perspective(70.0f, 16.0f/9.0f, 2.0f, 100.0f);
 
-        BoundingFrustum frustum(camera, projection);
+        Frustum frustum(camera, projection);
         ContainmentType::Value ret;
         
         glm::vec3 center = eye + frustum.getNear().getNormal() * 4.0f;
@@ -107,7 +107,7 @@ SUITE(BoundingFrustum)
         CHECK_EQUAL(ContainmentType::Disjoints, ret);
     }
 
-	TEST(ContainsPoint)
+    TEST(ContainsPoint)
     {
         glm::mat4 camera;
         glm::mat4 projection;
@@ -119,7 +119,7 @@ SUITE(BoundingFrustum)
         camera     = glm::lookAt(eye, target, up);
         projection = glm::perspective(80.0f, 16.0f/9.0f, 4.0f, 100.0f);
 
-        BoundingFrustum frustum(camera, projection);
+        Frustum frustum(camera, projection);
         
         ContainmentType::Value ret;
 
@@ -132,14 +132,14 @@ SUITE(BoundingFrustum)
         ret = frustum.contains(eye + 4.0f * frustum.getNear().getNormal());
         CHECK_EQUAL(ContainmentType::Intersects, ret);
     }
-	
+
     TEST(ContainsBox)
     {
         /// @todo
     }
 
-	TEST(IntersectsRay)
-	{
+    TEST(IntersectsRay)
+    {
         /// @todo
-	}
+    }
 }
