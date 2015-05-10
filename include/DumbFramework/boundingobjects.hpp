@@ -7,7 +7,7 @@
 
 #if defined(_DUMB_FW_BOUNDING_BOX_)     \
  or defined(_DUMB_FW_BOUNDING_SPHERE_)  \
- or defined(_DUMB_FW_BOUNDING_FRUSTUM_) \
+ or defined(_DUMB_FW_FRUSTUM_) \
  or defined(_DUMB_FW_BOUNDING_CIRCLE_)  \
  or defined(_DUMB_FW_BOUNDING_QUAD_)
  
@@ -20,7 +20,7 @@ class BoundingQuad;
 /* 3D */
 class BoundingBox;
 class BoundingSphere;
-class BoundingFrustum;
+class Frustum;
 
 }
 
@@ -33,11 +33,11 @@ class BoundingFrustum;
 /* 3D */
 #include <DumbFramework/boundingbox.hpp>
 #include <DumbFramework/boundingsphere.hpp>
-#include <DumbFramework/boundingfrustum.hpp>
+#include <DumbFramework/frustum.hpp>
 
 #endif /*    defined(_DUMB_FW_BOUNDING_BOX_) 
         * or defined(_DUMB_FW_BOUNDING_SPHERE_)
-        * or defined(_DUMB_FW_BOUNDING_FRUSTUM_)
+        * or defined(_DUMB_FW_FRUSTUM_)
         * or defined(_DUMB_FW_BOUNDING_CIRCLE_)
         * or defined(_DUMB_FW_BOUNDING_QUAD_)
         */
