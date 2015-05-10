@@ -27,7 +27,7 @@ void Example::init(Dumb::Core::Application::Adviser *adviser) {
     adviser->setVideoMode(current);
     adviser->setTitle("My App");
 }
-
+void Example::postInit() {}
 int Example::render() { return closeFlag; }
 void Example::handleUnicodeCharacter(unsigned int) {}
 void Example::handleUnicodeModifierCharacter(unsigned int,int) {}

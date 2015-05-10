@@ -84,6 +84,8 @@ namespace Dumb {
                                     // Setting up app hints.
                                     glfwMakeContextCurrent(window);
                                     glfwSwapInterval(1);
+                                    // Post-init as we've got the context.
+                                    delegate->postInit();
                                     // Application main loop.
                                     while(!glfwWindowShouldClose(window)) {
                                         if(!delegate->render()) {
@@ -205,6 +207,7 @@ namespace Dumb {
 #define DECLARE_WRAPPER_METHODS \
     public:\
 void init(Dumb::Core::Application::Adviser *);\
+void postInit();\
 int render();\
 void handleUnicodeCharacter(unsigned int);\
 void handleUnicodeModifierCharacter(unsigned int,int);\
