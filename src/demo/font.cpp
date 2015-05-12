@@ -412,7 +412,10 @@ void Example::postInit() {
     // Guess what ? There's no rendering for japanese fonts yet in stb_truetype !!
     range.clear();
     oversample.clear();
-    range.push_back(Range(0x110010, 128, 16.0));
+    range.push_back(Range(0x5bc2, 6, 32.0));
+    range.push_back(Range(0x5be4, 6, 32.0));
+    range.push_back(Range(0x5c38, 10, 32.0));
+    range.push_back(Range(0x7dab, 11, 64.0));
     oversample.push_back(Oversample(glm::vec2(1, 1), range));
     resource.push_back(Resource("DroidSansJapanese.ttf", oversample));
 
@@ -442,10 +445,23 @@ int Example::render() {
     glBindTexture(GL_TEXTURE_2D, engine->getAtlas());
     glBegin(GL_QUADS);
     glColor3f(0.5f, 0.5f, 1);
-    glTexCoord2f(0, 0); glVertex2f(0, 0);
-    glTexCoord2f(1, 0); glVertex2f(screenSize.x, 0);
-    glTexCoord2f(1, 1); glVertex2f(screenSize.x, screenSize.y);
-    glTexCoord2f(0, 1); glVertex2f(0, screenSize.y);
+    // Center the texture.
+    int offX;
+    int offY;
+    int sz;
+    if(screenSize.x > screenSize.y) {
+        sz = screenSize.y;
+        offY = 0;
+        offX = (screenSize.x - screenSize.y) / 2;
+    } else {
+        sz = screenSize.x;
+        offX = 0;
+        offY = (screenSize.y - screenSize.x) / 2;
+    }
+    glTexCoord2f(0, 0); glVertex2f(offX, offY);
+    glTexCoord2f(1, 0); glVertex2f(offX + sz, offY);
+    glTexCoord2f(1, 1); glVertex2f(offX + sz, offY + sz);
+    glTexCoord2f(0, 1); glVertex2f(offX, offY + sz);
     glEnd();
     glDisable(GL_TEXTURE_2D);
     return closeFlag;
