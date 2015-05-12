@@ -18,6 +18,10 @@
 #include <vector>
 #include <map>
 
+/* Of course, we'll use ICU for text management. The std c++ string library is far from perfect.
+   And the Dumb Framework won't use the Boost lib ! - Over my dead body ! - */
+#include <unicode/unistr.h>
+
 /**
  * Size of the font atlas.
  */
@@ -223,7 +227,6 @@ namespace Dumb {
              * Default constructor.
              */
             Wrapper() : data(0) { /* Nope */ }
-            // TODO 
             private:
             /**
              * Private constructor (used by the engine only).
@@ -250,6 +253,11 @@ namespace Dumb {
              */
             stbtt_packedchar *data;
         };
+
+        /**
+         * Text Area Identifier.
+         */
+        typedef unsigned long long int Area;
 
         /**
          * El Font Engine.
@@ -285,6 +293,21 @@ namespace Dumb {
                     Wrapper *result = (it != wrappers.end())?it->second:0;
                     return result;
                 }
+
+                /**
+                 * Simple text area creation.
+                 * @param [in] defFont Default font.
+                 * @param [in] pos Position in logical coordinate system.
+                 * @param [in] text Starting text.
+                 * @return Area identifier. This identifier can be '0' if something fails.
+                 */
+                Area createArea(Wrapper *defFont, glm::vec2 pos, icu::UnicodeString text);
+
+                /* TODO Serious business here :
+                   - Logical viewport management.
+                   - VAO management.
+                   - Text Areas storage and maintenance.
+                   - Rendering process. */
             private:
                 /**
                  * Pack a font and all its specs.
@@ -317,6 +340,16 @@ namespace Dumb {
 
 namespace Dumb {
     namespace Font {
+
+        //   ------------------
+        Area Engine::createArea(Wrapper *defFont, glm::vec2 pos, icu::UnicodeString text) {
+            /* TODO For the moment, it's simple. But in further devs, this method will be
+               a facade for a more extensive method :
+               Area createArea(Parameters params);
+               Where 'Parameters' is one hell of a class containing tons of informations about
+               the area to create/maintain, etc. */
+            return 0;
+        }
 
         // ------------
         Engine::~Engine() {
@@ -395,7 +428,6 @@ namespace Dumb {
             // Create the GL Texture.
             glGenTextures(1, &atlas);
             glBindTexture(GL_TEXTURE_2D, atlas);
-            //glPixelStorei(GL_UNPACK_ROW_LENGTH, size);
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA,
                     size, size, 0, GL_ALPHA, GL_UNSIGNED_BYTE, buffer);
