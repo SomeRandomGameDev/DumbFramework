@@ -69,12 +69,13 @@ namespace Dumb {
                 size(DFF_SIZE_DEFAULT) {}
                 /**
                  * Full constructor.
+                 * @param [in] id Font Range Identifier.
                  * @param [in] st Starting code point.
                  * @param [in] ct Glyphs count.
                  * @param [in] sz Size (in pixels).
                  */
-                Range(unsigned int st, unsigned int ct, double sz) :
-                    start(st), count(ct), size(sz) {}
+                Range(const char *id, unsigned int st, unsigned int ct, double sz) :
+                    identifier(id), start(st), count(ct), size(sz) {}
 
                 /**
                  * @return Starting code point.
@@ -96,7 +97,18 @@ namespace Dumb {
                 inline double getSize() const {
                     return size;
                 }
+
+                /**
+                 * @return Human readable identifier.
+                 */
+                inline const std::string &getIdentifier() const {
+                    return identifier;
+                }
             private:
+                /**
+                 * Human readable identifier.
+                 */
+                std::string identifier;
                 /**
                  * Starting code point.
                  */
@@ -207,7 +219,36 @@ namespace Dumb {
             friend class Engine;
 
             public:
+            /**
+             * Default constructor.
+             */
+            Wrapper() : data(0) { /* Nope */ }
+            // TODO 
             private:
+            /**
+             * Private constructor (used by the engine only).
+             */
+            Wrapper(Range originator, stbtt_packedchar *dt) :
+                Range(originator), data(dt) {
+                    /* Nothing special to be done. */
+                }
+            /**
+             * Private destructor.
+             */
+            ~Wrapper() {
+                if(0 != data) {
+                    delete []data;
+                }
+            }
+            /**
+             * @return Packed char data information.
+             */
+            inline stbtt_packedchar *getData() { return data; }
+            private:
+            /**
+             * Information about characters in the pack.
+             */
+            stbtt_packedchar *data;
         };
 
         /**
@@ -233,6 +274,16 @@ namespace Dumb {
                  */
                 inline GLuint getAtlas() {
                     return atlas;
+                }
+
+                /**
+                 * Retrieve a font wrapper.
+                 * @param id Identifier previously specified at engine initialisation.
+                 */
+                const Wrapper *getFont(const std::string &id) const {
+                    std::map<std::string, Wrapper *>::const_iterator it = wrappers.find(id);
+                    Wrapper *result = (it != wrappers.end())?it->second:0;
+                    return result;
                 }
             private:
                 /**
@@ -269,7 +320,11 @@ namespace Dumb {
 
         // ------------
         Engine::~Engine() {
-            // FIXME Free font wrappers.
+            std::map<std::string, Wrapper *>::iterator it;
+            for(it = wrappers.begin(); it != wrappers.end(); ++it) {
+                std::cout << "Flushing '" << it->first << "'" << std::endl; // TODO Logging.
+                delete it->second;
+            }
         }
 
         //   ----------------------
@@ -286,13 +341,17 @@ namespace Dumb {
                 range->num_chars_in_range = spec.getGlyphsCount();
                 std::cout << "Size : " << range->font_size << "px , Start : " << range->first_unicode_char_in_range
                     << ", Count : " << range->num_chars_in_range << std::endl;
-                range->chardata_for_range = new stbtt_packedchar[range->num_chars_in_range]; // FIXME Memory leak here ! Store and release in Font Wrappers.
+                range->chardata_for_range = new stbtt_packedchar[range->num_chars_in_range];
+                Wrapper *wrapper = new Wrapper(spec, range->chardata_for_range);
+                const std::string &name = spec.getIdentifier();
+                std::cout << "Register '" << name << "'" << std::endl; // TODO Logging.
+                wrappers.insert(std::pair<std::string, Wrapper *>(name, wrapper));
             }
             glm::vec2 ovr = oversample.getOversample();
             stbtt_PackSetOversampling(&context, (unsigned int) ovr.x, (unsigned int) ovr.y);
             if(stbtt_PackFontRanges(&context, reinterpret_cast<unsigned char*>(font),
-                    0, packRange, count) == 0) {
-                std::cerr << "Font range loading failure" << std::endl;
+                        0, packRange, count) == 0) {
+                std::cerr << "Font range loading failure" << std::endl; // TODO Logging
             }
             delete []packRange;
         }
@@ -303,7 +362,7 @@ namespace Dumb {
             fontFile.open(resource.getPath().c_str(), std::ios::binary|std::ios::ate|std::ios::in);
             // Font file check.
             if(fontFile.is_open()) {
-                std::cout << "Loading '" << resource.getPath() << "'" << std::endl;
+                std::cout << "Loading '" << resource.getPath() << "'" << std::endl; // TODO Logging
                 // Font file is ok. Let's load it.
                 std::streampos size = fontFile.tellg();
                 char *fontFileContent = new char[size];
@@ -316,7 +375,7 @@ namespace Dumb {
                 // We're done here.
                 delete []fontFileContent;
             } else {
-                std::cerr << "Failed to open '" << resource.getPath() << "'" << std::endl;
+                std::cerr << "Failed to open '" << resource.getPath() << "'" << std::endl; // TODO Logging
             }
         }
 
@@ -336,8 +395,10 @@ namespace Dumb {
             // Create the GL Texture.
             glGenTextures(1, &atlas);
             glBindTexture(GL_TEXTURE_2D, atlas);
+            //glPixelStorei(GL_UNPACK_ROW_LENGTH, size);
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA,
-                    FONT_ATLAS_SIZE, FONT_ATLAS_SIZE, 0, GL_ALPHA, GL_UNSIGNED_BYTE, buffer);
+                    size, size, 0, GL_ALPHA, GL_UNSIGNED_BYTE, buffer);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             delete []buffer;
@@ -400,26 +461,42 @@ void Example::postInit() {
     std::vector<Range> range;
     std::vector<Oversample> oversample;
     std::vector<Resource> resource;
-    range.push_back(Range(32, 95, 12.0));
-    range.push_back(Range(32, 95, 24.0));
-    oversample.push_back(Oversample(glm::vec2(1, 1), range));
-    oversample.push_back(Oversample(glm::vec2(2, 3), range));
     // Load Vera.
+    range.push_back(Range("Vera-12", 32, 95, 12.0));
+    range.push_back(Range("Vera-24", 32, 95, 24.0));
+    oversample.push_back(Oversample(glm::vec2(1, 1), range));
+    range.clear();
+    range.push_back(Range("Vera-12-ovr", 32, 95, 12.0));
+    range.push_back(Range("Vera-24-ovr", 32, 95, 24.0)); 
+    oversample.push_back(Oversample(glm::vec2(2, 3), range));
     resource.push_back(Resource("Vera.ttf", oversample));
-    // Load FreeSans with the same specs.
+    // Load FreeSans.
+    range.clear();
+    oversample.clear();
+    range.push_back(Range("SansSmall", 32, 95, 12.0));
+    range.push_back(Range("SansBig", 32, 95, 24.0));
+    oversample.push_back(Oversample(glm::vec2(1, 1), range));
     resource.push_back(Resource("FreeSans.ttf", oversample));
 
     // Guess what ? There's no rendering for japanese fonts yet in stb_truetype !!
     range.clear();
     oversample.clear();
-    range.push_back(Range(0x5bc2, 6, 32.0));
-    range.push_back(Range(0x5be4, 6, 32.0));
-    range.push_back(Range(0x5c38, 10, 32.0));
-    range.push_back(Range(0x7dab, 11, 64.0));
+    range.push_back(Range("Japan1", 0x5bc2, 6, 32.0));
+    range.push_back(Range("Japan2", 0x5be4, 6, 32.0));
+    range.push_back(Range("Japan3", 0x5c38, 10, 32.0));
+    range.push_back(Range("Japan4", 0x7dab, 11, 64.0));
     oversample.push_back(Oversample(glm::vec2(1, 1), range));
     resource.push_back(Resource("DroidSansJapanese.ttf", oversample));
 
-    engine = new Engine(resource);
+    // Another japanese font.
+    range.clear();
+    oversample.clear();
+    range.push_back(Range("BigJapan", 0x7cfb, 128, 64));
+    range.push_back(Range("LotsOfJapan", 0x5bc2, 64, 32.0));
+    oversample.push_back(Oversample(glm::vec2(1, 1), range));
+    resource.push_back(Resource("TakaoPMincho.ttf", oversample));
+
+    engine = new Engine(resource, 1200);
 }
 
 int Example::render() {
