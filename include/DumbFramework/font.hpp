@@ -1,0 +1,393 @@
+/*
+ * Copyright 2015 Stoned Xander
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#ifndef _DUMBFRAMEWORK_FONT_
+#define _DUMBFRAMEWORK_FONT_
+
+#include <iostream>
+#include <fstream>
+
+#include <stb_rect_pack.h>
+#include <stb_truetype.h>
+
+#include <string>
+#include <vector>
+#include <map>
+#include <array>
+
+/* Of course, we'll use ICU for text management. The std c++ string library is far from perfect.
+   And the Dumb Framework won't use the Boost lib ! - Over my dead body ! - */
+#include <unicode/unistr.h>
+#include <unicode/schriter.h>
+
+#include <DumbFramework/render/vertexbuffer.hpp>
+#include <DumbFramework/render/vertexstream.hpp>
+#include <DumbFramework/render/program.hpp>
+#include <DumbFramework/render/renderer.hpp>
+
+/**
+ * Dumb Font Engine default starting codepoint.
+ */
+#define DFE_START_CODEPOINT_DEFAULT 32U
+/**
+ * Dumb Font Engine default number of glyphs to load.
+ */
+#define DFE_GLYPHS_COUNT_DEFAULT 95U
+/**
+ * Dumb Font Engine default oversampling on X-Axis.
+ */
+#define DFE_OVERSAMPLE_X_DEFAULT 1
+/**
+ * Dumb Font Engine default oversampling on Y-Axis.
+ */
+#define DFE_OVERSAMPLE_Y_DEFAULT 1
+/**
+ * Dumb Font Engine default font size (in pixels).
+ */
+#define DFE_SIZE_DEFAULT 32.0
+/**
+ * Dumb Font Engine default texture atlas size.
+ */
+#define DFE_ATLAS_SIZE_DEFAULT 1024
+/**
+ * Dumb Font Engine default glyphs capacity.
+ */
+#define DFE_GLYPH_CAPACITY_DEFAULT 4096
+
+namespace Dumb {
+    namespace Font {
+        /**
+         * Font range. Defines size and glyphs to load.
+         */
+        class Range {
+            public:
+                /**
+                 * Default constructor.
+                 */
+                Range() : _start(DFE_START_CODEPOINT_DEFAULT),
+                _count(DFE_GLYPHS_COUNT_DEFAULT),
+                _size(DFE_SIZE_DEFAULT) {}
+                /**
+                 * Full constructor.
+                 * @param [in] id Font Range Identifier.
+                 * @param [in] st Starting code point.
+                 * @param [in] ct Glyphs count.
+                 * @param [in] sz Size (in pixels).
+                 */
+                Range(const char *id, unsigned int st, unsigned int ct, double sz) :
+                    _identifier(id), _start(st), _count(ct), _size(sz) {}
+
+                /**
+                 * @return Starting code point.
+                 */
+                inline unsigned int getStartingCodePoint() const {
+                    return _start;
+                }
+
+                /**
+                 * @return Number of glyphs.
+                 */
+                inline unsigned int getGlyphsCount() const {
+                    return _count;
+                }
+
+                /**
+                 * @return Size (in pixels).
+                 */
+                inline double getSize() const {
+                    return _size;
+                }
+
+                /**
+                 * @return Human readable identifier.
+                 */
+                inline const std::string &getIdentifier() const {
+                    return _identifier;
+                }
+            private:
+                /**
+                 * Human readable identifier.
+                 */
+                std::string _identifier;
+                /**
+                 * Starting code point.
+                 */
+                unsigned int _start;
+                /**
+                 * Number of glyphs to load.
+                 */
+                unsigned int _count;
+                /**
+                 * Size (in pixels).
+                 */
+                double _size;
+        };
+
+        /**
+         * Oversampled ranges of glyphs definition.
+         */
+        class Oversample {
+            public:
+                /**
+                 * Default constructor.
+                 */
+                Oversample() : _oversample(DFE_OVERSAMPLE_X_DEFAULT, DFE_OVERSAMPLE_Y_DEFAULT) {
+                    // Nothing to do.
+                }
+                /**
+                 * Complete constructor.
+                 * @param [in] ovr Oversampling (in both axis).
+                 * @param [in] rgs Font definition ranges.
+                 */
+                Oversample(glm::vec2 ovr, std::vector<Range> rgs) : _oversample(ovr), _ranges(rgs) {
+                    // Nothing special to do.
+                }
+                /**
+                 * @return Oversampling hint.
+                 */
+                inline glm::vec2 getOversample() const {
+                    return _oversample;
+                }
+                /**
+                 * @return Ranges.
+                 */
+                inline std::vector<Range> getRanges() const {
+                    return _ranges;
+                }
+            private:
+                /**
+                 * Oversampling hint.
+                 */
+                glm::vec2 _oversample;
+                /**
+                 * Ranges.
+                 */
+                std::vector<Range> _ranges;
+        };
+
+        /**
+         * Resource class describe where and how to load a font.
+         */
+        class Resource {
+            public:
+                /**
+                 * Default constructor.
+                 */
+                Resource() { /* Nothing to do ... Empty path, no specs ... */ }
+
+                /**
+                 * Full constructor.
+                 * @param [in] pt Path to font.
+                 * @param [in] spc List of font specs.
+                 */
+                Resource(std::string pt, std::vector<Oversample> spc) : _path(pt), _specs(spc) {
+                    /* Nothing more to do. */
+                }
+
+                /**
+                 * @return Font path.
+                 */
+                inline const std::string& getPath() const {
+                    return _path;
+                }
+
+                /**
+                 * @return Font specs.
+                 */
+                inline std::vector<Oversample> getSpecs() const {
+                    return _specs; // Ugly copy, but safe. The cardinality justifies it.
+                }
+
+            private:
+                /**
+                 * Font path.
+                 */
+                std::string _path;
+                /**
+                 * Font specs.
+                 */
+                std::vector<Oversample> _specs;
+        };
+
+        // Engine forward declaration.
+        class Engine;
+
+        /**
+         * Font wrapper. Addressable font descriptor for printing usage.
+         */
+        class Wrapper : public Range {
+            friend class Engine;
+
+            public:
+            /**
+             * Default constructor.
+             */
+            Wrapper() : _data(0) { /* Nope */ }
+            private:
+            /**
+             * Private constructor (used by the engine only).
+             */
+            Wrapper(Range originator, stbtt_packedchar *dt) :
+                Range(originator), _data(dt) {
+                    /* Nothing special to be done. */
+                }
+            /**
+             * Private destructor.
+             */
+            ~Wrapper() {
+                if(0 != _data) {
+                    delete []_data;
+                }
+            }
+            /**
+             * @return Packed char data information.
+             */
+            inline stbtt_packedchar *getData() { return _data; }
+            private:
+            /**
+             * Information about characters in the pack.
+             */
+            stbtt_packedchar *_data;
+        };
+
+        /**
+         * El Dumb Font Engine.
+         */
+        class Engine {
+            public:
+                /**
+                 * Constructor.
+                 * @param [in] fonts List of fonts to load.
+                 * @param [in] capacity Number of displayable glyphs.
+                 * @param [in] size Size of the font atlas. The atlas is a square texture.
+                 */
+                Engine(const std::vector<Resource> &fonts,
+                        unsigned int capacity = DFE_GLYPH_CAPACITY_DEFAULT,
+                        unsigned int size = DFE_ATLAS_SIZE_DEFAULT);
+
+                /**
+                 * Gentle destructor.
+                 */
+                ~Engine();
+
+                /**
+                 * @return The font atlas identifier.
+                 */
+                inline GLuint getAtlas() {
+                    return _atlas;
+                }
+
+                /**
+                 * Retrieve a font wrapper.
+                 * @param id Identifier previously specified at engine initialisation.
+                 */
+                const Wrapper *getFont(const std::string &id) const {
+                    std::map<std::string, Wrapper *>::const_iterator it = _wrappers.find(id);
+                    Wrapper *result = (it != _wrappers.end())?it->second:0;
+                    return result;
+                }
+
+                /**
+                 * Simple text printing.
+                 * @param [in] font Font to be used.
+                 * @param [in] pos Position in logical coordinate system.
+                 * @param [in] text Starting text.
+                 */
+                void print(const Wrapper *font, glm::vec2 pos, icu::UnicodeString text);
+
+                /**
+                 * Set the viewport. This method is pretty straightforward as we only
+                 * specify the viewport dimension in pixels. The coordinate system is meant
+                 * to have (0, 0) in top-left corner and (width, height) in bottom-right
+                 * corner.
+                 * @param [in] width Width (not only pixels).
+                 * @param [in] height Height (not only pixels).
+                 */
+                void setViewport(GLfloat width, GLfloat height);
+
+                /* TODO Serious business here :
+                   - Logical viewport management.
+                   - VAO management.
+                   - Text Areas storage and maintenance.
+                   - Rendering process. */
+            private:
+                /**
+                 * Pack a font and all its specs.
+                 * @param [in] context STB TrueType context.
+                 * @param [in] resource Resource.
+                 */
+                void packFont(stbtt_pack_context &context, const Resource &resource);
+                /**
+                 * Pack an oversampled set of font ranges.
+                 * @param [in] context STB TrueType context.
+                 * @param [in] oversample Oversampled set.
+                 * @param [in] font Font file data.
+                 */
+                void packOversample(stbtt_pack_context &context, const Oversample &oversample, char *font);
+            private:
+                /**
+                 * Font atlas texture identifier.
+                 */
+                GLuint _atlas;
+
+                /**
+                 * Font Wrappers.
+                 */
+                std::map<std::string, Wrapper*> _wrappers;
+
+                /**
+                 * Vertex Stream.
+                 */
+                Framework::Render::VertexStream _stream;
+
+                /**
+                 * Vertex Buffer Object.
+                 */
+                Framework::Render::VertexBuffer _buffer;
+
+                /**
+                 * GLSL Program identifier.
+                 */
+                Framework::Render::Program _program;
+
+                /**
+                 * Texture uniform binding.
+                 */
+                GLuint _uniformTexture;
+
+                /**
+                 * Projection Matrix uniform binding.
+                 */
+                GLuint _uniformMatrix;
+
+                /**
+                 * Projection Matrix.
+                 */
+                glm::mat4 _matrix;
+
+                /**
+                 * Glyph capacity.
+                 */
+                unsigned int _capacity;
+
+                /**
+                 * Atlas size (in texels).
+                 */
+                unsigned int _size;
+        };
+    } // 'Font' namespace.
+} // 'Dumb' namespace.
+
+#endif
