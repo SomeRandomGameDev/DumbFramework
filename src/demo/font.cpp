@@ -3,10 +3,9 @@
 #include <iostream>
 #include <fstream>
 
-#include <GL/glu.h>
-
 /*
-   g++ adviser.o font.cpp -I../src -I../../Libraries/stb -lglfw -lGL -lGLU -lm -o fonttest -std=c++11
+   g++ adviser.o font.cpp libDumbFramework.a -I../src -I../../Libraries/stb -I../../DumbFramework/include -licuuc -lGLEW -lglfw -lGL -lGLU -lpthread -lm -DGLM_FORCE_RADIANS -std=c++11 -o fonttest 
+   g++ adviser.o font.cpp -I../src -I../../Libraries/stb -lglfw -lGL -lGLU -lm -o fonttest -std=c++11 -DGLM_FORCE_RADIANS
  */
 
 #define STB_TRUETYPE_IMPLEMENTATION
@@ -17,46 +16,49 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <array>
 
 /* Of course, we'll use ICU for text management. The std c++ string library is far from perfect.
    And the Dumb Framework won't use the Boost lib ! - Over my dead body ! - */
 #include <unicode/unistr.h>
+#include <unicode/schriter.h>
+
+#include <DumbFramework/render/vertexbuffer.hpp>
+#include <DumbFramework/render/vertexstream.hpp>
+#include <DumbFramework/render/program.hpp>
+#include <DumbFramework/render/renderer.hpp>
+
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 /**
- * Size of the font atlas.
+ * Dumb Font Engine default starting codepoint.
  */
-#define FONT_ATLAS_SIZE 1024
-
+#define DFE_START_CODEPOINT_DEFAULT 32U
 /**
- * Large font size (in pixels).
+ * Dumb Font Engine default number of glyphs to load.
  */
-#define LARGE_FONT_SIZE 72.0f
-
+#define DFE_GLYPHS_COUNT_DEFAULT 95U
 /**
- * Dumb Framework Font engine Default Starting Codepoint.
+ * Dumb Font Engine default oversampling on X-Axis.
  */
-#define DFF_START_CODEPOINT_DEFAULT 32U
+#define DFE_OVERSAMPLE_X_DEFAULT 1
 /**
- * Dumb Framework Font engine Default number of glyphs to load.
+ * Dumb Font Engine default oversampling on Y-Axis.
  */
-#define DFF_GLYPHS_COUNT_DEFAULT 95U
+#define DFE_OVERSAMPLE_Y_DEFAULT 1
 /**
- * Dumb Framework Font engine Default Oversampling on X-Axis.
+ * Dumb Font Engine default font size (in pixels).
  */
-#define DFF_OVERSAMPLE_X_DEFAULT 1
+#define DFE_SIZE_DEFAULT 32.0
 /**
- * Dumb Framework Font engine Default Oversampling on Y-Axis.
+ * Dumb Font Engine default texture atlas size.
  */
-#define DFF_OVERSAMPLE_Y_DEFAULT 1
+#define DFE_ATLAS_SIZE_DEFAULT 1024
 /**
- * Dumb Framework Font engine Default Font Size (in pixels).
+ * Dumb Font Engine default glyphs capacity.
  */
-#define DFF_SIZE_DEFAULT 32.0
-/**
- * Dumb Framework Font engine Default Texture Atlas Size.
- */
-#define DFF_ATLAS_SIZE_DEFAULT 1024
-
+#define DFE_GLYPH_CAPACITY_DEFAULT 4096
 
 namespace Dumb {
     namespace Font {
@@ -68,9 +70,9 @@ namespace Dumb {
                 /**
                  * Default constructor.
                  */
-                Range() : start(DFF_START_CODEPOINT_DEFAULT),
-                count(DFF_GLYPHS_COUNT_DEFAULT),
-                size(DFF_SIZE_DEFAULT) {}
+                Range() : _start(DFE_START_CODEPOINT_DEFAULT),
+                _count(DFE_GLYPHS_COUNT_DEFAULT),
+                _size(DFE_SIZE_DEFAULT) {}
                 /**
                  * Full constructor.
                  * @param [in] id Font Range Identifier.
@@ -79,52 +81,52 @@ namespace Dumb {
                  * @param [in] sz Size (in pixels).
                  */
                 Range(const char *id, unsigned int st, unsigned int ct, double sz) :
-                    identifier(id), start(st), count(ct), size(sz) {}
+                    _identifier(id), _start(st), _count(ct), _size(sz) {}
 
                 /**
                  * @return Starting code point.
                  */
                 inline unsigned int getStartingCodePoint() const {
-                    return start;
+                    return _start;
                 }
 
                 /**
                  * @return Number of glyphs.
                  */
                 inline unsigned int getGlyphsCount() const {
-                    return count;
+                    return _count;
                 }
 
                 /**
                  * @return Size (in pixels).
                  */
                 inline double getSize() const {
-                    return size;
+                    return _size;
                 }
 
                 /**
                  * @return Human readable identifier.
                  */
                 inline const std::string &getIdentifier() const {
-                    return identifier;
+                    return _identifier;
                 }
             private:
                 /**
                  * Human readable identifier.
                  */
-                std::string identifier;
+                std::string _identifier;
                 /**
                  * Starting code point.
                  */
-                unsigned int start;
+                unsigned int _start;
                 /**
                  * Number of glyphs to load.
                  */
-                unsigned int count;
+                unsigned int _count;
                 /**
                  * Size (in pixels).
                  */
-                double size;
+                double _size;
         };
 
         /**
@@ -135,7 +137,7 @@ namespace Dumb {
                 /**
                  * Default constructor.
                  */
-                Oversample() : oversample(DFF_OVERSAMPLE_X_DEFAULT, DFF_OVERSAMPLE_Y_DEFAULT) {
+                Oversample() : _oversample(DFE_OVERSAMPLE_X_DEFAULT, DFE_OVERSAMPLE_Y_DEFAULT) {
                     // Nothing to do.
                 }
                 /**
@@ -143,30 +145,30 @@ namespace Dumb {
                  * @param [in] ovr Oversampling (in both axis).
                  * @param [in] rgs Font definition ranges.
                  */
-                Oversample(glm::vec2 ovr, std::vector<Range> rgs) : oversample(ovr), ranges(rgs) {
+                Oversample(glm::vec2 ovr, std::vector<Range> rgs) : _oversample(ovr), _ranges(rgs) {
                     // Nothing special to do.
                 }
                 /**
                  * @return Oversampling hint.
                  */
                 inline glm::vec2 getOversample() const {
-                    return oversample;
+                    return _oversample;
                 }
                 /**
                  * @return Ranges.
                  */
                 inline std::vector<Range> getRanges() const {
-                    return ranges;
+                    return _ranges;
                 }
             private:
                 /**
                  * Oversampling hint.
                  */
-                glm::vec2 oversample;
+                glm::vec2 _oversample;
                 /**
                  * Ranges.
                  */
-                std::vector<Range> ranges;
+                std::vector<Range> _ranges;
         };
 
         /**
@@ -184,7 +186,7 @@ namespace Dumb {
                  * @param [in] pt Path to font.
                  * @param [in] spc List of font specs.
                  */
-                Resource(std::string pt, std::vector<Oversample> spc) : path(pt), specs(spc) {
+                Resource(std::string pt, std::vector<Oversample> spc) : _path(pt), _specs(spc) {
                     /* Nothing more to do. */
                 }
 
@@ -192,25 +194,25 @@ namespace Dumb {
                  * @return Font path.
                  */
                 inline const std::string& getPath() const {
-                    return path;
+                    return _path;
                 }
 
                 /**
                  * @return Font specs.
                  */
                 inline std::vector<Oversample> getSpecs() const {
-                    return specs; // Ugly copy, but safe. The cardinality justifies it.
+                    return _specs; // Ugly copy, but safe. The cardinality justifies it.
                 }
 
             private:
                 /**
                  * Font path.
                  */
-                std::string path;
+                std::string _path;
                 /**
                  * Font specs.
                  */
-                std::vector<Oversample> specs;
+                std::vector<Oversample> _specs;
         };
 
         // Engine forward declaration.
@@ -226,50 +228,47 @@ namespace Dumb {
             /**
              * Default constructor.
              */
-            Wrapper() : data(0) { /* Nope */ }
+            Wrapper() : _data(0) { /* Nope */ }
             private:
             /**
              * Private constructor (used by the engine only).
              */
             Wrapper(Range originator, stbtt_packedchar *dt) :
-                Range(originator), data(dt) {
+                Range(originator), _data(dt) {
                     /* Nothing special to be done. */
                 }
             /**
              * Private destructor.
              */
             ~Wrapper() {
-                if(0 != data) {
-                    delete []data;
+                if(0 != _data) {
+                    delete []_data;
                 }
             }
             /**
              * @return Packed char data information.
              */
-            inline stbtt_packedchar *getData() { return data; }
+            inline stbtt_packedchar *getData() { return _data; }
             private:
             /**
              * Information about characters in the pack.
              */
-            stbtt_packedchar *data;
+            stbtt_packedchar *_data;
         };
 
         /**
-         * Text Area Identifier.
-         */
-        typedef unsigned long long int Area;
-
-        /**
-         * El Font Engine.
+         * El Dumb Font Engine.
          */
         class Engine {
             public:
                 /**
                  * Constructor.
                  * @param [in] fonts List of fonts to load.
+                 * @param [in] capacity Number of displayable glyphs.
                  * @param [in] size Size of the font atlas. The atlas is a square texture.
                  */
                 Engine(const std::vector<Resource> &fonts,
+                        unsigned int capacity,
                         unsigned int size);
 
                 /**
@@ -281,7 +280,7 @@ namespace Dumb {
                  * @return The font atlas identifier.
                  */
                 inline GLuint getAtlas() {
-                    return atlas;
+                    return _atlas;
                 }
 
                 /**
@@ -289,19 +288,28 @@ namespace Dumb {
                  * @param id Identifier previously specified at engine initialisation.
                  */
                 const Wrapper *getFont(const std::string &id) const {
-                    std::map<std::string, Wrapper *>::const_iterator it = wrappers.find(id);
-                    Wrapper *result = (it != wrappers.end())?it->second:0;
+                    std::map<std::string, Wrapper *>::const_iterator it = _wrappers.find(id);
+                    Wrapper *result = (it != _wrappers.end())?it->second:0;
                     return result;
                 }
 
                 /**
-                 * Simple text area creation.
-                 * @param [in] defFont Default font.
+                 * Simple text printing.
+                 * @param [in] font Font to be used.
                  * @param [in] pos Position in logical coordinate system.
                  * @param [in] text Starting text.
-                 * @return Area identifier. This identifier can be '0' if something fails.
                  */
-                Area createArea(Wrapper *defFont, glm::vec2 pos, icu::UnicodeString text);
+                void print(const Wrapper *font, glm::vec2 pos, icu::UnicodeString text);
+
+                /**
+                 * Set the viewport. This method is pretty straightforward as we only
+                 * specify the viewport dimension in pixels. The coordinate system is meant
+                 * to have (0, 0) in top-left corner and (width, height) in bottom-right
+                 * corner.
+                 * @param [in] width Width (not only pixels).
+                 * @param [in] height Height (not only pixels).
+                 */
+                void setViewport(GLfloat width, GLfloat height);
 
                 /* TODO Serious business here :
                    - Logical viewport management.
@@ -326,11 +334,52 @@ namespace Dumb {
                 /**
                  * Font atlas texture identifier.
                  */
-                GLuint atlas;
+                GLuint _atlas;
+
                 /**
                  * Font Wrappers.
                  */
-                std::map<std::string, Wrapper*> wrappers;
+                std::map<std::string, Wrapper*> _wrappers;
+
+                /**
+                 * Vertex Stream.
+                 */
+                Framework::Render::VertexStream _stream;
+
+                /**
+                 * Vertex Buffer Object.
+                 */
+                Framework::Render::VertexBuffer _buffer;
+
+                /**
+                 * GLSL Program identifier.
+                 */
+                Framework::Render::Program _program;
+
+                /**
+                 * Texture uniform binding.
+                 */
+                GLuint _uniformTexture;
+
+                /**
+                 * Projection Matrix uniform binding.
+                 */
+                GLuint _uniformMatrix;
+
+                /**
+                 * Projection Matrix.
+                 */
+                glm::mat4 _matrix;
+
+                /**
+                 * Glyph capacity.
+                 */
+                unsigned int _capacity;
+
+                /**
+                 * Atlas size (in texels).
+                 */
+                unsigned int _size;
         };
     } // 'Font' namespace.
 } // 'Dumb' namespace.
@@ -340,24 +389,128 @@ namespace Dumb {
 
 namespace Dumb {
     namespace Font {
+        // Program's index.
+#define DFE_POSITION_INDEX        0
+#define DFE_SIZE_INDEX            1
+#define DFE_TOP_TEX_INDEX         2
+#define DFE_DOWN_TEX_INDEX        3
+#define DFE_COLOR_INDEX           4
+#define DFE_BUFFER_ELEMENT_COUNT 11
+#define DFE_BUFFER_STRIDE        (DFE_BUFFER_ELEMENT_COUNT * sizeof(GLfloat))
+#define DFE_DEFAULT_COLOR        glm::fvec3(1.0f, 1.0f, 1.0f)
+
+        // Shaders
+        const char *s_dfe_fragmentShader =
+            "#version 410 core\n"
+            "layout (binding=0) uniform sampler2D un_texture;"
+            "in vec2 fs_tex;"
+            "in vec4 fs_color;"
+            "out vec4 out_Color;"
+            "void main() {"
+            "out_Color = texture(un_texture, vec2(fs_tex)) * fs_color;"
+            " }";
+
+        const char *s_dfe_vertexShaderInstanced =
+            "#version 410 core\n"
+            "uniform mat4 un_matrix;"
+            "layout (location=0) in vec2 vs_position;"
+            "layout (location=1) in vec2 vs_dimension;"
+            "layout (location=2) in vec2 vs_toptex;"
+            "layout (location=3) in vec2 vs_bottomtex;"
+            "layout (location=4) in vec3 vs_color;"
+            "flat out vec4 fs_color;"
+            "out vec2 fs_tex;"
+            "const vec2 quad[4] = { vec2(0, 0),"
+            "                       vec2(0, 1),"
+            "                       vec2(1, 1),"
+            "                       vec2(1, 0) };"
+            "void main() {"
+            "vec2 point = quad[gl_VertexID];"
+            "vec2 dimPt = vs_dimension * point;"
+            "fs_tex = mix(vs_toptex, vs_bottomtex, point);"
+            "fs_color = vec4(vs_color, 1);"
+            "gl_Position = un_matrix * vec4(vs_position + dimPt, 0.0, 1.0);"
+            "}";
+
 
         //   ------------------
-        Area Engine::createArea(Wrapper *defFont, glm::vec2 pos, icu::UnicodeString text) {
+        void Engine::print(const Wrapper *font, glm::vec2 pos, icu::UnicodeString text) {
+            using namespace Framework;
             /* TODO For the moment, it's simple. But in further devs, this method will be
                a facade for a more extensive method :
                Area createArea(Parameters params);
                Where 'Parameters' is one hell of a class containing tons of informations about
                the area to create/maintain, etc. */
-            return 0;
+            Render::Renderer& renderer = Render::Renderer::instance();
+
+            // Compoute the content of _cell and the number of glyph to print.
+            // Retrieve buffer and memcpy.
+            renderer.depthBufferWrite(false);
+
+            glBindTexture(0, _atlas); // FIXME not 'glBindTexture(GL_TEXTURE_2D, _atlas)' ?
+            _program.begin();
+            _program.uniform(_uniformMatrix, false, _matrix);
+            _program.uniform(_uniformTexture, 0);
+
+            renderer.setActiveTextureUnit(0);
+            _buffer.bind();
+            GLfloat *ptr = reinterpret_cast<GLfloat *>(_buffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY));
+            GLsizei count = 0; // Number of glyph to display.
+            // Iterate on the text.
+            UChar32 start = static_cast<UChar32>(font->getStartingCodePoint());
+            UChar32 last = start + static_cast<UChar32>(font->getGlyphsCount());
+            stbtt_aligned_quad quad;
+            float xpos = static_cast<float>(pos.x);
+            float ypos = static_cast<float>(pos.y);
+            stbtt_packedchar *data = font->_data; // How handy ...
+            icu::StringCharacterIterator it(text);
+            glm::fvec3 color = DFE_DEFAULT_COLOR;
+            for(it.setToStart(); it.hasNext();) {
+                UChar32 codepoint = it.next32PostInc();
+                std::cout << "0x" << std::hex << codepoint << std::dec << " ";
+                // Silently ignore out of range characters.
+                if((codepoint >= start) && (codepoint <= last)) {
+                    ++count;
+                    stbtt_GetPackedQuad(data, _size, _size, codepoint - start, &xpos, &ypos, &quad, 0);
+                    ptr[0] = quad.x0;
+                    ptr[1] = quad.y0;
+                    ptr[2] = quad.x1 - quad.x0;
+                    ptr[3] = quad.y1 - quad.y0;
+                    ptr[4] = quad.s0;
+                    ptr[5] = quad.t0;
+                    ptr[6] = quad.s1;
+                    ptr[7] = quad.t1;
+                    ptr[8] = color.r;
+                    ptr[9] = color.g;
+                    ptr[10] = color.b;
+                    ptr += DFE_BUFFER_ELEMENT_COUNT;
+                }
+            }
+            _buffer.unmap();
+            _buffer.unbind();
+            std::cout << std::endl;
+            // Send VAO.
+            _stream.bind();
+            std::cout << "Send " << count << " instance to the pipe." << std::endl;
+            glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, count);
+            _stream.unbind();
+            _program.end();
+            glBindTexture(0, 0);
+            renderer.depthBufferWrite(true);
         }
 
         // ------------
         Engine::~Engine() {
             std::map<std::string, Wrapper *>::iterator it;
-            for(it = wrappers.begin(); it != wrappers.end(); ++it) {
+            for(it = _wrappers.begin(); it != _wrappers.end(); ++it) {
                 std::cout << "Flushing '" << it->first << "'" << std::endl; // TODO Logging.
                 delete it->second;
             }
+        }
+
+        //   -------------------
+        void Engine::setViewport(GLfloat width, GLfloat height) {
+            _matrix = glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
         }
 
         //   ----------------------
@@ -378,7 +531,7 @@ namespace Dumb {
                 Wrapper *wrapper = new Wrapper(spec, range->chardata_for_range);
                 const std::string &name = spec.getIdentifier();
                 std::cout << "Register '" << name << "'" << std::endl; // TODO Logging.
-                wrappers.insert(std::pair<std::string, Wrapper *>(name, wrapper));
+                _wrappers.insert(std::pair<std::string, Wrapper *>(name, wrapper));
             }
             glm::vec2 ovr = oversample.getOversample();
             stbtt_PackSetOversampling(&context, (unsigned int) ovr.x, (unsigned int) ovr.y);
@@ -413,7 +566,10 @@ namespace Dumb {
         }
 
         //------------
-        Engine::Engine(const std::vector<Resource> &fonts, unsigned int size = DFF_ATLAS_SIZE_DEFAULT) {
+        Engine::Engine(const std::vector<Resource> &fonts,
+                unsigned int capacity = DFE_GLYPH_CAPACITY_DEFAULT,
+                unsigned int size = DFE_ATLAS_SIZE_DEFAULT) : _capacity(capacity), _size(size) {
+            using namespace Framework;
             // Let the fun begins !
             // First, build a temporary buffer for the texture.
             unsigned char *buffer = new unsigned char[size * size];
@@ -426,14 +582,44 @@ namespace Dumb {
             }
             stbtt_PackEnd(&context);
             // Create the GL Texture.
-            glGenTextures(1, &atlas);
-            glBindTexture(GL_TEXTURE_2D, atlas);
+            glGenTextures(1, &_atlas);
+            glBindTexture(GL_TEXTURE_2D, _atlas);
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA,
                     size, size, 0, GL_ALPHA, GL_UNSIGNED_BYTE, buffer);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             delete []buffer;
+
+            // We're not over. Let's initialize VBO/VAO/Shaders/Program.
+            _buffer.create(DFE_BUFFER_STRIDE*capacity);
+            _stream.create();
+            _stream.add(&_buffer,
+                    {
+                    { DFE_POSITION_INDEX, Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, DFE_BUFFER_STRIDE, 0,                  1) },
+                    { DFE_SIZE_INDEX,     Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  2, 1) },
+                    { DFE_TOP_TEX_INDEX,  Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  4, 1) },
+                    { DFE_DOWN_TEX_INDEX, Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  6, 1) },
+                    { DFE_COLOR_INDEX,    Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 3, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  8, 1) },
+                    });
+            _stream.compile();
+
+            // Create program.
+            std::array<Render::Shader, 2> shaders;
+            shaders[0].create(Render::Shader::VERTEX_SHADER,   s_dfe_vertexShaderInstanced);
+            shaders[1].create(Render::Shader::FRAGMENT_SHADER, s_dfe_fragmentShader);
+
+            _program.create();
+            for(unsigned long i=0; i<shaders.size(); i++)
+            {
+                shaders[i].infoLog(Severity::Info);
+                _program.attach(shaders[i]);
+            }
+
+            _program.link();
+            _program.infoLog(Severity::Info);
+            _uniformMatrix  = _program.getUniformLocation("un_matrix");
+            _uniformTexture = _program.getUniformLocation("un_texture");
         }
 
     } // 'Font' namespace.
@@ -449,7 +635,7 @@ class Example {
         /**
          * Default Constructor.
          */
-        Example() : closeFlag(1), engine(0) {
+        Example() : _closeFlag(1), _engine(0) {
             // Nothing special to do.
         }
 
@@ -457,25 +643,25 @@ class Example {
          * The mandatory destructor.
          */
         ~Example() {
-            if(0 != engine) {
-                delete engine;
+            if(0 != _engine) {
+                delete _engine;
             }
         }
     private:
         /**
          * If 0, close the app.
          */
-        int closeFlag;
+        int _closeFlag;
 
         /**
          * Font engine.
          */
-        Dumb::Font::Engine *engine;
+        Dumb::Font::Engine *_engine;
 
         /**
          * Screen size (in pixels).
          */
-        glm::vec2 screenSize;
+        glm::vec2 _screenSize;
 };
 
 void Example::init(Dumb::Core::Application::Adviser *adviser) {
@@ -483,7 +669,7 @@ void Example::init(Dumb::Core::Application::Adviser *adviser) {
     adviser->setMonitor(monitor);
     Dumb::Core::Application::Video::Mode current = monitor.getCurrentMode();
     adviser->setVideoMode(current);
-    screenSize = current.getResolution();
+    _screenSize = current.getResolution();
     adviser->setTitle("Font Test");
 }
 
@@ -528,57 +714,30 @@ void Example::postInit() {
     oversample.push_back(Oversample(glm::vec2(1, 1), range));
     resource.push_back(Resource("TakaoPMincho.ttf", oversample));
 
-    engine = new Engine(resource, 1200);
+    _engine = new Engine(resource, 1200);
 }
 
 int Example::render() {
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_TEXTURE_2D);
-    glDisable(GL_LIGHTING);
-    glDisable(GL_DEPTH_TEST);
+    glViewport(0, 0, _screenSize.x, _screenSize.y);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-    glViewport(0,0,screenSize.x,screenSize.y);
-    glClearColor(0,0,0,0);
-    glClear(GL_COLOR_BUFFER_BIT);
+    Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
+    renderer.depthTest(true);
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(0,screenSize.x,screenSize.y,0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glBindTexture(GL_TEXTURE_2D, engine->getAtlas());
-    glBegin(GL_QUADS);
-    glColor3f(0.5f, 0.5f, 1);
-    // Center the texture.
-    int offX;
-    int offY;
-    int sz;
-    if(screenSize.x > screenSize.y) {
-        sz = screenSize.y;
-        offY = 0;
-        offX = (screenSize.x - screenSize.y) / 2;
-    } else {
-        sz = screenSize.x;
-        offX = 0;
-        offY = (screenSize.y - screenSize.x) / 2;
-    }
-    glTexCoord2f(0, 0); glVertex2f(offX, offY);
-    glTexCoord2f(1, 0); glVertex2f(offX + sz, offY);
-    glTexCoord2f(1, 1); glVertex2f(offX + sz, offY + sz);
-    glTexCoord2f(0, 1); glVertex2f(offX, offY + sz);
-    glEnd();
-    glDisable(GL_TEXTURE_2D);
-    return closeFlag;
+    renderer.texture2D(true);
+    renderer.blend(true);
+    renderer.blendFunc(Framework::Render::BlendFunc::SRC_ALPHA, Framework::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
+    _engine->setViewport(_screenSize.x, _screenSize.y);
+    icu::UnicodeString toPrint("This is a test");
+    const Dumb::Font::Wrapper *font = _engine->getFont("Vera-24-ovr");
+    _engine->print(font, glm::vec2(50, 50), toPrint);
+    return _closeFlag;
 }
+
 void Example::handleUnicodeCharacter(unsigned int) {}
 void Example::handleUnicodeModifierCharacter(unsigned int,int) {}
 void Example::handleKey(int,int,int,int) {
-    closeFlag = 0;
+    _closeFlag = 0;
 }
 void Example::handleMousePosition(double xp,double yp) {}
 void Example::handleMouseButton(int,int,int) {}
