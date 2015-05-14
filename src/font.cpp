@@ -21,38 +21,52 @@ namespace Dumb {
     namespace Font {
         // Program's index.
         // Shaders
-        const char *s_dfe_fragmentShader =
-            "#version 410 core\n"
-            "layout (binding=0) uniform sampler2D un_texture;"
-            "in vec2 fs_tex;"
-            "in vec4 fs_color;"
-            "out vec4 out_Color;"
-            "void main() {"
-//            "out_Color = texture(un_texture, vec2(fs_tex)) * fs_color;"
-            "out_Color = vec4(1, 0, 0, 0.5);"
-            " }";
+        const char *s_dfe_fragmentShader = R"EOT(
+#version 410 core
 
-        const char *s_dfe_vertexShaderInstanced =
-            "#version 410 core\n"
-            "uniform mat4 un_matrix;"
-            "layout (location=0) in vec2 vs_position;"
-            "layout (location=1) in vec2 vs_dimension;"
-            "layout (location=2) in vec2 vs_toptex;"
-            "layout (location=3) in vec2 vs_bottomtex;"
-            "layout (location=4) in vec3 vs_color;"
-            "flat out vec4 fs_color;"
-            "out vec2 fs_tex;"
-            "const vec2 quad[4] = { vec2(0, 0),"
-            "                       vec2(0, 1),"
-            "                       vec2(1, 1),"
-            "                       vec2(1, 0) };"
-            "void main() {"
-            "vec2 point = quad[gl_VertexID];"
-            "vec2 dimPt = vs_dimension * point;"
-            "fs_tex = mix(vs_toptex, vs_bottomtex, point);"
-            "fs_color = vec4(vs_color, 1);"
-            "gl_Position = un_matrix * vec4(vs_position + dimPt, 0.0, 1.0);"
-            "}";
+layout (binding=0) uniform sampler2D un_texture;
+
+in vec2 fs_tex;
+in vec4 fs_color;
+
+out vec4 out_Color;
+
+void main()
+{
+    out_Color = texture(un_texture, vec2(fs_tex)).r * fs_color;
+}
+)EOT";
+
+        const char *s_dfe_vertexShaderInstanced = R"EOT(
+#version 410 core
+
+uniform mat4 un_matrix;
+
+layout (location=0) in vec2 vs_position;
+layout (location=1) in vec2 vs_dimension;
+layout (location=2) in vec2 vs_toptex;
+layout (location=3) in vec2 vs_bottomtex;
+layout (location=4) in vec3 vs_color;
+
+flat out vec4 fs_color;
+flat out vec2 fs_tex;
+
+const vec2 quad[4] = { vec2(0, 0),
+                       vec2(0, 1),
+                       vec2(1, 0),
+                       vec2(1, 1) };
+
+void main()
+{
+    vec2 point = quad[gl_VertexID];
+    vec2 dimPt = vs_dimension * point;
+
+    fs_tex = mix(vs_toptex, vs_bottomtex, point);
+    fs_color = vec4(vs_color, 1);
+
+    gl_Position = un_matrix * vec4(vs_position + dimPt, 0.0, 1.0);
+}
+)EOT";
 
 
         //   ------------------
@@ -69,12 +83,6 @@ namespace Dumb {
             // Retrieve buffer and memcpy.
             renderer.depthBufferWrite(false);
 
-            glBindTexture(0, _atlas); // FIXME not 'glBindTexture(GL_TEXTURE_2D, _atlas)' ?
-            _program.begin();
-            _program.uniform(_uniformMatrix, false, _matrix);
-            _program.uniform(_uniformTexture, 0);
-
-            renderer.setActiveTextureUnit(0);
             _buffer.bind();
             GLfloat *ptr = reinterpret_cast<GLfloat *>(_buffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY));
             GLsizei count = 0; // Number of glyph to display.
@@ -93,28 +101,45 @@ namespace Dumb {
                 if((codepoint >= start) && (codepoint <= last)) {
                     ++count;
                     stbtt_GetPackedQuad(data, _size, _size, codepoint - start, &xpos, &ypos, &quad, 0);
-                    ptr[0] = quad.x0;
-                    ptr[1] = quad.y0;
-                    ptr[2] = quad.x1 - quad.x0;
-                    ptr[3] = quad.y1 - quad.y0;
-                    ptr[4] = quad.s0;
-                    ptr[5] = quad.t0;
-                    ptr[6] = quad.s1;
-                    ptr[7] = quad.t1;
-                    ptr[8] = color.r;
-                    ptr[9] = color.g;
+                    ptr[ 0] = quad.x0;
+                    ptr[ 1] = quad.y0;
+                    ptr[ 2] = quad.x1 - quad.x0;
+                    ptr[ 3] = quad.y1 - quad.y0;
+                    ptr[ 4] = quad.s0;
+                    ptr[ 5] = quad.t0;
+                    ptr[ 6] = quad.s1;
+                    ptr[ 7] = quad.t1;
+                    ptr[ 8] = color.r;
+                    ptr[ 9] = color.g;
                     ptr[10] = color.b;
+                    
+                    Log_Info(Framework::Module::App, "#%04x", codepoint);
+                    Log_Info(Framework::Module::App, "x0 %f, y0 %f", quad.x0, quad.y0);
+                    Log_Info(Framework::Module::App, "x1 %f, y1 %f", quad.x1, quad.y1);
+                    Log_Info(Framework::Module::App, "s0 %f, t0 %f", quad.s0, quad.t0);
+                    Log_Info(Framework::Module::App, "s1 %f, t1 %f", quad.s1, quad.t1);
+                    Log_Info(Framework::Module::App, "r  %f, g  %f, b  %f", color.r, color.g, color.b);
+                
                     ptr += DFE_BUFFER_ELEMENT_COUNT;
                 }
+                Log_Info(Framework::Module::App, "----------------");
+                
             }
             _buffer.unmap();
             _buffer.unbind();
+
+            _program.begin();
+            _program.uniform(_uniformMatrix, false, _matrix);
+
+            renderer.setActiveTextureUnit(0);
+            glBindTexture(GL_TEXTURE_2D, _atlas);
+
             // Send VAO.
             _stream.bind();
             glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, count);
             _stream.unbind();
             _program.end();
-            glBindTexture(0, 0);
+            glBindTexture(GL_TEXTURE_2D, 0);
             renderer.depthBufferWrite(true);
         }
 
@@ -202,8 +227,8 @@ namespace Dumb {
             glGenTextures(1, &_atlas);
             glBindTexture(GL_TEXTURE_2D, _atlas);
             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA,
-                    size, size, 0, GL_ALPHA, GL_UNSIGNED_BYTE, buffer);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_R8,
+                    size, size, 0, GL_RED, GL_UNSIGNED_BYTE, buffer);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             delete []buffer;
@@ -213,11 +238,11 @@ namespace Dumb {
             _stream.create();
             _stream.add(&_buffer,
                     {
-                    { DFE_POSITION_INDEX, Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, DFE_BUFFER_STRIDE, 0,                  1) },
-                    { DFE_SIZE_INDEX,     Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  2, 1) },
-                    { DFE_TOP_TEX_INDEX,  Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  4, 1) },
-                    { DFE_DOWN_TEX_INDEX, Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  6, 1) },
-                    { DFE_COLOR_INDEX,    Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 3, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  8, 1) },
+                    { DFE_POSITION_INDEX, Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false, DFE_BUFFER_STRIDE,                    0, 1) },
+                    { DFE_SIZE_INDEX,     Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  2, 1) },
+                    { DFE_TOP_TEX_INDEX,  Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  4, 1) },
+                    { DFE_DOWN_TEX_INDEX, Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  6, 1) },
+                    { DFE_COLOR_INDEX,    Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 3, false, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  8, 1) },
                     });
             _stream.compile();
 

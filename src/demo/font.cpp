@@ -80,8 +80,8 @@ int Example::render() {
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
-    renderer.depthTest(true);
-
+    renderer.depthTest(false);
+    renderer.culling(false);
     renderer.texture2D(true);
     renderer.blend(true);
     renderer.blendFunc(Framework::Render::BlendFunc::SRC_ALPHA, Framework::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
