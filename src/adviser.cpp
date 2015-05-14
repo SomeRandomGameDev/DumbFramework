@@ -12,17 +12,19 @@ namespace Dumb {
                 }
 
                 Monitor::Monitor(GLFWmonitor *monitor) {
-                    const char *nm = glfwGetMonitorName(monitor);
-                    name = nm;
-                    int width;
-                    int height;
-                    glfwGetMonitorPhysicalSize(monitor, &width, &height);
-                    size = glm::vec2(width, height);
-                    current = Mode(glfwGetVideoMode(monitor));
-                    int modeCount;
-                    const GLFWvidmode *vidmods = glfwGetVideoModes(monitor, &modeCount);
-                    for(int i = 0; i < modeCount; ++i) {
-                        modes.push_back(Mode(vidmods + i));
+                    if(0 != monitor) {
+                        const char *nm = glfwGetMonitorName(monitor);
+                        name = nm;
+                        int width;
+                        int height;
+                        glfwGetMonitorPhysicalSize(monitor, &width, &height);
+                        size = glm::vec2(width, height);
+                        current = Mode(glfwGetVideoMode(monitor));
+                        int modeCount;
+                        const GLFWvidmode *vidmods = glfwGetVideoModes(monitor, &modeCount);
+                        for(int i = 0; i < modeCount; ++i) {
+                            modes.push_back(Mode(vidmods + i));
+                        }
                     }
                     descriptor = monitor;
                 }

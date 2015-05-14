@@ -39,12 +39,21 @@ class Example {
         glm::vec2 _screenSize;
 };
 
+#define DFE_DEBUG
+
 void Example::init(Dumb::Core::Application::Adviser *adviser) {
+#ifndef DFE_DEBUG
     Dumb::Core::Application::Video::Monitor monitor = adviser->getPrimaryMonitor();
     adviser->setMonitor(monitor);
-    Dumb::Core::Application::Video::Mode current = monitor.getCurrentMode();
-    adviser->setVideoMode(current);
-    _screenSize = current.getResolution();
+    Dumb::Core::Application::Video::Mode mode = monitor.getCurrentMode();
+    adviser->setVideoMode(mode);
+#else
+    Dumb::Core::Application::Video::Mode mode(glm::vec2(640, 480), glm::vec3(8, 8, 8), 60);
+    Dumb::Core::Application::Video::Monitor monitor(0);
+    adviser->setMonitor(monitor);
+    adviser->setVideoMode(mode);
+#endif
+    _screenSize = mode.getResolution();
     adviser->setTitle("Font Test");
 }
 

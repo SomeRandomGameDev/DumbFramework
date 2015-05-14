@@ -62,6 +62,7 @@ namespace Dumb {
                                 Video::Mode mode = adviser.getVideoMode();
                                 glm::vec2 size = mode.getResolution();
                                 GLFWmonitor *monitor = preferedMonitor.getMonitor();
+                                glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
                                 GLFWwindow *window = glfwCreateWindow(size.x, size.y,
                                         adviser.getTitle().c_str(),
                                         monitor, 0);
