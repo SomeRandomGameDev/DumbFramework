@@ -403,7 +403,7 @@ namespace Dumb {
             "out vec4 out_Color;"
             "void main() {"
 //            "out_Color = texture(un_texture, vec2(fs_tex)) * fs_color;"
-            "out_color = vec4(1, 0, 0, 0.5);"
+            "out_Color = vec4(1, 0, 0, 0.5);"
             " }";
 
         const char *s_dfe_vertexShaderInstanced =
@@ -679,32 +679,6 @@ void Example::postInit() {
     range.push_back(Range("Vera-24-ovr", 32, 95, 24.0)); 
     oversample.push_back(Oversample(glm::vec2(2, 3), range));
     resource.push_back(Resource("Vera.ttf", oversample));
-    // Load FreeSans.
-    range.clear();
-    oversample.clear();
-    range.push_back(Range("SansSmall", 32, 95, 12.0));
-    range.push_back(Range("SansBig", 32, 95, 24.0));
-    oversample.push_back(Oversample(glm::vec2(1, 1), range));
-    resource.push_back(Resource("FreeSans.ttf", oversample));
-
-    // Guess what ? There's no rendering for japanese fonts yet in stb_truetype !!
-    range.clear();
-    oversample.clear();
-    range.push_back(Range("Japan1", 0x5bc2, 6, 32.0));
-    range.push_back(Range("Japan2", 0x5be4, 6, 32.0));
-    range.push_back(Range("Japan3", 0x5c38, 10, 32.0));
-    range.push_back(Range("Japan4", 0x7dab, 11, 64.0));
-    oversample.push_back(Oversample(glm::vec2(1, 1), range));
-    resource.push_back(Resource("DroidSansJapanese.ttf", oversample));
-
-    // Another japanese font.
-    range.clear();
-    oversample.clear();
-    range.push_back(Range("BigJapan", 0x7cfb, 128, 64));
-    range.push_back(Range("LotsOfJapan", 0x5bc2, 64, 32.0));
-    oversample.push_back(Oversample(glm::vec2(1, 1), range));
-    resource.push_back(Resource("TakaoPMincho.ttf", oversample));
-
     _engine = new Engine(resource, 1200);
 }
 
