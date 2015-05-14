@@ -16,9 +16,12 @@
 #ifndef _DUMBFRAMEWORK_RUNNER_
 #define _DUMBFRAMEWORK_RUNNER_
 
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <adviser.hpp>
+#include <DumbFramework/adviser.hpp>
 #include <iostream>
+
+#include <DumbFramework/log.hpp>
 
 namespace Dumb {
     namespace Core {
@@ -83,10 +86,18 @@ namespace Dumb {
                                             Runner::handleWindowIconify);
                                     // Setting up app hints.
                                     glfwMakeContextCurrent(window);
+                                    // Setting up GLEW.
+                                    GLenum glewError = glewInit();
+                                    if(GLEW_OK != glewError) {
+                                        std::cerr << "Can't initialize GLEW : "
+                                            << glewGetErrorString(glewError)
+                                            << std::endl; // TODO Logging.
+                                        glfwTerminate();
+                                        return -1;
+                                    }
                                     glfwSwapInterval(1);
-                                    // Post-init as we've got the context.
-                                    delegate->postInit();
                                     // Application main loop.
+                                    delegate->postInit();
                                     while(!glfwWindowShouldClose(window)) {
                                         if(!delegate->render()) {
                                             glfwSetWindowShouldClose(window, GL_TRUE);
@@ -198,10 +209,37 @@ namespace Dumb {
     } // 'Core' namespace.
 } // 'Dumb' namespace.
 
+/*
+     Framework::Log::LogBuilder<Framework::Log::AllPassFilter, Framework::Log::SimpleMessageFormat> msgBuilder;
+  Framework::Log::ConsoleOutputPolicy output;
+
+  Framework::Log::LogProcessor& processor = Framework::Log::LogProcessor::instance();
+  processor.start(&msgBuilder, &output);
+
+  std::string title("Sprite EngineTest");
+  TestEngine testScene(640, 480);
+  Framework::WindowHint hint(640, 480, title);
+  Application application;
+
+  application.start(hint, &testScene);
+
+  Log_Info(Framework::Module::App, "End ...");
+  processor.stop();
+  */
+
 // Create a simple application.
 #define SIMPLE_APP(W) \
-    int main(void){W *w = new W();Dumb::Core::Application::Runner<W> runner(w);\
-        int result = runner.start();delete w;return result;}
+    int main(void){ \
+Framework::Log::LogBuilder<Framework::Log::AllPassFilter, Framework::Log::SimpleMessageFormat> msgBuilder;\
+Framework::Log::ConsoleOutputPolicy output;\
+Framework::Log::LogProcessor& processor = Framework::Log::LogProcessor::instance();\
+processor.start(&msgBuilder, &output);\
+W *w = new W();Dumb::Core::Application::Runner<W> runner(w);\
+int result = runner.start();delete w;\
+Log_Info(Framework::Module::App, "End ...");\
+processor.stop();\
+return result;\
+}
 
 // Declare all wrapper methods.
 #define DECLARE_WRAPPER_METHODS \

@@ -1,4 +1,4 @@
-#include <runner.hpp>
+#include <DumbFramework/runner.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -407,7 +407,8 @@ namespace Dumb {
             "in vec4 fs_color;"
             "out vec4 out_Color;"
             "void main() {"
-            "out_Color = texture(un_texture, vec2(fs_tex)) * fs_color;"
+//            "out_Color = texture(un_texture, vec2(fs_tex)) * fs_color;"
+            "out_color = vec4(1, 0, 0, 0.5);"
             " }";
 
         const char *s_dfe_vertexShaderInstanced =
@@ -467,7 +468,6 @@ namespace Dumb {
             glm::fvec3 color = DFE_DEFAULT_COLOR;
             for(it.setToStart(); it.hasNext();) {
                 UChar32 codepoint = it.next32PostInc();
-                std::cout << "0x" << std::hex << codepoint << std::dec << " ";
                 // Silently ignore out of range characters.
                 if((codepoint >= start) && (codepoint <= last)) {
                     ++count;
@@ -483,15 +483,18 @@ namespace Dumb {
                     ptr[8] = color.r;
                     ptr[9] = color.g;
                     ptr[10] = color.b;
+                    for(int j = 0; j < DFE_BUFFER_ELEMENT_COUNT; ++j) {
+                        std::cout << "[#" << j << " : " << ptr[j] << "]";
+                    }
                     ptr += DFE_BUFFER_ELEMENT_COUNT;
+                    std::cout << std::endl;
                 }
             }
+            std::cout << "####" << std::endl;
             _buffer.unmap();
             _buffer.unbind();
-            std::cout << std::endl;
             // Send VAO.
             _stream.bind();
-            std::cout << "Send " << count << " instance to the pipe." << std::endl;
             glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, count);
             _stream.unbind();
             _program.end();
