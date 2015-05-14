@@ -1,5 +1,6 @@
 #include <DumbFramework/runner.hpp>
 #include <DumbFramework/font.hpp>
+#include <DumbFramework/file.hpp>
 
 /**
  * Demo : Minimal font engine example.
@@ -59,6 +60,7 @@ void Example::init(Dumb::Core::Application::Adviser *adviser) {
 
 void Example::postInit() {
     using namespace Dumb::Font;
+    std::string fontPath = Framework::File::executableDirectory() + "/resources/fonts/";
     // Now, load the font and build the font atlas.
     std::vector<Range> range;
     std::vector<Oversample> oversample;
@@ -68,10 +70,17 @@ void Example::postInit() {
     range.push_back(Range("Vera-24", 32, 95, 24.0));
     oversample.push_back(Oversample(glm::vec2(1, 1), range));
     range.clear();
-    range.push_back(Range("Vera-12-ovr", 32, 95, 12.0));
+    range.push_back(Range("Vera-16-ovr", 32, 95, 16.0));
     range.push_back(Range("Vera-24-ovr", 32, 95, 24.0)); 
-    oversample.push_back(Oversample(glm::vec2(2, 3), range));
-    resource.push_back(Resource("Vera.ttf", oversample));
+    oversample.push_back(Oversample(glm::vec2(4, 4), range));
+    resource.push_back(Resource(fontPath + "Vera.ttf", oversample));
+    // Load Vera italic.
+    range.clear();
+    oversample.clear();
+    range.push_back(Range("Vera-Italic", 32, 95, 16.0));
+    oversample.push_back(Oversample(glm::vec2(4, 4), range));
+    resource.push_back(Resource(fontPath + "VeraIt.ttf", oversample));
+ 
     _engine = new Engine(resource, 2048, 4096);
 }
 
@@ -86,9 +95,28 @@ int Example::render() {
     renderer.blend(true);
     renderer.blendFunc(Framework::Render::BlendFunc::SRC_ALPHA, Framework::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
     _engine->setViewport(_screenSize.x, _screenSize.y);
-    icu::UnicodeString toPrint("This is a test");
-    const Dumb::Font::Wrapper *font = _engine->getFont("Vera-24-ovr");
-    _engine->print(font, glm::vec2(50, 50), toPrint);
+    icu::UnicodeString toPrint("This is a [Super] test");
+    const Dumb::Font::Wrapper *font = _engine->getFont("Vera-16-ovr");
+    const Dumb::Font::Wrapper *italic = _engine->getFont("Vera-Italic");
+    const Dumb::Font::Wrapper *big = _engine->getFont("Vera-24-ovr");
+    _engine->print(font, glm::vec2(50, 50), toPrint, glm::fvec3(0.2f, 0.5f, 0.9f));
+
+    glm::vec3 colorWhite = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::vec3 colorRed = glm::vec3(1.0f, 0.3f, 0.3f);
+    glm::vec3 colorGreen = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 colorBlue = glm::vec3(0.5f, 0.5f, 1.0f);
+
+    icu::UnicodeString decorated("This is a decorated text with a big font here.");
+    _engine->print(font, glm::vec2(50, 150), decorated, colorWhite,
+            { Dumb::Font::Decoration(glm::vec2(0, 4), 0, &colorGreen, false, false),
+              Dumb::Font::Decoration(glm::vec2(10, 9), italic, 0, false, false),
+              Dumb::Font::Decoration(glm::vec2(32, 13), big, &colorRed, false, false) });
+
+    icu::UnicodeString interleaved("Let's try blended decoration.");
+    _engine->print(font, glm::vec2(50, 250), interleaved, colorWhite,
+            { Dumb::Font::Decoration(glm::vec2(9, 10), 0, &colorBlue, false, false),
+              Dumb::Font::Decoration(glm::vec2(4, 10), big, 0, false, false) });
+
     return _closeFlag;
 }
 
@@ -104,7 +132,5 @@ void Example::handleWindowClose() {}
 void Example::handleWindowSize(int, int) {}
 void Example::handleWindowIconify(int) {}
 void Example::close() {}
-
-
 
 SIMPLE_APP(Example)

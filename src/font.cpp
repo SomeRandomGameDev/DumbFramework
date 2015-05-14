@@ -1,6 +1,26 @@
+/*
+ * Copyright 2015 Stoned Xander
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #define STBTT_STATIC
 #define STB_TRUETYPE_IMPLEMENTATION
 #define STB_RECT_PACK_IMPLEMENTATION
+
+#include <iostream>
+#include <fstream>
+#include <array>
+#include <algorithm>
 
 #include <DumbFramework/font.hpp>
 
@@ -14,8 +34,6 @@
 #define DFE_COLOR_INDEX           4
 #define DFE_BUFFER_ELEMENT_COUNT 11
 #define DFE_BUFFER_STRIDE        (DFE_BUFFER_ELEMENT_COUNT * sizeof(GLfloat))
-#define DFE_DEFAULT_COLOR        glm::fvec3(1.0f, 1.0f, 1.0f)
-
 
 namespace Dumb {
     namespace Font {
@@ -24,59 +42,90 @@ namespace Dumb {
         const char *s_dfe_fragmentShader = R"EOT(
 #version 410 core
 
-layout (binding=0) uniform sampler2D un_texture;
+            layout (binding=0) uniform sampler2D un_texture;
 
-in vec2 fs_tex;
-in vec4 fs_color;
+        in vec2 fs_tex;
+        in vec4 fs_color;
 
-out vec4 out_Color;
+        out vec4 out_Color;
 
-void main()
-{
-    out_Color = texture(un_texture, vec2(fs_tex)).r * fs_color;
-}
-)EOT";
+        void main()
+        {
+            out_Color = texture(un_texture, vec2(fs_tex)).r * fs_color;
+        }
+        )EOT";
 
         const char *s_dfe_vertexShaderInstanced = R"EOT(
 #version 410 core
 
-uniform mat4 un_matrix;
+            uniform mat4 un_matrix;
 
-layout (location=0) in vec2 vs_position;
-layout (location=1) in vec2 vs_dimension;
-layout (location=2) in vec2 vs_toptex;
-layout (location=3) in vec2 vs_bottomtex;
-layout (location=4) in vec3 vs_color;
+        layout (location=0) in vec2 vs_position;
+        layout (location=1) in vec2 vs_dimension;
+        layout (location=2) in vec2 vs_toptex;
+        layout (location=3) in vec2 vs_bottomtex;
+        layout (location=4) in vec3 vs_color;
 
-flat out vec4 fs_color;
-flat out vec2 fs_tex;
+        flat out vec4 fs_color;
+        flat out vec2 fs_tex;
 
-const vec2 quad[4] = { vec2(0, 0),
-                       vec2(0, 1),
-                       vec2(1, 0),
-                       vec2(1, 1) };
+        const vec2 quad[4] = { vec2(0, 0),
+            vec2(0, 1),
+            vec2(1, 0),
+            vec2(1, 1) };
 
-void main()
-{
-    vec2 point = quad[gl_VertexID];
-    vec2 dimPt = vs_dimension * point;
+        void main()
+        {
+            vec2 point = quad[gl_VertexID];
+            vec2 dimPt = vs_dimension * point;
 
-    fs_tex = mix(vs_toptex, vs_bottomtex, point);
-    fs_color = vec4(vs_color, 1);
+            fs_tex = mix(vs_toptex, vs_bottomtex, point);
+            fs_color = vec4(vs_color, 1);
 
-    gl_Position = un_matrix * vec4(vs_position + dimPt, 0.0, 1.0);
-}
-)EOT";
+            gl_Position = un_matrix * vec4(vs_position + dimPt, 0.0, 1.0);
+        }
+        )EOT";
 
+#define DFE_DECORATION_SPAN 0
+#define DFE_DECORATION_FONT 1
+#define DFE_DECORATION_COLOR 2
+#define DFE_DECORATION_UNDERLINE 3 // TODO
+#define DFE_DECORATION_STRIKE 4 // TODO
 
-        //   ------------------
-        void Engine::print(const Wrapper *font, glm::vec2 pos, icu::UnicodeString text) {
-            using namespace Framework;
-            /* TODO For the moment, it's simple. But in further devs, this method will be
-               a facade for a more extensive method :
-               Area createArea(Parameters params);
-               Where 'Parameters' is one hell of a class containing tons of informations about
-               the area to create/maintain, etc. */
+        typedef std::tuple<const Wrapper *, glm::fvec3, bool, bool> InnerDecoration;
+
+        //   -------------
+        void Engine::print(const Wrapper *def, glm::vec2 pos, icu::UnicodeString text, glm::vec3 color,
+                std::initializer_list<Decoration> decoration) {
+            using namespace Framework; // FIXME Arg ! Remove this !
+            // We'll have to bake an ordered decoration list.
+            const int length = text.length();
+            InnerDecoration* decoArray = new InnerDecoration[length];
+            /* FIXME This code isn't thread safe anyway. Move this as a member of the Engine. */
+
+            for(int i = 0; i < length; ++i) {
+                decoArray[i] = InnerDecoration(def, color, false, false);
+            }
+            for(auto &i : decoration) {
+                glm::ivec2 span = std::get<DFE_DECORATION_SPAN>(i);
+                const Wrapper *font = std::get<DFE_DECORATION_FONT>(i);
+                const glm::fvec3 *coloration = std::get<DFE_DECORATION_COLOR>(i);
+                glm::fvec3 colApply;
+                int start = std::max(0, span.x);
+                int end = std::min(length, span.x + span.y);
+                for(int j = start; j < end; ++j) {
+                    if(0 == font) {
+                        font = std::get<0>(decoArray[j]);
+                    }
+                    if(0 == coloration) {
+                        colApply = std::get<1>(decoArray[j]);
+                    } else {
+                        colApply = *coloration;
+                    }
+                    decoArray[j] = InnerDecoration(font, colApply, false, false);
+                }
+            }
+            // Here we go.
             Render::Renderer& renderer = Render::Renderer::instance();
 
             // Compoute the content of _cell and the number of glyph to print.
@@ -87,43 +136,41 @@ void main()
             GLfloat *ptr = reinterpret_cast<GLfloat *>(_buffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY));
             GLsizei count = 0; // Number of glyph to display.
             // Iterate on the text.
-            UChar32 start = static_cast<UChar32>(font->getStartingCodePoint());
-            UChar32 last = start + static_cast<UChar32>(font->getGlyphsCount());
             stbtt_aligned_quad quad;
             float xpos = static_cast<float>(pos.x);
             float ypos = static_cast<float>(pos.y);
-            stbtt_packedchar *data = font->_data; // How handy ...
+            UChar32 start;
+            UChar32 last;
+            stbtt_packedchar *data;
             icu::StringCharacterIterator it(text);
-            glm::fvec3 color = DFE_DEFAULT_COLOR;
-            for(it.setToStart(); it.hasNext();) {
+            InnerDecoration *glyphDecoration = decoArray;
+            for(it.setToStart(); it.hasNext(); ++glyphDecoration) {
+                // Retrieve decoration.
+                const Wrapper *curFont = std::get<0>(*glyphDecoration);
+                glm::vec3 curColor = std::get<1>(*glyphDecoration);
                 UChar32 codepoint = it.next32PostInc();
-                // Silently ignore out of range characters.
-                if((codepoint >= start) && (codepoint <= last)) {
-                    ++count;
-                    stbtt_GetPackedQuad(data, _size, _size, codepoint - start, &xpos, &ypos, &quad, 0);
-                    ptr[ 0] = quad.x0;
-                    ptr[ 1] = quad.y0;
-                    ptr[ 2] = quad.x1 - quad.x0;
-                    ptr[ 3] = quad.y1 - quad.y0;
-                    ptr[ 4] = quad.s0;
-                    ptr[ 5] = quad.t0;
-                    ptr[ 6] = quad.s1;
-                    ptr[ 7] = quad.t1;
-                    ptr[ 8] = color.r;
-                    ptr[ 9] = color.g;
-                    ptr[10] = color.b;
-                    
-                    Log_Info(Framework::Module::App, "#%04x", codepoint);
-                    Log_Info(Framework::Module::App, "x0 %f, y0 %f", quad.x0, quad.y0);
-                    Log_Info(Framework::Module::App, "x1 %f, y1 %f", quad.x1, quad.y1);
-                    Log_Info(Framework::Module::App, "s0 %f, t0 %f", quad.s0, quad.t0);
-                    Log_Info(Framework::Module::App, "s1 %f, t1 %f", quad.s1, quad.t1);
-                    Log_Info(Framework::Module::App, "r  %f, g  %f, b  %f", color.r, color.g, color.b);
-                
-                    ptr += DFE_BUFFER_ELEMENT_COUNT;
+                if(0 != curFont) {
+                    start = static_cast<UChar32>(curFont->getStartingCodePoint());
+                    last = start + static_cast<UChar32>(curFont->getGlyphsCount());
+                    data = curFont->_data;
+                    // Silently ignore out of range characters.
+                    if((codepoint >= start) && (codepoint <= last)) {
+                        ++count;
+                        stbtt_GetPackedQuad(data, _size, _size, codepoint - start, &xpos, &ypos, &quad, 0);
+                        ptr[ 0] = quad.x0;
+                        ptr[ 1] = quad.y0;
+                        ptr[ 2] = quad.x1 - quad.x0;
+                        ptr[ 3] = quad.y1 - quad.y0;
+                        ptr[ 4] = quad.s0;
+                        ptr[ 5] = quad.t0;
+                        ptr[ 6] = quad.s1;
+                        ptr[ 7] = quad.t1;
+                        ptr[ 8] = curColor.r;
+                        ptr[ 9] = curColor.g;
+                        ptr[10] = curColor.b;
+                        ptr += DFE_BUFFER_ELEMENT_COUNT;
+                    }
                 }
-                Log_Info(Framework::Module::App, "----------------");
-                
             }
             _buffer.unmap();
             _buffer.unbind();
@@ -141,6 +188,68 @@ void main()
             _program.end();
             glBindTexture(GL_TEXTURE_2D, 0);
             renderer.depthBufferWrite(true);
+
+            delete []decoArray;
+        }
+
+        //   -------------
+        void Engine::print(const Wrapper *font, glm::vec2 pos, icu::UnicodeString text, glm::vec3 color) {
+            using namespace Framework;
+            if(0 != font) {
+                Render::Renderer& renderer = Render::Renderer::instance();
+
+                // Compoute the content of _cell and the number of glyph to print.
+                // Retrieve buffer and memcpy.
+                renderer.depthBufferWrite(false);
+
+                _buffer.bind();
+                GLfloat *ptr = reinterpret_cast<GLfloat *>(_buffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY));
+                GLsizei count = 0; // Number of glyph to display.
+                // Iterate on the text.
+                UChar32 start = static_cast<UChar32>(font->getStartingCodePoint());
+                UChar32 last = start + static_cast<UChar32>(font->getGlyphsCount());
+                stbtt_aligned_quad quad;
+                float xpos = static_cast<float>(pos.x);
+                float ypos = static_cast<float>(pos.y);
+                stbtt_packedchar *data = font->_data; // How handy ...
+                icu::StringCharacterIterator it(text);
+                for(it.setToStart(); it.hasNext();) {
+                    UChar32 codepoint = it.next32PostInc();
+                    // Silently ignore out of range characters.
+                    if((codepoint >= start) && (codepoint <= last)) {
+                        ++count;
+                        stbtt_GetPackedQuad(data, _size, _size, codepoint - start, &xpos, &ypos, &quad, 0);
+                        ptr[ 0] = quad.x0;
+                        ptr[ 1] = quad.y0;
+                        ptr[ 2] = quad.x1 - quad.x0;
+                        ptr[ 3] = quad.y1 - quad.y0;
+                        ptr[ 4] = quad.s0;
+                        ptr[ 5] = quad.t0;
+                        ptr[ 6] = quad.s1;
+                        ptr[ 7] = quad.t1;
+                        ptr[ 8] = color.r;
+                        ptr[ 9] = color.g;
+                        ptr[10] = color.b;
+                        ptr += DFE_BUFFER_ELEMENT_COUNT;
+                    }
+                }
+                _buffer.unmap();
+                _buffer.unbind();
+
+                _program.begin();
+                _program.uniform(_uniformMatrix, false, _matrix);
+
+                renderer.setActiveTextureUnit(0);
+                glBindTexture(GL_TEXTURE_2D, _atlas);
+
+                // Send VAO.
+                _stream.bind();
+                glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, count);
+                _stream.unbind();
+                _program.end();
+                glBindTexture(GL_TEXTURE_2D, 0);
+                renderer.depthBufferWrite(true);
+            }
         }
 
         // ------------

@@ -16,16 +16,14 @@
 #ifndef _DUMBFRAMEWORK_FONT_
 #define _DUMBFRAMEWORK_FONT_
 
-#include <iostream>
-#include <fstream>
-
 #include <stb_rect_pack.h>
 #include <stb_truetype.h>
 
 #include <string>
 #include <vector>
 #include <map>
-#include <array>
+#include <tuple>
+#include <initializer_list>
 
 /* Of course, we'll use ICU for text management. The std c++ string library is far from perfect.
    And the Dumb Framework won't use the Boost lib ! - Over my dead body ! - */
@@ -65,6 +63,11 @@
  * Dumb Font Engine default glyphs capacity.
  */
 #define DFE_GLYPH_CAPACITY_DEFAULT 4096
+/**
+ * Default printing color.
+ */
+#define DFE_COLOR_DEFAULT        glm::fvec3(1.0f, 1.0f, 1.0f)
+
 
 namespace Dumb {
     namespace Font {
@@ -263,6 +266,12 @@ namespace Dumb {
         };
 
         /**
+         * Decoration type.
+         * A tuple consisting in (offset-length, font, color, underline-flag, stroke-flag).
+         */
+        typedef std::tuple<glm::ivec2, const Wrapper *, const glm::fvec3 *, bool, bool> Decoration;
+
+        /**
          * El Dumb Font Engine.
          */
         class Engine {
@@ -304,8 +313,22 @@ namespace Dumb {
                  * @param [in] font Font to be used.
                  * @param [in] pos Position in logical coordinate system.
                  * @param [in] text Starting text.
+                 * @param [in] color Text Color (RGB, [0..1]).
                  */
-                void print(const Wrapper *font, glm::vec2 pos, icu::UnicodeString text);
+                void print(const Wrapper *font, glm::vec2 pos, icu::UnicodeString text, glm::vec3 color = DFE_COLOR_DEFAULT);
+
+                /**
+                 * Decorated text printing.
+                 * @param [in] font Font to be used.
+                 * @param [in] pos Position in logical coordinate system.
+                 * @param [in] text Starting text.
+                 * @param [in] color Default color.
+                 * @param [in] decoration A list of decoration hints. A decoration hint is
+                 * a tuple containing the following : A start and end index, a font wrapper, a color,
+                 * a flag to underlining, a flag for stroke.
+                 */
+                void print(const Wrapper *def, glm::vec2 pos, icu::UnicodeString text, glm::vec3 color,
+                        std::initializer_list<Decoration> decoration);
 
                 /**
                  * Set the viewport. This method is pretty straightforward as we only
