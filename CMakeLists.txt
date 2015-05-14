@@ -117,7 +117,8 @@ set(DUMB_FRAMEWORK_SOURCES
     src/transform.cpp
     src/joystick.cpp
     src/mouse.cpp
-    src/adviser.cpp)
+    src/adviser.cpp
+    src/font.cpp)
 
 if(MSVC)
 set(DUMB_FRAMEWORK_SOURCES
@@ -141,6 +142,8 @@ target_link_libraries(DumbFramework ${SOIL_LIBRARIES} )
 target_link_libraries(DumbFramework ${THREAD_LIBRARY} )
 target_link_libraries(DumbFramework ${FREETYPE_GL_LIBRARY} )
 target_link_libraries(DumbFramework ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(DumbFramework ${ICU_LIBRARIES})
+
 
 if(BUILD_TESTS)
     find_package(UnitTest++)
@@ -177,7 +180,6 @@ target_link_libraries(gui DumbFramework)
 add_executable(fonttest src/demo/font.cpp)
 add_dependencies(resources fonttest)
 target_link_libraries(fonttest DumbFramework)
-target_link_libraries(fonttest ${ICU_LIBRARIES})
 
 set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
 set(DOXYFILE ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)

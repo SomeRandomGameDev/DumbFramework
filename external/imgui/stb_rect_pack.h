@@ -1,4 +1,4 @@
-// stb_rect_pack.h - v0.06 - public domain - rectangle packing
+// stb_rect_pack.h - v0.05 - public domain - rectangle packing
 // Sean Barrett 2014
 //
 // Useful for e.g. packing rectangular textures into an atlas.
@@ -13,7 +13,6 @@
 // More docs to come.
 //
 // No memory allocations; uses qsort() and assert() from stdlib.
-// Can override those by defining STBRP_SORT and STBRP_ASSERT.
 //
 // This library currently uses the Skyline Bottom-Left algorithm.
 //
@@ -21,18 +20,8 @@
 // implement them to the same API, but with a different init
 // function.
 //
-// Credits
-//
-//  Library
-//    Sean Barrett
-//  Minor features
-//    Martins Mozeiko
-//  Bugfixes / warning fixes
-//    [your name could be here]
-//
 // Version history:
 //
-//     0.06  (2015-04-15)  added STBRP_SORT to allow replacing qsort
 //     0.05:  added STBRP_ASSERT to allow replacing assert
 //     0.04:  fixed minor bug in STBRP_LARGE_RECTS support
 //     0.01:  initial release
@@ -140,7 +129,7 @@ enum
 {
    STBRP_HEURISTIC_Skyline_default=0,
    STBRP_HEURISTIC_Skyline_BL_sortHeight = STBRP_HEURISTIC_Skyline_default,
-   STBRP_HEURISTIC_Skyline_BF_sortHeight,
+   STBRP_HEURISTIC_Skyline_BF_sortHeight
 };
 
 
@@ -180,10 +169,7 @@ struct stbrp_context
 //
 
 #ifdef STB_RECT_PACK_IMPLEMENTATION
-#ifndef STBRP_SORT
 #include <stdlib.h>
-#define STBRP_SORT qsort
-#endif
 
 #ifndef STBRP_ASSERT
 #include <assert.h>
@@ -192,7 +178,7 @@ struct stbrp_context
 
 enum
 {
-   STBRP__INIT_skyline = 1,
+   STBRP__INIT_skyline = 1
 };
 
 STBRP_DEF void stbrp_setup_heuristic(stbrp_context *context, int heuristic)
@@ -262,6 +248,7 @@ STBRP_DEF void stbrp_init_target(stbrp_context *context, int width, int height, 
 // find minimum y position if it starts at x1
 static int stbrp__skyline_find_min_y(stbrp_context *c, stbrp_node *first, int x0, int width, int *pwaste)
 {
+   (void)c;
    stbrp_node *node = first;
    int x1 = x0 + width;
    int min_y, visited_width, waste_area;
@@ -538,7 +525,7 @@ STBRP_DEF void stbrp_pack_rects(stbrp_context *context, stbrp_rect *rects, int n
    }
 
    // sort according to heuristic
-   STBRP_SORT(rects, num_rects, sizeof(rects[0]), rect_height_compare);
+   qsort(rects, num_rects, sizeof(rects[0]), rect_height_compare);
 
    for (i=0; i < num_rects; ++i) {
       stbrp__findresult fr = stbrp__skyline_pack_rectangle(context, rects[i].w, rects[i].h);
@@ -551,7 +538,7 @@ STBRP_DEF void stbrp_pack_rects(stbrp_context *context, stbrp_rect *rects, int n
    }
 
    // unsort
-   STBRP_SORT(rects, num_rects, sizeof(rects[0]), rect_original_order);
+   qsort(rects, num_rects, sizeof(rects[0]), rect_original_order);
 
    // set was_packed flags
    for (i=0; i < num_rects; ++i)
