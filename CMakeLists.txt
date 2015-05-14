@@ -49,6 +49,7 @@ find_package(OpenGL)
 find_package(GLEW)
 find_package(GLFW)
 find_package(GLM ${GLM_MINIMUM_VERSION} REQUIRED)
+find_package(ICU 4.4 REQUIRED)
 find_package(Doxygen)
 # find_package(BOX2D)
 # find_package(Freetype-gl)
@@ -115,7 +116,8 @@ set(DUMB_FRAMEWORK_SOURCES
     src/windowhint.cpp
     src/transform.cpp
     src/joystick.cpp
-    src/mouse.cpp)
+    src/mouse.cpp
+    src/adviser.cpp)
 
 if(MSVC)
 set(DUMB_FRAMEWORK_SOURCES
@@ -171,6 +173,11 @@ target_link_libraries(flatengine DumbFramework)
 add_executable(gui src/demo/gui.cpp)
 add_dependencies(resources gui)
 target_link_libraries(gui DumbFramework)
+
+add_executable(fonttest src/demo/font.cpp)
+add_dependencies(resources fonttest)
+target_link_libraries(fonttest DumbFramework)
+target_link_libraries(fonttest ${ICU_LIBRARIES})
 
 set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
 set(DOXYFILE ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)

@@ -3,11 +3,6 @@
 #include <iostream>
 #include <fstream>
 
-/*
-   g++ adviser.o font.cpp libDumbFramework.a -I../src -I../../Libraries/stb -I../../DumbFramework/include -licuuc -lGLEW -lglfw -lGL -lGLU -lpthread -lm -DGLM_FORCE_RADIANS -std=c++11 -o fonttest 
-   g++ adviser.o font.cpp -I../src -I../../Libraries/stb -lglfw -lGL -lGLU -lm -o fonttest -std=c++11 -DGLM_FORCE_RADIANS
- */
-
 #define STB_TRUETYPE_IMPLEMENTATION
 #define STB_RECT_PACK_IMPLEMENTATION
 #include <stb_rect_pack.h>
@@ -483,14 +478,9 @@ namespace Dumb {
                     ptr[8] = color.r;
                     ptr[9] = color.g;
                     ptr[10] = color.b;
-                    for(int j = 0; j < DFE_BUFFER_ELEMENT_COUNT; ++j) {
-                        std::cout << "[#" << j << " : " << ptr[j] << "]";
-                    }
                     ptr += DFE_BUFFER_ELEMENT_COUNT;
-                    std::cout << std::endl;
                 }
             }
-            std::cout << "####" << std::endl;
             _buffer.unmap();
             _buffer.unbind();
             // Send VAO.
@@ -506,7 +496,7 @@ namespace Dumb {
         Engine::~Engine() {
             std::map<std::string, Wrapper *>::iterator it;
             for(it = _wrappers.begin(); it != _wrappers.end(); ++it) {
-                std::cout << "Flushing '" << it->first << "'" << std::endl; // TODO Logging.
+                Log_Info(Framework::Module::App, "Flushing '%s'", it->first.c_str());
                 delete it->second;
             }
         }
@@ -528,19 +518,17 @@ namespace Dumb {
                 range->font_size = spec.getSize();
                 range->first_unicode_char_in_range = spec.getStartingCodePoint();
                 range->num_chars_in_range = spec.getGlyphsCount();
-                std::cout << "Size : " << range->font_size << "px , Start : " << range->first_unicode_char_in_range
-                    << ", Count : " << range->num_chars_in_range << std::endl;
                 range->chardata_for_range = new stbtt_packedchar[range->num_chars_in_range];
                 Wrapper *wrapper = new Wrapper(spec, range->chardata_for_range);
                 const std::string &name = spec.getIdentifier();
-                std::cout << "Register '" << name << "'" << std::endl; // TODO Logging.
+                Log_Info(Framework::Module::App, "Register '%s'", name.c_str());
                 _wrappers.insert(std::pair<std::string, Wrapper *>(name, wrapper));
             }
             glm::vec2 ovr = oversample.getOversample();
             stbtt_PackSetOversampling(&context, (unsigned int) ovr.x, (unsigned int) ovr.y);
             if(stbtt_PackFontRanges(&context, reinterpret_cast<unsigned char*>(font),
                         0, packRange, count) == 0) {
-                std::cerr << "Font range loading failure" << std::endl; // TODO Logging
+                Log_Error(Framework::Module::App, "Font range loading failure");
             }
             delete []packRange;
         }
@@ -551,7 +539,7 @@ namespace Dumb {
             fontFile.open(resource.getPath().c_str(), std::ios::binary|std::ios::ate|std::ios::in);
             // Font file check.
             if(fontFile.is_open()) {
-                std::cout << "Loading '" << resource.getPath() << "'" << std::endl; // TODO Logging
+                Log_Info(Framework::Module::App, "Loading '%s'", resource.getPath().c_str());
                 // Font file is ok. Let's load it.
                 std::streampos size = fontFile.tellg();
                 char *fontFileContent = new char[size];
@@ -564,7 +552,7 @@ namespace Dumb {
                 // We're done here.
                 delete []fontFileContent;
             } else {
-                std::cerr << "Failed to open '" << resource.getPath() << "'" << std::endl; // TODO Logging
+                Log_Error(Framework::Module::App, "Failed to open '%s'", resource.getPath().c_str());
             }
         }
 
