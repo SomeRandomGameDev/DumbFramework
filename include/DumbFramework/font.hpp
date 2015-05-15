@@ -226,12 +226,15 @@ namespace Dumb {
 
         // Engine forward declaration.
         class Engine;
+        // Cache forward declaration.
+        class Cache;
 
         /**
          * Font wrapper. Addressable font descriptor for printing usage.
          */
         class Wrapper : public Range {
             friend class Engine;
+            friend class Cache;
 
             public:
             /**
@@ -277,6 +280,71 @@ namespace Dumb {
         typedef std::tuple<const Wrapper *, glm::fvec3, bool, bool> InnerDecoration;
 
         /**
+         * Caching class. Allows precomputing text decoration and positionning.
+         */
+        class Cache {
+            public:
+                /**
+                 * Constructor.
+                 * @param [in] def Default font to be used.
+                 * @param [in] pos Position in logical coordinate system.
+                 * @param [in] text Starting text.
+                 * @param [in] color Default color.
+                 * @param [in] decoration A list of decoration hints. A decoration hint is
+                 * a tuple containing the following : A start and end index, a font wrapper, a color,
+                 * a flag to underlining, a flag for stroke.
+                 * @param [in] size Font atlas size.
+                 */
+                Cache(const Wrapper *def,
+                        glm::vec2 pos,
+                        const icu::UnicodeString &text,
+                        glm::vec3 color,
+                        std::initializer_list<Decoration> decoration,
+                        unsigned int size);
+
+                /**
+                 * Constructor for simple text.
+                 * @param [in] font Font to be used.
+                 * @param [in] pos Position in logical coordinate system.
+                 * @param [in] text Starting text.
+                 * @param [in] color Color.
+                 * @param [in] size Font atlas size.
+                 */
+                Cache(const Wrapper *def,
+                        glm::vec2 pos,
+                        const icu::UnicodeString &text,
+                        glm::vec3 color,
+                        unsigned int size);
+
+                /**
+                 * Destructor.
+                 */
+                ~Cache();
+
+                /**
+                 * Fetch the computed buffer.
+                 * @param [out] dest Destination buffer.
+                 * @param [in] size Size of the destination buffer.
+                 */
+                void fetch(GLfloat *dest, unsigned int size) const;
+
+                /**
+                 * @return The number of glyphs.
+                 */
+                inline unsigned int count() const { return _count; }
+            private:
+                /**
+                 * Buffer content.
+                 */
+                GLfloat *_buffer;
+
+                /**
+                 * Glyphs count.
+                 */
+                unsigned int _count;
+        };
+
+        /**
          * El Dumb Font Engine.
          */
         class Engine {
@@ -320,11 +388,14 @@ namespace Dumb {
                  * @param [in] text Starting text.
                  * @param [in] color Text Color (RGB, [0..1]).
                  */
-                void print(const Wrapper *font, glm::vec2 pos, icu::UnicodeString text, glm::vec3 color = DFE_COLOR_DEFAULT);
+                void print(const Wrapper *font,
+                        glm::vec2 pos,
+                        icu::UnicodeString text,
+                        glm::vec3 color = DFE_COLOR_DEFAULT);
 
                 /**
                  * Decorated text printing.
-                 * @param [in] font Font to be used.
+                 * @param [in] def Default font to be used.
                  * @param [in] pos Position in logical coordinate system.
                  * @param [in] text Starting text.
                  * @param [in] color Default color.
@@ -332,8 +403,23 @@ namespace Dumb {
                  * a tuple containing the following : A start and end index, a font wrapper, a color,
                  * a flag to underlining, a flag for stroke.
                  */
-                void print(const Wrapper *def, glm::vec2 pos, icu::UnicodeString text, glm::vec3 color,
+                void print(const Wrapper *def,
+                        glm::vec2 pos,
+                        const icu::UnicodeString &text,
+                        glm::vec3 color,
                         std::initializer_list<Decoration> decoration);
+
+                /**
+                 * Print a precomputed text.
+                 * @param [in] cache Precomputed text.
+                 */
+                void print(const Cache &cache);
+
+                /**
+                 * Print a list of precomputed texts.
+                 * @param [in] texts List of precomputed texts.
+                 */
+                void print(const std::vector<const Cache*> &texts);
 
                 /**
                  * Set the viewport. This method is pretty straightforward as we only
@@ -344,6 +430,11 @@ namespace Dumb {
                  * @param [in] height Height (not only pixels).
                  */
                 void setViewport(GLfloat width, GLfloat height);
+
+                /**
+                 * @return Font atlas size.
+                 */
+                inline unsigned int size() { return _size; }
 
                 /* TODO Serious business here :
                    - Logical viewport management.

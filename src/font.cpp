@@ -92,14 +92,70 @@ namespace Dumb {
 #define DFE_DECORATION_UNDERLINE 3 // TODO
 #define DFE_DECORATION_STRIKE 4 // TODO
 
-        //   -------------
-        void Engine::print(const Wrapper *def, glm::vec2 pos, icu::UnicodeString text, glm::vec3 color,
-                std::initializer_list<Decoration> decoration) {
-            using namespace Framework; // FIXME Arg ! Remove this !
+        // ---------
+        Cache::Cache(const Wrapper *def,
+                glm::vec2 pos,
+                const icu::UnicodeString &text,
+                glm::vec3 color,
+                unsigned int size) {
+            _count = 0; // Number of glyph to display.
+            // Iterate on the text.
+            stbtt_aligned_quad quad;
+            float xpos = static_cast<float>(pos.x);
+            float ypos = static_cast<float>(pos.y);
+            UChar32 start = static_cast<UChar32>(def->getStartingCodePoint());
+            UChar32 last = start + static_cast<UChar32>(def->getGlyphsCount());
+            stbtt_packedchar *data;
+            icu::StringCharacterIterator it(text);
+            // First pass : Determine the number of glyph to store.
+            for(it.setToStart(); it.hasNext();) {
+                // Retrieve decoration.
+                UChar32 codepoint = it.next32PostInc();
+                if(0 != def) {
+                    // Silently ignore out of range characters.
+                    if((codepoint >= start) && (codepoint <= last)) {
+                        ++_count;
+                    }
+                }
+            }
+            // Allocate the buffer.
+            _buffer = new GLfloat[_count*DFE_BUFFER_ELEMENT_COUNT];
+            GLfloat *ptr = _buffer;
+            // Second pass : Populate.
+            for(it.setToStart(); it.hasNext();) {
+                UChar32 codepoint = it.next32PostInc();
+                if(0 != def) {
+                    data = def->_data;
+                    // Silently ignore out of range characters.
+                    if((codepoint >= start) && (codepoint <= last)) {
+                        stbtt_GetPackedQuad(data, size, size, codepoint - start, &xpos, &ypos, &quad, 0);
+                        ptr[ 0] = quad.x0;
+                        ptr[ 1] = quad.y0;
+                        ptr[ 2] = quad.x1 - quad.x0;
+                        ptr[ 3] = quad.y1 - quad.y0;
+                        ptr[ 4] = quad.s0;
+                        ptr[ 5] = quad.t0;
+                        ptr[ 6] = quad.s1;
+                        ptr[ 7] = quad.t1;
+                        ptr[ 8] = color.r;
+                        ptr[ 9] = color.g;
+                        ptr[10] = color.b;
+                        ptr += DFE_BUFFER_ELEMENT_COUNT;
+                    }
+                }
+            }
+        }
+
+        // ---------
+        Cache::Cache(const Wrapper *def,
+                glm::vec2 pos,
+                const icu::UnicodeString &text,
+                glm::vec3 color,
+                std::initializer_list<Decoration> decoration,
+                unsigned int size) {
             // We'll have to bake an ordered decoration list.
             const int length = text.length();
             InnerDecoration* decoArray = new InnerDecoration[length];
-            /* FIXME This code isn't thread safe anyway. Move this as a member of the Engine. */
 
             for(int i = 0; i < length; ++i) {
                 decoArray[i] = InnerDecoration(def, color, false, false);
@@ -123,16 +179,7 @@ namespace Dumb {
                     decoArray[j] = InnerDecoration(font, colApply, false, false);
                 }
             }
-            // Here we go.
-            Render::Renderer& renderer = Render::Renderer::instance();
-
-            // Compoute the content of _cell and the number of glyph to print.
-            // Retrieve buffer and memcpy.
-            renderer.depthBufferWrite(false);
-
-            _buffer.bind();
-            GLfloat *ptr = reinterpret_cast<GLfloat *>(_buffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY));
-            GLsizei count = 0; // Number of glyph to display.
+            _count = 0; // Number of glyph to display.
             // Iterate on the text.
             stbtt_aligned_quad quad;
             float xpos = static_cast<float>(pos.x);
@@ -142,6 +189,26 @@ namespace Dumb {
             stbtt_packedchar *data;
             icu::StringCharacterIterator it(text);
             InnerDecoration *glyphDecoration = decoArray;
+            // First pass : Determine the number of glyph to store.
+            for(it.setToStart(); it.hasNext(); ++glyphDecoration) {
+                // Retrieve decoration.
+                const Wrapper *curFont = std::get<0>(*glyphDecoration);
+                UChar32 codepoint = it.next32PostInc();
+                if(0 != curFont) {
+                    start = static_cast<UChar32>(curFont->getStartingCodePoint());
+                    last = start + static_cast<UChar32>(curFont->getGlyphsCount());
+                    data = curFont->_data;
+                    // Silently ignore out of range characters.
+                    if((codepoint >= start) && (codepoint <= last)) {
+                        ++_count;
+                    }
+                }
+            }
+            // Allocate the buffer.
+            _buffer = new GLfloat[_count*DFE_BUFFER_ELEMENT_COUNT];
+            GLfloat *ptr = _buffer;
+            // Second pass : Populate.
+            glyphDecoration = decoArray;
             for(it.setToStart(); it.hasNext(); ++glyphDecoration) {
                 // Retrieve decoration.
                 const Wrapper *curFont = std::get<0>(*glyphDecoration);
@@ -153,8 +220,7 @@ namespace Dumb {
                     data = curFont->_data;
                     // Silently ignore out of range characters.
                     if((codepoint >= start) && (codepoint <= last)) {
-                        ++count;
-                        stbtt_GetPackedQuad(data, _size, _size, codepoint - start, &xpos, &ypos, &quad, 0);
+                        stbtt_GetPackedQuad(data, size, size, codepoint - start, &xpos, &ypos, &quad, 0);
                         ptr[ 0] = quad.x0;
                         ptr[ 1] = quad.y0;
                         ptr[ 2] = quad.x1 - quad.x0;
@@ -170,24 +236,92 @@ namespace Dumb {
                     }
                 }
             }
+            delete []decoArray;
+        }
+
+        //-----------
+        Cache::~Cache() {
+            if(0 != _buffer) {
+                delete []_buffer;
+            }
+        }
+
+        //   ------------
+        void Cache::fetch(GLfloat *dest, unsigned int size) const {
+            if(size >= _count) {
+                memcpy(dest, _buffer, _count * DFE_BUFFER_STRIDE);
+            }
+        }
+
+        //   -------------
+        void Engine::print(const std::vector<const Cache*> &texts) {
+            Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
+            renderer.depthBufferWrite(false);
+            _buffer.bind();
+            GLfloat *ptr = reinterpret_cast<GLfloat *>(
+                    _buffer.map(Framework::Render::BufferObject::Access::Policy::WRITE_ONLY));
+            unsigned int remaining = _capacity;
+            GLfloat *current = ptr;
+            std::vector<const Cache *>::const_iterator it;
+            unsigned int count;
+            unsigned int total = 0;
+            for(it = texts.begin(); it != texts.end(); ++it) {
+                (*it)->fetch(current, remaining);
+                count = (*it)->count();
+                total += count;
+                remaining -= count;
+                current += count * DFE_BUFFER_STRIDE;
+            }
             _buffer.unmap();
             _buffer.unbind();
 
             _program.begin();
             _program.uniform(_uniformMatrix, false, _matrix);
-
             renderer.setActiveTextureUnit(0);
             glBindTexture(GL_TEXTURE_2D, _atlas);
 
             // Send VAO.
             _stream.bind();
-            glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, count);
+            glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, total);
             _stream.unbind();
             _program.end();
             glBindTexture(GL_TEXTURE_2D, 0);
             renderer.depthBufferWrite(true);
+        }
 
-            delete []decoArray;
+        //   -------------
+        void Engine::print(const Cache &cache) {
+            Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
+            renderer.depthBufferWrite(false);
+            _buffer.bind();
+            GLfloat *ptr = reinterpret_cast<GLfloat *>(
+                    _buffer.map(Framework::Render::BufferObject::Access::Policy::WRITE_ONLY));
+            cache.fetch(ptr, _capacity);
+            _buffer.unmap();
+            _buffer.unbind();
+
+            _program.begin();
+            _program.uniform(_uniformMatrix, false, _matrix);
+            renderer.setActiveTextureUnit(0);
+            glBindTexture(GL_TEXTURE_2D, _atlas);
+
+            // Send VAO.
+            _stream.bind();
+            glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, cache.count());
+            _stream.unbind();
+            _program.end();
+            glBindTexture(GL_TEXTURE_2D, 0);
+            renderer.depthBufferWrite(true);
+        }
+
+        //   -------------
+        void Engine::print(const Wrapper *def,
+                glm::vec2 pos,
+                const icu::UnicodeString &text,
+                glm::vec3 color,
+                std::initializer_list<Decoration> decoration) {
+            Cache cache(def, pos, text, color, decoration, _size);
+            print(cache);
         }
 
         //   -------------
@@ -195,11 +329,7 @@ namespace Dumb {
             using namespace Framework;
             if(0 != font) {
                 Render::Renderer& renderer = Render::Renderer::instance();
-
-                // Compoute the content of _cell and the number of glyph to print.
-                // Retrieve buffer and memcpy.
                 renderer.depthBufferWrite(false);
-
                 _buffer.bind();
                 GLfloat *ptr = reinterpret_cast<GLfloat *>(_buffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY));
                 GLsizei count = 0; // Number of glyph to display.

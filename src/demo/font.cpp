@@ -112,7 +112,8 @@ int Example::render() {
     renderer.culling(false);
     renderer.texture2D(true);
     renderer.blend(true);
-    renderer.blendFunc(Framework::Render::BlendFunc::SRC_ALPHA, Framework::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
+    renderer.blendFunc(Framework::Render::BlendFunc::SRC_ALPHA,
+            Framework::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
     _engine->setViewport(_screenSize.x, _screenSize.y);
     icu::UnicodeString toPrint("This is a [Super] test");
     const Dumb::Font::Wrapper *font = _engine->getFont("Vera-16-ovr");
@@ -145,7 +146,7 @@ void Example::handleUnicodeCharacter(unsigned int) {}
 void Example::handleUnicodeModifierCharacter(unsigned int,int) {}
 void Example::handleKey(int,int,int,int) {
     if(_frames > 0) {
-        Log_Info(Framework::Module::Render, "Time per frame : %.5fns",
+        Log_Info(Framework::Module::Render, "Time per frame : %.0fns",
                 ((_elapsed * 1000000000) / (double) _frames));
         double elapsed = glfwGetTime() - _start;
         Log_Info(Framework::Module::Render, "FPS : %.3f",
