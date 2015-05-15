@@ -92,8 +92,6 @@ namespace Dumb {
 #define DFE_DECORATION_UNDERLINE 3 // TODO
 #define DFE_DECORATION_STRIKE 4 // TODO
 
-        typedef std::tuple<const Wrapper *, glm::fvec3, bool, bool> InnerDecoration;
-
         //   -------------
         void Engine::print(const Wrapper *def, glm::vec2 pos, icu::UnicodeString text, glm::vec3 color,
                 std::initializer_list<Decoration> decoration) {

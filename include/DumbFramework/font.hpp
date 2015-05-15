@@ -272,6 +272,11 @@ namespace Dumb {
         typedef std::tuple<glm::ivec2, const Wrapper *, const glm::fvec3 *, bool, bool> Decoration;
 
         /**
+         * Decoration type for internal use only.
+         */
+        typedef std::tuple<const Wrapper *, glm::fvec3, bool, bool> InnerDecoration;
+
+        /**
          * El Dumb Font Engine.
          */
         class Engine {
