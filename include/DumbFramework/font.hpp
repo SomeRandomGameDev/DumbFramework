@@ -317,6 +317,21 @@ namespace Dumb {
                         unsigned int size);
 
                 /**
+                 * Copy constructor.
+                 * @param [in] orig Origin.
+                 */
+                Cache(const Cache &orig) {
+                    _buffer = 0;
+                    *this = orig;
+                }
+
+                /**
+                 * Copy operator.
+                 * @param [in] orig Origin.
+                 */
+                Cache &operator=(const Cache &orig);
+
+                /**
                  * Destructor.
                  */
                 ~Cache();
@@ -332,6 +347,12 @@ namespace Dumb {
                  * @return The number of glyphs.
                  */
                 inline unsigned int count() const { return _count; }
+
+                /**
+                 * Change the text position.
+                 * @param [in] pos New position.
+                 */
+                void moveTo(glm::vec2 pos);
             private:
                 /**
                  * Buffer content.
@@ -342,6 +363,11 @@ namespace Dumb {
                  * Glyphs count.
                  */
                 unsigned int _count;
+
+                /**
+                 * Attended position.
+                 */
+                glm::vec2 _position;
         };
 
         /**
@@ -442,6 +468,16 @@ namespace Dumb {
                    - Text Areas storage and maintenance.
                    - Rendering process. */
             private:
+                /**
+                 * Private copy constructor.
+                 */
+                Engine(const Engine &) : _atlas(0) {}
+
+                /**
+                 * Private copy operator.
+                 */
+                Engine &operator=(const Engine &) { return *this; }
+
                 /**
                  * Pack a font and all its specs.
                  * @param [in] context STB TrueType context.

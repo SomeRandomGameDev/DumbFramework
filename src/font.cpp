@@ -152,7 +152,7 @@ namespace Dumb {
                 const icu::UnicodeString &text,
                 glm::vec3 color,
                 std::initializer_list<Decoration> decoration,
-                unsigned int size) {
+                unsigned int size) : _position(pos) {
             // We'll have to bake an ordered decoration list.
             const int length = text.length();
             InnerDecoration* decoArray = new InnerDecoration[length];
@@ -239,11 +239,38 @@ namespace Dumb {
             delete []decoArray;
         }
 
+        //   -------------
+        void Cache::moveTo(glm::vec2 pos) {
+            // First, compute the initial position.
+            if((0 != _buffer) && (_count > 0)) {
+                glm::vec2 diff = pos - _position;
+                GLfloat *ptr = _buffer;
+                for(unsigned int i = 0; i < _count; ++i,
+                        ptr += DFE_BUFFER_ELEMENT_COUNT) {
+                    ptr[0] += diff.x;
+                    ptr[1] += diff.y;
+                }
+            }
+        }
+
         //-----------
         Cache::~Cache() {
             if(0 != _buffer) {
                 delete []_buffer;
             }
+        }
+
+        Cache &Cache::operator=(const Cache &orig) {
+            if(&orig != this) {
+                if(0 != _buffer) {
+                    delete[] _buffer;
+                }
+                _count = orig._count;
+                _buffer = new GLfloat[_count * DFE_BUFFER_ELEMENT_COUNT];
+                memcpy(_buffer, orig._buffer, _count * DFE_BUFFER_STRIDE);
+                _position = orig._position;
+            }
+            return *this;
         }
 
         //   ------------
@@ -270,7 +297,7 @@ namespace Dumb {
                 count = (*it)->count();
                 total += count;
                 remaining -= count;
-                current += count * DFE_BUFFER_STRIDE;
+                current += count * DFE_BUFFER_ELEMENT_COUNT;
             }
             _buffer.unmap();
             _buffer.unbind();
