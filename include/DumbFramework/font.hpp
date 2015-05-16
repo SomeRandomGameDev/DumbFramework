@@ -284,6 +284,9 @@ namespace Dumb {
          */
         class Cache {
             public:
+
+                // TODO Add a constructor with size constraint (restraining box).
+
                 /**
                  * Constructor.
                  * @param [in] def Default font to be used.
@@ -353,6 +356,78 @@ namespace Dumb {
                  * @param [in] pos New position.
                  */
                 void moveTo(glm::vec2 pos);
+
+                /**
+                 * Compute the current bounding box.
+                 * @return The text bounding box.
+                 */
+                glm::vec4 computeBox();
+
+                /**
+                 * Reset text.
+                 * @param [in] text Text to set.
+                 * @param [in] keep If 'true', keep the current decoration, else, reset it
+                 * with default values (default : false).
+                 */
+                void setText(icu::UnicodeString text, bool keep = false);
+
+                /**
+                 * Append a text.
+                 * @param [in] src Text to append.
+                 */
+                void append(const icu::UnicodeString &src);
+
+                /**
+                 * Append a character.
+                 * @param [in] chr Character to append.
+                 */
+                void append(const UChar32 chr);
+
+                /**
+                 * Remove last characters.
+                 * @param [in] nb Number of character to remove (default : 1).
+                 */
+                void remove(int nb = 1);
+
+                /**
+                 * Add a decoration.
+                 * @param [in] decoration Decoration to add.
+                 * @param [in] compute Recompute the whole text (default : true).
+                 */
+                void addDecoration(Decoration decoration, bool compute = true);
+
+                /**
+                 * Clear the decoration.
+                 * @param [in] compute Recompute the whole text (default : true).
+                 * @param [in] offset Start of the cleansing (default = 0).
+                 * @param [in] length Length of the cleansing (default = -1, i.e
+                 * to the end of the text.
+                 */
+                void clearDecoration(bool compute = true,
+                        unsigned int offset = 0, int length = -1);
+
+            private:
+                /**
+                 * Compute the number of glyphs to display according to the decoration.
+                 */
+                void computeGlyphCount();
+
+                /**
+                 * Compute default decoration (according to input text).
+                 */
+                void computeDefaultDecoration();
+
+                /**
+                 * Compute the decoration based on external declaration.
+                 * @param [in] decoration Decoration ranges.
+                 */
+                void computeDecoration(std::initializer_list<Decoration> decoration);
+
+                /**
+                 * (Re-)compute the drawing buffer.
+                 * @param [in] size Font atlas size.
+                 */
+                void computeBuffer(unsigned int size);
             private:
                 /**
                  * Buffer content.
@@ -368,6 +443,31 @@ namespace Dumb {
                  * Attended position.
                  */
                 glm::vec2 _position;
+
+                /**
+                 * Current decoration cache.
+                 */
+                std::vector<InnerDecoration> _decorations;
+
+                /**
+                 * Default font.
+                 */
+                const Wrapper *_font;
+
+                /**
+                 * Default color.
+                 */
+                glm::vec3 _color;
+
+                /**
+                 * Displayed text.
+                 */
+                icu::UnicodeString _text;
+
+                /**
+                 * Glyphs position.
+                 */
+                std::vector<glm::vec2> _glyphs;
         };
 
         /**

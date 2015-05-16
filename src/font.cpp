@@ -92,74 +92,45 @@ namespace Dumb {
 #define DFE_DECORATION_UNDERLINE 3 // TODO
 #define DFE_DECORATION_STRIKE 4 // TODO
 
-        // ---------
-        Cache::Cache(const Wrapper *def,
-                glm::vec2 pos,
-                const icu::UnicodeString &text,
-                glm::vec3 color,
-                unsigned int size) {
-            _count = 0; // Number of glyph to display.
+        //   ----------------------------------
+        void Cache::computeDefaultDecoration() {
+            const int length = _text.length();
+            _decorations.clear();
+            for(int i = 0; i < length; ++i) {
+                _decorations.push_back(InnerDecoration(_font, _color, false, false));
+            }
+        }
+
+        //   ------------------------
+        void Cache::computeGlyphCount() {
+            _count = 0;
             // Iterate on the text.
-            stbtt_aligned_quad quad;
-            float xpos = static_cast<float>(pos.x);
-            float ypos = static_cast<float>(pos.y);
-            UChar32 start = static_cast<UChar32>(def->getStartingCodePoint());
-            UChar32 last = start + static_cast<UChar32>(def->getGlyphsCount());
-            stbtt_packedchar *data;
-            icu::StringCharacterIterator it(text);
+            UChar32 start;
+            UChar32 last;
+            icu::StringCharacterIterator it(_text);
+            unsigned int glyph = 0;
+            InnerDecoration glyphDecoration;
             // First pass : Determine the number of glyph to store.
-            for(it.setToStart(); it.hasNext();) {
+            for(it.setToStart(); it.hasNext(); ++glyph) {
                 // Retrieve decoration.
+                glyphDecoration = _decorations[glyph];
+                const Wrapper *curFont = std::get<0>(glyphDecoration);
                 UChar32 codepoint = it.next32PostInc();
-                if(0 != def) {
+                if(0 != curFont) {
+                    start = static_cast<UChar32>(curFont->getStartingCodePoint());
+                    last = start + static_cast<UChar32>(curFont->getGlyphsCount());
                     // Silently ignore out of range characters.
                     if((codepoint >= start) && (codepoint <= last)) {
                         ++_count;
                     }
                 }
             }
-            // Allocate the buffer.
-            _buffer = new GLfloat[_count*DFE_BUFFER_ELEMENT_COUNT];
-            GLfloat *ptr = _buffer;
-            // Second pass : Populate.
-            for(it.setToStart(); it.hasNext();) {
-                UChar32 codepoint = it.next32PostInc();
-                if(0 != def) {
-                    data = def->_data;
-                    // Silently ignore out of range characters.
-                    if((codepoint >= start) && (codepoint <= last)) {
-                        stbtt_GetPackedQuad(data, size, size, codepoint - start, &xpos, &ypos, &quad, 0);
-                        ptr[ 0] = quad.x0;
-                        ptr[ 1] = quad.y0;
-                        ptr[ 2] = quad.x1 - quad.x0;
-                        ptr[ 3] = quad.y1 - quad.y0;
-                        ptr[ 4] = quad.s0;
-                        ptr[ 5] = quad.t0;
-                        ptr[ 6] = quad.s1;
-                        ptr[ 7] = quad.t1;
-                        ptr[ 8] = color.r;
-                        ptr[ 9] = color.g;
-                        ptr[10] = color.b;
-                        ptr += DFE_BUFFER_ELEMENT_COUNT;
-                    }
-                }
-            }
         }
 
-        // ---------
-        Cache::Cache(const Wrapper *def,
-                glm::vec2 pos,
-                const icu::UnicodeString &text,
-                glm::vec3 color,
-                std::initializer_list<Decoration> decoration,
-                unsigned int size) : _position(pos) {
-            // We'll have to bake an ordered decoration list.
-            const int length = text.length();
-            InnerDecoration* decoArray = new InnerDecoration[length];
-
-            for(int i = 0; i < length; ++i) {
-                decoArray[i] = InnerDecoration(def, color, false, false);
-            }
+        //   ------------------------
+        void Cache::computeDecoration(std::initializer_list<Decoration> decoration) {
+            computeDefaultDecoration();
+            const int length = _text.length();
             for(auto &i : decoration) {
                 glm::ivec2 span = std::get<DFE_DECORATION_SPAN>(i);
                 const Wrapper *font = std::get<DFE_DECORATION_FONT>(i);
@@ -169,57 +140,45 @@ namespace Dumb {
                 int end = std::min(length, span.x + span.y);
                 for(int j = start; j < end; ++j) {
                     if(0 == font) {
-                        font = std::get<0>(decoArray[j]);
+                        font = std::get<0>(_decorations[j]);
                     }
                     if(0 == coloration) {
-                        colApply = std::get<1>(decoArray[j]);
+                        colApply = std::get<1>(_decorations[j]);
                     } else {
                         colApply = *coloration;
                     }
-                    decoArray[j] = InnerDecoration(font, colApply, false, false);
+                    _decorations[j] = InnerDecoration(font, colApply, false, false);
                 }
             }
-            _count = 0; // Number of glyph to display.
-            // Iterate on the text.
-            stbtt_aligned_quad quad;
-            float xpos = static_cast<float>(pos.x);
-            float ypos = static_cast<float>(pos.y);
-            UChar32 start;
-            UChar32 last;
-            stbtt_packedchar *data;
-            icu::StringCharacterIterator it(text);
-            InnerDecoration *glyphDecoration = decoArray;
-            // First pass : Determine the number of glyph to store.
-            for(it.setToStart(); it.hasNext(); ++glyphDecoration) {
-                // Retrieve decoration.
-                const Wrapper *curFont = std::get<0>(*glyphDecoration);
-                UChar32 codepoint = it.next32PostInc();
-                if(0 != curFont) {
-                    start = static_cast<UChar32>(curFont->getStartingCodePoint());
-                    last = start + static_cast<UChar32>(curFont->getGlyphsCount());
-                    data = curFont->_data;
-                    // Silently ignore out of range characters.
-                    if((codepoint >= start) && (codepoint <= last)) {
-                        ++_count;
-                    }
-                }
-            }
+        }
+
+        //   --------------------
+        void Cache::computeBuffer(unsigned int size) {
+            computeGlyphCount();
             // Allocate the buffer.
             _buffer = new GLfloat[_count*DFE_BUFFER_ELEMENT_COUNT];
+            stbtt_aligned_quad quad;
+            stbtt_packedchar *data;
+            float xpos = static_cast<float>(_position.x);
+            float ypos = static_cast<float>(_position.y);
             GLfloat *ptr = _buffer;
             // Second pass : Populate.
-            glyphDecoration = decoArray;
-            for(it.setToStart(); it.hasNext(); ++glyphDecoration) {
+            unsigned int glyph = 0;
+            _glyphs.clear();
+            icu::StringCharacterIterator it(_text);
+            for(it.setToStart(); it.hasNext(); ++glyph) {
                 // Retrieve decoration.
-                const Wrapper *curFont = std::get<0>(*glyphDecoration);
-                glm::vec3 curColor = std::get<1>(*glyphDecoration);
+                InnerDecoration &glyphDecoration = _decorations[glyph];
+                const Wrapper *curFont = std::get<0>(glyphDecoration);
+                glm::vec3 curColor = std::get<1>(glyphDecoration);
                 UChar32 codepoint = it.next32PostInc();
                 if(0 != curFont) {
-                    start = static_cast<UChar32>(curFont->getStartingCodePoint());
-                    last = start + static_cast<UChar32>(curFont->getGlyphsCount());
+                    UChar32 start = static_cast<UChar32>(curFont->getStartingCodePoint());
+                    UChar32 last = start + static_cast<UChar32>(curFont->getGlyphsCount());
                     data = curFont->_data;
                     // Silently ignore out of range characters.
                     if((codepoint >= start) && (codepoint <= last)) {
+                        _glyphs.push_back(glm::vec2(xpos, ypos));
                         stbtt_GetPackedQuad(data, size, size, codepoint - start, &xpos, &ypos, &quad, 0);
                         ptr[ 0] = quad.x0;
                         ptr[ 1] = quad.y0;
@@ -236,7 +195,27 @@ namespace Dumb {
                     }
                 }
             }
-            delete []decoArray;
+        }
+
+        // ---------
+        Cache::Cache(const Wrapper *def,
+                glm::vec2 pos,
+                const icu::UnicodeString &text,
+                glm::vec3 color,
+                unsigned int size) : _position(pos), _font(def), _color(color), _text(text) {
+            computeDefaultDecoration();
+            computeBuffer(size);
+        }
+
+        // ---------
+        Cache::Cache(const Wrapper *def,
+                glm::vec2 pos,
+                const icu::UnicodeString &text,
+                glm::vec3 color,
+                std::initializer_list<Decoration> decoration,
+                unsigned int size) : _position(pos), _font(def), _color(color), _text(text) {
+            computeDecoration(decoration);
+            computeBuffer(size);
         }
 
         //   -------------
@@ -253,6 +232,42 @@ namespace Dumb {
             }
         }
 
+        //        -----------------
+        glm::vec4 Cache::computeBox() {
+            // TODO
+            return glm::vec4(0, 0, 0, 0);
+        }
+
+        //   --------------
+        void Cache::setText(icu::UnicodeString text, bool keep) {
+            // TODO
+        }
+
+        //   -------------
+        void Cache::append(const icu::UnicodeString &src) {
+            // TODO
+        }
+
+        //   -------------
+        void Cache::append(const UChar32 chr) {
+            // TODO
+        }
+
+        //   -------------
+        void Cache::remove(int nb) {
+            // TODO
+        }
+
+        //   --------------------
+        void Cache::addDecoration(Decoration decoration, bool compute) {
+            // TODO
+        }
+
+        //   ----------------------
+        void Cache::clearDecoration(bool compute, unsigned int offset, int length) {
+            // TODO
+        }
+
         //-----------
         Cache::~Cache() {
             if(0 != _buffer) {
@@ -260,6 +275,7 @@ namespace Dumb {
             }
         }
 
+        //     ----------------
         Cache &Cache::operator=(const Cache &orig) {
             if(&orig != this) {
                 if(0 != _buffer) {
@@ -269,6 +285,11 @@ namespace Dumb {
                 _buffer = new GLfloat[_count * DFE_BUFFER_ELEMENT_COUNT];
                 memcpy(_buffer, orig._buffer, _count * DFE_BUFFER_STRIDE);
                 _position = orig._position;
+                _decorations = orig._decorations;
+                _font = orig._font;
+                _color = orig._color;
+                _text = orig._text;
+                _glyphs = orig._glyphs;
             }
             return *this;
         }
