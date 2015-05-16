@@ -159,6 +159,17 @@ void Example::postInit() {
         _collection.push_back(newCache);
     }
 
+    Dumb::Font::Cache *changeText = new Dumb::Font::Cache(*_cache);
+    changeText->moveTo(glm::vec2(0, 240));
+    changeText->setText(icu::UnicodeString("It's a new text with the same decoration."), true);
+    // Append some text.
+    changeText->append(icu::UnicodeString(" And appending some new text."));
+    // Remove 5 glyphs.
+    changeText->remove(5);
+    // Append a new text.
+    changeText->append(icu::UnicodeString("stuff."));
+    _collection.push_back(changeText);
+
     glViewport(0, 0, _screenSize.x, _screenSize.y);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 

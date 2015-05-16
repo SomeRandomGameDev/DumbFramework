@@ -369,7 +369,7 @@ namespace Dumb {
                  * @param [in] keep If 'true', keep the current decoration, else, reset it
                  * with default values (default : false).
                  */
-                void setText(icu::UnicodeString text, bool keep = false);
+                void setText(const icu::UnicodeString &text, bool keep = false);
 
                 /**
                  * Append a text.
@@ -468,6 +468,11 @@ namespace Dumb {
                  * Glyphs position.
                  */
                 std::vector<glm::vec2> _glyphs;
+
+                /**
+                 * Atlas font size.
+                 */
+                unsigned int _size;
         };
 
         /**

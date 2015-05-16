@@ -202,7 +202,7 @@ namespace Dumb {
                 glm::vec2 pos,
                 const icu::UnicodeString &text,
                 glm::vec3 color,
-                unsigned int size) : _position(pos), _font(def), _color(color), _text(text) {
+                unsigned int size) : _position(pos), _font(def), _color(color), _text(text), _size(size) {
             computeDefaultDecoration();
             computeBuffer(size);
         }
@@ -213,7 +213,7 @@ namespace Dumb {
                 const icu::UnicodeString &text,
                 glm::vec3 color,
                 std::initializer_list<Decoration> decoration,
-                unsigned int size) : _position(pos), _font(def), _color(color), _text(text) {
+                unsigned int size) : _position(pos), _font(def), _color(color), _text(text), _size(size) {
             computeDecoration(decoration);
             computeBuffer(size);
         }
@@ -223,6 +223,7 @@ namespace Dumb {
             // First, compute the initial position.
             if((0 != _buffer) && (_count > 0)) {
                 glm::vec2 diff = pos - _position;
+                _position = pos;
                 GLfloat *ptr = _buffer;
                 for(unsigned int i = 0; i < _count; ++i,
                         ptr += DFE_BUFFER_ELEMENT_COUNT) {
@@ -239,23 +240,45 @@ namespace Dumb {
         }
 
         //   --------------
-        void Cache::setText(icu::UnicodeString text, bool keep) {
-            // TODO
+        void Cache::setText(const icu::UnicodeString &text, bool keep) {
+            int oldTextLength = _text.length();
+            _text = text;
+            int length = _text.length();
+            if(!keep) {
+                oldTextLength = 0;
+                _decorations.clear();
+            }
+            for(int i = oldTextLength; i < length; ++i) {
+                _decorations.push_back(InnerDecoration(_font, _color, false, false));
+            }
+            _glyphs.clear();
+            delete []_buffer;
+            computeBuffer(_size);
         }
 
         //   -------------
         void Cache::append(const icu::UnicodeString &src) {
-            // TODO
+            // FIXME Absolutely crappy implementation.
+            icu::UnicodeString newText = _text;
+            newText.append(src);
+            setText(newText, true);
         }
 
         //   -------------
         void Cache::append(const UChar32 chr) {
-            // TODO
+            // FIXME Very naive implementation ...
+            icu::UnicodeString newText = _text;
+            newText.append(chr);
+            setText(newText, true);
         }
 
         //   -------------
         void Cache::remove(int nb) {
-            // TODO
+            // This one is 'easy'. We just lower the glyph count.
+            if(nb > 0) {
+                _count = std::max(0U, _count - nb);
+                _text.truncate(_count); // FIXME This is buggy if there's some unprinted glyphs.
+            }
         }
 
         //   --------------------
@@ -290,6 +313,7 @@ namespace Dumb {
                 _color = orig._color;
                 _text = orig._text;
                 _glyphs = orig._glyphs;
+                _size = orig._size;
             }
             return *this;
         }
