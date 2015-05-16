@@ -153,7 +153,7 @@ void Example::postInit() {
     std::default_random_engine generator;
     std::uniform_int_distribution<int> distX(0,_screenSize.x - 100);
     std::uniform_int_distribution<int> distY(32,_screenSize.y);
-    for(int i = 0; i < 20; ++i) {
+    for(int i = 0; i < 5; ++i) {
         Dumb::Font::Cache *newCache = new Dumb::Font::Cache(*_cache);
         newCache->moveTo(glm::vec2(distX(generator), distY(generator)));
         _collection.push_back(newCache);
@@ -168,6 +168,18 @@ void Example::postInit() {
     changeText->remove(5);
     // Append a new text.
     changeText->append(icu::UnicodeString("stuff."));
+    _collection.push_back(changeText);
+
+    // Cleared decoration.
+    changeText = new Dumb::Font::Cache(*_cache);
+    changeText->clearDecoration(true, 0, 14);
+    changeText->moveTo(glm::vec2(0, 210));
+    _collection.push_back(changeText);
+
+    // Add decoration.
+    changeText = new Dumb::Font::Cache(*changeText);
+    changeText->moveTo(glm::vec2(0, 180));
+    changeText->addDecoration(Dumb::Font::Decoration(glm::vec2(0, 41), 0, &COLOR_GREEN, false, false));
     _collection.push_back(changeText);
 
     glViewport(0, 0, _screenSize.x, _screenSize.y);

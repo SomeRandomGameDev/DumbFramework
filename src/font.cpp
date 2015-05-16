@@ -130,25 +130,8 @@ namespace Dumb {
         //   ------------------------
         void Cache::computeDecoration(std::initializer_list<Decoration> decoration) {
             computeDefaultDecoration();
-            const int length = _text.length();
             for(auto &i : decoration) {
-                glm::ivec2 span = std::get<DFE_DECORATION_SPAN>(i);
-                const Wrapper *font = std::get<DFE_DECORATION_FONT>(i);
-                const glm::fvec3 *coloration = std::get<DFE_DECORATION_COLOR>(i);
-                glm::fvec3 colApply;
-                int start = std::max(0, span.x);
-                int end = std::min(length, span.x + span.y);
-                for(int j = start; j < end; ++j) {
-                    if(0 == font) {
-                        font = std::get<0>(_decorations[j]);
-                    }
-                    if(0 == coloration) {
-                        colApply = std::get<1>(_decorations[j]);
-                    } else {
-                        colApply = *coloration;
-                    }
-                    _decorations[j] = InnerDecoration(font, colApply, false, false);
-                }
+                addDecoration(i, false);
             }
         }
 
@@ -283,12 +266,55 @@ namespace Dumb {
 
         //   --------------------
         void Cache::addDecoration(Decoration decoration, bool compute) {
-            // TODO
+            int length = _text.length();
+            glm::ivec2 span = std::get<DFE_DECORATION_SPAN>(decoration);
+            const Wrapper *font = std::get<DFE_DECORATION_FONT>(decoration);
+            const glm::fvec3 *coloration = std::get<DFE_DECORATION_COLOR>(decoration);
+            glm::fvec3 colApply;
+            const Wrapper *fontApply;
+            int start = std::max(0, span.x);
+            int end = std::min(length, span.x + span.y);
+            int size = _decorations.size();
+            if(end > size) {
+                for(int j = size; j < end; ++j) {
+                    _decorations.push_back(InnerDecoration(_font, _color, false, false));
+                }
+            }
+            for(int j = start; j < end; ++j) {
+                if(0 == font) {
+                    fontApply = std::get<0>(_decorations[j]);
+                } else {
+                    fontApply = font;
+                }
+                if(0 == coloration) {
+                    colApply = std::get<1>(_decorations[j]);
+                } else {
+                    colApply = *coloration;
+                }
+                _decorations[j] = InnerDecoration(fontApply, colApply, false, false);
+            }
+            if(compute) {
+                delete []_buffer;
+                computeBuffer(_size);
+            }
         }
 
         //   ----------------------
         void Cache::clearDecoration(bool compute, unsigned int offset, int length) {
-            // TODO
+            unsigned int size = _decorations.size();
+            if(offset < size) {
+                if(length < 0) {
+                    length = size - offset;
+                }
+                unsigned int last = offset + length + 1;
+                for(unsigned int i = offset; i < last; ++i) {
+                    _decorations[i] = InnerDecoration(_font, _color, false, false);
+                }
+                if(compute) {
+                    delete []_buffer;
+                    computeBuffer(_size);
+                }
+            }
         }
 
         //-----------
