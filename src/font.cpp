@@ -17,6 +17,9 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #define STB_RECT_PACK_IMPLEMENTATION
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+
 #include <iostream>
 #include <fstream>
 #include <array>
@@ -102,32 +105,6 @@ namespace Dumb {
         }
 
         //   ------------------------
-        void Cache::computeGlyphCount() {
-            _count = 0;
-            // Iterate on the text.
-            UChar32 start;
-            UChar32 last;
-            icu::StringCharacterIterator it(_text);
-            unsigned int glyph = 0;
-            InnerDecoration glyphDecoration;
-            // First pass : Determine the number of glyph to store.
-            for(it.setToStart(); it.hasNext(); ++glyph) {
-                // Retrieve decoration.
-                glyphDecoration = _decorations[glyph];
-                const Wrapper *curFont = std::get<0>(glyphDecoration);
-                UChar32 codepoint = it.next32PostInc();
-                if(0 != curFont) {
-                    start = static_cast<UChar32>(curFont->getStartingCodePoint());
-                    last = start + static_cast<UChar32>(curFont->getGlyphsCount());
-                    // Silently ignore out of range characters.
-                    if((codepoint >= start) && (codepoint <= last)) {
-                        ++_count;
-                    }
-                }
-            }
-        }
-
-        //   ------------------------
         void Cache::computeDecoration(std::initializer_list<Decoration> decoration) {
             computeDefaultDecoration();
             for(auto &i : decoration) {
@@ -136,10 +113,23 @@ namespace Dumb {
         }
 
         //   --------------------
+        void Cache::fillVoidGlyph(GLfloat *ptr) {
+            for(int i = 0; i < DFE_BUFFER_ELEMENT_COUNT; ++i) {
+                *(ptr++) = 0;
+            }
+        }
+
+        //   --------------------
         void Cache::computeBuffer(unsigned int size) {
-            computeGlyphCount();
+            const unsigned int length = _text.length();
             // Allocate the buffer.
-            _buffer = new GLfloat[_count*DFE_BUFFER_ELEMENT_COUNT];
+            if(_capacity < length) {
+                if(0 != _buffer) {
+                    delete []_buffer;
+                }
+                _capacity = length;
+                _buffer = new GLfloat[_capacity*DFE_BUFFER_ELEMENT_COUNT];
+            }
             stbtt_aligned_quad quad;
             stbtt_packedchar *data;
             float xpos = static_cast<float>(_position.x);
@@ -174,9 +164,13 @@ namespace Dumb {
                         ptr[ 8] = curColor.r;
                         ptr[ 9] = curColor.g;
                         ptr[10] = curColor.b;
-                        ptr += DFE_BUFFER_ELEMENT_COUNT;
+                    } else {
+                        fillVoidGlyph(ptr);
                     }
+                } else {
+                    fillVoidGlyph(ptr);
                 }
+                ptr += DFE_BUFFER_ELEMENT_COUNT;
             }
         }
 
@@ -185,7 +179,8 @@ namespace Dumb {
                 glm::vec2 pos,
                 const icu::UnicodeString &text,
                 glm::vec3 color,
-                unsigned int size) : _position(pos), _font(def), _color(color), _text(text), _size(size) {
+                unsigned int size) : _buffer(0), _capacity(0),
+        _position(pos), _font(def), _color(color), _text(text), _size(size) {
             computeDefaultDecoration();
             computeBuffer(size);
         }
@@ -196,7 +191,8 @@ namespace Dumb {
                 const icu::UnicodeString &text,
                 glm::vec3 color,
                 std::initializer_list<Decoration> decoration,
-                unsigned int size) : _position(pos), _font(def), _color(color), _text(text), _size(size) {
+                unsigned int size) : _buffer(0), _capacity(0),
+        _position(pos), _font(def), _color(color), _text(text), _size(size) {
             computeDecoration(decoration);
             computeBuffer(size);
         }
@@ -204,11 +200,12 @@ namespace Dumb {
         //   -------------
         void Cache::moveTo(glm::vec2 pos) {
             // First, compute the initial position.
-            if((0 != _buffer) && (_count > 0)) {
+            const unsigned int length = _text.length();
+            if((0 != _buffer) && (length > 0)) {
                 glm::vec2 diff = pos - _position;
                 _position = pos;
                 GLfloat *ptr = _buffer;
-                for(unsigned int i = 0; i < _count; ++i,
+                for(unsigned int i = 0; i < length; ++i,
                         ptr += DFE_BUFFER_ELEMENT_COUNT) {
                     ptr[0] += diff.x;
                     ptr[1] += diff.y;
@@ -235,13 +232,11 @@ namespace Dumb {
                 _decorations.push_back(InnerDecoration(_font, _color, false, false));
             }
             _glyphs.clear();
-            delete []_buffer;
             computeBuffer(_size);
         }
 
         //   -------------
         void Cache::append(const icu::UnicodeString &src) {
-            // FIXME Absolutely crappy implementation.
             icu::UnicodeString newText = _text;
             newText.append(src);
             setText(newText, true);
@@ -249,7 +244,6 @@ namespace Dumb {
 
         //   -------------
         void Cache::append(const UChar32 chr) {
-            // FIXME Very naive implementation ...
             icu::UnicodeString newText = _text;
             newText.append(chr);
             setText(newText, true);
@@ -259,8 +253,9 @@ namespace Dumb {
         void Cache::remove(int nb) {
             // This one is 'easy'. We just lower the glyph count.
             if(nb > 0) {
-                _count = std::max(0U, _count - nb);
-                _text.truncate(_count); // FIXME This is buggy if there's some unprinted glyphs.
+                int length = _text.length();
+                length = std::max(0, length - nb);
+                _text.truncate(length);
             }
         }
 
@@ -294,7 +289,6 @@ namespace Dumb {
                 _decorations[j] = InnerDecoration(fontApply, colApply, false, false);
             }
             if(compute) {
-                delete []_buffer;
                 computeBuffer(_size);
             }
         }
@@ -311,7 +305,6 @@ namespace Dumb {
                     _decorations[i] = InnerDecoration(_font, _color, false, false);
                 }
                 if(compute) {
-                    delete []_buffer;
                     computeBuffer(_size);
                 }
             }
@@ -330,9 +323,9 @@ namespace Dumb {
                 if(0 != _buffer) {
                     delete[] _buffer;
                 }
-                _count = orig._count;
-                _buffer = new GLfloat[_count * DFE_BUFFER_ELEMENT_COUNT];
-                memcpy(_buffer, orig._buffer, _count * DFE_BUFFER_STRIDE);
+                _capacity = orig._capacity;
+                _buffer = new GLfloat[_capacity * DFE_BUFFER_ELEMENT_COUNT];
+                memcpy(_buffer, orig._buffer, _capacity * DFE_BUFFER_STRIDE);
                 _position = orig._position;
                 _decorations = orig._decorations;
                 _font = orig._font;
@@ -346,8 +339,9 @@ namespace Dumb {
 
         //   ------------
         void Cache::fetch(GLfloat *dest, unsigned int size) const {
-            if(size >= _count) {
-                memcpy(dest, _buffer, _count * DFE_BUFFER_STRIDE);
+            const unsigned int length = _text.length();
+            if(size >= length) {
+                memcpy(dest, _buffer, length * DFE_BUFFER_STRIDE);
             }
         }
 
@@ -601,3 +595,6 @@ namespace Dumb {
 
     } // 'Font' namespace.
 } // 'Dumb' namespace.
+
+#pragma GCC diagnostic pop
+

@@ -16,6 +16,9 @@
 #ifndef _DUMBFRAMEWORK_FONT_
 #define _DUMBFRAMEWORK_FONT_
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+
 #include <stb_rect_pack.h>
 #include <stb_truetype.h>
 
@@ -349,7 +352,7 @@ namespace Dumb {
                 /**
                  * @return The number of glyphs.
                  */
-                inline unsigned int count() const { return _count; }
+                inline unsigned int count() const { return _text.length(); }
 
                 /**
                  * Change the text position.
@@ -408,11 +411,6 @@ namespace Dumb {
 
             private:
                 /**
-                 * Compute the number of glyphs to display according to the decoration.
-                 */
-                void computeGlyphCount();
-
-                /**
                  * Compute default decoration (according to input text).
                  */
                 void computeDefaultDecoration();
@@ -428,6 +426,12 @@ namespace Dumb {
                  * @param [in] size Font atlas size.
                  */
                 void computeBuffer(unsigned int size);
+
+                /**
+                 * Fill void glyph (in case of invalid character or null font).
+                 * @param [in] ptr Entry buffer.
+                 */
+                void fillVoidGlyph(GLfloat *ptr);
             private:
                 /**
                  * Buffer content.
@@ -435,9 +439,10 @@ namespace Dumb {
                 GLfloat *_buffer;
 
                 /**
-                 * Glyphs count.
+                 * Glyphs capacity.
+                 * The buffer can be wider than the current usage.
                  */
-                unsigned int _count;
+                unsigned int _capacity;
 
                 /**
                  * Attended position.
@@ -649,5 +654,7 @@ namespace Dumb {
         };
     } // 'Font' namespace.
 } // 'Dumb' namespace.
+
+#pragma GCC diagnostic pop
 
 #endif

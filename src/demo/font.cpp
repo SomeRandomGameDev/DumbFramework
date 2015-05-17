@@ -4,6 +4,7 @@
 #include <DumbFramework/log.hpp>
 
 #include <random>
+#include <sstream>
 
 // Some Constants.
 static const glm::vec3 COLOR_WHITE = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -182,6 +183,9 @@ void Example::postInit() {
     changeText->addDecoration(Dumb::Font::Decoration(glm::vec2(0, 41), 0, &COLOR_GREEN, false, false));
     _collection.push_back(changeText);
 
+    _cache->clearDecoration();
+    _cache->addDecoration(Dumb::Font::Decoration(glm::vec2(0, 15), _big, 0, false, false));
+
     glViewport(0, 0, _screenSize.x, _screenSize.y);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -197,9 +201,16 @@ void Example::postInit() {
 }
 
 int Example::render() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     double startTime = glfwGetTime();
+    std::stringstream stream;
+
+    stream << startTime;
+    _cache->setText(icu::UnicodeString(stream.str().c_str()), true);
 
     _engine->print(_collection);
+
+    _engine->print(*_cache);
 
     _elapsed += glfwGetTime() - startTime;
     ++_frames;
