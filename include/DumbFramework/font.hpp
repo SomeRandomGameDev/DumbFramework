@@ -565,25 +565,18 @@ namespace Dumb {
                 void print(const std::vector<const Cache*> &texts);
 
                 /**
-                 * Set the viewport. This method is pretty straightforward as we only
-                 * specify the viewport dimension in pixels. The coordinate system is meant
-                 * to have (0, 0) in top-left corner and (width, height) in bottom-right
-                 * corner.
-                 * @param [in] width Width (not only pixels).
-                 * @param [in] height Height (not only pixels).
+                 * Set the viewport.
+                 * @param [in] startX Viewport starting point on X-axis.
+                 * @param [in] startY Viewport starting point on Y-axis.
+                 * @param [in] width Width.
+                 * @param [in] height Height.
                  */
-                void setViewport(GLfloat width, GLfloat height);
+                void viewport(GLfloat startX, GLfloat startY, GLfloat width, GLfloat height);
 
                 /**
                  * @return Font atlas size.
                  */
                 inline unsigned int size() { return _size; }
-
-                /* TODO Serious business here :
-                   - Logical viewport management.
-                   - VAO management.
-                   - Text Areas storage and maintenance.
-                   - Rendering process. */
             private:
                 /**
                  * Private copy constructor.

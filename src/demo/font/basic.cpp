@@ -106,7 +106,7 @@ void Example::init(Dumb::Core::Application::Adviser *adviser) {
     Dumb::Core::Application::Video::Mode mode = monitor.getCurrentMode();
     adviser->setVideoMode(mode);
 #else
-    Dumb::Core::Application::Video::Mode mode(glm::vec2(640, 480), glm::vec3(8, 8, 8), 60);
+    Dumb::Core::Application::Video::Mode mode(glm::vec2(1024, 768), glm::vec3(8, 8, 8), 60);
     Dumb::Core::Application::Video::Monitor monitor(0);
     adviser->setMonitor(monitor);
     adviser->setVideoMode(mode);
@@ -139,7 +139,7 @@ void Example::postInit() {
     resource.push_back(Resource(fontPath + "VeraIt.ttf", oversample));
 
     _engine = new Engine(resource, 1048576, 4096);
-    _engine->setViewport(_screenSize.x, _screenSize.y);
+    _engine->viewport(-10, -10, _screenSize.x, _screenSize.y);
     _normal = _engine->getFont("Vera-16-ovr");
     _italic = _engine->getFont("Vera-Italic");
     _big = _engine->getFont("Vera-24-ovr");

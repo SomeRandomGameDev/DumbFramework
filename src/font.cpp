@@ -216,7 +216,12 @@ namespace Dumb {
         //        -----------------
         glm::vec4 Cache::computeBox() {
             const unsigned int length = _text.length();
-            glm::vec4 result(0, 0, 0, 0);
+            return computeTextBox(0, length);
+        }
+
+        //        ---------------------
+        glm::vec4 Cache::computeTextBox(unsigned int start, unsigned int end) {
+            glm::vec4 result(0.0f, 0.0f, 0.0f, 0.0f);
             if(0 != _buffer) {
                 GLfloat *ptr = _buffer;
                 result.x = _buffer[0];
@@ -224,7 +229,7 @@ namespace Dumb {
                 result.z = _buffer[2] + _buffer[0];
                 result.w = _buffer[3] + _buffer[1];
                 GLfloat value;
-                for(unsigned int i = 0; i < length; ++i, ptr += DFE_BUFFER_ELEMENT_COUNT) {
+                for(unsigned int i = start; i < end; ++i, ptr += DFE_BUFFER_ELEMENT_COUNT) {
                     if(ptr[0] < result.x) {
                         result.x = ptr[0];
                     }
@@ -507,8 +512,8 @@ namespace Dumb {
         }
 
         //   -------------------
-        void Engine::setViewport(GLfloat width, GLfloat height) {
-            _matrix = glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
+        void Engine::viewport(GLfloat startX, GLfloat startY, GLfloat width, GLfloat height) {
+            _matrix = glm::ortho(startX, startX + width, height + startY, startY, -1.0f, 1.0f);
         }
 
         //   ----------------------

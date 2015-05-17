@@ -177,9 +177,9 @@ add_executable(gui src/demo/gui.cpp)
 add_dependencies(resources gui)
 target_link_libraries(gui DumbFramework)
 
-add_executable(fonttest src/demo/font.cpp)
-add_dependencies(resources fonttest)
-target_link_libraries(fonttest DumbFramework)
+add_executable(font-basic src/demo/font/basic.cpp)
+add_dependencies(resources font-basic)
+target_link_libraries(font-basic DumbFramework)
 
 set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
 set(DOXYFILE ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
