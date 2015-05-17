@@ -215,8 +215,33 @@ namespace Dumb {
 
         //        -----------------
         glm::vec4 Cache::computeBox() {
-            // TODO
-            return glm::vec4(0, 0, 0, 0);
+            const unsigned int length = _text.length();
+            glm::vec4 result(0, 0, 0, 0);
+            if(0 != _buffer) {
+                GLfloat *ptr = _buffer;
+                result.x = _buffer[0];
+                result.y = _buffer[1];
+                result.z = _buffer[2] + _buffer[0];
+                result.w = _buffer[3] + _buffer[1];
+                GLfloat value;
+                for(unsigned int i = 0; i < length; ++i, ptr += DFE_BUFFER_ELEMENT_COUNT) {
+                    if(ptr[0] < result.x) {
+                        result.x = ptr[0];
+                    }
+                    if(ptr[1] < result.y) {
+                        result.y = ptr[1];
+                    }
+                    value = ptr[2] + ptr[0];
+                    if(value > result.z) {
+                        result.z = value;
+                    }
+                    value = ptr[3] + ptr[1];
+                    if(value > result.w) {
+                        result.w = value;
+                    }
+                }
+            }
+            return result;
         }
 
         //   --------------

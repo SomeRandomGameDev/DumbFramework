@@ -326,8 +326,7 @@ namespace Dumb {
                  * Copy constructor.
                  * @param [in] orig Origin.
                  */
-                Cache(const Cache &orig) {
-                    _buffer = 0;
+                Cache(const Cache &orig) : _buffer(0) {
                     *this = orig;
                 }
 
@@ -361,7 +360,7 @@ namespace Dumb {
                 void moveTo(glm::vec2 pos);
 
                 /**
-                 * Compute the current bounding box.
+                 * Compute the current bounding box (minX, minY, maxX, maxY).
                  * @return The text bounding box.
                  */
                 glm::vec4 computeBox();
@@ -410,6 +409,14 @@ namespace Dumb {
                         unsigned int offset = 0, int length = -1);
 
             private:
+                /**
+                 * Compute a text box for a range of glyphs.
+                 * @param [in] start Index of starting glyph.
+                 * @param [in] end Index of ending glyph.
+                 * @return Text zone bounding box (minX, minY, maxX, maxY).
+                 */
+                glm::vec4 computeTextBox(unsigned int start, unsigned int end);
+
                 /**
                  * Compute default decoration (according to input text).
                  */
