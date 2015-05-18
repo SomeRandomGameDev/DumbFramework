@@ -92,6 +92,16 @@ class Example {
         Dumb::Font::Cache *_cache;
 
         /**
+         * Clickable text zone.
+         */
+        glm::vec4 _zone = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+        /**
+         * Last cursor position.
+         */
+        glm::vec2 _cursor = glm::vec2(0.0, 0.0);
+
+        /**
          * Text cache collection.
          */
         std::vector<const Dumb::Font::Cache *> _collection;
@@ -183,6 +193,14 @@ void Example::postInit() {
     changeText->addDecoration(Dumb::Font::Decoration(glm::vec2(0, 41), 0, &COLOR_GREEN, false, false));
     _collection.push_back(changeText);
 
+    // Reset decoration, change text, add decoration on a word and keep this word box coordinate
+    // for further use.
+    changeText = new Dumb::Font::Cache(_normal, glm::vec2(0, 50),
+            icu::UnicodeString("That text got a clickable zone."), COLOR_WHITE,
+     { Dumb::Font::Decoration(glm::vec2(16, 9), _big, &COLOR_BLUE, false, false) }, _engine->size());
+    _collection.push_back(changeText);
+    _zone = changeText->computeBox(16, 9);
+
     _cache->clearDecoration();
     _cache->addDecoration(Dumb::Font::Decoration(glm::vec2(0, 15), _big, 0, false, false));
 
@@ -229,8 +247,22 @@ void Example::handleKey(int,int,int,int) {
     }
     _closeFlag = 0;
 }
-void Example::handleMousePosition(double xp,double yp) {}
-void Example::handleMouseButton(int,int,int) {}
+void Example::handleMousePosition(double xp,double yp) {
+    _cursor.x = xp;
+    _cursor.y = yp;
+}
+void Example::handleMouseButton(int button,int action,int mods) {
+    if(GLFW_PRESS == action) {
+        // Look for clickable text.
+        if((_cursor.x <= _zone.z) &&
+                (_cursor.x >= _zone.x) &&
+                (_cursor.y <= _zone.w) &&
+                (_cursor.y >= _zone.y)) {
+            std::cout << "Clicked !" << std::endl;
+        }
+    }
+    std::cout << "(" << _cursor.x << ", " << _cursor.y << ") - [ (" << _zone.x << ", " << _zone.y << " - " << _zone.z << ", " << _zone.w << ") ]" << std::endl;
+}
 void Example::handleMouseScroll(double,double) {}
 void Example::handleWindowClose() {}
 void Example::handleWindowSize(int, int) {}

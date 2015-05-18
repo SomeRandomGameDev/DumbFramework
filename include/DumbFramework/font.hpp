@@ -287,9 +287,6 @@ namespace Dumb {
          */
         class Cache {
             public:
-
-                // TODO Add a constructor with size constraint (restraining box).
-
                 /**
                  * Constructor.
                  * @param [in] def Default font to be used.
@@ -366,6 +363,14 @@ namespace Dumb {
                 glm::vec4 computeBox();
 
                 /**
+                 * Compute a text box for a range of glyphs.
+                 * @param [in] offset Index of starting glyph.
+                 * @param [in] length Length of the text zone.
+                 * @return Text zone bounding box (minX, minY, maxX, maxY).
+                 */
+                glm::vec4 computeBox(unsigned int offset, unsigned int length);
+
+                /**
                  * Reset text.
                  * @param [in] text Text to set.
                  * @param [in] keep If 'true', keep the current decoration, else, reset it
@@ -409,14 +414,6 @@ namespace Dumb {
                         unsigned int offset = 0, int length = -1);
 
             private:
-                /**
-                 * Compute a text box for a range of glyphs.
-                 * @param [in] start Index of starting glyph.
-                 * @param [in] end Index of ending glyph.
-                 * @return Text zone bounding box (minX, minY, maxX, maxY).
-                 */
-                glm::vec4 computeTextBox(unsigned int start, unsigned int end);
-
                 /**
                  * Compute default decoration (according to input text).
                  */

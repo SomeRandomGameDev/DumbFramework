@@ -216,20 +216,31 @@ namespace Dumb {
         //        -----------------
         glm::vec4 Cache::computeBox() {
             const unsigned int length = _text.length();
-            return computeTextBox(0, length);
+            return computeBox(0, length);
         }
 
         //        ---------------------
-        glm::vec4 Cache::computeTextBox(unsigned int start, unsigned int end) {
-            glm::vec4 result(0.0f, 0.0f, 0.0f, 0.0f);
+        glm::vec4 Cache::computeBox(unsigned int offset, unsigned int length) {
+            glm::vec4 result = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
             if(0 != _buffer) {
                 GLfloat *ptr = _buffer;
-                result.x = _buffer[0];
-                result.y = _buffer[1];
-                result.z = _buffer[2] + _buffer[0];
-                result.w = _buffer[3] + _buffer[1];
                 GLfloat value;
-                for(unsigned int i = start; i < end; ++i, ptr += DFE_BUFFER_ELEMENT_COUNT) {
+                unsigned int size = _text.length();
+                if(offset + length > size) {
+                    if(offset > size) {
+                        length = 0;
+                    } else {
+                        length = size - offset;
+                    }
+                }
+                ptr = _buffer + (offset * DFE_BUFFER_ELEMENT_COUNT);
+                result.x = ptr[0];
+                result.y = ptr[1];
+                result.z = ptr[2] + ptr[0];
+                result.w = ptr[3] + ptr[1];
+                for(unsigned int j = 0;
+                        j < length;
+                        ++j, ptr += DFE_BUFFER_ELEMENT_COUNT) {
                     if(ptr[0] < result.x) {
                         result.x = ptr[0];
                     }
