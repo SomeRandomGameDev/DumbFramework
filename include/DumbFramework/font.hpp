@@ -574,6 +574,11 @@ namespace Dumb {
                  * @return Font atlas size.
                  */
                 inline unsigned int size() { return _size; }
+
+                /**
+                 * @return The projection matrix.
+                 */
+                inline glm::mat4 viewport() { return _matrix; }
             private:
                 /**
                  * Private copy constructor.

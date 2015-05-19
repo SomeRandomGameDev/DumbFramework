@@ -6,6 +6,8 @@
 #include <random>
 #include <sstream>
 
+#include <glm/ext.hpp>
+
 // Some Constants.
 static const glm::vec3 COLOR_WHITE = glm::vec3(1.0f, 1.0f, 1.0f);
 static const glm::vec3 COLOR_RED   = glm::vec3(1.0f, 0.3f, 0.3f);
@@ -149,7 +151,7 @@ void Example::postInit() {
     resource.push_back(Resource(fontPath + "VeraIt.ttf", oversample));
 
     _engine = new Engine(resource, 1048576, 4096);
-    _engine->viewport(-10, -10, _screenSize.x, _screenSize.y);
+    _engine->viewport(0, 0, _screenSize.x, _screenSize.y);
     _normal = _engine->getFont("Vera-16-ovr");
     _italic = _engine->getFont("Vera-Italic");
     _big = _engine->getFont("Vera-24-ovr");
@@ -195,7 +197,7 @@ void Example::postInit() {
 
     // Reset decoration, change text, add decoration on a word and keep this word box coordinate
     // for further use.
-    changeText = new Dumb::Font::Cache(_normal, glm::vec2(0, 50),
+    changeText = new Dumb::Font::Cache(_normal, glm::vec2(150, 50),
             icu::UnicodeString("That text got a clickable zone."), COLOR_WHITE,
      { Dumb::Font::Decoration(glm::vec2(16, 9), _big, &COLOR_BLUE, false, false) }, _engine->size());
     _collection.push_back(changeText);
@@ -253,15 +255,18 @@ void Example::handleMousePosition(double xp,double yp) {
 }
 void Example::handleMouseButton(int button,int action,int mods) {
     if(GLFW_PRESS == action) {
+        glm::vec4 cursor = glm::vec4(_cursor.x, _cursor.y, 0, 1);
+        glm::vec4 low = glm::vec4(_zone.x, _zone.y, 0, 1);
+        glm::vec4 high = glm::vec4(_zone.z, _zone.w, 0, 1);
+
         // Look for clickable text.
-        if((_cursor.x <= _zone.z) &&
-                (_cursor.x >= _zone.x) &&
-                (_cursor.y <= _zone.w) &&
-                (_cursor.y >= _zone.y)) {
-            std::cout << "Clicked !" << std::endl;
+        if((cursor.x <= high.x) &&
+                (cursor.x >= low.x) &&
+                (cursor.y <= high.y) &&
+                (cursor.y >= low.y)) {
+            _closeFlag = 0;
         }
     }
-    std::cout << "(" << _cursor.x << ", " << _cursor.y << ") - [ (" << _zone.x << ", " << _zone.y << " - " << _zone.z << ", " << _zone.w << ") ]" << std::endl;
 }
 void Example::handleMouseScroll(double,double) {}
 void Example::handleWindowClose() {}
