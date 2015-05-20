@@ -1,80 +1,72 @@
 ### Purpose
-There's many good libraries for speeding up your productivity. But sometimes, speeding up is not enough. You're always running out of time. One can always get libraries like GLFW, GLEW, SOIL. But you need to do basic stuff over and over again. Here comes the dumb framework. It implements the glue, a slightly higher level of abstraction that combines underneath libraries without cutting you from them.
+There's many good libraries for speeding up your productivity. But sometimes, speeding up is not enough. You're always running out of time. One can always get libraries like GLFW, GLEW, internalisation, font management, texture loading and so on ... But you need to do basic stuff over and over again. Here comes the Dumb Framework. It implements the glue, a slightly higher level of abstraction that combines underneath libraries without cutting you from them.
 
 We're talking about ultra-lightweight productions here. It's not about getting a middleware, pushing your assets and publishing a fat prototype. It's about coding a couple of routines, launch your favorite compilers and obtaining a shiny tiny executable.
 
 ### So, how can I use your stuff ?
-Assuming you're comfortable with C++, here is the thing: There's a class, named Application, that represents the core of your prod. Its purpose is to display one scene at a time (perhaps your app is about a single scene, why not ?). A scene is just an object that can collect information from input devices (keyboard, mouse ...) and output a result (on screen, with sound).
-One only needs to create a scene class by deriving the Scene interface.
+Assuming you're comfortable with C++, here is the thing: You'll have to create a class that implement a concept compatible with the Dumb Core Application Runner (yeah, that's its name). Then, instanciate a runner and feed it with your fantastic class like this:
 
 ```cpp
-class MyScene : public Scene {
-   // ... See the Scene class code, it pretty straightforward.
+#include <DumbFramework/runner.hpp>
+
+class MyWrapper {
+    DECLARE_WRAPPER_METHODS
+    // Do whatever you want ...
+    public:
+        MyWrapper() {} // You'll need that.
 };
+
+// Implement the wrapper methods. See runner.hpp.
+
+SIMPLE_APP(MyWrapper)
 ```
 
-Then, you just have to use it like that.
+More details ?
 
 ```cpp
-int main(void) {
-  MyScene myScene;
-  Application myApplication;      
-  WindowHint hint;
-  // ... Fill hint with starting preferences (window size, fullscreen ?).
-  myApplication.start(hint, &myScene);
+#include <DumbFramework/runner.hpp>
 
-  return 0;
+class MyWrapper {
+    DECLARE_WRAPPER_METHODS
+};
+
+// Help create the app. This is called BEFORE the window is created.
+void MyWrapper::init(Dumb::Core::Application::Adviser *adviser) {
+    Dumb::Core::Application::Video::Monitor monitor = adviser->getPrimaryMonitor();
+    adviser->setMonitor(monitor);
+    Dumb::Core::Application::Video::Mode mode = monitor.getCurrentMode();
+    adviser->setVideoMode(mode);
+    adviser->setTitle("Your Favorite Application Title");
+    // The application will be fullscreen on the primary monitor.
+    // But there's a way to make windowed apps.
+}
+
+// This is called AFTER window creation/graphic context.
+void MyWrapper::postInit() {
+    // Do whatever that require a graphic context.
+}
+
+// All glory to the render method !
+int MyWrapper::render() {
+    // Return 0 if you want to quit the application.
+    return GL_TRUE;
+}
+
+// This is invoked once the window is closed.
+void MyWrapper::close() {
+    // [...]
+}
+
+// Implements the rest of the wrapping methods (window, mouse and keyboard event handlers).
+// [...]
+
+int main() {
+    MyWrapper myWrapper;
+    Dumb::Core::Application::Runner runner(&myWrapper);
+    int result = runner.start();
+    return result;
 }
 ```
-
-Complete examples are available in the git repository, under the 'demo' directory.
-### Or what about making things simplier ?
-Not concerned about scene management and all that stuff ?
-Just use the Wrapper.
-What you've got to do is just to create a class that implement the following methods:
-
-```cpp
-GLFWwindow *createWindow();
-void destroyWindow(GLFWwindow *);
-void init();
-void render();
-void handleKeyAction(int key, int scancode, int action, int mods);
-void handleMouseButtonAction(int button, int action, int mods);
-void handleMousePositionAction(double x, double y);
-void handleMouseWheelAction(double x, double y);
-void handleWindowSize(int x, int y);
-void handleChar(unsigned int unicodeChar);
-void handleCursorEnter(int flag);
-```
-
-And that's about it. Then, merges it with the wrapper using the magic of the templates like this:
-
-```cpp
-// Include GLFW/GLEW stuff
-#include <wrapper.hpp>
-#include "the_place_where_you_declared_your_class.hpp"
-
-// Let say that your class is named 'MySimpleApplication'.
-
-
-int main(void) {
-  Wrapper<MySimpleApplication> *wrapper;
-  MySimpleApplication *app = new MySimpleApplication(/* your own flavour of constructor */);
-  // Do whatever you want to prepare your stuff. Then.
-
-  wrapper = new Wrapper<MySimpleApplication>(app);
-
-  wrapper->start();
-
-  return 0;
-}
-```
-
-And voilà !
-
-### What if I want to play with sprites ?
-The way to flat happiness is short with this dumb framework.
-// For now, there's a tool under construction that will guide you through this realm. Stay tuned.
 
 ### How does it compile ?
 
@@ -102,11 +94,14 @@ In order to compile, the librarie needs the following:
 
 - cmake >= 2.6
 - GLM >= 0.9.5.4
-- SOIL
+- Latest stb toolbox
 - GLEW
 - GLFW >= 3
 - Box2D (in some cases)
-- SOIL
+- ICU
 
+#### Why the hell do I need THAT ?
+
+There's some neat stuff already implemented, like OpenGL 4 support, a small sprite engine (the Sprengine), a font renderer (the Dumb Font Engine) and some serious rendering things.
 
 *SomeRandomGameDev* and *BlockoS/MooZ*

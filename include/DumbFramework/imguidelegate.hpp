@@ -1,10 +1,10 @@
 #ifndef _DUMB_FW_IMGUI_DELEGATE_
 #define _DUMB_FW_IMGUI_DELEGATE_
 
+#include <DumbFramework/runner.hpp>
 #include <external/stb_image.h>
 #include <imgui/imgui.h>
 
-#include <DumbFramework/windowhint.hpp>
 #include <DumbFramework/render/program.hpp>
 #include <DumbFramework/render/texture2d.hpp>
 #include <DumbFramework/render/vertexbuffer.hpp>
@@ -32,6 +32,7 @@ const char* ImGuiDelegateFragmentShader();
 template <typename T>
 class ImGuiDelegate
 {
+    DECLARE_WRAPPER_METHODS
     public:
         /** 
          * Constructor.
@@ -45,31 +46,6 @@ class ImGuiDelegate
          * Destructor.
          */
         ~ImGuiDelegate();
-        /**
-         * Create window.
-         */
-        GLFWwindow *createWindow();
-        /**
-         * Destroy window.
-         * @param [in] window Window pointer.
-         */
-        void destroyWindow(GLFWwindow *window);
-        /**
-         * Initialize delegate.
-         */
-        void init();
-        /**
-         * Render everything.
-         */
-        void render();
-        void handleKeyAction(int key, int scancode, int action, int mods);
-        void handleMouseButtonAction(int button, int action, int mods);
-        void handleMousePositionAction(double x, double y);
-        void handleMouseWheelAction(double x, double y);
-        void handleWindowSize(int x, int y);
-        void handleChar(unsigned int unicodeChar);
-        void handleCursorEnter(int flag);
-        
     protected:
         static void renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count);
         static const char* getClipboardText();

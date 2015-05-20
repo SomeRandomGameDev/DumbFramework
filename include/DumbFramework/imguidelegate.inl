@@ -35,25 +35,22 @@ ImGuiDelegate<T>::~ImGuiDelegate()
  * Create window.
  */
 template<class T>
-GLFWwindow* ImGuiDelegate<T>::createWindow()
+void ImGuiDelegate<T>::init(Dumb::Core::Application::Adviser *adviser) {
 {
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    _window = glfwCreateWindow(_width, _height, _title, nullptr, nullptr);
-    return _window;
+    Dumb::Core::Application::Video::Mode mode(glm::vec2(_width, _height), glm::vec3(8, 8, 8), 60);
+    Dumb::Core::Application::Video::Monitor monitor(0);
+    adviser->setMonitor(monitor);
+    adviser->setVideoMode(mode);
+    adviser->setTitle(_title);
 }
 /**
  * Destroy window.
  * @param [in] window Window pointer.
  */
 template<class T>
-void ImGuiDelegate<T>::destroyWindow(GLFWwindow *window)
+void ImGuiDelegate<T>::close()
 {
     _delegate->destroy();
-    if(window != _window)
-    {
-        return;
-    }
-    glfwDestroyWindow(_window);
     _window = nullptr;
     
     _program.destroy();
@@ -66,7 +63,7 @@ void ImGuiDelegate<T>::destroyWindow(GLFWwindow *window)
  * Initialize delegate.
  */
 template<class T>
-void ImGuiDelegate<T>::init()
+void ImGuiDelegate<T>::postInit()
 {
     // Initialize ImGui.
     int windowWidth, windowHeight;
@@ -214,7 +211,20 @@ void ImGuiDelegate<T>::render()
 }
 
 template<class T>
-void ImGuiDelegate<T>::handleKeyAction(int key, int scancode, int action, int mods)
+void ImGuiDelegate<T>::hhandleUnicodeModifierCharacter(unsigned int,int) {}
+
+template<class T>
+void ImGuiDelegate<T>::hhandleWindowClose() {}
+
+template<class T>
+void ImGuiDelegate<T>::hhandleWindowSize(int, int) {}
+
+template<class T>
+void ImGuiDelegate<T>::hhandleWindowIconify(int) {}
+
+
+template<class T>
+void ImGuiDelegate<T>::handleKey(int key, int scancode, int action, int mods)
 {
     (void)scancode;
     ImGuiIO& io = ImGui::GetIO();
@@ -231,7 +241,7 @@ void ImGuiDelegate<T>::handleKeyAction(int key, int scancode, int action, int mo
 }
 
 template<class T>
-void ImGuiDelegate<T>::handleMouseButtonAction(int button, int action, int mods)
+void ImGuiDelegate<T>::handleMouseButton(int button, int action, int mods)
 {
     (void)mods;
     if((GLFW_PRESS == action) && ((button >= 0) && (button < 2)))
@@ -241,7 +251,7 @@ void ImGuiDelegate<T>::handleMouseButtonAction(int button, int action, int mods)
 }
 
 template<class T>
-void ImGuiDelegate<T>::handleMousePositionAction(double x, double y)
+void ImGuiDelegate<T>::handleMousePosition(double x, double y)
 {
     (void)x;
     (void)y;
@@ -249,7 +259,7 @@ void ImGuiDelegate<T>::handleMousePositionAction(double x, double y)
 }
 
 template<class T>
-void ImGuiDelegate<T>::handleMouseWheelAction(double x, double y)
+void ImGuiDelegate<T>::handleMouseScroll(double x, double y)
 {
     (void)x;
     ImGui::GetIO().MouseWheel = (y != 0.0f) ? ((y > 0.0f) ? 1 : - 1) : 0;
@@ -264,7 +274,7 @@ void ImGuiDelegate<T>::handleWindowSize(int w, int h)
 }
 
 template<class T>
-void ImGuiDelegate<T>::handleChar(unsigned int unicodeChar)
+void ImGuiDelegate<T>::handleUnicodeCharacter(unsigned int unicodeChar)
 {
     if((unicodeChar > 0) && (unicodeChar < 0x10000))
     {

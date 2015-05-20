@@ -97,7 +97,6 @@ set(DUMB_FRAMEWORK_SOURCES
     ${DUMB_FRAMEWORK_RENDER_SOURCES}
     src/camera.cpp
     src/imguidelegate.cpp
-    src/application.cpp
     src/rect.cpp
     src/boundingbox.cpp
     src/boundingsphere.cpp
@@ -113,7 +112,6 @@ set(DUMB_FRAMEWORK_SOURCES
     src/log.cpp
     src/sprengine.cpp
     src/sprite.cpp
-    src/windowhint.cpp
     src/transform.cpp
     src/joystick.cpp
     src/mouse.cpp
@@ -173,9 +171,10 @@ add_executable(flatengine src/demo/flatengine.cpp)
 add_dependencies(resources flatengine)
 target_link_libraries(flatengine DumbFramework)
 
-add_executable(gui src/demo/gui.cpp)
-add_dependencies(resources gui)
-target_link_libraries(gui DumbFramework)
+# This one is extremely painful to port !
+#add_executable(gui src/demo/gui.cpp)
+#add_dependencies(resources gui)
+#target_link_libraries(gui DumbFramework)
 
 add_executable(font-basic src/demo/font/basic.cpp)
 add_dependencies(resources font-basic)
