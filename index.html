@@ -5,9 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
 
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -21,7 +21,7 @@
       <div class="inner">
         <h1>A Dumb Framework</h1>
         <h2>A very dumb framework/glue to GLFW/GLEW/SOIL for quick and dirty prototyping.</h2>
-        <a href="https://github.com/SomeRandomGameDev/DumbFramework" class="button"><small>View project on</small>GitHub</a>
+        <a href="https://github.com/SomeRandomGameDev/DumbFramework" class="button"><small>View project on</small> GitHub</a>
       </div>
     </header>
 
@@ -29,193 +29,117 @@
       <div class="inner clearfix">
         <section id="main-content">
           <h3>
-<a name="purpose" class="anchor" href="#purpose"><span class="octicon octicon-link"></span></a>Purpose</h3>
+<a id="purpose" class="anchor" href="#purpose" aria-hidden="true"><span class="octicon octicon-link"></span></a>Purpose</h3>
 
-<p>There's many good libraries for speeding up your productivity. But sometimes, speeding up is not enough. You're always running out of time. One can always get libraries like GLFW, GLEW, SOIL. But you need to do basic stuff over and over again. Here comes the dumb framework. It implements the glue, a slightly higher level of abstraction that combines underneath libraries without cutting you from them.</p>
+<p>There's many good libraries for speeding up your productivity. But sometimes, speeding up is not enough. You're always running out of time. One can always get libraries like GLFW, GLEW, internalisation, font management, texture loading and so on ... But you need to do basic stuff over and over again. Here comes the Dumb Framework. It implements the glue, a slightly higher level of abstraction that combines underneath libraries without cutting you from them.</p>
 
 <p>We're talking about ultra-lightweight productions here. It's not about getting a middleware, pushing your assets and publishing a fat prototype. It's about coding a couple of routines, launch your favorite compilers and obtaining a shiny tiny executable.</p>
 
 <h3>
-<a name="so-how-can-i-use-your-stuff-" class="anchor" href="#so-how-can-i-use-your-stuff-"><span class="octicon octicon-link"></span></a>So, how can I use your stuff ?</h3>
+<a id="so-how-can-i-use-your-stuff-" class="anchor" href="#so-how-can-i-use-your-stuff-" aria-hidden="true"><span class="octicon octicon-link"></span></a>So, how can I use your stuff ?</h3>
 
-<p>Assuming you're comfortable with C++, here is the thing: There's a class, named Application, that represents the core of your prod. Its purpose is to display one scene at a time (perhaps your app is about a single scene, why not ?). A scene is just an object that can collect information from input devices (keyboard, mouse ...) and output a result (on screen, with sound).
-One only needs to create a scene class by deriving the Scene interface.</p>
+<p>Assuming you're comfortable with C++, here is the thing: You'll have to create a class that implement a concept compatible with the Dumb Core Application Runner (yeah, that's its name). Then, instanciate a runner and feed it with your fantastic class like this:</p>
 
-<div class="highlight highlight-cpp"><pre><span class="k">class</span> <span class="nc">MyScene</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Scene</span> <span class="p">{</span>
-   <span class="c1">// ... See the Scene class code, it pretty straightforward.</span>
-<span class="p">};</span>
-</pre></div>
+<div class="highlight highlight-cpp"><pre>#<span class="pl-k">include</span> <span class="pl-s"><span class="pl-pds">&lt;</span>DumbFramework/runner.hpp<span class="pl-pds">&gt;</span></span>
 
-<p>Then, you just have to use it like that.</p>
+<span class="pl-k">class</span> <span class="pl-en">MyWrapper</span> {
+    DECLARE_WRAPPER_METHODS
+    <span class="pl-c">// Do whatever you want ...</span>
+    <span class="pl-k">public:</span>
+        <span class="pl-en">MyWrapper</span>() {} <span class="pl-c">// You'll need that.</span>
+};
 
-<div class="highlight highlight-cpp"><pre><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
-  <span class="n">MyScene</span> <span class="n">myScene</span><span class="p">;</span>
-  <span class="n">Application</span> <span class="n">myApplication</span><span class="p">;</span>      
-  <span class="n">WindowHint</span> <span class="n">hint</span><span class="p">;</span>
-  <span class="c1">// ... Fill hint with starting preferences (window size, fullscreen ?).</span>
-  <span class="n">myApplication</span><span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="n">hint</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">myScene</span><span class="p">);</span>
+<span class="pl-c">// Implement the wrapper methods. See runner.hpp.</span>
 
-  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
+<span class="pl-en">SIMPLE_APP</span>(MyWrapper)</pre></div>
 
-<p>Complete examples are available in the git repository, under the 'demo' directory.</p>
+<p>More details ?</p>
 
-<h3>
-<a name="or-what-about-making-things-simplier-" class="anchor" href="#or-what-about-making-things-simplier-"><span class="octicon octicon-link"></span></a>Or what about making things simplier ?</h3>
+<div class="highlight highlight-cpp"><pre>#<span class="pl-k">include</span> <span class="pl-s"><span class="pl-pds">&lt;</span>DumbFramework/runner.hpp<span class="pl-pds">&gt;</span></span>
 
-<p>Not concerned about scene management and all that stuff ?
-Just use the Wrapper.
-What you've got to do is just to create a class that implement the following methods:</p>
+<span class="pl-k">class</span> <span class="pl-en">MyWrapper</span> {
+    DECLARE_WRAPPER_METHODS
+};
 
-<div class="highlight highlight-cpp"><pre><span class="n">GLFWwindow</span> <span class="o">*</span><span class="nf">createWindow</span><span class="p">();</span>
-<span class="kt">void</span> <span class="nf">destroyWindow</span><span class="p">(</span><span class="n">GLFWwindow</span> <span class="o">*</span><span class="p">);</span>
-<span class="kt">void</span> <span class="nf">init</span><span class="p">();</span>
-<span class="kt">void</span> <span class="nf">render</span><span class="p">();</span>
-<span class="kt">void</span> <span class="nf">handleKeyAction</span><span class="p">(</span><span class="kt">int</span> <span class="n">key</span><span class="p">,</span> <span class="kt">int</span> <span class="n">scancode</span><span class="p">,</span> <span class="kt">int</span> <span class="n">action</span><span class="p">,</span> <span class="kt">int</span> <span class="n">mods</span><span class="p">);</span>
-<span class="kt">void</span> <span class="nf">handleMouseButtonAction</span><span class="p">(</span><span class="kt">int</span> <span class="n">button</span><span class="p">,</span> <span class="kt">int</span> <span class="n">action</span><span class="p">,</span> <span class="kt">int</span> <span class="n">mods</span><span class="p">);</span>
-<span class="kt">void</span> <span class="nf">handleMousePositionAction</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span><span class="p">,</span> <span class="kt">double</span> <span class="n">y</span><span class="p">);</span>
-<span class="kt">void</span> <span class="nf">handleMouseWheelAction</span><span class="p">(</span><span class="kt">double</span> <span class="n">x</span><span class="p">,</span> <span class="kt">double</span> <span class="n">y</span><span class="p">);</span>
-<span class="kt">void</span> <span class="nf">handleWindowSize</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">y</span><span class="p">);</span>
-<span class="kt">void</span> <span class="nf">handleChar</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">unicodeChar</span><span class="p">);</span>
-<span class="kt">void</span> <span class="nf">handleCursorEnter</span><span class="p">(</span><span class="kt">int</span> <span class="n">flag</span><span class="p">);</span>
-</pre></div>
+<span class="pl-c">// Help create the app. This is called BEFORE the window is created.</span>
+<span class="pl-k">void</span> <span class="pl-en">MyWrapper::init</span>(Dumb::Core::Application::Adviser *adviser) {
+    Dumb::Core::Application::Video::Monitor monitor = adviser-&gt;<span class="pl-c1">getPrimaryMonitor</span>();
+    adviser-&gt;<span class="pl-c1">setMonitor</span>(monitor);
+    Dumb::Core::Application::Video::Mode mode = monitor.<span class="pl-c1">getCurrentMode</span>();
+    adviser-&gt;<span class="pl-c1">setVideoMode</span>(mode);
+    adviser-&gt;<span class="pl-c1">setTitle</span>(<span class="pl-s"><span class="pl-pds">"</span>Your Favorite Application Title<span class="pl-pds">"</span></span>);
+    <span class="pl-c">// The application will be fullscreen on the primary monitor.</span>
+    <span class="pl-c">// But there's a way to make windowed apps.</span>
+}
 
-<p>And that's about it. Then, merges it with the wrapper using the magic of the templates like this:</p>
+<span class="pl-c">// This is called AFTER window creation/graphic context.</span>
+<span class="pl-k">void</span> <span class="pl-en">MyWrapper::postInit</span>() {
+    <span class="pl-c">// Do whatever that require a graphic context.</span>
+}
 
-<div class="highlight highlight-cpp"><pre><span class="c1">// Include GLFW/GLEW stuff</span>
-<span class="cp">#include &lt;wrapper.hpp&gt;</span>
-<span class="cp">#include "the_place_where_you_declared_your_class.hpp"</span>
+<span class="pl-c">// All glory to the render method !</span>
+<span class="pl-k">int</span> <span class="pl-en">MyWrapper::render</span>() {
+    <span class="pl-c">// Return 0 if you want to quit the application.</span>
+    <span class="pl-k">return</span> GL_TRUE;
+}
 
-<span class="c1">// Let say that your class is named 'MySimpleApplication'.</span>
+<span class="pl-c">// This is invoked once the window is closed.</span>
+<span class="pl-k">void</span> <span class="pl-en">MyWrapper::close</span>() {
+    <span class="pl-c">// [...]</span>
+}
 
+<span class="pl-c">// Implements the rest of the wrapping methods (window, mouse and keyboard event handlers).</span>
+<span class="pl-c">// [...]</span>
 
-<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
-  <span class="n">Wrapper</span><span class="o">&lt;</span><span class="n">MySimpleApplication</span><span class="o">&gt;</span> <span class="o">*</span><span class="n">wrapper</span><span class="p">;</span>
-  <span class="n">MySimpleApplication</span> <span class="o">*</span><span class="n">app</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MySimpleApplication</span><span class="p">(</span><span class="cm">/* your own flavour of constructor */</span><span class="p">);</span>
-  <span class="c1">// Do whatever you want to prepare your stuff. Then.</span>
-
-  <span class="n">wrapper</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Wrapper</span><span class="o">&lt;</span><span class="n">MySimpleApplication</span><span class="o">&gt;</span><span class="p">(</span><span class="n">app</span><span class="p">);</span>
-
-  <span class="n">wrapper</span><span class="o">-&gt;</span><span class="n">start</span><span class="p">();</span>
-
-  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-
-<p>And voilà !</p>
+<span class="pl-k">int</span> <span class="pl-en">main</span>() {
+    MyWrapper myWrapper;
+    Dumb::Core::Application::Runner <span class="pl-smi">runner</span>(&amp;myWrapper);
+    <span class="pl-k">int</span> result = runner.<span class="pl-c1">start</span>();
+    <span class="pl-k">return</span> result;
+}</pre></div>
 
 <h3>
-<a name="what-if-i-want-to-play-with-sprites-" class="anchor" href="#what-if-i-want-to-play-with-sprites-"><span class="octicon octicon-link"></span></a>What if I want to play with sprites ?</h3>
+<a id="how-does-it-compile-" class="anchor" href="#how-does-it-compile-" aria-hidden="true"><span class="octicon octicon-link"></span></a>How does it compile ?</h3>
 
-<p>The way to flat happiness is short with this dumb framework. But it requires a little descriptive effort. What you need is a square picture, about power of two (16x16, 32x32 ... but usually 512x512 or even 1024x1024) and an XML file that describe what's in it in term of sprite and animation of sprite. Here's an example:</p>
+<h4>
+<a id="under-linux" class="anchor" href="#under-linux" aria-hidden="true"><span class="octicon octicon-link"></span></a>Under Linux</h4>
 
-<div class="highlight highlight-xml"><pre><span class="c">&lt;!-- First the path to the picture. Note that is can be</span>
-<span class="c">absolute OR relative - from where you've launched your</span>
-<span class="c">program. Then come the number of sprite definition. --&gt;</span>
-<span class="nt">&lt;atlas</span> <span class="na">path=</span><span class="s">"testsprite.png"</span> <span class="na">size=</span><span class="s">"1"</span><span class="nt">&gt;</span>
+<p>Make sure to have <strong>cmake</strong> and proceed like this:</p>
 
-<span class="c">&lt;!-- Here comes the list of definitions. From here,</span>
-<span class="c">you can define any sprite you want. Keep in mind that</span>
-<span class="c">everything is about numerical identifier by now.</span>
-<span class="c">Afterall, this framework is really dumb. --&gt;</span>
+<div class="highlight highlight-sh"><pre>$ <span class="pl-c1">cd</span> DumbFrameworkRoot
+$ mkdir build
+$ <span class="pl-c1">cd</span> build
+$ cmake ..
+$ make</pre></div>
 
-<span class="c">&lt;!-- So, here is the first definition. Its identifier</span>
-<span class="c">is obviously 'O'. The 'size' attribute says that it</span>
-<span class="c">hosts only one animation. --&gt;</span>
-<span class="nt">&lt;definition</span> <span class="na">id=</span><span class="s">"0"</span> <span class="na">size=</span><span class="s">"1"</span><span class="nt">&gt;</span>
-  <span class="c">&lt;!-- Then comes the list of animations. The first</span>
-<span class="c">  one got the identifier '0' (what a surprise ...).</span>
-<span class="c">  We also precise that the animation will consist in</span>
-<span class="c">  five frames (and don't lie about this - the framework</span>
-<span class="c">  is very itchy when it comes to lies ... --&gt;</span>
-  <span class="nt">&lt;animation</span> <span class="na">id=</span><span class="s">"0"</span> <span class="na">size=</span><span class="s">"5"</span><span class="nt">&gt;</span>
-    <span class="c">&lt;!-- Time to list the frames. No identifier here, only</span>
-<span class="c">    'time'. It designate the time of appearance in milliseconds.</span>
-<span class="c">    As always, declare the frame in order of appearance. The</span>
-<span class="c">    Dumb Framework being dumb, it won't make the job for you. --&gt;</span>
+<p>This will produce tons of stuff including the <strong>libDumbFramework.a</strong> static library file. Feel free to modify the CMakeLists.txt file in the root directory to fit your need (and/or to tune it with your favorite options. In my case, I'm very fond of clang++ hence the</p>
 
-    <span class="c">&lt;!-- offsetX and offsetY is a displacement in pixel given the</span>
-<span class="c">    declared position of the sprite (you'll see that it's useful</span>
-<span class="c">    for stuff like jump animation and so on).</span>
-<span class="c">    width and height are dimension, in pixels.</span>
-<span class="c">    topU, topV, bottomU, bottomV are texture coordinate in pixel</span>
-<span class="c">    within the big picture you're pointing at. They are coordinate</span>
-<span class="c">    of the upper-left and bottom-right corners. --&gt;</span>
-    <span class="nt">&lt;frame</span> <span class="na">time=</span><span class="s">"0"</span>
-           <span class="na">offsetX=</span><span class="s">"0"</span> <span class="na">offsetY=</span><span class="s">"0"</span>
-           <span class="na">width=</span><span class="s">"30"</span> <span class="na">height=</span><span class="s">"50"</span>
-           <span class="na">topU=</span><span class="s">"13"</span> <span class="na">topV=</span><span class="s">"5"</span>
-           <span class="na">bottomU=</span><span class="s">"43"</span> <span class="na">bottomV=</span><span class="s">"55"</span><span class="nt">/&gt;</span>
-    <span class="nt">&lt;frame</span> <span class="na">time=</span><span class="s">"200"</span>
-           <span class="na">offsetX=</span><span class="s">"0"</span> <span class="na">offsetY=</span><span class="s">"0"</span>
-           <span class="na">width=</span><span class="s">"30"</span> <span class="na">height=</span><span class="s">"50"</span>
-           <span class="na">topU=</span><span class="s">"55"</span> <span class="na">topV=</span><span class="s">"5"</span>
-           <span class="na">bottomU=</span><span class="s">"85"</span> <span class="na">bottomV=</span><span class="s">"55"</span><span class="nt">/&gt;</span>
-    <span class="nt">&lt;frame</span> <span class="na">time=</span><span class="s">"400"</span>
-           <span class="na">offsetX=</span><span class="s">"0"</span> <span class="na">offsetY=</span><span class="s">"0"</span>
-           <span class="na">width=</span><span class="s">"30"</span> <span class="na">height=</span><span class="s">"50"</span>
-           <span class="na">topU=</span><span class="s">"90"</span> <span class="na">topV=</span><span class="s">"5"</span>
-           <span class="na">bottomU=</span><span class="s">"120"</span> <span class="na">bottomV=</span><span class="s">"55"</span><span class="nt">/&gt;</span>
-    <span class="nt">&lt;frame</span> <span class="na">time=</span><span class="s">"600"</span>
-           <span class="na">offsetX=</span><span class="s">"0"</span> <span class="na">offsetY=</span><span class="s">"0"</span>
-           <span class="na">width=</span><span class="s">"30"</span> <span class="na">height=</span><span class="s">"50"</span>
-           <span class="na">topU=</span><span class="s">"125"</span> <span class="na">topV=</span><span class="s">"5"</span>
-           <span class="na">bottomU=</span><span class="s">"155"</span> <span class="na">bottomV=</span><span class="s">"55"</span><span class="nt">/&gt;</span>
-    <span class="nt">&lt;frame</span> <span class="na">time=</span><span class="s">"800"</span>
-           <span class="na">offsetX=</span><span class="s">"0"</span> <span class="na">offsetY=</span><span class="s">"0"</span>
-           <span class="na">width=</span><span class="s">"30"</span> <span class="na">height=</span><span class="s">"50"</span>
-           <span class="na">topU=</span><span class="s">"13"</span> <span class="na">topV=</span><span class="s">"5"</span>
-           <span class="na">bottomU=</span><span class="s">"43"</span> <span class="na">bottomV=</span><span class="s">"55"</span><span class="nt">/&gt;</span>
-    <span class="c">&lt;!-- ... --&gt;</span>
-  <span class="nt">&lt;/animation&gt;</span>
-  <span class="c">&lt;!-- ... --&gt;</span>
-<span class="nt">&lt;/definition&gt;</span>
+<pre><code>cmake -DCMAKE_CXX_COMPILER=/usr/bin/clang++ ..
+</code></pre>
 
-<span class="nt">&lt;/atlas&gt;</span>
-</pre></div>
+<p>).</p>
 
-<p>Now, how to use that ?
-First, you'll have to include header files sprite.hpp and sprengine.hpp. Then, in you shiny prototype, declare an atlas (you know, this big picture with all your sprite in it), like this:</p>
+<h4>
+<a id="what-youll-need-" class="anchor" href="#what-youll-need-" aria-hidden="true"><span class="octicon octicon-link"></span></a>What you'll need ...</h4>
 
-<div class="highlight highlight-cpp"><pre><span class="n">Sprite</span><span class="o">::</span><span class="n">Atlas</span> <span class="o">*</span><span class="n">atlas</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Sprite</span><span class="o">::</span><span class="n">Atlas</span><span class="p">(</span><span class="s">"/path/to/the/xml"</span><span class="p">);</span>
-</pre></div>
+<p>In order to compile, the librarie needs the following:</p>
 
-<p>From this object, you'll have access to all the sprite definitions/animations/frame you've declared earlier.
-Then, you'll need an 'engine' to display/move all this.</p>
+<ul>
+<li>cmake &gt;= 2.6</li>
+<li>GLM &gt;= 0.9.5.4</li>
+<li>Latest stb toolbox</li>
+<li>GLEW</li>
+<li>GLFW &gt;= 3</li>
+<li>Box2D (in some cases)</li>
+<li>ICU</li>
+</ul>
 
-<div class="highlight highlight-cpp"><pre><span class="n">Sprite</span><span class="o">::</span><span class="n">Engine</span> <span class="o">*</span><span class="n">engine</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Sprite</span><span class="o">::</span><span class="n">Engine</span><span class="p">(</span><span class="n">atlas</span><span class="p">,</span> <span class="mi">150000</span><span class="p">);</span>
-</pre></div>
+<h4>
+<a id="why-the-hell-do-i-need-that-" class="anchor" href="#why-the-hell-do-i-need-that-" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why the hell do I need THAT ?</h4>
 
-<p>The above line declares a sprite engine that will use you previously declared atlas and will be able to displayed 150000 sprites.
-When setting your scene, be sure to set the viewing window of the sprite engine (it is very important : it can't guess it by itself). For example, given that you have a rendering window with a physical size of 600 per 400 pixels, and you want your sprites rendered at a 1:1 ratio, initialise the sprite engine rendering service like this.</p>
+<p>There's some neat stuff already implemented, like OpenGL 4 support, a small sprite engine (the Sprengine), a font renderer (the Dumb Font Engine) and some serious rendering things.</p>
 
-<div class="highlight highlight-cpp"><pre><span class="n">engine</span><span class="o">-&gt;</span><span class="n">viewport</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">400</span><span class="p">);</span>
-</pre></div>
-
-<p>The "view" will be centered on coordinate (0, 0). Upper left corner will have coordinate (-300, -200) and bottom right (300, 200).</p>
-
-<p>Now, it's time to play with the sprites. Remember that we've defined a sprite scheme with identifier '0'. Let's create one instance of it.</p>
-
-<div class="highlight highlight-cpp"><pre><span class="c1">// Create an instance of sprite from definition 'O', initialy</span>
-<span class="c1">// place at coordinates (100, 100) and starting with animation '0'.</span>
-<span class="n">Sprite</span><span class="o">::</span><span class="n">Identifier</span> <span class="n">identifier</span> <span class="o">=</span> <span class="n">engine</span><span class="o">-&gt;</span><span class="n">create</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">glm</span><span class="o">::</span><span class="n">vec2</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="mi">0</span><span class="p">);</span>
-</pre></div>
-
-<p>By default, the engine cycle the animations. Here the sprite will be displayed at (100, 100) in the engine coordinate system (in the window context described earlier, it will be (400, 300) ).</p>
-
-<p>Finally, to render the sprite, just invoke the following:</p>
-
-<div class="highlight highlight-cpp"><pre><span class="n">engine</span><span class="o">-&gt;</span><span class="n">render</span><span class="p">();</span> <span class="c1">// Magic !</span>
-</pre></div>
-
-<p>And that's it !</p>
-
-<p>Of course, there's some other methods to actually move the sprites, rotate them, perform zooming and so on. (and this will be documented later even if it's totally done in the code).</p>
-
-<p>Have fun with that.</p>
-
-<p><em>SomeRandomGameDev</em> and <em>BlockoS</em></p>
+<p><em>SomeRandomGameDev</em> and <em>BlockoS/MooZ</em></p>
         </section>
 
         <aside id="sidebar">
