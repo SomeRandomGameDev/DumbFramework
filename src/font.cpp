@@ -35,8 +35,6 @@
 #define DFE_TOP_TEX_INDEX         2 // (GLfloat, GLfloat)
 #define DFE_DOWN_TEX_INDEX        3 // (GLfloat, GLfloat)
 #define DFE_COLOR_INDEX           4 // (GLubyte, GLubyte, GLubyte, GLubyte)
-#define DFE_BUFFER_ELEMENT_COUNT  9
-#define DFE_BUFFER_STRIDE         (DFE_BUFFER_ELEMENT_COUNT * sizeof(GLfloat))
 
 namespace Dumb {
     namespace Font {
@@ -377,72 +375,70 @@ namespace Dumb {
         }
 
         //   ------------
-        void Cache::fetch(GLfloat *dest, unsigned int size) const {
-            const unsigned int length = _text.length();
+        unsigned int Cache::fetch(void *dest, unsigned int size) const {
+            unsigned int length = _text.length();
             if(size >= length) {
-                memcpy(dest, _buffer, length * DFE_BUFFER_STRIDE);
+                length *= DFE_BUFFER_STRIDE;
+                memcpy(dest, _buffer, length);
+            } else {
+                length = 0;
             }
+            return length;
         }
 
-        //   -------------
-        void Engine::print(const std::vector<const Cache*> &texts) {
-            Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
-            renderer.depthBufferWrite(false);
-            _buffer.bind();
-            GLfloat *ptr = reinterpret_cast<GLfloat *>(
-                    _buffer.map(Framework::Render::BufferObject::Access::Policy::WRITE_ONLY));
-            unsigned int remaining = _capacity;
-            GLfloat *current = ptr;
+        //  ---------------
+        int aggregateCaches(const std::vector<const Cache *> &texts,
+                void *buffer, int size) {
+            unsigned int remaining = size;
+            unsigned char *current = reinterpret_cast<unsigned char *>(buffer);
             std::vector<const Cache *>::const_iterator it;
             unsigned int count;
             unsigned int total = 0;
             for(it = texts.begin(); it != texts.end(); ++it) {
-                (*it)->fetch(current, remaining);
                 count = (*it)->count();
-                total += count;
-                remaining -= count;
-                current += count * DFE_BUFFER_ELEMENT_COUNT;
+                if(remaining >= count) {
+                    total += count;
+                    remaining -= count;
+                    current += (*it)->fetch(current, remaining);
+                } else {
+                    break;
+                }
             }
-            _buffer.unmap();
-            _buffer.unbind();
+            return total;
+        }
 
-            _program.begin();
-            _program.uniform(_uniformMatrix, false, _matrix);
-            renderer.setActiveTextureUnit(0);
-            glBindTexture(GL_TEXTURE_2D, _atlas);
+#define PRINT_ROUTINE(fetch,size) \
+        Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();\
+        renderer.depthBufferWrite(false);\
+        _buffer.bind();\
+        void *ptr = _buffer.map(Framework::Render::BufferObject::Access::Policy::WRITE_ONLY);\
+        fetch;\
+        _buffer.unmap();\
+        _buffer.unbind();\
+        _program.begin();\
+        _program.uniform(_uniformMatrix, false, _matrix);\
+        renderer.setActiveTextureUnit(0);\
+        glBindTexture(GL_TEXTURE_2D, _atlas);\
+        _stream.bind();\
+        glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, (size));\
+        _stream.unbind();\
+        _program.end();\
+        glBindTexture(GL_TEXTURE_2D, 0);\
+        renderer.depthBufferWrite(true);
 
-            // Send VAO.
-            _stream.bind();
-            glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, total);
-            _stream.unbind();
-            _program.end();
-            glBindTexture(GL_TEXTURE_2D, 0);
-            renderer.depthBufferWrite(true);
+        //   -------------
+        void Engine::print(const std::vector<const Cache*> &texts) {
+            PRINT_ROUTINE(unsigned int total = aggregateCaches(texts, ptr, _capacity), total)
+        }
+
+        //   -------------
+        void Engine::print(const void *cache, unsigned int size) {
+            PRINT_ROUTINE(memcpy(ptr, cache, size * DFE_BUFFER_STRIDE), size)
         }
 
         //   -------------
         void Engine::print(const Cache &cache) {
-            Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
-            renderer.depthBufferWrite(false);
-            _buffer.bind();
-            GLfloat *ptr = reinterpret_cast<GLfloat *>(
-                    _buffer.map(Framework::Render::BufferObject::Access::Policy::WRITE_ONLY));
-            cache.fetch(ptr, _capacity);
-            _buffer.unmap();
-            _buffer.unbind();
-
-            _program.begin();
-            _program.uniform(_uniformMatrix, false, _matrix);
-            renderer.setActiveTextureUnit(0);
-            glBindTexture(GL_TEXTURE_2D, _atlas);
-
-            // Send VAO.
-            _stream.bind();
-            glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, cache.count());
-            _stream.unbind();
-            _program.end();
-            glBindTexture(GL_TEXTURE_2D, 0);
-            renderer.depthBufferWrite(true);
+            PRINT_ROUTINE(cache.fetch(ptr, _capacity), cache.count())
         }
 
         //   -------------
@@ -497,14 +493,10 @@ namespace Dumb {
                 }
                 _buffer.unmap();
                 _buffer.unbind();
-
                 _program.begin();
                 _program.uniform(_uniformMatrix, false, _matrix);
-
                 renderer.setActiveTextureUnit(0);
                 glBindTexture(GL_TEXTURE_2D, _atlas);
-
-                // Send VAO.
                 _stream.bind();
                 glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, count);
                 _stream.unbind();

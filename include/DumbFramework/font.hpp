@@ -71,6 +71,16 @@
  */
 #define DFE_COLOR_DEFAULT glm::vec4(255, 255, 255, 255)
 
+/**
+ * Number of element in a buffer cell. (FIXME Not relevant).
+ */
+#define DFE_BUFFER_ELEMENT_COUNT  9
+
+/**
+ * Vertex buffer stride.
+ */
+#define DFE_BUFFER_STRIDE         (DFE_BUFFER_ELEMENT_COUNT * sizeof(GLfloat))
+
 
 namespace Dumb {
     namespace Font {
@@ -342,8 +352,9 @@ namespace Dumb {
                  * Fetch the computed buffer.
                  * @param [out] dest Destination buffer.
                  * @param [in] size Size of the destination buffer.
+                 * @return Number of copied bytes.
                  */
-                void fetch(GLfloat *dest, unsigned int size) const;
+                unsigned int fetch(void *dest, unsigned int size) const;
 
                 /**
                  * @return The number of glyphs.
@@ -485,6 +496,16 @@ namespace Dumb {
         };
 
         /**
+         * Utility method that aggregate a collection of cache into a
+         * contiguous section of memory.
+         * @param [in] collection Collection of font cache.
+         * @param [out] buffer Target buffer.
+         * @param [in] size Number of storable glyphs.
+         * @return The number of aggregated glyhps.
+         */
+        int aggregateCaches(const std::vector<const Cache *> &collection, void *buffer, int size);
+
+        /**
          * El Dumb Font Engine.
          */
         class Engine {
@@ -560,6 +581,13 @@ namespace Dumb {
                  * @param [in] texts List of precomputed texts.
                  */
                 void print(const std::vector<const Cache*> &texts);
+
+                /**
+                 * Directly print the content of a precomputed buffer.
+                 * @param [in] cache Vertex buffer data.
+                 * @param [in] size Number of glyphs.
+                 */
+                void print(const void *cache, unsigned int size);
 
                 /**
                  * Set the viewport.

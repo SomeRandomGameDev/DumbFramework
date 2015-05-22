@@ -23,6 +23,8 @@
 
 #include <glm/ext.hpp>
 
+#define MAX_GLYPHS 1024576
+
 // Some Constants.
 static const glm::vec4 COLOR_WHITE = glm::vec4(255, 255, 255, 128);
 static const glm::vec4 COLOR_RED   = glm::vec4(255, 96, 96, 255);
@@ -41,6 +43,7 @@ class Example {
          */
         Example() : _closeFlag(1), _engine(0), _frames(0), _elapsed(0) {
             // Nothing special to do.
+            _precomputed = new unsigned char[MAX_GLYPHS * DFE_BUFFER_STRIDE];
         }
 
         /**
@@ -50,12 +53,12 @@ class Example {
             if(0 != _engine) {
                 delete _engine;
             }
-            delete _cache;
             std::vector<const Dumb::Font::Cache *>::const_iterator it;
             for(it = _collection.begin(); it != _collection.end(); ++it) {
                 Dumb::Font::Cache *cache = const_cast<Dumb::Font::Cache *>(*it);
                 delete cache;
             }
+            delete []((unsigned char *)_precomputed);
         }
     private:
         /**
@@ -122,6 +125,16 @@ class Example {
          * Text cache collection.
          */
         std::vector<const Dumb::Font::Cache *> _collection;
+
+        /**
+         * Precomputed buffer.
+         */
+        void *_precomputed;
+
+        /**
+         * Number of precomputed glyphs.
+         */
+        unsigned int _precomputedSize;
 };
 
 #define DFE_DEBUG
@@ -165,7 +178,7 @@ void Example::postInit() {
     oversample.push_back(Oversample(glm::vec2(4, 4), range));
     resource.push_back(Resource(fontPath + "VeraIt.ttf", oversample));
 
-    _engine = new Engine(resource, 1048576, 4096);
+    _engine = new Engine(resource, MAX_GLYPHS, 4096);
     _engine->viewport(0, 0, _screenSize.x, _screenSize.y);
     _normal = _engine->getFont("Vera-16-ovr");
     _italic = _engine->getFont("Vera-Italic");
@@ -181,7 +194,7 @@ void Example::postInit() {
     std::default_random_engine generator;
     std::uniform_int_distribution<int> distX(0,_screenSize.x - 100);
     std::uniform_int_distribution<int> distY(32,_screenSize.y);
-    for(int i = 0; i < 5; ++i) {
+    for(int i = 0; i < 20; ++i) {
         Dumb::Font::Cache *newCache = new Dumb::Font::Cache(*_cache);
         newCache->moveTo(glm::vec2(distX(generator), distY(generator)));
         _collection.push_back(newCache);
@@ -218,8 +231,11 @@ void Example::postInit() {
     _collection.push_back(changeText);
     _zone = changeText->computeBox(16, 9);
 
+    _precomputedSize = aggregateCaches(_collection, _precomputed, MAX_GLYPHS);
+
     _cache->clearDecoration();
     _cache->addDecoration(Dumb::Font::Decoration(glm::vec2(0, 15), _big, 0));
+    _collection.push_back(_cache);
 
     glViewport(0, 0, _screenSize.x, _screenSize.y);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -244,8 +260,8 @@ int Example::render() {
     _cache->setText(icu::UnicodeString(stream.str().c_str()), true);
 
     _engine->print(_collection);
+    //_engine->print(_precomputed, _precomputedSize); // This is 40% faster, but for static text only.
 
-    _engine->print(*_cache);
 
     _elapsed += glfwGetTime() - startTime;
     ++_frames;
