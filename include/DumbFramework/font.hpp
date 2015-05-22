@@ -69,7 +69,7 @@
 /**
  * Default printing color.
  */
-#define DFE_COLOR_DEFAULT        glm::fvec3(1.0f, 1.0f, 1.0f)
+#define DFE_COLOR_DEFAULT glm::vec4(255, 255, 255, 255)
 
 
 namespace Dumb {
@@ -275,12 +275,12 @@ namespace Dumb {
          * Decoration type.
          * A tuple consisting in (offset-length, font, color, underline-flag, stroke-flag).
          */
-        typedef std::tuple<glm::ivec2, const Wrapper *, const glm::fvec3 *, bool, bool> Decoration;
+        typedef std::tuple<glm::ivec2, const Wrapper *, const glm::vec4 *> Decoration;
 
         /**
          * Decoration type for internal use only.
          */
-        typedef std::tuple<const Wrapper *, glm::fvec3, bool, bool> InnerDecoration;
+        typedef std::tuple<const Wrapper *, glm::vec4> InnerDecoration;
 
         /**
          * Caching class. Allows precomputing text decoration and positionning.
@@ -301,7 +301,7 @@ namespace Dumb {
                 Cache(const Wrapper *def,
                         glm::vec2 pos,
                         const icu::UnicodeString &text,
-                        glm::vec3 color,
+                        glm::vec4 color,
                         std::initializer_list<Decoration> decoration,
                         unsigned int size);
 
@@ -316,7 +316,7 @@ namespace Dumb {
                 Cache(const Wrapper *def,
                         glm::vec2 pos,
                         const icu::UnicodeString &text,
-                        glm::vec3 color,
+                        glm::vec4 color,
                         unsigned int size);
 
                 /**
@@ -466,7 +466,7 @@ namespace Dumb {
                 /**
                  * Default color.
                  */
-                glm::vec3 _color;
+                glm::vec4 _color;
 
                 /**
                  * Displayed text.
@@ -531,7 +531,7 @@ namespace Dumb {
                 void print(const Wrapper *font,
                         glm::vec2 pos,
                         icu::UnicodeString text,
-                        glm::vec3 color = DFE_COLOR_DEFAULT);
+                        glm::vec4 color = DFE_COLOR_DEFAULT);
 
                 /**
                  * Decorated text printing.
@@ -546,7 +546,7 @@ namespace Dumb {
                 void print(const Wrapper *def,
                         glm::vec2 pos,
                         const icu::UnicodeString &text,
-                        glm::vec3 color,
+                        glm::vec4 color,
                         std::initializer_list<Decoration> decoration);
 
                 /**

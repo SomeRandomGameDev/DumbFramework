@@ -24,10 +24,10 @@
 #include <glm/ext.hpp>
 
 // Some Constants.
-static const glm::vec3 COLOR_WHITE = glm::vec3(1.0f, 1.0f, 1.0f);
-static const glm::vec3 COLOR_RED   = glm::vec3(1.0f, 0.3f, 0.3f);
-static const glm::vec3 COLOR_GREEN = glm::vec3(0.0f, 1.0f, 0.0f);
-static const glm::vec3 COLOR_BLUE  = glm::vec3(0.5f, 0.5f, 1.0f);
+static const glm::vec4 COLOR_WHITE = glm::vec4(255, 255, 255, 128);
+static const glm::vec4 COLOR_RED   = glm::vec4(255, 96, 96, 255);
+static const glm::vec4 COLOR_GREEN = glm::vec4(0, 255, 0, 255);
+static const glm::vec4 COLOR_BLUE  = glm::vec4(128, 128, 255, 255);
 
 
 /**
@@ -173,9 +173,9 @@ void Example::postInit() {
 
     icu::UnicodeString decorated("This is a decorated text with a big font here.");
     _cache = new Dumb::Font::Cache(_normal, glm::vec2(50, 150), decorated, COLOR_WHITE,
-            { Dumb::Font::Decoration(glm::vec2(0, 4), 0, &COLOR_GREEN, false, false),
-            Dumb::Font::Decoration(glm::vec2(10, 9), _italic, 0, false, false),
-            Dumb::Font::Decoration(glm::vec2(32, 13), _big, &COLOR_RED, false, false) },
+            { Dumb::Font::Decoration(glm::vec2(0, 4), 0, &COLOR_GREEN),
+            Dumb::Font::Decoration(glm::vec2(10, 9), _italic, 0),
+            Dumb::Font::Decoration(glm::vec2(32, 13), _big, &COLOR_RED) },
             _engine->size());
 
     std::default_random_engine generator;
@@ -207,19 +207,19 @@ void Example::postInit() {
     // Add decoration.
     changeText = new Dumb::Font::Cache(*changeText);
     changeText->moveTo(glm::vec2(0, 180));
-    changeText->addDecoration(Dumb::Font::Decoration(glm::vec2(0, 41), 0, &COLOR_GREEN, false, false));
+    changeText->addDecoration(Dumb::Font::Decoration(glm::vec2(0, 41), 0, &COLOR_GREEN));
     _collection.push_back(changeText);
 
     // Reset decoration, change text, add decoration on a word and keep this word box coordinate
     // for further use.
     changeText = new Dumb::Font::Cache(_normal, glm::vec2(150, 50),
             icu::UnicodeString("That text got a clickable zone."), COLOR_WHITE,
-     { Dumb::Font::Decoration(glm::vec2(16, 9), _big, &COLOR_BLUE, false, false) }, _engine->size());
+     { Dumb::Font::Decoration(glm::vec2(16, 9), _big, &COLOR_BLUE) }, _engine->size());
     _collection.push_back(changeText);
     _zone = changeText->computeBox(16, 9);
 
     _cache->clearDecoration();
-    _cache->addDecoration(Dumb::Font::Decoration(glm::vec2(0, 15), _big, 0, false, false));
+    _cache->addDecoration(Dumb::Font::Decoration(glm::vec2(0, 15), _big, 0));
 
     glViewport(0, 0, _screenSize.x, _screenSize.y);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);

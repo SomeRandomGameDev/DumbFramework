@@ -30,13 +30,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#define DFE_POSITION_INDEX        0
-#define DFE_SIZE_INDEX            1
-#define DFE_TOP_TEX_INDEX         2
-#define DFE_DOWN_TEX_INDEX        3
-#define DFE_COLOR_INDEX           4
-#define DFE_BUFFER_ELEMENT_COUNT 11
-#define DFE_BUFFER_STRIDE        (DFE_BUFFER_ELEMENT_COUNT * sizeof(GLfloat))
+#define DFE_POSITION_INDEX        0 // (GLfloat, GLfloat)
+#define DFE_SIZE_INDEX            1 // (GLfloat, GLfloat)
+#define DFE_TOP_TEX_INDEX         2 // (GLfloat, GLfloat)
+#define DFE_DOWN_TEX_INDEX        3 // (GLfloat, GLfloat)
+#define DFE_COLOR_INDEX           4 // (GLubyte, GLubyte, GLubyte, GLubyte)
+#define DFE_BUFFER_ELEMENT_COUNT  9
+#define DFE_BUFFER_STRIDE         (DFE_BUFFER_ELEMENT_COUNT * sizeof(GLfloat))
 
 namespace Dumb {
     namespace Font {
@@ -67,7 +67,7 @@ namespace Dumb {
         layout (location=1) in vec2 vs_dimension;
         layout (location=2) in vec2 vs_toptex;
         layout (location=3) in vec2 vs_bottomtex;
-        layout (location=4) in vec3 vs_color;
+        layout (location=4) in vec4 vs_color;
 
         flat out vec4 fs_color;
         flat out vec2 fs_tex;
@@ -83,7 +83,7 @@ namespace Dumb {
             vec2 dimPt = vs_dimension * point;
 
             fs_tex = mix(vs_toptex, vs_bottomtex, point);
-            fs_color = vec4(vs_color, 1);
+            fs_color = vs_color / 255.0;
 
             gl_Position = un_matrix * vec4(vs_position + dimPt, 0.0, 1.0);
         }
@@ -92,15 +92,13 @@ namespace Dumb {
 #define DFE_DECORATION_SPAN 0
 #define DFE_DECORATION_FONT 1
 #define DFE_DECORATION_COLOR 2
-#define DFE_DECORATION_UNDERLINE 3 // TODO
-#define DFE_DECORATION_STRIKE 4 // TODO
 
         //   ----------------------------------
         void Cache::computeDefaultDecoration() {
             const int length = _text.length();
             _decorations.clear();
             for(int i = 0; i < length; ++i) {
-                _decorations.push_back(InnerDecoration(_font, _color, false, false));
+                _decorations.push_back(InnerDecoration(_font, _color));
             }
         }
 
@@ -114,9 +112,7 @@ namespace Dumb {
 
         //   --------------------
         void Cache::fillVoidGlyph(GLfloat *ptr) {
-            for(int i = 0; i < DFE_BUFFER_ELEMENT_COUNT; ++i) {
-                *(ptr++) = 0;
-            }
+            memset(ptr, 0, DFE_BUFFER_STRIDE);
         }
 
         //   --------------------
@@ -143,7 +139,7 @@ namespace Dumb {
                 // Retrieve decoration.
                 InnerDecoration &glyphDecoration = _decorations[glyph];
                 const Wrapper *curFont = std::get<0>(glyphDecoration);
-                glm::vec3 curColor = std::get<1>(glyphDecoration);
+                glm::vec4 curColor = std::get<1>(glyphDecoration);
                 UChar32 codepoint = it.next32PostInc();
                 if(0 != curFont) {
                     UChar32 start = static_cast<UChar32>(curFont->getStartingCodePoint());
@@ -161,9 +157,11 @@ namespace Dumb {
                         ptr[ 5] = quad.t0;
                         ptr[ 6] = quad.s1;
                         ptr[ 7] = quad.t1;
-                        ptr[ 8] = curColor.r;
-                        ptr[ 9] = curColor.g;
-                        ptr[10] = curColor.b;
+                        unsigned char *colorBuffer = (unsigned char *) (ptr + 8);
+                        colorBuffer[0] = curColor.r;
+                        colorBuffer[1] = curColor.g;
+                        colorBuffer[2] = curColor.b;
+                        colorBuffer[3] = curColor.a;
                     } else {
                         fillVoidGlyph(ptr);
                     }
@@ -178,7 +176,7 @@ namespace Dumb {
         Cache::Cache(const Wrapper *def,
                 glm::vec2 pos,
                 const icu::UnicodeString &text,
-                glm::vec3 color,
+                glm::vec4 color,
                 unsigned int size) : _buffer(0), _capacity(0),
         _position(pos), _font(def), _color(color), _text(text), _size(size) {
             computeDefaultDecoration();
@@ -189,7 +187,7 @@ namespace Dumb {
         Cache::Cache(const Wrapper *def,
                 glm::vec2 pos,
                 const icu::UnicodeString &text,
-                glm::vec3 color,
+                glm::vec4 color,
                 std::initializer_list<Decoration> decoration,
                 unsigned int size) : _buffer(0), _capacity(0),
         _position(pos), _font(def), _color(color), _text(text), _size(size) {
@@ -270,7 +268,7 @@ namespace Dumb {
                 _decorations.clear();
             }
             for(int i = oldTextLength; i < length; ++i) {
-                _decorations.push_back(InnerDecoration(_font, _color, false, false));
+                _decorations.push_back(InnerDecoration(_font, _color));
             }
             _glyphs.clear();
             computeBuffer(_size);
@@ -305,15 +303,15 @@ namespace Dumb {
             int length = _text.length();
             glm::ivec2 span = std::get<DFE_DECORATION_SPAN>(decoration);
             const Wrapper *font = std::get<DFE_DECORATION_FONT>(decoration);
-            const glm::fvec3 *coloration = std::get<DFE_DECORATION_COLOR>(decoration);
-            glm::fvec3 colApply;
+            const glm::vec4 *coloration = std::get<DFE_DECORATION_COLOR>(decoration);
+            glm::vec4 colApply;
             const Wrapper *fontApply;
             int start = std::max(0, span.x);
             int end = std::min(length, span.x + span.y);
             int size = _decorations.size();
             if(end > size) {
                 for(int j = size; j < end; ++j) {
-                    _decorations.push_back(InnerDecoration(_font, _color, false, false));
+                    _decorations.push_back(InnerDecoration(_font, _color));
                 }
             }
             for(int j = start; j < end; ++j) {
@@ -327,7 +325,7 @@ namespace Dumb {
                 } else {
                     colApply = *coloration;
                 }
-                _decorations[j] = InnerDecoration(fontApply, colApply, false, false);
+                _decorations[j] = InnerDecoration(fontApply, colApply);
             }
             if(compute) {
                 computeBuffer(_size);
@@ -343,7 +341,7 @@ namespace Dumb {
                 }
                 unsigned int last = offset + length + 1;
                 for(unsigned int i = offset; i < last; ++i) {
-                    _decorations[i] = InnerDecoration(_font, _color, false, false);
+                    _decorations[i] = InnerDecoration(_font, _color);
                 }
                 if(compute) {
                     computeBuffer(_size);
@@ -451,20 +449,21 @@ namespace Dumb {
         void Engine::print(const Wrapper *def,
                 glm::vec2 pos,
                 const icu::UnicodeString &text,
-                glm::vec3 color,
+                glm::vec4 color,
                 std::initializer_list<Decoration> decoration) {
             Cache cache(def, pos, text, color, decoration, _size);
             print(cache);
         }
 
         //   -------------
-        void Engine::print(const Wrapper *font, glm::vec2 pos, icu::UnicodeString text, glm::vec3 color) {
+        void Engine::print(const Wrapper *font, glm::vec2 pos, icu::UnicodeString text, glm::vec4 color) {
             using namespace Framework;
             if(0 != font) {
                 Render::Renderer& renderer = Render::Renderer::instance();
                 renderer.depthBufferWrite(false);
                 _buffer.bind();
-                GLfloat *ptr = reinterpret_cast<GLfloat *>(_buffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY));
+                GLfloat *ptr = reinterpret_cast<GLfloat *>(
+                        _buffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY));
                 GLsizei count = 0; // Number of glyph to display.
                 // Iterate on the text.
                 UChar32 start = static_cast<UChar32>(font->getStartingCodePoint());
@@ -488,9 +487,11 @@ namespace Dumb {
                         ptr[ 5] = quad.t0;
                         ptr[ 6] = quad.s1;
                         ptr[ 7] = quad.t1;
-                        ptr[ 8] = color.r;
-                        ptr[ 9] = color.g;
-                        ptr[10] = color.b;
+                        unsigned char *colorBuffer = (unsigned char *) (ptr + 8);
+                        colorBuffer[0] = color.r;
+                        colorBuffer[1] = color.g;
+                        colorBuffer[2] = color.b;
+                        colorBuffer[3] = color.a;
                         ptr += DFE_BUFFER_ELEMENT_COUNT;
                     }
                 }
@@ -612,7 +613,7 @@ namespace Dumb {
                     { DFE_SIZE_INDEX,     Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  2, 1) },
                     { DFE_TOP_TEX_INDEX,  Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  4, 1) },
                     { DFE_DOWN_TEX_INDEX, Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  6, 1) },
-                    { DFE_COLOR_INDEX,    Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 3, false, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  8, 1) },
+                    { DFE_COLOR_INDEX,    Render::Geometry::Attribute(Render::Geometry::ComponentType::UNSIGNED_BYTE, 4, false, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  8, 1) },
                     });
             _stream.compile();
 
