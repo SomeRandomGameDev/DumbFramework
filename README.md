@@ -57,7 +57,8 @@ void MyWrapper::close() {
     // [...]
 }
 
-// Implements the rest of the wrapping methods (window, mouse and keyboard event handlers).
+// Implements the rest of the wrapping methods
+// (window, mouse and keyboard event handlers).
 // [...]
 
 int main() {
@@ -67,7 +68,7 @@ int main() {
     return result;
 }
 ```
-
+More information are available in the [wiki](https://github.com/SomeRandomGameDev/DumbFramework/wiki).
 ### How does it compile ?
 
 #### Under Linux
