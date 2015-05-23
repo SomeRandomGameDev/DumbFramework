@@ -16,9 +16,6 @@
 #ifndef _DUMBFRAMEWORK_FONT_
 #define _DUMBFRAMEWORK_FONT_
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-
 #include <stb_rect_pack.h>
 #include <stb_truetype.h>
 
@@ -590,6 +587,11 @@ namespace Dumb {
                 void print(const void *cache, unsigned int size);
 
                 /**
+                 * Simply redraw the previously displayed strings.
+                 */
+                void redraw();
+
+                /**
                  * Set the viewport.
                  * @param [in] startX Viewport starting point on X-axis.
                  * @param [in] startY Viewport starting point on Y-axis.
@@ -681,10 +683,13 @@ namespace Dumb {
                  * Atlas size (in texels).
                  */
                 unsigned int _size;
+
+                /**
+                 * Number of glyphs previously sent to GPU.
+                 */
+                unsigned int _lastCount;
         };
     } // 'Font' namespace.
 } // 'Dumb' namespace.
-
-#pragma GCC diagnostic pop
 
 #endif

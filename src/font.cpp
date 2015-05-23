@@ -17,9 +17,6 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #define STB_RECT_PACK_IMPLEMENTATION
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-
 #include <iostream>
 #include <fstream>
 #include <array>
@@ -48,11 +45,11 @@ namespace Dumb {
         in vec2 fs_tex;
         in vec4 fs_color;
 
-        out vec4 out_Color;
+        layout (location=0) out vec4 color;
 
         void main()
         {
-            out_Color = texture(un_texture, vec2(fs_tex)).r * fs_color;
+            color = texture(un_texture, vec2(fs_tex)).r * fs_color;
         }
         )EOT";
 
@@ -420,7 +417,9 @@ namespace Dumb {
         renderer.setActiveTextureUnit(0);\
         glBindTexture(GL_TEXTURE_2D, _atlas);\
         _stream.bind();\
-        glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, (size));\
+        unsigned int toSend = (size);\
+        glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, toSend);\
+        _lastCount = toSend;\
         _stream.unbind();\
         _program.end();\
         glBindTexture(GL_TEXTURE_2D, 0);\
@@ -439,6 +438,22 @@ namespace Dumb {
         //   -------------
         void Engine::print(const Cache &cache) {
             PRINT_ROUTINE(cache.fetch(ptr, _capacity), cache.count())
+        }
+
+        //   --------------
+        void Engine::redraw() {
+            Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
+            renderer.depthBufferWrite(false);
+            _program.begin();
+            _program.uniform(_uniformMatrix, false, _matrix);
+            renderer.setActiveTextureUnit(0);
+            glBindTexture(GL_TEXTURE_2D, _atlas);
+            _stream.bind();
+            glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, _lastCount);
+            _stream.unbind();
+            _program.end();
+            glBindTexture(GL_TEXTURE_2D, 0);
+            renderer.depthBufferWrite(true);
         }
 
         //   -------------
@@ -499,6 +514,7 @@ namespace Dumb {
                 glBindTexture(GL_TEXTURE_2D, _atlas);
                 _stream.bind();
                 glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, count);
+                _lastCount = count;
                 _stream.unbind();
                 _program.end();
                 glBindTexture(GL_TEXTURE_2D, 0);
@@ -573,7 +589,7 @@ namespace Dumb {
         //------------
         Engine::Engine(const std::vector<Resource> &fonts,
                 unsigned int capacity,
-                unsigned int size) : _capacity(capacity), _size(size) {
+                unsigned int size) : _capacity(capacity), _size(size), _lastCount(0) {
             using namespace Framework;
             // Let the fun begins !
             // First, build a temporary buffer for the texture.
@@ -601,11 +617,21 @@ namespace Dumb {
             _stream.create();
             _stream.add(&_buffer,
                     {
-                    { DFE_POSITION_INDEX, Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false, DFE_BUFFER_STRIDE,                    0, 1) },
-                    { DFE_SIZE_INDEX,     Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  2, 1) },
-                    { DFE_TOP_TEX_INDEX,  Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  4, 1) },
-                    { DFE_DOWN_TEX_INDEX, Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  6, 1) },
-                    { DFE_COLOR_INDEX,    Render::Geometry::Attribute(Render::Geometry::ComponentType::UNSIGNED_BYTE, 4, false, DFE_BUFFER_STRIDE, sizeof(GLfloat) *  8, 1) },
+                    { DFE_POSITION_INDEX,
+                      Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false,
+                              DFE_BUFFER_STRIDE,                    0, 1) },
+                    { DFE_SIZE_INDEX,
+                      Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false,
+                              DFE_BUFFER_STRIDE, sizeof(GLfloat) *  2, 1) },
+                    { DFE_TOP_TEX_INDEX,
+                      Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false,
+                              DFE_BUFFER_STRIDE, sizeof(GLfloat) *  4, 1) },
+                    { DFE_DOWN_TEX_INDEX,
+                      Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false,
+                              DFE_BUFFER_STRIDE, sizeof(GLfloat) *  6, 1) },
+                    { DFE_COLOR_INDEX,
+                      Render::Geometry::Attribute(Render::Geometry::ComponentType::UNSIGNED_BYTE, 4, false,
+                              DFE_BUFFER_STRIDE, sizeof(GLfloat) *  8, 1) },
                     });
             _stream.compile();
 
@@ -629,6 +655,3 @@ namespace Dumb {
 
     } // 'Font' namespace.
 } // 'Dumb' namespace.
-
-#pragma GCC diagnostic pop
-

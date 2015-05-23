@@ -135,6 +135,11 @@ class Example {
          * Number of precomputed glyphs.
          */
         unsigned int _precomputedSize;
+
+        /**
+         * Computation flag. If 'true', order a text computation.
+         */
+        bool _compute;
 };
 
 #define DFE_DEBUG
@@ -227,7 +232,7 @@ void Example::postInit() {
     // for further use.
     changeText = new Dumb::Font::Cache(_normal, glm::vec2(150, 50),
             icu::UnicodeString("That text got a clickable zone."), COLOR_WHITE,
-     { Dumb::Font::Decoration(glm::vec2(16, 9), _big, &COLOR_BLUE) }, _engine->size());
+            { Dumb::Font::Decoration(glm::vec2(16, 9), _big, &COLOR_BLUE) }, _engine->size());
     _collection.push_back(changeText);
     _zone = changeText->computeBox(16, 9);
 
@@ -248,6 +253,7 @@ void Example::postInit() {
     renderer.blendFunc(Framework::Render::BlendFunc::SRC_ALPHA,
             Framework::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
 
+    _compute = true;
     _start = glfwGetTime();
 }
 
@@ -259,8 +265,13 @@ int Example::render() {
     stream << startTime;
     _cache->setText(icu::UnicodeString(stream.str().c_str()), true);
 
-    _engine->print(_collection);
-    //_engine->print(_precomputed, _precomputedSize); // This is 40% faster, but for static text only.
+    if(_compute) {
+        _engine->print(_collection);
+        //_engine->print(_precomputed, _precomputedSize); // This is 40% faster, but for static text only.
+        _compute = false;
+    } else {
+        _engine->redraw();
+    }
 
 
     _elapsed += glfwGetTime() - startTime;
@@ -270,15 +281,18 @@ int Example::render() {
 
 void Example::handleUnicodeCharacter(unsigned int) {}
 void Example::handleUnicodeModifierCharacter(unsigned int,int) {}
-void Example::handleKey(int,int,int,int) {
-    if(_frames > 0) {
-        Log_Info(Framework::Module::Render, "Time per frame : %.0fns",
-                ((_elapsed * 1000000000) / (double) _frames));
-        double elapsed = glfwGetTime() - _start;
-        Log_Info(Framework::Module::Render, "FPS : %.3f",
-                _frames / elapsed);
-    }
-    _closeFlag = 0;
+void Example::handleKey(int key,int,int,int) {
+    if(GLFW_KEY_ESCAPE == key) {
+        if(_frames > 0) {
+            Log_Info(Framework::Module::Render, "Time per frame : %.0fns",
+                    ((_elapsed * 1000000000) / (double) _frames));
+            double elapsed = glfwGetTime() - _start;
+            Log_Info(Framework::Module::Render, "FPS : %.3f",
+                    _frames / elapsed);
+        }
+        _closeFlag = 0; } else {
+            _compute = true;
+        }
 }
 void Example::handleMousePosition(double xp,double yp) {
     _cursor.x = xp;
