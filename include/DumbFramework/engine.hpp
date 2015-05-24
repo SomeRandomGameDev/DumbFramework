@@ -37,6 +37,13 @@ namespace Dumb {
         /**
          * Dumb Core Engine.
          * The processing delegation must implement the following concept:
+         * Constructor(...);
+         * const std::vector<std::pair<Framework::Render::Shader::Type, const char *> > const& shaders() const;
+         * const std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute> > const& attributes() const;
+         * GLenum primitive() const;
+         * bool isInstanced() const;
+         * void viewport(GLfloat, GLfloat, GLfloat, GLfloat);
+         * GLsizei instanceCardinality() const;
          * void init(Framework::Render::Program &);
          * void update(Framework::Render::Program &);
          * GLsizei update(void *, ...);
@@ -50,19 +57,23 @@ namespace Dumb {
 
                 /**
                  * Default constructor.
-                 * @param [in] delegate Delegation object.
-                 * @param [in] shaders Set of shaders (pair of shader type and definition).
-                 * @param [in] attributes Vertex stream attributes.
-                 * @param [in] capacity Engine capacity (in buffer objects).
+                 * @param [in] capacity Engine capacity in number of managed objects.
+                 * @param [in] args Variable number of argument.
+                 * A Delegate Class constructor must match.
                  */
-                Engine(T *delegate,
-                        std::initializer_list< std::pair<Framework::Render::Shader::Type, const char*> > const& shaders,
-                        std::initializer_list< std::pair<unsigned int, Framework::Render::Geometry::Attribute> > const& attributes,
-                        GLenum primitive,
-                        unsigned int capacity = DUMB_CORE_ENGINE_CAPACITY_DEFAULT,
-                        bool instance = false,
-                        GLsizei count = 4) : _delegate(delegate), _mode(primitive), _instanced(instance), _cardinality(count) {
-                    // First, determine the stride.
+                template <typename... A> Engine(unsigned int capacity, A... args) {
+                    // First, create the delegate object.
+                    _delegate = new T(args...);
+                    std::vector< std::pair<Framework::Render::Shader::Type, const char*> > const& shaders;
+                    std::vector< std::pair<unsigned int, Framework::Render::Geometry::Attribute> > const& attributes;
+                    shaders = _delegate->shaders();
+                    attributes = _delegate->attributes();
+                    _mode = _delegate->primitive();
+                    _instanced = delegate->isInstanced();
+                    if(_instanced) {
+                        _cardinality = delegate->instanceCardinality();
+                    }
+                    // Then, determine the stride.
                     unsigned int stride = 0;
                     for(auto &i : attributes) {
                         Framework::Render::Geometry::Attribute &attribute = i.second;
@@ -87,6 +98,24 @@ namespace Dumb {
                     }
                     _program.link();
                     _delegate->init(_program);
+                }
+
+                /**
+                 * Interface method for viewport setting.
+                 * @param [in] startX Viewport starting point on X-axis.
+                 * @param [in] startY Viewport starting point on Y-axis.
+                 * @param [in] width Width.
+                 * @param [in] height Height.
+                 */
+                void viewport(GLfloat x, GLfloat y, GLfloat width, GLfloat height) {
+                    _delegate->viewport(x, y, width, height);
+                }
+
+                /**
+                 * Destructor.
+                 */
+                ~Engine() {
+                    delete _delegate;
                 }
 
                 /**
