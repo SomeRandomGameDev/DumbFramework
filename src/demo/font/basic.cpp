@@ -183,18 +183,19 @@ void Example::postInit() {
     oversample.push_back(Oversample(glm::vec2(4, 4), range));
     resource.push_back(Resource(fontPath + "VeraIt.ttf", oversample));
 
-    _engine = new Engine(resource, MAX_GLYPHS, 4096);
+    _engine = new Engine(MAX_GLYPHS, resource, 4096);
     _engine->viewport(0, 0, _screenSize.x, _screenSize.y);
-    _normal = _engine->getFont("Vera-16-ovr");
-    _italic = _engine->getFont("Vera-Italic");
-    _big = _engine->getFont("Vera-24-ovr");
+    Dumb::Font::Delegate &delegate = _engine->delegate();
+    _normal = delegate.getFont("Vera-16-ovr");
+    _italic = delegate.getFont("Vera-Italic");
+    _big = delegate.getFont("Vera-24-ovr");
 
     icu::UnicodeString decorated("This is a decorated text with a big font here.");
     _cache = new Dumb::Font::Cache(_normal, glm::vec2(50, 150), decorated, COLOR_WHITE,
             { Dumb::Font::Decoration(glm::vec2(0, 4), 0, &COLOR_GREEN),
             Dumb::Font::Decoration(glm::vec2(10, 9), _italic, 0),
             Dumb::Font::Decoration(glm::vec2(32, 13), _big, &COLOR_RED) },
-            _engine->size());
+            delegate.size());
 
     std::default_random_engine generator;
     std::uniform_int_distribution<int> distX(0,_screenSize.x - 100);
@@ -232,7 +233,7 @@ void Example::postInit() {
     // for further use.
     changeText = new Dumb::Font::Cache(_normal, glm::vec2(150, 50),
             icu::UnicodeString("That text got a clickable zone."), COLOR_WHITE,
-            { Dumb::Font::Decoration(glm::vec2(16, 9), _big, &COLOR_BLUE) }, _engine->size());
+            { Dumb::Font::Decoration(glm::vec2(16, 9), _big, &COLOR_BLUE) }, delegate.size());
     _collection.push_back(changeText);
     _zone = changeText->computeBox(16, 9);
 
@@ -266,11 +267,11 @@ int Example::render() {
     _cache->setText(icu::UnicodeString(stream.str().c_str()), true);
 
     if(_compute) {
-        _engine->print(_collection);
+        _engine->render(_collection);
         //_engine->print(_precomputed, _precomputedSize); // This is 40% faster, but for static text only.
         _compute = false;
     } else {
-        _engine->redraw();
+        _engine->render();
     }
 
 

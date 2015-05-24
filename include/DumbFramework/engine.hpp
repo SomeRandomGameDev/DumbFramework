@@ -38,15 +38,16 @@ namespace Dumb {
          * Dumb Core Engine.
          * The processing delegation must implement the following concept:
          * Constructor(...);
-         * const std::vector<std::pair<Framework::Render::Shader::Type, const char *> > const& shaders() const;
-         * const std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute> > const& attributes() const;
+         * std::vector<std::pair<Framework::Render::Shader::Type, const char *> > shaders() const;
+         * std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute> > attributes() const;
          * GLenum primitive() const;
          * bool isInstanced() const;
          * void viewport(GLfloat, GLfloat, GLfloat, GLfloat);
          * GLsizei instanceCardinality() const;
          * void init(Framework::Render::Program &);
          * void update(Framework::Render::Program &);
-         * GLsizei update(void *, ...);
+         * GLsizei update(void *, GLsizei, ...);
+         * void postRender();
          * This last method is in fact a set of methods which first argument
          * is a pointer to the vertex buffer mapping and other arguments are
          * variadic. Hence, it's up to the delegation to implement whatever
@@ -64,14 +65,14 @@ namespace Dumb {
                 template <typename... A> Engine(unsigned int capacity, A... args) {
                     // First, create the delegate object.
                     _delegate = new T(args...);
-                    std::vector< std::pair<Framework::Render::Shader::Type, const char*> > const& shaders;
-                    std::vector< std::pair<unsigned int, Framework::Render::Geometry::Attribute> > const& attributes;
+                    std::vector< std::pair<Framework::Render::Shader::Type, const char*> > shaders;
+                    std::vector< std::pair<unsigned int, Framework::Render::Geometry::Attribute> > attributes;
                     shaders = _delegate->shaders();
                     attributes = _delegate->attributes();
                     _mode = _delegate->primitive();
-                    _instanced = delegate->isInstanced();
+                    _instanced = _delegate->isInstanced();
                     if(_instanced) {
-                        _cardinality = delegate->instanceCardinality();
+                        _cardinality = _delegate->instanceCardinality();
                     }
                     // Then, determine the stride.
                     unsigned int stride = 0;
@@ -82,18 +83,21 @@ namespace Dumb {
                         }
                     }
                     // Initialize buffer.
+                    _capacity = capacity;
                     _buffer.create(stride*capacity);
                     // Create and initialize stream.
                     _stream.create();
-                    _stream.add(&_buffer, attributes);
+                    for(auto &i : attributes) {
+                        _stream.add(&_buffer, i.first, i.second);
+                    }
                     _stream.compile();
                     // Create program and initialize program.
                     _program.create();
-                    _program.infoLog(Severity::Info);
+                    _program.infoLog(Framework::Severity::Info);
                     for(auto &i : shaders) {
                         Framework::Render::Shader shader;
                         shader.create(i.first, i.second);
-                        shader.infoLog(Severity::Info);
+                        shader.infoLog(Framework::Severity::Info);
                         _program.attach(shader);
                     }
                     _program.link();
@@ -119,6 +123,11 @@ namespace Dumb {
                 }
 
                 /**
+                 * @return The delegation object.
+                 */
+                inline T &delegate() { return *_delegate; }
+
+                /**
                  * Variadic render.
                  * @param [in] args Variadic arguments.
                  */
@@ -126,14 +135,13 @@ namespace Dumb {
                     Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
                     renderer.depthBufferWrite(false);
                     _program.begin();
+                    renderer.setActiveTextureUnit(0);
                     _delegate->update(_program); // Delegate the program update.
                     _buffer.bind();
                     void *ptr = _buffer.map(Framework::Render::BufferObject::Access::Policy::WRITE_ONLY);
-                    count = _delegate->update(ptr, args...); // Delegate the buffer update.
+                    GLsizei count = _delegate->update(ptr, _capacity, args...); // Delegate the buffer update.
                     _buffer.unmap();
                     _buffer.unbind();
-                    renderer.setActiveTextureUnit(0);
-                    glBindTexture(GL_TEXTURE_2D, _atlas);
                     _stream.bind();
                     if(_instanced) {
                         glDrawArraysInstanced (_mode, 0, _cardinality, count);
@@ -142,10 +150,14 @@ namespace Dumb {
                     }
                     _stream.unbind();
                     _program.end();
-                    glBindTexture(GL_TEXTURE_2D, 0);
                     renderer.depthBufferWrite(true);
+                    _delegate->postRender();
                 }
 
+                /**
+                 * @return The engine capacity.
+                 */
+                inline unsigned int capacity() const { return _capacity; }
             private:
                 /**
                  * Delegation object.
@@ -181,6 +193,11 @@ namespace Dumb {
                  * Instanciation cardinality.
                  */
                 GLsizei _cardinality;
+
+                /**
+                 * Engine capacity.
+                 */
+                GLsizei _capacity;
         };
     } // 'Core' namespace.
 } // 'Dumb' namespace.

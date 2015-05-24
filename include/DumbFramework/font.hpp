@@ -30,10 +30,7 @@
 #include <unicode/unistr.h>
 #include <unicode/schriter.h>
 
-#include <DumbFramework/render/vertexbuffer.hpp>
-#include <DumbFramework/render/vertexstream.hpp>
-#include <DumbFramework/render/program.hpp>
-#include <DumbFramework/render/renderer.hpp>
+#include <DumbFramework/engine.hpp>
 
 /**
  * Dumb Font Engine default starting codepoint.
@@ -235,7 +232,7 @@ namespace Dumb {
         };
 
         // Engine forward declaration.
-        class Engine;
+        class Delegate;
         // Cache forward declaration.
         class Cache;
 
@@ -243,7 +240,7 @@ namespace Dumb {
          * Font wrapper. Addressable font descriptor for printing usage.
          */
         class Wrapper : public Range {
-            friend class Engine;
+            friend class Delegate;
             friend class Cache;
 
             public:
@@ -503,31 +500,61 @@ namespace Dumb {
         int aggregateCaches(const std::vector<const Cache *> &collection, void *buffer, int size);
 
         /**
-         * El Dumb Font Engine.
+         * El Dumb Font Engine Delegate.
          */
-        class Engine {
+        class Delegate {
             public:
                 /**
                  * Constructor.
                  * @param [in] fonts List of fonts to load.
-                 * @param [in] capacity Number of displayable glyphs.
                  * @param [in] size Size of the font atlas. The atlas is a square texture.
                  */
-                Engine(const std::vector<Resource> &fonts,
-                        unsigned int capacity = DFE_GLYPH_CAPACITY_DEFAULT,
+                Delegate(const std::vector<Resource> &fonts,
                         unsigned int size = DFE_ATLAS_SIZE_DEFAULT);
 
                 /**
                  * Gentle destructor.
                  */
-                ~Engine();
+                ~Delegate();
 
                 /**
-                 * @return The font atlas identifier.
+                 * @return List of shaders used for rendering.
                  */
-                inline GLuint getAtlas() {
-                    return _atlas;
-                }
+                std::vector<std::pair<Framework::Render::Shader::Type, const char *> >
+                    shaders() const;
+
+                /**
+                 * @return Vertex stream composition.
+                 */
+                std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute> >
+                    attributes() const;
+
+                /**
+                 * @return Drawing mode.
+                 */
+                inline GLenum primitive() const { return GL_TRIANGLE_STRIP; }
+
+                /**
+                 * @return 'true' if the drawing is instanced.
+                 */
+                inline bool isInstanced() const { return true; }
+
+                /**
+                 * @return The instanciation cardinality.
+                 */
+                inline GLsizei instanceCardinality() const { return 4; }
+
+                /**
+                 * Initialisation.
+                 * @param [in] program Compiled program that will be used for rendering.
+                 */
+                void init(Framework::Render::Program &program);
+
+                /**
+                 * Program update at rendering time.
+                 * @param [in] program Program used for rendering.
+                 */
+                void update(Framework::Render::Program &program);
 
                 /**
                  * Retrieve a font wrapper.
@@ -541,18 +568,24 @@ namespace Dumb {
 
                 /**
                  * Simple text printing.
+                 * @param [in] ptr Buffer to update.
+                 * @param [in] capacity Buffer capacity (number of elements).
                  * @param [in] font Font to be used.
                  * @param [in] pos Position in logical coordinate system.
                  * @param [in] text Starting text.
-                 * @param [in] color Text Color (RGB, [0..1]).
+                 * @param [in] color Text Color (RGBA, [0..255]).
+                 * @return The number of updated elements.
                  */
-                void print(const Wrapper *font,
+                GLsizei update(void *ptr, GLsizei capacity,
+                        const Wrapper *font,
                         glm::vec2 pos,
                         icu::UnicodeString text,
                         glm::vec4 color = DFE_COLOR_DEFAULT);
 
                 /**
                  * Decorated text printing.
+                 * @param [in] ptr Buffer to update.
+                 * @param [in] capacity Buffer capacity (number of elements).
                  * @param [in] def Default font to be used.
                  * @param [in] pos Position in logical coordinate system.
                  * @param [in] text Starting text.
@@ -560,8 +593,10 @@ namespace Dumb {
                  * @param [in] decoration A list of decoration hints. A decoration hint is
                  * a tuple containing the following : A start and end index, a font wrapper, a color,
                  * a flag to underlining, a flag for stroke.
+                 * @return The number of updated elements.
                  */
-                void print(const Wrapper *def,
+                GLsizei update(void *ptr, GLsizei capacity,
+                        const Wrapper *def,
                         glm::vec2 pos,
                         const icu::UnicodeString &text,
                         glm::vec4 color,
@@ -569,27 +604,41 @@ namespace Dumb {
 
                 /**
                  * Print a precomputed text.
+                 * @param [in] ptr Buffer to update.
+                 * @param [in] capacity Buffer capacity (number of elements).
                  * @param [in] cache Precomputed text.
+                 * @return The number of updated elements.
                  */
-                void print(const Cache &cache);
+                GLsizei update(void *ptr, GLsizei capacity,
+                        const Cache &cache);
 
                 /**
                  * Print a list of precomputed texts.
+                 * @param [in] ptr Buffer to update.
+                 * @param [in] capacity Buffer capacity (number of elements).
                  * @param [in] texts List of precomputed texts.
+                 * @return The number of updated elements.
                  */
-                void print(const std::vector<const Cache*> &texts);
+                GLsizei update(void *ptr, GLsizei capacity,
+                        const std::vector<const Cache*> &texts);
 
                 /**
                  * Directly print the content of a precomputed buffer.
+                 * @param [in] ptr Buffer to update.
+                 * @param [in] capacity Buffer capacity (number of elements).
                  * @param [in] cache Vertex buffer data.
                  * @param [in] size Number of glyphs.
+                 * @return The number of updated elements.
                  */
-                void print(const void *cache, unsigned int size);
+                GLsizei update(void *ptr, GLsizei capacity,
+                        const void *cache, unsigned int size);
 
                 /**
                  * Simply redraw the previously displayed strings.
+                 * @param [in] ptr Buffer to update. In this case, the buffer won't be updated.
+                 * @return The number of updated elements.
                  */
-                void redraw();
+                GLsizei update(void *ptr, GLsizei capacity);
 
                 /**
                  * Set the viewport.
@@ -609,16 +658,21 @@ namespace Dumb {
                  * @return The projection matrix.
                  */
                 inline glm::mat4 viewport() { return _matrix; }
+
+                /**
+                 * Post-render context cleaning.
+                 */
+                void postRender();
             private:
                 /**
                  * Private copy constructor.
                  */
-                Engine(const Engine &) : _atlas(0) {}
+                Delegate(const Delegate &) : _atlas(0) {}
 
                 /**
                  * Private copy operator.
                  */
-                Engine &operator=(const Engine &) { return *this; }
+                Delegate &operator=(const Delegate &) { return *this; }
 
                 /**
                  * Pack a font and all its specs.
@@ -645,21 +699,6 @@ namespace Dumb {
                 std::map<std::string, Wrapper*> _wrappers;
 
                 /**
-                 * Vertex Stream.
-                 */
-                Framework::Render::VertexStream _stream;
-
-                /**
-                 * Vertex Buffer Object.
-                 */
-                Framework::Render::VertexBuffer _buffer;
-
-                /**
-                 * GLSL Program identifier.
-                 */
-                Framework::Render::Program _program;
-
-                /**
                  * Texture uniform binding.
                  */
                 GLuint _uniformTexture;
@@ -675,11 +714,6 @@ namespace Dumb {
                 glm::mat4 _matrix;
 
                 /**
-                 * Glyph capacity.
-                 */
-                unsigned int _capacity;
-
-                /**
                  * Atlas size (in texels).
                  */
                 unsigned int _size;
@@ -689,6 +723,8 @@ namespace Dumb {
                  */
                 unsigned int _lastCount;
         };
+
+        typedef Dumb::Core::Engine<Delegate> Engine;
     } // 'Font' namespace.
 } // 'Dumb' namespace.
 
