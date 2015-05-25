@@ -71,7 +71,7 @@ TestEngine::TestEngine(int w, int h) : _atlas(0), _engine(0), _centerX(0), _cent
     _lastWheelPosition(0), _rightPressed(false),
     _rotate(0) { _pressed = _init = _quit = false; }
 
-    int TestEngine::render() {
+    bool TestEngine::render() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         double current = glfwGetTime();
@@ -80,7 +80,7 @@ TestEngine::TestEngine(int w, int h) : _atlas(0), _engine(0), _centerX(0), _cent
 
         //_engine->move(_identifier, glm::vec2(100, 100 + 50*sin(_elapsed)));
         _engine->render();
-        return _quit?0:1;
+        return !_quit;
     }
 
 void TestEngine::handleMouseScroll(double, double wheel) {
