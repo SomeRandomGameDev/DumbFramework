@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include <iostream>
 
 #include <DumbFramework/runner.hpp>
@@ -27,12 +26,12 @@ class TestEngine {
         TestEngine() : TestEngine(1024, 768) {}
         TestEngine(int, int);
     private:
-        Sprite::Atlas *_atlas;
-        Sprite::Engine *_engine;
+        Dumb::Sprite::Atlas *_atlas;
+        Dumb::Sprite::Engine *_engine;
 
-        Sprite::Identifier _identifier;
+        Dumb::Sprite::Identifier _identifier;
 
-        Sprite::Identifier _evilTwin;
+        Dumb::Sprite::Identifier _evilTwin;
 
         bool _init;
         bool _quit;
@@ -169,9 +168,9 @@ void TestEngine::handleKey(int key, int /* scancode */, int action, int /* mods 
 
 void TestEngine::postInit() {
     if(0 == _atlas) {
-        _atlas = new Sprite::Atlas();
+        _atlas = new Dumb::Sprite::Atlas();
         _atlas->read("test.xml");
-        _engine = new Sprite::Engine(_atlas, 8);
+        _engine = new Dumb::Sprite::Engine(_atlas, 8);
         _init = true;
     }
     _engine->viewport(_centerX, _centerY, _width, _height);
