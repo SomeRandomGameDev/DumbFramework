@@ -62,7 +62,7 @@ namespace Dumb {
                  * @param [in] args Variable number of argument.
                  * A Delegate Class constructor must match.
                  */
-                template <typename... A> Engine(unsigned int capacity, A... args) {
+                template <typename... A> Engine(unsigned int capacity, A... args) : _count(0) {
                     // First, create the delegate object.
                     _delegate = new T(args...);
                     std::vector< std::pair<Framework::Render::Shader::Type, const char*> > shaders;
@@ -140,6 +140,7 @@ namespace Dumb {
                     _buffer.bind();
                     void *ptr = _buffer.map(Framework::Render::BufferObject::Access::Policy::WRITE_ONLY);
                     GLsizei count = _delegate->update(ptr, _capacity, args...); // Delegate the buffer update.
+                    _count = count;
                     _buffer.unmap();
                     _buffer.unbind();
                     _stream.bind();
@@ -152,6 +153,30 @@ namespace Dumb {
                     _program.end();
                     renderer.depthBufferWrite(true);
                     _delegate->postRender();
+                }
+
+                /**
+                 * Simple render.
+                 * Only trigger GPU for buffer rendering without update.
+                 */
+                void render() {
+                    if(_count > 0) {
+                        Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
+                        renderer.depthBufferWrite(false);
+                        _program.begin();
+                        renderer.setActiveTextureUnit(0);
+                        _delegate->update(_program); // Delegate the program update.
+                        _stream.bind();
+                        if(_instanced) {
+                            glDrawArraysInstanced (_mode, 0, _cardinality, _count);
+                        } else {
+                            glDrawArrays(_mode, 0, _count);
+                        }
+                        _stream.unbind();
+                        _program.end();
+                        renderer.depthBufferWrite(true);
+                        _delegate->postRender();
+                    }
                 }
 
                 /**
@@ -198,6 +223,11 @@ namespace Dumb {
                  * Engine capacity.
                  */
                 GLsizei _capacity;
+
+                /**
+                 * Last update count.
+                 */
+                GLsizei _count;
         };
     } // 'Core' namespace.
 } // 'Dumb' namespace.
