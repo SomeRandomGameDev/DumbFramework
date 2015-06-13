@@ -29,6 +29,182 @@ namespace Dumb {
     namespace Sprite {
 
         /**
+         * An artifact is a non-mutable definition of a graphic object in
+         * the sprite atlas.
+         */
+        class Artifact {
+            public:
+                /**
+                 * Default constructor.
+                 * @param [in] anchor Anchor Position.
+                 * @param [in] coordinates Texture coordinates.
+                 * @param [in] layer Texture index.
+                 */
+                Artifact(glm::vec2 anchor, glm::vec4 coordinates, unsigned int layer) :
+                    _anchor(anchor), _coordinates(coordinates), _layer(layer) { }
+
+                /**
+                 * @return The anchor.
+                 */
+                const glm::vec2 &anchor() { return _anchor; }
+
+                /**
+                 * @return The texture coordinates.
+                 */
+                const glm::vec4 &coordinates() { return _coordinates; }
+
+                /**
+                 * @return Texture layer.
+                 */
+                unsigned int layer() { return _layer; }
+            private:
+                /**
+                 * Anchor position.
+                 */
+                glm::vec2 _anchor;
+
+                /**
+                 * Texture coordinates.
+                 * These coordinates also serves as size. There expressed in texels
+                 * instead of the classic [0..1] range.
+                 */
+                glm::vec4 _coordinates;
+
+                /**
+                 * Texture index in the texture array.
+                 */
+                unsigned int _layer;
+        };
+
+        /**
+         * A sprite state consists in a relative position, a rotation angle
+         * and a scale factor associated to a sprite identifier.
+         */
+        class State {
+            public:
+                State(Identifier id, glm::vec2 offset, double angle = 0.0, double factor = 1.0) :
+                    _identifier(id), _offset(offset), _angle(angle), _factor(factor) {}
+                inline Identifier getId() const { return _id; }
+                inline void setId(Identifier id) { _id = id; }
+                inline glm::vec2 getOffset() const { return _offset; }
+                inline void setOffset(glm::vec2 offset) { _offset = offset; }
+                inline double getRotation() const { return _angle; }
+                inline void setRotation(double angle) { _angle = angle }
+                inline double getScale() const { return _factor; }
+                inline void setScale(double factor) { _factor = factor };
+                inline int getLayer() const { return _layer; }
+                inline void setLayer(int layer) { _layer = layer; }
+            private:
+                /**
+                 * Sprite identifier.
+                 */
+                Identifier _id;
+
+                /**
+                 * Relative position.
+                 */
+                glm::vec2 _offset;
+
+                /**
+                 * Rotation angle.
+                 */
+                double _angle;
+
+                /**
+                 * Scale factor.
+                 */
+                double _factor;
+
+                /**
+                 * Layer.
+                 */
+                int _layer;
+        };
+
+        class Keyframe {
+            public:
+                /**
+                 * Constructor.
+                 * @param [in] size Number of components.
+                 */
+                Keyframe(unsigned int size) : _states(size) {}
+
+                /**
+                 * @return Relative timestamp (in seconds).
+                 */
+                inline double getTime() const { return _time; }
+                /**
+                 * Set relative timestamp.
+                 * @param [in] time Time in seconds.
+                 */
+                inline void setTime(double time) { _time = time; }
+                /**
+                 * @return The component states.
+                 */
+                inline const std::vector<const State *> &getStates() const { return _states; }
+                /**
+                 * Set a component states.
+                 * @param [in] id Component identifier (slot index).
+                 * @param [in] st Pointer to the state object.
+                 */
+                inline void setState(int id, const State *st) { _states[id] = st; }
+            private:
+                /**
+                 * Relative time at which the keyframe occurs.
+                 */
+                double _time;
+
+                /**
+                 * States. Can be null for a certain slot, meaning
+                 * that there's no modification.
+                 */
+                std::vector<const State *> _states; // TODO There's a problem here : Who's in charge of this object lifecycle ?
+        };
+
+        /**
+         * Composite animation definition.
+         */
+        class Animation {
+            // TODO Make keyframe, Fixed size component list.
+            public:
+            private:
+                /**
+                 * Keyframes (sorted in time).
+                 */
+                std::vector<const Keyframe> _frames;
+        };
+
+        /**
+         * Animation Instanciation.
+         */
+        class Instance {
+            public:
+            private:
+                /**
+                 * Current animation.
+                 */
+                Animation *_animation;
+
+                /**
+                 * Relative time progression.
+                 */
+                double _time;
+
+                /**
+                 * Current/Last keyframe.
+                 */
+                unsigned int _lastFrame;
+
+                // TODO Add a listener/callback for animation end.
+        };
+
+        // TODO Make a sprite management layer ON TOP of the Dumb Sprite Engine.
+        // It must manage still images and animation instances. It also must be
+        // totally invisible from the Dumb Sprite Engine point of view.
+
+        // ### OLD STYLE ###
+
+        /**
          * An animation frame consists in a texture quad coordinate, an offset,
          * a size and a timestamp.
          * It is a non-mutable object.

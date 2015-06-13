@@ -210,7 +210,8 @@ namespace Dumb {
 // Create a simple application.
 #define SIMPLE_APP(W) \
     int main(void){ \
-        Framework::Log::LogBuilder<Framework::Log::AllPassFilter, Framework::Log::SimpleMessageFormat> msgBuilder;\
+        Framework::Log::LogBuilder<Framework::Log::AllPassFilter,\
+        Framework::Log::SimpleMessageFormat> msgBuilder;\
         Framework::Log::ConsoleOutputPolicy output;\
         Framework::Log::LogProcessor& processor = Framework::Log::LogProcessor::instance();\
         processor.start(&msgBuilder, &output);\
