@@ -1,6 +1,23 @@
-#include <DumbFramework/boundingobjects.hpp>
+/*
+ * Copyright 2015 MooZ
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#include <DumbFramework/geometry/boundingcircle.hpp>
 
-namespace Framework {
+namespace Dumb     {
+namespace Core     {
+namespace Geometry {
     
 /** Constructor. */
 BoundingCircle::BoundingCircle()
@@ -12,7 +29,7 @@ BoundingCircle::BoundingCircle()
  *  @param [in] c  Bounding circle center.
  *  @param [in] r  Bounding sphere radius.
  */
-BoundingCircle::BoundingCircle(const glm::vec2& c, float r)
+BoundingCircle::BoundingCircle(glm::vec2 const& c, float r)
     : _center(c)
     , _radius(r)
     , _squareRadius(r*r)
@@ -41,7 +58,7 @@ BoundingCircle::BoundingCircle(const float* buffer, size_t count, size_t stride)
 /** Constructor.
  *  Merge two bounding circles.
  */
-BoundingCircle::BoundingCircle(const BoundingCircle& c0, const BoundingCircle& c1)
+BoundingCircle::BoundingCircle(BoundingCircle const& c0, BoundingCircle const& c1)
 {
     float length = glm::distance(c0._center, c1._center);
     float dR     = c0._radius - c1._radius;
@@ -52,7 +69,7 @@ BoundingCircle::BoundingCircle(const BoundingCircle& c0, const BoundingCircle& c
 /** Copy constructor.
  *  @param [in] circle Source bounding circle.
  */
-BoundingCircle::BoundingCircle(const BoundingCircle& circle)
+BoundingCircle::BoundingCircle(BoundingCircle const& circle)
     : _center(circle._center)
     , _radius(circle._radius)
     , _squareRadius(circle._squareRadius)
@@ -61,7 +78,7 @@ BoundingCircle::BoundingCircle(const BoundingCircle& circle)
 /** Copy operator.
  *  @param [in] circle Source bounding circle.
  */
-BoundingCircle& BoundingCircle::operator= (const BoundingCircle& circle)
+BoundingCircle& BoundingCircle::operator= (BoundingCircle const& circle)
 {
     _center = circle._center;
     _radius = circle._radius;
@@ -70,7 +87,7 @@ BoundingCircle& BoundingCircle::operator= (const BoundingCircle& circle)
 }
 
 /** Check if the current bounding circle contains the specified bounding circle. */
-ContainmentType::Value BoundingCircle::contains(const BoundingCircle& circle)
+ContainmentType::Value BoundingCircle::contains(BoundingCircle const& circle)
 {
     glm::vec2 delta = _center - circle._center;
     
@@ -106,7 +123,7 @@ ContainmentType::Value BoundingCircle::contains(const float* buffer, size_t coun
 /** Check if the current bounding circle contains the specified point.
  *  @param [in] point Point to be tested.
  */
-ContainmentType::Value BoundingCircle::contains(const glm::vec2& point)
+ContainmentType::Value BoundingCircle::contains(glm::vec2 const& point)
 {
     glm::vec2 delta = point - _center;
     float squareDistance = glm::dot(delta, delta);
@@ -117,7 +134,7 @@ ContainmentType::Value BoundingCircle::contains(const glm::vec2& point)
 /** Check if the current bounding circle intersects the specified ray.
  *  @param [in] ray Ray to be tested.
  */
-bool BoundingCircle::intersects(const Ray2d& ray)
+bool BoundingCircle::intersects(Ray2 const& ray)
 {
     float epsilon = std::numeric_limits<float>::epsilon();
     float distance = glm::distance(_center, ray.origin);
@@ -132,34 +149,34 @@ bool BoundingCircle::intersects(const Ray2d& ray)
 /** Tell on which side of the specified line the current bounding circle is.
  *  @param [in] line Line.
  */
-Side BoundingCircle::classify(const Line2d& line)
+Side BoundingCircle::classify(Line2d const& line)
 {
     float d = line.distance(_center);
-	if(d <= -_radius)
-	{ return Side::Back; }
-	if(d >= _radius)
-	{ return Side::Front; }
-	return Side::On;
+    if(d <= -_radius)
+    { return Side::Back; }
+    if(d >= _radius)
+    { return Side::Front; }
+    return Side::On;
 }
 /** Apply transformation.
  *  @param [in] m 3*3 transformation matrix.
  */
-void BoundingCircle::transform(const glm::mat3& m)
+void BoundingCircle::transform(glm::mat3 const & m)
 {
-	// Transform center.
-	glm::vec3 pt = m * glm::vec3(_center, 1.0f);
-	_center = glm::vec2(pt.x, pt.y);
-	
-	// Find the biggest scale.
-	glm::vec2 sx(m[0].x, m[1].x);
-	glm::vec2 sy(m[0].y, m[1].y);
-	float scale = glm::max(glm::dot(sx,sx), glm::dot(sy,sy));
-	_squareRadius = _squareRadius * scale;
-	_radius = _radius * sqrt(scale);
+    // Transform center.
+    glm::vec3 pt = m * glm::vec3(_center, 1.0f);
+    _center = glm::vec2(pt.x, pt.y);
+    
+    // Find the biggest scale.
+    glm::vec2 sx(m[0].x, m[1].x);
+    glm::vec2 sy(m[0].y, m[1].y);
+    float scale = glm::max(glm::dot(sx,sx), glm::dot(sy,sy));
+    _squareRadius = _squareRadius * scale;
+    _radius = _radius * sqrt(scale);
 }
 
 /** Get circle center. **/
-const glm::vec2& BoundingCircle::getCenter() const
+glm::vec2 const& BoundingCircle::getCenter() const
 { return _center; }
 /** Get circle radius. **/
 float BoundingCircle::getRadius() const
@@ -168,4 +185,6 @@ float BoundingCircle::getRadius() const
 float BoundingCircle::getSquareRadius() const
 { return _squareRadius; }
 
-}
+} // Geometry
+} // Core
+} // Dumb

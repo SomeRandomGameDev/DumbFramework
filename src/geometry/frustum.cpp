@@ -1,6 +1,23 @@
-#include <DumbFramework/boundingobjects.hpp>
+/*
+ * Copyright 2015 MooZ
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#include <DumbFramework/geometry/frustum.hpp>
 
-namespace Framework {
+namespace Dumb     {
+namespace Core     {
+namespace Geometry {
 
 /** Constructor. */
 Frustum::Frustum()
@@ -205,27 +222,29 @@ ContainmentType::Value Frustum::contains(glm::vec3 const& point)
 /** Check if the current bounding box intersects the specified ray.
  * @param [in] ray Ray to be tested.
  */
-bool Frustum::intersects(Ray const& ray)
+bool Frustum::intersects(Ray3 const& ray)
 {
     /// @todo
     (void)ray;
     return false;
 }
 /** Get camera matrix used to build frustum planes. **/
-const glm::mat4& Frustum::getCameraMatrix() const { return _camera; }
+glm::mat4 const& Frustum::getCameraMatrix() const { return _camera; }
 /** Get projection matrix used to build frustum planes. **/
-const glm::mat4& Frustum::getProjectionMatrix() const { return _projection; }
+glm::mat4 const& Frustum::getProjectionMatrix() const { return _projection; }
 /** Get near plane. **/
-const Plane& Frustum::getNear() const { return _planes[FRUSTUM_PLANE_NEAR]; }
+Plane const& Frustum::getNear() const { return _planes[FRUSTUM_PLANE_NEAR]; }
 /** Get far plane. **/
-const Plane& Frustum::getFar() const { return _planes[FRUSTUM_PLANE_FAR]; }
+Plane const& Frustum::getFar() const { return _planes[FRUSTUM_PLANE_FAR]; }
 /** Get top plane. **/
-const Plane& Frustum::getTop() const { return _planes[FRUSTUM_PLANE_TOP]; }
+Plane const& Frustum::getTop() const { return _planes[FRUSTUM_PLANE_TOP]; }
 /** Get bottom plane. **/
-const Plane& Frustum::getBottom() const { return _planes[FRUSTUM_PLANE_BOTTOM]; }
+Plane const& Frustum::getBottom() const { return _planes[FRUSTUM_PLANE_BOTTOM]; }
 /** Get left plane. **/
-const Plane& Frustum::getLeft() const { return _planes[FRUSTUM_PLANE_LEFT]; }
+Plane const& Frustum::getLeft() const { return _planes[FRUSTUM_PLANE_LEFT]; }
 /** Get right plane. **/
-const Plane& Frustum::getRight() const { return _planes[FRUSTUM_PLANE_RIGHT]; }
+Plane const& Frustum::getRight() const { return _planes[FRUSTUM_PLANE_RIGHT]; }
 
-}
+} // Geometry
+} // Core
+} // Dumb

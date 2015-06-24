@@ -1,6 +1,8 @@
-#include <DumbFramework/line2d.hpp>
+#include <DumbFramework/geometry/line2d.hpp>
 
-namespace Framework {
+namespace Dumb     {
+namespace Core     {
+namespace Geometry {
 
 /** Constructor. */
 Line2d::Line2d()
@@ -9,7 +11,7 @@ Line2d::Line2d()
  *  @param [in] p0 First point.
  *  @param [in] p1 Second point.
  */
-Line2d::Line2d(const glm::vec2& p0, const glm::vec2& p1)
+Line2d::Line2d(glm::vec2 const& p0, glm::vec2 const& p1)
 {
     glm::vec2 direction = p1 - p0;
     _normal.x = -direction.y;
@@ -23,14 +25,14 @@ Line2d::Line2d(const glm::vec2& p0, const glm::vec2& p1)
 /** Copy constructor.
  *  @param [in] plane Source plane.
  */
-Line2d::Line2d(const Line2d& line)
+Line2d::Line2d(Line2d const& line)
     : _normal(line._normal)
     , _distance(line._distance)
 {}
 /** Copy operator.
  *  @param [in] plane Source line.
  */
-Line2d& Line2d::operator= (const Line2d& line)
+Line2d& Line2d::operator= (Line2d const& line)
 {
     _normal   = line._normal;
     _distance = line._distance;
@@ -39,14 +41,14 @@ Line2d& Line2d::operator= (const Line2d& line)
 /** Compute distance of a point to the line.
  *  @param [in] p Point.
  */
-float Line2d::distance(const glm::vec2& p) const
+float Line2d::distance(glm::vec2 const& p) const
 {
     return glm::dot(_normal, p) + _distance;
 }
 /** Tell on which side the specified point is.
  *  @param [in] p Point.
  */
-Side Line2d::classify(const glm::vec2& p) const
+Side Line2d::classify(glm::vec2 const& p) const
 {
     float epsilon = std::numeric_limits<float>::epsilon();
     float signedDistance = distance(p);
@@ -64,7 +66,7 @@ Side Line2d::classify(const glm::vec2& p) const
  *  @param [in]  ray       Ray to be tested.
  *  @param [out] distance  Distance from origin to plane if the ray instersects. -1.0 otherwise.
  */
-bool Line2d::intersects(const Ray2d& ray, float& distance)
+bool Line2d::intersects(Ray2 const& ray, float& distance)
 {
     float epsilon = std::numeric_limits<float>::epsilon();
     float nd = glm::dot(_normal, ray.direction);
@@ -77,14 +79,16 @@ bool Line2d::intersects(const Ray2d& ray, float& distance)
     return (distance >= 0);
 }
 /** Compute closest point on the line from the specified point. **/
-glm::vec2 Line2d::closestPoint(const glm::vec2& p) const
+glm::vec2 Line2d::closestPoint(glm::vec2 const& p) const
 {
     return p - (distance(p) * _normal);
 }
 /** Get normal. **/
-const glm::vec2& Line2d::getNormal() const { return _normal; }
+glm::vec2 const& Line2d::getNormal() const { return _normal; }
 /** Get distance. **/
 float Line2d::getDistance() const { return _distance; }
 
-}
+} // Geometry
+} // Core
+} // Dumb
 
