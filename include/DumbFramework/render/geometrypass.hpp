@@ -1,7 +1,7 @@
 #ifndef _DUMB_FW_RENDER_GEOMETRY_PASS_
 #define _DUMB_FW_RENDER_GEOMETRY_PASS_
 
-#include <DumbFramework/camera.hpp>
+#include <DumbFramework/geometry/camera.hpp>
 #include <DumbFramework/render/vertexbuffer.hpp>
 #include <DumbFramework/render/vertexstream.hpp>
 #include <DumbFramework/render/program.hpp>
@@ -34,7 +34,7 @@ class GeometryPass
         bool create(glm::ivec2 const& viewportSize);
         void destroy();
         
-        void begin(Camera const& camera);
+        void begin(Dumb::Core::Geometry::Camera const& camera);
         void end();
         void render(Material& material, glm::mat4 const& modelMatrix, glm::mat3 const& normalMatrix, Mesh const& mesh);
         

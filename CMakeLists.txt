@@ -83,7 +83,8 @@ set(DUMB_FRAMEWORK_GEOMETRY_SOURCES
     src/geometry/ray.cpp
     src/geometry/rect.cpp
     src/geometry/plane.cpp
-    src/geometry/transform.cpp)
+    src/geometry/transform.cpp
+    src/geometry/camera.cpp)
 
 set(DUMB_FRAMEWORK_RENDER_SOURCES
     src/render/renderer.cpp
@@ -108,7 +109,6 @@ set(DUMB_FRAMEWORK_RENDER_SOURCES
 set(DUMB_FRAMEWORK_SOURCES
     ${DUMB_FRAMEWORK_GEOMETRY_SOURCES}
     ${DUMB_FRAMEWORK_RENDER_SOURCES}
-    src/camera.cpp
     src/imguidelegate.cpp
     src/file.cpp
     src/module.cpp
