@@ -2,9 +2,11 @@
 #include <vector>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/random.hpp>
-#include <DumbFramework/boundingobjects.hpp>
+#include <DumbFramework/geometry/boundingsphere.hpp>
+#include <DumbFramework/geometry/boundingbox.hpp>
+#include <DumbFramework/geometry/frustum.hpp>
 
-using namespace Framework;
+using namespace Dumb::Core::Geometry;
 
 SUITE(Frustum)
 {

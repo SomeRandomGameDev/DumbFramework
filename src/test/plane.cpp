@@ -1,8 +1,8 @@
 #include <unittest++/UnitTest++.h>
 #include <glm/gtc/random.hpp>
-#include <DumbFramework/plane.hpp>
+#include <DumbFramework/geometry/plane.hpp>
 
-using namespace Framework;
+using namespace Dumb::Core::Geometry;
 
 SUITE(Plane)
 {
@@ -37,7 +37,7 @@ SUITE(Plane)
     
     TEST(Intersects)
     {
-        Ray   ray;
+        Ray3  ray;
         float distance;
         bool  ret;
 

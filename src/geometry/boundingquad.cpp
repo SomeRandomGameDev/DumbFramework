@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- #include <DumbFramework/geometry/boundingcircle.hpp>
+#include <DumbFramework/geometry/boundingcircle.hpp>
 #include <DumbFramework/geometry/boundingquad.hpp>
 
 namespace Dumb     {
@@ -200,7 +200,7 @@ bool BoundingQuad::intersects(Ray2 const& ray)
 /** Tell on which side of the specified line the current bounding box is.
  *  @param [in] line Line.
  */
-Side BoundingQuad::classify(Line2d const& line) const
+Side BoundingQuad::classify(Line2 const& line) const
 {
     float radius   = glm::dot(glm::abs(line.getNormal()), _extent);
     float distance = line.distance(_center);

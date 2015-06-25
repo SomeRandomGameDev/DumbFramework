@@ -1,9 +1,9 @@
 #include <unittest++/UnitTest++.h>
 #include <vector>
 #include <glm/gtc/random.hpp>
-#include <DumbFramework/transform.hpp>
+#include <DumbFramework/geometry/transform.hpp>
 
-using namespace Framework;
+using namespace Dumb::Core::Geometry;
 
 SUITE(Transform)
 {

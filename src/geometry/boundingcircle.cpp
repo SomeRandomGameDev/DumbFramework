@@ -149,7 +149,7 @@ bool BoundingCircle::intersects(Ray2 const& ray)
 /** Tell on which side of the specified line the current bounding circle is.
  *  @param [in] line Line.
  */
-Side BoundingCircle::classify(Line2d const& line)
+Side BoundingCircle::classify(Line2 const& line)
 {
     float d = line.distance(_center);
     if(d <= -_radius)

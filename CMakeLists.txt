@@ -79,7 +79,7 @@ set(DUMB_FRAMEWORK_GEOMETRY_SOURCES
     src/geometry/boundingquad.cpp
     src/geometry/boundingsphere.cpp
     src/geometry/frustum.cpp
-    src/geometry/line2d.cpp
+    src/geometry/line2.cpp
     src/geometry/ray.cpp
     src/geometry/rect.cpp
     src/geometry/plane.cpp
@@ -154,7 +154,7 @@ if(BUILD_TESTS)
     set(DUMB_FRAMEWORK_TEST_SOURCES
         src/test/boundingbox.cpp
         src/test/boundingsphere.cpp
-        src/test/boundingfrustum.cpp
+        src/test/frustum.cpp
         src/test/boundingcircle.cpp
         src/test/plane.cpp
         src/test/log.cpp

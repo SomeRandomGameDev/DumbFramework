@@ -27,24 +27,24 @@ namespace Geometry {
 /**
  * 2d line.
  */
-class Line2d
+class Line2
 {
     public:
         /** Constructor. */
-        Line2d();
-        /** Build plane from 2 points.
+        Line2();
+        /** Build line from 2 points.
          *  @param [in] p0 First point.
          *  @param [in] p1 Second point.
          */
-        Line2d(glm::vec2 const& p0, glm::vec2 const& p1);
+        Line2(glm::vec2 const& p0, glm::vec2 const& p1);
         /** Copy constructor.
-         *  @param [in] plane Source plane.
+         *  @param [in] line Source line.
          */
-        Line2d(Line2d const& line);
+        Line2(Line2 const& line);
         /** Copy operator.
-         *  @param [in] plane Source line.
+         *  @param [in] line Source line.
          */
-        Line2d& operator= (Line2d const& line);
+        Line2& operator= (Line2 const& line);
         /** Compute distance of a point to the line.
          *  @param [in] p Point.
          */

@@ -21,7 +21,7 @@
 #include <DumbFramework/geometry/side.hpp>
 #include <DumbFramework/geometry/containment.hpp>
 #include <DumbFramework/geometry/ray.hpp>
-#include <DumbFramework/geometry/line2d.hpp>
+#include <DumbFramework/geometry/line2.hpp>
 
 namespace Dumb     {
 namespace Core     {
@@ -85,7 +85,7 @@ class BoundingQuad
         /** Tell on which side of the specified line the current bounding quad is.
          *  @param [in] line Line.
          */
-        Side classify(Line2d const& line) const;
+        Side classify(Line2 const& line) const;
         /** Apply transformation.
          *  @param [in] m 3*3 transformation matrix.
          */
