@@ -1,6 +1,24 @@
-#include <DumbFramework/boundingobjects.hpp>
+/*
+ * Copyright 2015 MooZ
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#include <DumbFramework/geometry/boundingsphere.hpp>
+#include <DumbFramework/geometry/boundingbox.hpp>
 
-namespace Framework {
+namespace Dumb     {
+namespace Core     {
+namespace Geometry {
 
 /** Constructor. */
 BoundingBox::BoundingBox()
@@ -13,7 +31,7 @@ BoundingBox::BoundingBox()
 *  @param [in] bmin Bounding box minimum point.
 *  @param [in] bmax Bounding box maximum point.
 */
-BoundingBox::BoundingBox(const glm::vec3& bmin, const glm::vec3& bmax)
+BoundingBox::BoundingBox(glm::vec3 const& bmin, glm::vec3 const& bmax)
     : _min(bmin)
     , _max(bmax)
 {
@@ -41,7 +59,7 @@ BoundingBox::BoundingBox(const uint8_t* buffer, size_t count, size_t stride)
 /** Constructor.
 *  @param [in] sphere Bounding sphere.
 */
-BoundingBox::BoundingBox(const BoundingSphere& sphere)
+BoundingBox::BoundingBox(BoundingSphere const& sphere)
 {
     glm::vec3 direction = glm::vec3(sphere.getRadius());
     _min = sphere.getCenter() - direction;
@@ -51,7 +69,7 @@ BoundingBox::BoundingBox(const BoundingSphere& sphere)
 /** Constructor.
 *  Merge two bounding boxes.
 */
-BoundingBox::BoundingBox(const BoundingBox& b0, const BoundingBox& b1)
+BoundingBox::BoundingBox(BoundingBox const& b0, BoundingBox const& b1)
     : _min(glm::min(b0._min, b1._min))
     , _max(glm::max(b0._max, b1._max))
 {
@@ -60,7 +78,7 @@ BoundingBox::BoundingBox(const BoundingBox& b0, const BoundingBox& b1)
 /** Copy constructor.
 *  @param [in] box Source bounding box.
 */
-BoundingBox::BoundingBox(const BoundingBox& box)
+BoundingBox::BoundingBox(BoundingBox const& box)
     : _min(box._min)
     , _max(box._max)
     , _center(box._center)
@@ -69,7 +87,7 @@ BoundingBox::BoundingBox(const BoundingBox& box)
 /** Copy operator.
 *  @param [in] box Source bounding box.
 */
-BoundingBox& BoundingBox::operator= (const BoundingBox& box)
+BoundingBox& BoundingBox::operator= (BoundingBox const& box)
 {
     _min    = box._min;
     _max    = box._max;
@@ -78,7 +96,7 @@ BoundingBox& BoundingBox::operator= (const BoundingBox& box)
     return *this;
 }
 /** Check if the current bounding box contains the specified bounding box. */
-ContainmentType::Value BoundingBox::contains(const BoundingBox& box)
+ContainmentType::Value BoundingBox::contains(BoundingBox const& box)
 {
     if((box._max.x < _min.x) ||
        (box._min.x > _max.x) ||
@@ -97,7 +115,7 @@ ContainmentType::Value BoundingBox::contains(const BoundingBox& box)
     return ContainmentType::Intersects;
 }
 /** Check if the current bounding box contains the specified bounding sphere. */
-ContainmentType::Value BoundingBox::contains(const BoundingSphere& sphere)
+ContainmentType::Value BoundingBox::contains(BoundingSphere const& sphere)
 {
     glm::vec3 diffMin = sphere.getCenter() - _min;
     glm::vec3 diffMax = _max - sphere.getCenter();
@@ -154,7 +172,7 @@ ContainmentType::Value BoundingBox::contains(const float* buffer, size_t count, 
 /** Check if the current bounding box contains the specified point.
 *  @param [in] point Point to be tested.
 */
-ContainmentType::Value BoundingBox::contains(const glm::vec3& point)
+ContainmentType::Value BoundingBox::contains(glm::vec3 const& point)
 {
     glm::vec3 dummy = glm::abs(_center - point);
     if((dummy.x < _extent.x) &&
@@ -170,7 +188,7 @@ ContainmentType::Value BoundingBox::contains(const glm::vec3& point)
 /** Check if the current bounding box intersects the specified ray.
 *  @param [in] ray Ray to be tested.
 */
-bool BoundingBox::intersects(const Ray& ray)
+bool BoundingBox::intersects(Ray3 const& ray)
 {
     glm::vec3 t0 = (_min - ray.origin) / ray.direction;
     glm::vec3 t1 = (_max - ray.origin) / ray.direction;
@@ -188,7 +206,7 @@ bool BoundingBox::intersects(const Ray& ray)
 /** Tell on which side of the specified plane the current bounding box is.
  *  @param [in] plane Plane.
  */
-Side BoundingBox::classify(const Plane& plane) const
+Side BoundingBox::classify(Plane const& plane) const
 {
     float radius   = glm::dot(glm::abs(plane.getNormal()), _extent);
     float distance = plane.distance(_center);
@@ -200,7 +218,7 @@ Side BoundingBox::classify(const Plane& plane) const
 /** Apply transformation.
 *  @param [in] m 4*4 transformation matrix.
 */
-void BoundingBox::transform(const glm::mat4& m)
+void BoundingBox::transform(glm::mat4 const& m)
 {
     glm::vec3 dummy[2] =
     { 
@@ -226,4 +244,6 @@ void BoundingBox::_update()
     _extent = glm::abs(_max - _center); 
 }
 
-}
+} // Geometry
+} // Core
+} // Dumb

@@ -1,6 +1,24 @@
-#include <DumbFramework/boundingobjects.hpp>
+/*
+ * Copyright 2015 MooZ
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#include <DumbFramework/geometry/boundingbox.hpp>
+#include <DumbFramework/geometry/boundingsphere.hpp>
 
-namespace Framework {
+namespace Dumb     {
+namespace Core     {
+namespace Geometry {
 
 /** Constructor. */
 BoundingSphere::BoundingSphere()
@@ -12,7 +30,7 @@ BoundingSphere::BoundingSphere()
  *  @param [in] c  Bounding sphere center.
  *  @param [in] r  Bounding sphere radius.
  */
-BoundingSphere::BoundingSphere(const glm::vec3& c, float r)
+BoundingSphere::BoundingSphere(glm::vec3 const& c, float r)
     : _center(c)
     , _radius(r)
     , _squareRadius(r*r)
@@ -44,7 +62,7 @@ BoundingSphere::BoundingSphere(const uint8_t* buffer, size_t count, size_t strid
 /** Constructor.
  *  Merge two bounding spheres.
  */
-BoundingSphere::BoundingSphere(const BoundingSphere& s0, const BoundingSphere& s1)
+BoundingSphere::BoundingSphere(BoundingSphere const& s0, BoundingSphere const& s1)
 {
     BoundingSphere merged;
     float distance = glm::distance(s0._center, s1._center);
@@ -57,7 +75,7 @@ BoundingSphere::BoundingSphere(const BoundingSphere& s0, const BoundingSphere& s
 /** Copy constructor.
  *  @param [in] sphere Source bounding sphere.
  */
-BoundingSphere::BoundingSphere(const BoundingSphere& sphere)
+BoundingSphere::BoundingSphere(BoundingSphere const& sphere)
     : _center(sphere._center)
     , _radius(sphere._radius)
     , _squareRadius(sphere._squareRadius)
@@ -65,7 +83,7 @@ BoundingSphere::BoundingSphere(const BoundingSphere& sphere)
 /** Copy operator.
  *  @param [in] sphere Source bounding sphere.
  */
-BoundingSphere& BoundingSphere::operator= (const BoundingSphere& sphere)
+BoundingSphere& BoundingSphere::operator= (BoundingSphere const& sphere)
 {
     _center = sphere._center;
     _radius = sphere._radius;
@@ -73,7 +91,7 @@ BoundingSphere& BoundingSphere::operator= (const BoundingSphere& sphere)
     return *this;
 }
 /** Check if the current bounding sphere contains the specified bounding box. */
-ContainmentType::Value BoundingSphere::contains(const BoundingBox& box)
+ContainmentType::Value BoundingSphere::contains(BoundingBox const& box)
 {
     glm::vec3 diffMin = _center  - box.getMin();
     glm::vec3 diffMax = box.getMax() - _center;
@@ -104,7 +122,7 @@ ContainmentType::Value BoundingSphere::contains(const BoundingBox& box)
     return ContainmentType::Disjoints;
 }
 /** Check if the current bounding sphere contains the specified bounding sphere. */
-ContainmentType::Value BoundingSphere::contains(const BoundingSphere& sphere)
+ContainmentType::Value BoundingSphere::contains(BoundingSphere const& sphere)
 {
     glm::vec3 delta = _center - sphere._center;
     
@@ -141,7 +159,7 @@ ContainmentType::Value BoundingSphere::contains(const float* buffer, size_t coun
 /** Check if the current bounding sphere contains the specified point.
  * @param [in] point Point to be tested.
  */
-ContainmentType::Value BoundingSphere::contains(const glm::vec3& point)
+ContainmentType::Value BoundingSphere::contains(glm::vec3 const& point)
 {
     float distance = glm::distance(_center, point);
     if(distance < _radius) { return ContainmentType::Contains;  }
@@ -151,7 +169,7 @@ ContainmentType::Value BoundingSphere::contains(const glm::vec3& point)
 /** Check if the current bounding sphere intersects the specified ray.
   * @param [in] ray Ray to be tested.
   */
-bool BoundingSphere::intersects(const Ray& ray)
+bool BoundingSphere::intersects(Ray3 const& ray)
 {
     float epsilon = std::numeric_limits<float>::epsilon();
     float distance = glm::distance(_center, ray.origin);
@@ -166,7 +184,7 @@ bool BoundingSphere::intersects(const Ray& ray)
 /** Tell on which side of the specified plane the current bounding sphere is.
  *  @param [in] plane Plane.
  */
-Side BoundingSphere::classify(const Plane& plane) const
+Side BoundingSphere::classify(Plane const& plane) const
 {
     float d = plane.distance(_center);
     if(d <= -_radius)
@@ -178,7 +196,7 @@ Side BoundingSphere::classify(const Plane& plane) const
 /** Apply transformation.
  *  @param [in] m 4*4 transformation matrix.
  */
-void BoundingSphere::transform(const glm::mat4& m)
+void BoundingSphere::transform(glm::mat4 const& m)
 {
     // Transform center.
     glm::vec4 pt = m * glm::vec4(_center, 1.0f);
@@ -203,4 +221,6 @@ float BoundingSphere::getRadius() const
 float BoundingSphere::getSquareRadius() const
 { return _squareRadius; }
 
-}
+} // Geometry
+} // Core
+} // Dumb

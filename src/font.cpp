@@ -84,6 +84,31 @@ namespace Dumb {
         }
         )EOT";
 
+        std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute>> s_attributes =
+            std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute>>(
+                    {
+                    { DFE_POSITION_INDEX,
+                    Framework::Render::Geometry::Attribute(
+                            Framework::Render::Geometry::ComponentType::FLOAT, 2, false,
+                            DFE_BUFFER_STRIDE,                    0, 1) },
+                    { DFE_SIZE_INDEX,
+                    Framework::Render::Geometry::Attribute(
+                            Framework::Render::Geometry::ComponentType::FLOAT, 2, false,
+                            DFE_BUFFER_STRIDE, sizeof(GLfloat) *  2, 1) },
+                    { DFE_TOP_TEX_INDEX,
+                    Framework::Render::Geometry::Attribute(
+                            Framework::Render::Geometry::ComponentType::FLOAT, 2, false,
+                            DFE_BUFFER_STRIDE, sizeof(GLfloat) *  4, 1) },
+                    { DFE_DOWN_TEX_INDEX,
+                    Framework::Render::Geometry::Attribute(
+                            Framework::Render::Geometry::ComponentType::FLOAT, 2, false,
+                            DFE_BUFFER_STRIDE, sizeof(GLfloat) *  6, 1) },
+                    { DFE_COLOR_INDEX,
+                    Framework::Render::Geometry::Attribute(
+                            Framework::Render::Geometry::ComponentType::UNSIGNED_BYTE, 4, false,
+                            DFE_BUFFER_STRIDE, sizeof(GLfloat) *  8, 1) },
+                    });
+
 #define DFE_DECORATION_SPAN 0
 #define DFE_DECORATION_FONT 1
 #define DFE_DECORATION_COLOR 2
@@ -404,77 +429,54 @@ namespace Dumb {
             return total;
         }
 
-#define PRINT_ROUTINE(fetch,size) \
-        Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();\
-        renderer.depthBufferWrite(false);\
-        _buffer.bind();\
-        void *ptr = _buffer.map(Framework::Render::BufferObject::Access::Policy::WRITE_ONLY);\
-        fetch;\
-        _buffer.unmap();\
-        _buffer.unbind();\
-        _program.begin();\
-        _program.uniform(_uniformMatrix, false, _matrix);\
-        renderer.setActiveTextureUnit(0);\
-        glBindTexture(GL_TEXTURE_2D, _atlas);\
-        _stream.bind();\
-        unsigned int toSend = (size);\
-        glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, toSend);\
-        _lastCount = toSend;\
-        _stream.unbind();\
-        _program.end();\
-        glBindTexture(GL_TEXTURE_2D, 0);\
-        renderer.depthBufferWrite(true);
-
-        //   -------------
-        void Engine::print(const std::vector<const Cache*> &texts) {
-            PRINT_ROUTINE(unsigned int total = aggregateCaches(texts, ptr, _capacity), total)
+        //      ----------------
+        GLsizei Delegate::update(void *ptr, GLsizei capacity,
+                const std::vector<const Cache*> &texts) {
+            GLsizei total = (GLsizei) aggregateCaches(texts, ptr, capacity);
+            _lastCount = total;
+            return total;
         }
 
-        //   -------------
-        void Engine::print(const void *cache, unsigned int size) {
-            PRINT_ROUTINE(memcpy(ptr, cache, size * DFE_BUFFER_STRIDE), size)
+        //      ----------------
+        GLsizei Delegate::update(void *ptr, GLsizei capacity,
+                const void *cache, unsigned int size) {
+            GLsizei result = std::min((GLsizei) size, capacity);
+            memcpy(ptr, cache, result * DFE_BUFFER_STRIDE);
+            _lastCount = result;
+            return result;
         }
 
-        //   -------------
-        void Engine::print(const Cache &cache) {
-            PRINT_ROUTINE(cache.fetch(ptr, _capacity), cache.count())
+        //      ----------------
+        GLsizei Delegate::update(void *ptr, GLsizei capacity,
+                const Cache &cache) {
+            cache.fetch(ptr, capacity);
+            GLsizei result = cache.count();
+            _lastCount = result;
+            return result;
         }
 
-        //   --------------
-        void Engine::redraw() {
-            Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
-            renderer.depthBufferWrite(false);
-            _program.begin();
-            _program.uniform(_uniformMatrix, false, _matrix);
-            renderer.setActiveTextureUnit(0);
-            glBindTexture(GL_TEXTURE_2D, _atlas);
-            _stream.bind();
-            glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, _lastCount);
-            _stream.unbind();
-            _program.end();
-            glBindTexture(GL_TEXTURE_2D, 0);
-            renderer.depthBufferWrite(true);
+        //      ----------------
+        GLsizei Delegate::update(void * /* ptr */, GLsizei /* capacity */) {
+            return _lastCount;
         }
 
-        //   -------------
-        void Engine::print(const Wrapper *def,
+        //      ----------------
+        GLsizei Delegate::update(void *ptr, GLsizei capacity,
+                const Wrapper *def,
                 glm::vec2 pos,
                 const icu::UnicodeString &text,
                 glm::vec4 color,
                 std::initializer_list<Decoration> decoration) {
             Cache cache(def, pos, text, color, decoration, _size);
-            print(cache);
+            return update(ptr, capacity, cache);
         }
 
-        //   -------------
-        void Engine::print(const Wrapper *font, glm::vec2 pos, icu::UnicodeString text, glm::vec4 color) {
-            using namespace Framework;
+        //      ----------------
+        GLsizei Delegate::update(void *vptr, GLsizei capacity,
+                const Wrapper *font, glm::vec2 pos, icu::UnicodeString text, glm::vec4 color) {
+            GLsizei result = 0;
             if(0 != font) {
-                Render::Renderer& renderer = Render::Renderer::instance();
-                renderer.depthBufferWrite(false);
-                _buffer.bind();
-                GLfloat *ptr = reinterpret_cast<GLfloat *>(
-                        _buffer.map(Render::BufferObject::Access::Policy::WRITE_ONLY));
+                GLfloat *ptr = reinterpret_cast<GLfloat *>(vptr);
                 GLsizei count = 0; // Number of glyph to display.
                 // Iterate on the text.
                 UChar32 start = static_cast<UChar32>(font->getStartingCodePoint());
@@ -506,24 +508,13 @@ namespace Dumb {
                         ptr += DFE_BUFFER_ELEMENT_COUNT;
                     }
                 }
-                _buffer.unmap();
-                _buffer.unbind();
-                _program.begin();
-                _program.uniform(_uniformMatrix, false, _matrix);
-                renderer.setActiveTextureUnit(0);
-                glBindTexture(GL_TEXTURE_2D, _atlas);
-                _stream.bind();
-                glDrawArraysInstanced (GL_TRIANGLE_STRIP, 0, 4, count);
-                _lastCount = count;
-                _stream.unbind();
-                _program.end();
-                glBindTexture(GL_TEXTURE_2D, 0);
-                renderer.depthBufferWrite(true);
+                result = count;
             }
+            return result;
         }
 
         // ------------
-        Engine::~Engine() {
+        Delegate::~Delegate() {
             std::map<std::string, Wrapper *>::iterator it;
             for(it = _wrappers.begin(); it != _wrappers.end(); ++it) {
                 Log_Info(Framework::Module::App, "Flushing '%s'", it->first.c_str());
@@ -531,13 +522,13 @@ namespace Dumb {
             }
         }
 
-        //   -------------------
-        void Engine::viewport(GLfloat startX, GLfloat startY, GLfloat width, GLfloat height) {
+        //   ------------------
+        void Delegate::viewport(GLfloat startX, GLfloat startY, GLfloat width, GLfloat height) {
             _matrix = glm::ortho(startX, startX + width, height + startY, startY, -1.0f, 1.0f);
         }
 
-        //   ----------------------
-        void Engine::packOversample(stbtt_pack_context &context, const Oversample &oversample, char *font) {
+        //   ------------------------
+        void Delegate::packOversample(stbtt_pack_context &context, const Oversample &oversample, char *font) {
             std::vector<Range> specs = oversample.getRanges();
             std::vector<Range>::size_type count = specs.size();
             stbtt_pack_range *packRange = new stbtt_pack_range[count];
@@ -563,8 +554,8 @@ namespace Dumb {
             delete []packRange;
         }
 
-        //   ----------------
-        void Engine::packFont(stbtt_pack_context &context, const Resource &resource) {
+        //   ------------------
+        void Delegate::packFont(stbtt_pack_context &context, const Resource &resource) {
             std::ifstream fontFile;
             fontFile.open(resource.getPath().c_str(), std::ios::binary|std::ios::ate|std::ios::in);
             // Font file check.
@@ -586,11 +577,9 @@ namespace Dumb {
             }
         }
 
-        //------------
-        Engine::Engine(const std::vector<Resource> &fonts,
-                unsigned int capacity,
-                unsigned int size) : _capacity(capacity), _size(size), _lastCount(0) {
-            using namespace Framework;
+        //----------------
+        Delegate::Delegate(const std::vector<Resource> &fonts,
+                unsigned int size) : _size(size), _lastCount(0) {
             // Let the fun begins !
             // First, build a temporary buffer for the texture.
             unsigned char *buffer = new unsigned char[size * size];
@@ -611,47 +600,40 @@ namespace Dumb {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             delete []buffer;
-
-            // We're not over. Let's initialize VBO/VAO/Shaders/Program.
-            _buffer.create(DFE_BUFFER_STRIDE*capacity);
-            _stream.create();
-            _stream.add(&_buffer,
-                    {
-                    { DFE_POSITION_INDEX,
-                      Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false,
-                              DFE_BUFFER_STRIDE,                    0, 1) },
-                    { DFE_SIZE_INDEX,
-                      Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false,
-                              DFE_BUFFER_STRIDE, sizeof(GLfloat) *  2, 1) },
-                    { DFE_TOP_TEX_INDEX,
-                      Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false,
-                              DFE_BUFFER_STRIDE, sizeof(GLfloat) *  4, 1) },
-                    { DFE_DOWN_TEX_INDEX,
-                      Render::Geometry::Attribute(Render::Geometry::ComponentType::FLOAT, 2, false,
-                              DFE_BUFFER_STRIDE, sizeof(GLfloat) *  6, 1) },
-                    { DFE_COLOR_INDEX,
-                      Render::Geometry::Attribute(Render::Geometry::ComponentType::UNSIGNED_BYTE, 4, false,
-                              DFE_BUFFER_STRIDE, sizeof(GLfloat) *  8, 1) },
-                    });
-            _stream.compile();
-
-            // Create program.
-            std::array<Render::Shader, 2> shaders;
-            shaders[0].create(Render::Shader::VERTEX_SHADER,   s_dfe_vertexShaderInstanced);
-            shaders[1].create(Render::Shader::FRAGMENT_SHADER, s_dfe_fragmentShader);
-
-            _program.create();
-            for(unsigned long i=0; i<shaders.size(); i++)
-            {
-                shaders[i].infoLog(Severity::Info);
-                _program.attach(shaders[i]);
-            }
-
-            _program.link();
-            _program.infoLog(Severity::Info);
-            _uniformMatrix  = _program.getUniformLocation("un_matrix");
-            _uniformTexture = _program.getUniformLocation("un_texture");
         }
 
+        //    ----------------------------------------------------------------
+        std::vector<std::pair<Framework::Render::Shader::Type, const char *> >
+            Delegate::shaders() const {
+                return std::vector<std::pair<Framework::Render::Shader::Type, const char *> >(
+                        {
+                        { Framework::Render::Shader::VERTEX_SHADER,   s_dfe_vertexShaderInstanced },
+                        { Framework::Render::Shader::FRAGMENT_SHADER, s_dfe_fragmentShader }
+                        });
+            }
+
+        //    -----------------------------------------------------------------------
+        std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute> >
+            Delegate::attributes() const {
+                return s_attributes;
+            }
+
+
+        //   --------------
+        void Delegate::init(Framework::Render::Program &program) {
+            _uniformMatrix  = program.getUniformLocation("un_matrix");
+            _uniformTexture = program.getUniformLocation("un_texture");
+        }
+
+        //   ----------------
+        void Delegate::update(Framework::Render::Program &program) {
+            program.uniform(_uniformMatrix, false, _matrix);
+            glBindTexture(GL_TEXTURE_2D, _atlas);
+        }
+
+        //   --------------------
+        void Delegate::postRender() {
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
     } // 'Font' namespace.
 } // 'Dumb' namespace.

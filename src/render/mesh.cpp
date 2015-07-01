@@ -306,12 +306,12 @@ void Mesh::computeBoundingObjects()
     {
         return;
     }
-    _aabb = BoundingBox(ptr+attributes[Position].offset, _vertexCount, attributes[Position].stride);
+    _aabb = Dumb::Core::Geometry::BoundingBox(ptr+attributes[Position].offset, _vertexCount, attributes[Position].stride);
     _vertexBuffer.bind();
         _vertexBuffer.unmap();
     _vertexBuffer.unbind();
 
-    _sphere = BoundingSphere(_aabb.getCenter(), glm::distance(_aabb.getMin(), _aabb.getMax()) / 2.0f);
+    _sphere = Dumb::Core::Geometry::BoundingSphere(_aabb.getCenter(), glm::distance(_aabb.getMin(), _aabb.getMax()) / 2.0f);
 }
 /** Create vertex stream. **/
 bool Mesh::createVertexStream()

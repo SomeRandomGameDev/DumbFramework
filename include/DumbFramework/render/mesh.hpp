@@ -1,7 +1,8 @@
 #ifndef _DUMB_FW_MESH_
 #define _DUMB_FW_MESH_
 
-#include <DumbFramework/boundingobjects.hpp>
+#include <DumbFramework/geometry/boundingbox.hpp>
+#include <DumbFramework/geometry/boundingsphere.hpp>
 #include <DumbFramework/render/geometry.hpp>
 #include <DumbFramework/render/vertexbuffer.hpp>
 #include <DumbFramework/render/indexbuffer.hpp>
@@ -102,12 +103,12 @@ class Mesh
          * Get mesh bounding sphere.
          * @return Bounding sphere.
          */
-        inline BoundingSphere const& boundingSphere() const;
+        inline Dumb::Core::Geometry::BoundingSphere const& boundingSphere() const;
         /**
          * Get mesh axis aligned bounding box.
          * @return Axis aligned bounding box.
          */
-        inline BoundingBox const& boundingBox() const;
+        inline Dumb::Core::Geometry::BoundingBox const& boundingBox() const;
         /**
          * Retrieve vertex stream.
          */
@@ -156,9 +157,9 @@ class Mesh
         /** Primitive type. **/
         Geometry::Primitive _primitiveType;
         /** Bounding sphere. **/
-        BoundingSphere _sphere;
+        Dumb::Core::Geometry::BoundingSphere _sphere;
         /** Axis aligned bounging sphere. **/
-        BoundingBox    _aabb;
+        Dumb::Core::Geometry::BoundingBox    _aabb;
         /** Vertex stream for a single instance. **/
         VertexStream _stream;
 };

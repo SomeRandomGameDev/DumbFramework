@@ -315,7 +315,7 @@ bool LightPass::add(SpotLight const& light)
     return true;
 }
 
-void LightPass::draw(Camera const& camera)
+void LightPass::draw(Dumb::Core::Geometry::Camera const& camera)
 {
     Renderer& renderer = Renderer::instance();
 

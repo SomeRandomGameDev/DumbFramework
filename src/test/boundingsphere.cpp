@@ -1,9 +1,10 @@
 #include <unittest++/UnitTest++.h>
 #include <vector>
 #include <glm/gtc/random.hpp>
-#include <DumbFramework/boundingobjects.hpp>
+#include <DumbFramework/geometry/boundingsphere.hpp>
+#include <DumbFramework/geometry/boundingbox.hpp>
 
-using namespace Framework;
+using namespace Dumb::Core::Geometry;
 
 SUITE(BoundingSphere)
 {
@@ -118,7 +119,7 @@ SUITE(BoundingSphere)
     TEST(IntersectsRay)
     {
         BoundingSphere sphere(glm::vec3(1.0f, 0.0f, 0.0f), 2.0f);
-        Ray ray(glm::vec3(0.5f), glm::vec3(-1.0f));
+        Ray3 ray(glm::vec3(0.5f), glm::vec3(-1.0f));
         
         bool res;
         

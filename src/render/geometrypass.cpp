@@ -205,7 +205,7 @@ void GeometryPass::destroy()
     _view.destroy();
 }
 
-void GeometryPass::begin(Camera const& camera)
+void GeometryPass::begin(Dumb::Core::Geometry::Camera const& camera)
 {
     Renderer& renderer = Renderer::instance();
     
