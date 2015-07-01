@@ -90,9 +90,9 @@ namespace Dumb {
                                     // Setting up GLEW.
                                     GLenum glewError = glewInit();
                                     if(GLEW_OK != glewError) {
-                                        std::cerr << "Can't initialize GLEW : "
-                                            << glewGetErrorString(glewError)
-                                            << std::endl; // TODO Logging.
+                                        Log_Error(Framework::Module::App,
+                                                "Can't initialize GLEW : %s",
+                                                glewGetErrorString(glewError));
                                         glfwTerminate();
                                         return -1;
                                     }
@@ -146,10 +146,7 @@ namespace Dumb {
                      * @param [in] desc Error description.
                      */
                     static void handleErrorMessage(int code, const char *desc) {
-                        std::cerr << "[!!] "
-                            << desc
-                            << " (errcode : " << code << ")."
-                            << std::endl;
+                        Log_Error(Framework::Module::App, "%s (errcode : %d)", desc, code);
                     }
 
                     // Basic GLFW Callbacks.
@@ -210,44 +207,27 @@ namespace Dumb {
     } // 'Core' namespace.
 } // 'Dumb' namespace.
 
-/*
-     Framework::Log::LogBuilder<Framework::Log::AllPassFilter, Framework::Log::SimpleMessageFormat> msgBuilder;
-  Framework::Log::ConsoleOutputPolicy output;
-
-  Framework::Log::LogProcessor& processor = Framework::Log::LogProcessor::instance();
-  processor.start(&msgBuilder, &output);
-
-  std::string title("Sprite EngineTest");
-  TestEngine testScene(640, 480);
-  Framework::WindowHint hint(640, 480, title);
-  Application application;
-
-  application.start(hint, &testScene);
-
-  Log_Info(Framework::Module::App, "End ...");
-  processor.stop();
-  */
-
 // Create a simple application.
 #define SIMPLE_APP(W) \
     int main(void){ \
-Framework::Log::LogBuilder<Framework::Log::AllPassFilter, Framework::Log::SimpleMessageFormat> msgBuilder;\
-Framework::Log::ConsoleOutputPolicy output;\
-Framework::Log::LogProcessor& processor = Framework::Log::LogProcessor::instance();\
-processor.start(&msgBuilder, &output);\
-W *w = new W();Dumb::Core::Application::Runner<W> runner(w);\
-int result = runner.start();delete w;\
-Log_Info(Framework::Module::App, "End ...");\
-processor.stop();\
-return result;\
-}
+        Framework::Log::LogBuilder<Framework::Log::AllPassFilter,\
+        Framework::Log::SimpleMessageFormat> msgBuilder;\
+        Framework::Log::ConsoleOutputPolicy output;\
+        Framework::Log::LogProcessor& processor = Framework::Log::LogProcessor::instance();\
+        processor.start(&msgBuilder, &output);\
+        W *w = new W();Dumb::Core::Application::Runner<W> runner(w);\
+        int result = runner.start();delete w;\
+        Log_Info(Framework::Module::App, "End ...");\
+        processor.stop();\
+        return result;\
+    }
 
 // Declare all wrapper methods.
 #define DECLARE_WRAPPER_METHODS \
     public:\
 void init(Dumb::Core::Application::Adviser *);\
 void postInit();\
-int render();\
+bool render();\
 void handleUnicodeCharacter(unsigned int);\
 void handleUnicodeModifierCharacter(unsigned int,int);\
 void handleKey(int,int,int,int);\

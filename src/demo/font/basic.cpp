@@ -41,7 +41,7 @@ class Example {
         /**
          * Default Constructor.
          */
-        Example() : _closeFlag(1), _engine(0), _frames(0), _elapsed(0) {
+        Example() : _closeFlag(true), _engine(0), _frames(0), _elapsed(0) {
             // Nothing special to do.
             _precomputed = new unsigned char[MAX_GLYPHS * DFE_BUFFER_STRIDE];
         }
@@ -62,9 +62,9 @@ class Example {
         }
     private:
         /**
-         * If 0, close the app.
+         * If false, close the app.
          */
-        int _closeFlag;
+        bool _closeFlag;
 
         /**
          * Font engine.
@@ -258,7 +258,7 @@ void Example::postInit() {
     _start = glfwGetTime();
 }
 
-int Example::render() {
+bool Example::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     double startTime = glfwGetTime();
     std::stringstream stream;
@@ -291,7 +291,7 @@ void Example::handleKey(int key,int,int,int) {
             Log_Info(Framework::Module::Render, "FPS : %.3f",
                     _frames / elapsed);
         }
-        _closeFlag = 0; } else {
+        _closeFlag = false; } else {
             _compute = true;
         }
 }
@@ -310,7 +310,7 @@ void Example::handleMouseButton(int button,int action,int mods) {
                 (cursor.x >= low.x) &&
                 (cursor.y <= high.y) &&
                 (cursor.y >= low.y)) {
-            _closeFlag = 0;
+            _closeFlag = false;
         }
     }
 }
