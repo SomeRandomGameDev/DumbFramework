@@ -1,9 +1,33 @@
-#ifndef _DUMB_FW_BOUNDING_SPHERE_
-#define _DUMB_FW_BOUNDING_SPHERE_
+/*
+ * Copyright 2015 MooZ
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#ifndef _DUMBFRAMEWORK_BOUNDING_SPHERE_
+#define _DUMBFRAMEWORK_BOUNDING_SPHERE_
 
-#include <DumbFramework/boundingobjects.hpp>
+#include <sys/types.h>
+#include <glm/glm.hpp>
 
-namespace Framework {
+#include <DumbFramework/geometry/ray.hpp>
+#include <DumbFramework/geometry/containment.hpp>
+#include <DumbFramework/geometry/plane.hpp>
+
+namespace Dumb     {
+namespace Core     {
+namespace Geometry {
+
+class BoundingBox;
 
 /**
  * Bounding sphere.
@@ -17,7 +41,7 @@ class BoundingSphere
          *  @param [in] c  Bounding sphere center.
          *  @param [in] r  Bounding sphere radius.
          */
-        BoundingSphere(const glm::vec3& c, float r);
+        BoundingSphere(glm::vec3 const& c, float r);
         /** Constructor.
          *  @param [in] buffer Pointer to the point array.
          *  @param [in] count  Number of points 
@@ -27,20 +51,20 @@ class BoundingSphere
         /** Constructor.
          *  Merge two bounding spheres.
          */
-        BoundingSphere(const BoundingSphere& s0, const BoundingSphere& s1);
+        BoundingSphere(BoundingSphere const& s0, BoundingSphere const& s1);
         /** Copy constructor.
          *  @param [in] sphere Source bounding sphere.
          */
-        BoundingSphere(const BoundingSphere& sphere);
+        BoundingSphere(BoundingSphere const& sphere);
 
         /** Copy operator.
          *  @param [in] sphere Source bounding sphere.
          */
-        BoundingSphere& operator= (const BoundingSphere& sphere);
+        BoundingSphere& operator= (BoundingSphere const& sphere);
         /** Check if the current bounding sphere contains the specified bounding box. */
-        ContainmentType::Value contains(const BoundingBox& box);
+        ContainmentType::Value contains(BoundingBox const& box);
         /** Check if the current bounding sphere contains the specified bounding sphere. */
-        ContainmentType::Value contains(const BoundingSphere& sphere);
+        ContainmentType::Value contains(BoundingSphere const& sphere);
         /** Check if the current bounding sphere contains the specified list of points.
          *  @param [in] buffer Pointer to the point array.
          *  @param [in] count  Number of points 
@@ -50,19 +74,19 @@ class BoundingSphere
         /** Check if the current bounding sphere contains the specified point.
          *  @param [in] point Point to be tested.
          */
-        ContainmentType::Value contains(const glm::vec3& point);
+        ContainmentType::Value contains(glm::vec3 const& point);
         /** Check if the current bounding sphere intersects the specified ray.
          *  @param [in] ray Ray to be tested.
          */
-        bool intersects(const Ray& ray);
+        bool intersects(Ray3 const& ray);
         /** Tell on which side of the specified plane the current bounding sphere is.
          *  @param [in] plane Plane.
          */
-        Side classify(const Plane& plane) const;
+        Side classify(Plane const& plane) const;
         /** Apply transformation.
          *  @param [in] m 4*4 transformation matrix.
          */
-        void transform(const glm::mat4& m);
+        void transform(glm::mat4 const& m);
 
         /** Get sphere center. **/
         const glm::vec3& getCenter() const;
@@ -80,6 +104,8 @@ class BoundingSphere
         float _squareRadius;
 };
 
-}
+} // Geometry
+} // Core
+} // Dumb
 
-#endif /* _DUMB_FW_BOUNDING_SPHERE_ */
+#endif // _DUMBFRAMEWORK_BOUNDING_SPHERE_

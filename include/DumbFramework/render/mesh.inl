@@ -5,7 +5,7 @@ namespace Render    {
  * Get mesh bounding sphere.
  * @return Bounding sphere.
  */
-BoundingSphere const& Mesh::boundingSphere() const
+Dumb::Core::Geometry::BoundingSphere const& Mesh::boundingSphere() const
 {
     return _sphere;
 }
@@ -13,7 +13,7 @@ BoundingSphere const& Mesh::boundingSphere() const
  * Get mesh axis aligned bounding box.
  * @return Axis aligned bounding box.
  */
-BoundingBox const& Mesh::boundingBox() const
+Dumb::Core::Geometry::BoundingBox const& Mesh::boundingBox() const
 {
     return _aabb;
 }

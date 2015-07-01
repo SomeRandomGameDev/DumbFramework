@@ -1,17 +1,17 @@
 #include <unittest++/UnitTest++.h>
 #include <vector>
 #include <glm/gtc/random.hpp>
-#include <DumbFramework/boundingobjects.hpp>
+#include <DumbFramework/geometry/boundingcircle.hpp>
 
-using namespace Framework;
+using namespace Dumb::Core::Geometry;
 
 SUITE(BoundingCircle)
 {
     TEST(ContainsCircle)
     {
         ContainmentType::Value ret;
-        Framework::BoundingCircle c0(glm::vec2( 4.1f, -1.6f), 2.5f);
-        Framework::BoundingCircle c1(glm::vec2( 2.7f,  0.8f), 3.1f);
+        BoundingCircle c0(glm::vec2( 4.1f, -1.6f), 2.5f);
+        BoundingCircle c1(glm::vec2( 2.7f,  0.8f), 3.1f);
         
         ret = c0.contains(c1);
         CHECK_EQUAL(ContainmentType::Intersects, ret);
@@ -19,7 +19,7 @@ SUITE(BoundingCircle)
         ret = c1.contains(c0);
         CHECK_EQUAL(ContainmentType::Intersects, ret);
     
-        Framework::BoundingCircle c2(glm::vec2( 5.1f, -2.0f), 0.7f);
+        BoundingCircle c2(glm::vec2( 5.1f, -2.0f), 0.7f);
         
         ret = c0.contains(c2);
         CHECK_EQUAL(ContainmentType::Contains, ret);
@@ -27,7 +27,7 @@ SUITE(BoundingCircle)
         ret = c2.contains(c0);
         CHECK_EQUAL(ContainmentType::Contains, ret);
         
-        Framework::BoundingCircle c3(glm::vec2(-8.4f, 11.3f), 1.9f);
+        BoundingCircle c3(glm::vec2(-8.4f, 11.3f), 1.9f);
         
         ret = c3.contains(c2);
         CHECK_EQUAL(ContainmentType::Disjoints, ret);
@@ -44,7 +44,7 @@ SUITE(BoundingCircle)
         size_t count;
         glm::vec2 center;
         
-        Framework::BoundingCircle c0(glm::vec2( 5.5f, 9.1f), 7.3f);
+        BoundingCircle c0(glm::vec2( 5.5f, 9.1f), 7.3f);
         center = glm::vec2( 1.4f, 10.1f);
         count = 11;
         for(size_t i=0; i<count; i++)
@@ -60,7 +60,7 @@ SUITE(BoundingCircle)
         CHECK_EQUAL(ContainmentType::Contains, ret);
 
         pointList.clear();
-        Framework::BoundingCircle c1(glm::vec2( 0.0f,-1.1f), 8.5f);
+        BoundingCircle c1(glm::vec2( 0.0f,-1.1f), 8.5f);
         center = glm::vec2(-9.4f,-1.1f);
         count = 9;
         for(size_t i=0; i<count; i++)
@@ -73,7 +73,7 @@ SUITE(BoundingCircle)
         CHECK_EQUAL(ContainmentType::Intersects, ret);
         
         pointList.clear();
-        Framework::BoundingCircle c2(glm::vec2(-5.3f,-3.1f), 2.5f);
+        BoundingCircle c2(glm::vec2(-5.3f,-3.1f), 2.5f);
         center = glm::vec2( 7.4f,-8.1f);
         count = 25;
         for(size_t i=0; i<count; i++)
@@ -90,7 +90,7 @@ SUITE(BoundingCircle)
     {
         ContainmentType::Value ret;
         glm::vec2 dummy;
-        Framework::BoundingCircle c0(glm::vec2( 5.5f, 9.1f), 7.3f);
+        BoundingCircle c0(glm::vec2( 5.5f, 9.1f), 7.3f);
         
         dummy = glm::vec2( 7.6f, 3.4f);
         ret = c0.contains(dummy);
@@ -103,42 +103,42 @@ SUITE(BoundingCircle)
     
     TEST(ClassifyLine)
     {
-        Framework::BoundingCircle c0;
-        Framework::Line2d l;
-        Framework::Side ret;
+        BoundingCircle c0;
+        Line2 l;
+        Side ret;
         
-        c0 = Framework::BoundingCircle(glm::vec2( 5.5f, 9.1f), 7.3f);
+        c0 = BoundingCircle(glm::vec2( 5.5f, 9.1f), 7.3f);
         
-        l  = Framework::Line2d(glm::vec2(-1.0f, 2.0f), glm::vec2( 0.5f,-2.2f));
+        l  = Line2(glm::vec2(-1.0f, 2.0f), glm::vec2( 0.5f,-2.2f));
         ret = c0.classify(l);
-        CHECK_EQUAL(Framework::Side::Front, ret);
+        CHECK_EQUAL(Side::Front, ret);
 
-        l  = Framework::Line2d(glm::vec2( 0.5f,-2.2f), glm::vec2(-1.0f, 2.0f));
+        l  = Line2(glm::vec2( 0.5f,-2.2f), glm::vec2(-1.0f, 2.0f));
         ret = c0.classify(l);
-        CHECK_EQUAL(Framework::Side::Back, ret);
+        CHECK_EQUAL(Side::Back, ret);
 
-        l  = Framework::Line2d(glm::vec2(0.5f,8.5f), glm::vec2(5.5f, 9.1f));
+        l  = Line2(glm::vec2(0.5f,8.5f), glm::vec2(5.5f, 9.1f));
         ret = c0.classify(l);
-        CHECK_EQUAL(Framework::Side::On, ret);
+        CHECK_EQUAL(Side::On, ret);
     }
     
     TEST(Intersects)
     {
-        Framework::BoundingCircle c0;
-        Framework::Ray2d ray;
+        BoundingCircle c0;
+        Ray2 ray;
         bool ret;
         
-        c0 = Framework::BoundingCircle(glm::vec2( 5.5f, 9.1f), 7.3f);
+        c0 = BoundingCircle(glm::vec2( 5.5f, 9.1f), 7.3f);
         
-        ray = Framework::Ray2d(glm::vec2(4.0f, 7.6f), glm::vec2(-1.0f,-1.0f));
+        ray = Ray2(glm::vec2(4.0f, 7.6f), glm::vec2(-1.0f,-1.0f));
         ret = c0.intersects(ray);
         CHECK_EQUAL(true, ret);
 
-        ray = Framework::Ray2d(glm::vec2(-5.5f,-9.2f), glm::vec2( 1.0f, 1.0f));
+        ray = Ray2(glm::vec2(-5.5f,-9.2f), glm::vec2( 1.0f, 1.0f));
         ret = c0.intersects(ray);
         CHECK_EQUAL(true, ret);
 
-        ray = Framework::Ray2d(glm::vec2(-5.5f,-9.2f), glm::vec2( 0.0f, 1.0f));
+        ray = Ray2(glm::vec2(-5.5f,-9.2f), glm::vec2( 0.0f, 1.0f));
         ret = c0.intersects(ray);
         CHECK_EQUAL(false, ret);
     }

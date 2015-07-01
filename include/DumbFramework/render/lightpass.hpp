@@ -48,7 +48,7 @@ class LightPass
         bool add(SpotLight  const& light);
         // [todo] bool add(DirectionalLight const& light);
         
-        void draw(Camera const& camera);
+        void draw(Dumb::Core::Geometry::Camera const& camera);
         Texture2D* output();
 
         void debug(glm::ivec2 const& pos, glm::ivec2 const& size);

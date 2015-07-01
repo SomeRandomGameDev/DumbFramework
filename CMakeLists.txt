@@ -73,6 +73,19 @@ include_directories( ${EXPAT_INCLUDE_DIR}
 set(IMGUI_SOURCES
     external/imgui/imgui.cpp)
 
+set(DUMB_FRAMEWORK_GEOMETRY_SOURCES
+    src/geometry/boundingbox.cpp
+    src/geometry/boundingcircle.cpp
+    src/geometry/boundingquad.cpp
+    src/geometry/boundingsphere.cpp
+    src/geometry/frustum.cpp
+    src/geometry/line2.cpp
+    src/geometry/ray.cpp
+    src/geometry/rect.cpp
+    src/geometry/plane.cpp
+    src/geometry/transform.cpp
+    src/geometry/camera.cpp)
+
 set(DUMB_FRAMEWORK_RENDER_SOURCES
     src/render/renderer.cpp
     src/render/bufferobject.cpp
@@ -94,25 +107,15 @@ set(DUMB_FRAMEWORK_RENDER_SOURCES
     src/render/geometrypass.cpp)
 
 set(DUMB_FRAMEWORK_SOURCES
+    ${DUMB_FRAMEWORK_GEOMETRY_SOURCES}
     ${DUMB_FRAMEWORK_RENDER_SOURCES}
-    src/camera.cpp
     src/imguidelegate.cpp
-    src/rect.cpp
-    src/boundingbox.cpp
-    src/boundingsphere.cpp
-    src/frustum.cpp
-    src/boundingcircle.cpp
-    src/boundingquad.cpp
-    src/line2d.cpp
-    src/plane.cpp
-    src/ray.cpp
     src/file.cpp
     src/module.cpp
     src/severity.cpp
     src/log.cpp
     src/sprengine.cpp
     src/sprite.cpp
-    src/transform.cpp
     src/joystick.cpp
     src/mouse.cpp
     src/adviser.cpp
@@ -151,7 +154,7 @@ if(BUILD_TESTS)
     set(DUMB_FRAMEWORK_TEST_SOURCES
         src/test/boundingbox.cpp
         src/test/boundingsphere.cpp
-        src/test/boundingfrustum.cpp
+        src/test/frustum.cpp
         src/test/boundingcircle.cpp
         src/test/plane.cpp
         src/test/log.cpp
