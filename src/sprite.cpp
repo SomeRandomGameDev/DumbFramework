@@ -25,7 +25,7 @@
 
 namespace Dumb {
     namespace Sprite {
-
+        
         /** Default constructor. **/
         Animation::Animation()
             : _name("")
@@ -205,9 +205,9 @@ namespace Dumb {
             if(it->second >= _animations.size()) { return NULL; }
             return &_animations[it->second];
         }
+
         /**
          * Constructor.
-         * @param path Path to description file.
          */
         Atlas::Atlas()
             : _definitions()
