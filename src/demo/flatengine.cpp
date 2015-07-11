@@ -30,8 +30,9 @@ class TestEngine {
         Dumb::Sprite::Engine *_engine;
 
         Dumb::Sprite::Identifier _identifier;
-
         Dumb::Sprite::Identifier _evilTwin;
+
+        Dumb::Sprite::Cache *_cache;
 
         bool _init;
         bool _quit;
@@ -69,7 +70,8 @@ TestEngine::TestEngine(int w, int h) : _atlas(0), _engine(0), _centerX(0), _cent
     _width(w), _height(h),
     _scale(1.0), _evilScale(1.0),
     _lastWheelPosition(0), _rightPressed(false),
-    _rotate(0) { _pressed = _init = _quit = false; }
+    _rotate(0) { _pressed = _init = _quit = false;
+}
 
     bool TestEngine::render() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -79,7 +81,7 @@ TestEngine::TestEngine(int w, int h) : _atlas(0), _engine(0), _centerX(0), _cent
         _start = current;
 
         //_engine->move(_identifier, glm::vec2(100, 100 + 50*sin(_elapsed)));
-        _engine->render();
+        _engine->render(_cache);
         return !_quit;
     }
 
@@ -88,7 +90,7 @@ void TestEngine::handleMouseScroll(double, double wheel) {
     _lastWheelPosition = wheel;
     if(_rightPressed) {
         _rotate += (diff * 5);
-        _engine->rotate(_identifier, (_rotate * 3.1415)/180.0f);
+        _cache->rotate(_identifier, (_rotate * 3.1415)/180.0f);
     } else {
         float factor = 1;
         if(diff < 0) {
@@ -103,9 +105,9 @@ void TestEngine::handleMouseScroll(double, double wheel) {
         }
         if(_init) {
             if(_pressed) {
-                _engine->scale(_evilTwin, _evilScale);
+                _cache->scale(_evilTwin, _evilScale);
             } else {
-                _engine->zoom(_initX, _initY, _scale);
+                // TODO _engine->zoom(_initX, _initY, _scale);
             }
         }
     }
@@ -115,7 +117,7 @@ void TestEngine::handleMousePosition(double x, double y) {
     if(_pressed) {
         _centerX = _lastX + (_initX - x) * _scale;
         _centerY = _lastY + (_initY - y) * _scale;
-        if(_init) _engine->viewport(_centerX, _centerY, _width, _height, _scale);
+        if(_init) _engine->viewport(_centerX, _centerY, _width, _height); // TODO modify viewport invocation.
     } else {
         _initX = x;
         _initY = y;
@@ -125,7 +127,7 @@ void TestEngine::handleMousePosition(double x, double y) {
 }
 
 void TestEngine::init(Dumb::Core::Application::Adviser *adviser) {
-#ifndef DFE_DEBUG
+#ifdef DSE_RELEASE
     Dumb::Core::Application::Video::Monitor monitor = adviser->getPrimaryMonitor();
     adviser->setMonitor(monitor);
     Dumb::Core::Application::Video::Mode mode = monitor.getCurrentMode();
@@ -153,7 +155,7 @@ void TestEngine::handleKey(int key, int /* scancode */, int action, int /* mods 
     _quit = (GLFW_PRESS == action) && (GLFW_KEY_ESCAPE == key);
 
     if((GLFW_PRESS == action) && (GLFW_KEY_SPACE == key)) {
-        _engine->copy(_evilTwin, _identifier);
+        _cache->copy(_evilTwin, _identifier);
     }
 
     if((GLFW_PRESS == action) && (GLFW_KEY_RIGHT_CONTROL == key)) {
@@ -161,31 +163,40 @@ void TestEngine::handleKey(int key, int /* scancode */, int action, int /* mods 
             if(fantom >= 0) {
             _engine->move(fantom, glm::vec2(0, 0));
             }*/
-        _engine->setLayer(_identifier, last);
+        _cache->setLayer(_identifier, last);
         last = (last == 0)?2:0;
     }
 }
 
 void TestEngine::postInit() {
     if(0 == _atlas) {
-        _atlas = new Dumb::Sprite::Atlas();
-        _atlas->read("test.xml");
-        _engine = new Dumb::Sprite::Engine(_atlas, 8);
+        std::string texture = Framework::File::executableDirectory() + "/resources/textures/cubeTex.png";
+        std::vector<std::string> textures;
+        textures.push_back(texture);
+        // Create an Atlas from one texture file with 32 possible Sprite definition slots.
+        _atlas = new Dumb::Sprite::Atlas(textures, 32);
+        // Create a Sprite cache from the atlas with 128 sprite instances max.
+        _cache = new Dumb::Sprite::Cache(*_atlas, 128);
+        // Define a sprite at slot 0.
+        (void) _atlas->define(0, glm::vec4(0, 0, 128, 128), glm::vec2(0, 0), 0);
+        // Create a sprite instance out of sprite definition #0 at position (100, 100).
+        _identifier = _cache->create(0, glm::vec2(100, 100));
+        std::cout << "Identifier is " << _identifier << std::endl;
+        // Create a sprite engine out of the Sprite atlas that can contains up to 1024 sprite instance.
+        // I know, it's a bit redundant with the cache capacity. But keep in mind that cache and engine are
+        // not correlated at all and that a sprite engine can switch from a cache to another.
+        _engine = new Dumb::Sprite::Engine(1024, *_atlas);
         _init = true;
     }
     _engine->viewport(_centerX, _centerY, _width, _height);
     glViewport(0, 0, _width, _height);
     glClearColor(1.0f, 0.0f, 1.0f, 0.0f);
 
-    _identifier = _engine->create(0, glm::vec2(100, 100), 0);
-    _evilTwin = _engine->create(0, glm::vec2(50, 0), 0, true, 0.0f, 2.0f, 1);
-    // Layer 1 is behind
     _start = glfwGetTime();
     _elapsed = 0;
 
     Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
     renderer.depthTest(true);
-
     renderer.texture2D(true);
     renderer.blend(true);
     renderer.blendFunc(Framework::Render::BlendFunc::SRC_ALPHA, Framework::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
@@ -198,12 +209,12 @@ void TestEngine::handleUnicodeCharacter(unsigned int) {}
 void TestEngine::handleUnicodeModifierCharacter(unsigned int,int) {}
 
 void TestEngine::close() {
-    _engine->destroy(_identifier);
-    _engine->destroy(_evilTwin);
     delete _engine;
+    delete _cache;
     delete _atlas;
 
     _engine = 0;
+    _cache = 0;
     _atlas = 0;
 }
 

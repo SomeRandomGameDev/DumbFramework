@@ -16,13 +16,238 @@
 #ifndef _DUMB_FW_SPRENGINE_
 #define _DUMB_FW_SPRENGINE_
 
-#include <DumbFramework/sprite.hpp>
-#include <DumbFramework/render/vertexbuffer.hpp>
-#include <DumbFramework/render/vertexstream.hpp>
-#include <DumbFramework/render/program.hpp>
+#include <initializer_list>
+
+//#include <DumbFramework/sprite.hpp>
+#include <DumbFramework/engine.hpp>
+#include <DumbFramework/render/texture2d.hpp>
 
 namespace Dumb {
     namespace Sprite {
+        /**
+         * Sprite definition (Atlas Wise).
+         */
+        class Sprite {
+            public:
+                /**
+                 * Default constructor.
+                 */
+                Sprite() : _coordinates(0.0, 0.0, 0.0, 0.0),
+                    _size(0.0, 0.0),
+                    _anchor(0.0, 0.0), _layer(0) {}
+                /**
+                 * Bulk setter.
+                 * @param [in] coord Texture coordinates.
+                 * @param [in] size Sprite size in pixels.
+                 * @param [in] anchor Anchor coordinates.
+                 * @param [in] layer Texture layer.
+                 */
+                inline void set(glm::vec4 coord, glm::vec2 size,
+                        glm::vec2 anchor, unsigned int layer) {
+                    _coordinates = coord;
+                    _size = size;
+                    _anchor = anchor;
+                    _layer = layer;
+                }
+                /**
+                 * Provides textures coordinates.
+                 * @return Texture coordinates (top-left, bottom-right, [0..1]).
+                 */
+                inline glm::vec4 getCoordinates() const { return _coordinates; }
+                /**
+                 * Provides sprite size.
+                 * @return Sprite size (in pixels).
+                 */
+                inline glm::vec2 getSize() const { return _size; }
+                /**
+                 * Provides anchor position.
+                 * @return Relative anchor position (in pixels).
+                 */
+                inline glm::vec2 getAnchor() const { return _anchor; }
+                /**
+                 * Provides texture layer.
+                 * @return Layer in the texture array.
+                 */
+                inline unsigned int getLayer() const { return _layer; }
+            private:
+                /**
+                 * Texture coordinates.
+                 */
+                glm::vec4 _coordinates;
+
+                /**
+                 * Sprite size (in pixels).
+                 */
+                glm::vec2 _size;
+
+                /**
+                 * Relative anchor position (from top-left).
+                 */
+                glm::vec2 _anchor;
+
+                /**
+                 * Texture layer in the Atlas.
+                 */
+                unsigned int _layer;
+        };
+
+        /**
+         * Sprite Atlas.
+         */
+        class Atlas {
+            public:
+                /**
+                 * Build Sprite Atlas from multiple textures.
+                 * @param [in] paths List of file path.
+                 */
+                Atlas(const std::vector<std::string> &paths, unsigned int capacity);
+
+                /**
+                 * Destructor.
+                 */
+                ~Atlas();
+
+                /**
+                 * Define a sprite.
+                 * @param [in] id Sprite definition identifier.
+                 * @param [in] coord Texture coordinates ([0..1]).
+                 * @param [in] size Sprite size in pixels.
+                 * @param [in] anchor Anchor coordinates.
+                 * @param [in] layer Texture layer.
+                 * @return Sprite definition or null if not in capacity range.
+                 */
+                const Sprite *define(unsigned int id, glm::vec4 coord,
+                        glm::vec2 size, glm::vec2 anchor, unsigned int layer);
+
+                /**
+                 * Define a sprite with pixel coordinates.
+                 * @param [in] id Sprite definition identifier.
+                 * @param [in] coord Sprite coordinates (x, y, width, height).
+                 * @param [in] anchor Anchor coordinates.
+                 * @param [in] layer Texture layer.
+                 * @return Sprite definition or null if not in capacity range.
+                 */
+                const Sprite *define(unsigned int id, glm::vec4 coord,
+                        glm::vec2 anchor, unsigned int layer);
+
+                /**
+                 * Retrieve sprite definition.
+                 * @param [in] id Sprite definition identifier.
+                 * @return Sprite definition or null if not in capacity range.
+                 */
+                const Sprite *get(unsigned int id) const;
+
+                /**
+                 * Bind atlas texture.
+                 */
+                inline void bind() const {
+                    _texture.bind();
+                }
+
+                /**
+                 * Unbind atlas texture.
+                 */
+                inline void unbind() const {
+                    _texture.unbind();
+                }
+            private:
+                /**
+                 * Texture array identifier.
+                 */
+                Framework::Render::Texture2D _texture;
+
+                /**
+                 * Atlas Size in pixels.
+                 */
+                glm::vec2 _size;
+
+                /**
+                 * Sprite definitions.
+                 */
+                Sprite *_sprites;
+
+                /**
+                 * Capacity (in sprites).
+                 */
+                unsigned int _capacity;
+        };
+
+        /**
+         * Sprite instance.
+         * Not so many information here. Only sprite definition.
+         * The rest of the information is in the associated cell.
+         */
+        class Instance {
+            public:
+                /**
+                 * Default useless constructor.
+                 */
+                Instance() : _sprite(0), _reverse(0) {}
+
+                /**
+                 * Provide the instanciated sprite.
+                 * @return Sprite definition.
+                 */
+                inline const Sprite *getSprite() const { return _sprite; }
+
+                /**
+                 * Provide reverse id.
+                 * @return Reverse id in lookup table.
+                 */
+                inline unsigned int getReverse() const { return _reverse; }
+
+                /**
+                 * Bulk setter.
+                 * @param [in] sprite Sprite definition.
+                 * @param [in] reverse Reverse identification in the lookup table.
+                 * @param [in] layer Layer.
+                 */
+                inline void set(const Sprite *sprite, unsigned int reverse,
+                        unsigned int layer) {
+                    _sprite = sprite;
+                    _reverse = reverse;
+                    _layer = layer;
+                }
+
+                /**
+                 * Set the reverse identifier.
+                 * @param [in] reverse Reverse identifier in the lookup table.
+                 */
+                inline void setReverse(unsigned int reverse) { _reverse = reverse; }
+
+                /**
+                 * Set the sprite definition.
+                 * @param [in] sprite Sprite definition.
+                 */
+                inline void setSprite(const Sprite *sprite) { _sprite = sprite; }
+
+                /**
+                 * Retrieve layer.
+                 * @return Layer.
+                 */
+                inline unsigned int getLayer() const { return _layer; }
+
+                /**
+                 * Set Layer.
+                 * @param [in] layer Layer.
+                 */
+                void setLayer(unsigned int layer) { _layer = layer; }
+            private:
+                /**
+                 * Sprite Definition.
+                 */
+                const Sprite *_sprite;
+
+                /**
+                 * Reserve identification in lookup table.
+                 */
+                unsigned int _reverse;
+
+                /**
+                 * Layer.
+                 */
+                unsigned int _layer;
+        };
 
         /**
          * Sprite instance identifier.
@@ -51,44 +276,6 @@ namespace Dumb {
              */
             bool _free;
         } LookupItem;
-
-        /**
-         * Sprite instance description structure.
-         */
-        typedef struct {
-            /**
-             * Attached definition.
-             */
-            Definition *_definition;
-            /**
-             * Animation identifier.
-             */
-            unsigned int _animation;
-            /**
-             * Last drawn frame.
-             */
-            unsigned int _frame;
-            /**
-             * Elapsed time since animation start.
-             */
-            double _elapsed;
-            /**
-             * Layer information.
-             */
-            unsigned int _layer;
-            /**
-             * Reserve identification in lookup table.
-             */
-            unsigned int _reverse;
-            /**
-             * Cycle flag.
-             */
-            bool _cycle;
-            /**
-             * Still flag. Useful to quickly manage animation with only one frame.
-             */
-            bool _still;
-        } Instance;
 
         /**
          * Cell to copy into 'V-Ram'.
@@ -141,39 +328,48 @@ namespace Dumb {
         } Cell;
 
         /**
-         * The Sprite Engine.
-         * \o_ VBO and Geometry Shader Extravaganza _o/
-         * The engine is NOT thread safe. Multi-thread safety must
-         * be ensured outside the engine as it depends on user strategy.
+         * Sprite Cache class.
          */
-        class Engine {
+        class Cache {
             public:
                 /**
                  * Constructor.
-                 * @param atlas Backed atlas.
-                 * @param capacity Maximum number of manageable sprites.
+                 * @param [in] atlas Sprite Atlas.
+                 * @param [in] capacity Instance capacity.
                  */
-                Engine(Atlas *atlas, unsigned int capacity);
+                Cache(const Atlas &atlas, unsigned int capacity);
 
                 /**
                  * Destructor.
                  */
-                ~Engine();
+                ~Cache();
+
+                /**
+                 * @return The number of defined instance.
+                 */
+                inline unsigned int count() const { return _count; }
+
+                /**
+                 * Copy the buffer content.
+                 * @param [in] ptr Mapped buffer.
+                 * @param [in] size Number of cell to copy.
+                 */
+                inline void copy(void *ptr, GLsizei size) const {
+                    memcpy(ptr, _cell, size * sizeof(Cell));
+                }
 
                 /**
                  * Create a new sprite instance.
                  * @param definitionId Sprite definition identifier.
                  * @patam pos Initial position.
-                 * @param firstAnim Animation to launch.
-                 * @param cycle if <code>true</code>, cycle the first animation.
                  * @param angle Initial sprite rotation angle.
                  * @param scale Initial sprite scale factor.
                  * @param layer Sprite layer.
                  * @return An identifier to sprite instance or a negative value in case of
                  * invalid parameters.
                  */
-                Identifier create(unsigned int definitionId, glm::vec2 pos, unsigned int firstAnim = 0,
-                        bool cycle=true, float angle=0.0f, float scale=1.0f, unsigned int layer=0.0f);
+                Identifier create(unsigned int definitionId, glm::vec2 pos,
+                        float angle=0.0f, float scale=1.0f, unsigned int layer=0.0f);
 
                 /**
                  * Destroy/Remove a sprite instance for the engine.
@@ -196,17 +392,31 @@ namespace Dumb {
                 Identifier clone(Identifier source);
 
                 /**
-                 * Set the sprite current animation.
+                 * Set the sprite for a given identifier.
                  * @param Id Sprite identifier.
                  * @param pos Position.
-                 * @param animId Animation identifier.
-                 * @param cycle Does the animation need to cycle ?
-                 * @param progress Time progression in current animation.
+                 * @param spriteId Sprite definition identifier.
                  * @param angle Sprite rotation angle.
+                 * @param [in] scale Scaling factor.
+                 * @param [in] layer Layer.
                  * @return <code>false</code> in case of invalid parameters.
                  */
-                bool set(Identifier id, glm::vec2 pos, unsigned int animId, bool cycle=true,
-                        double progress=0, float angle=0.0f, float scale=1.0f, unsigned int layer=0.0f);
+                bool set(Identifier id, glm::vec2 pos, unsigned int spriteId,
+                        float angle=0.0f, float scale=1.0f, unsigned int layer=0.0f);
+
+                /**
+                 * Set the sprite for a given identifier.
+                 * @param Id Sprite identifier.
+                 * @param pos Position.
+                 * @param sprite Sprite definition.
+                 * @param angle Sprite rotation angle.
+                 * @param [in] scale Scaling factor.
+                 * @param [in] layer Layer.
+                 * @return <code>false</code> in case of invalid parameters.
+                 */
+                bool set(Identifier id, glm::vec2 pos, const Sprite *sprite,
+                        float angle=0.0f, float scale=1.0f, unsigned int layer=0.0f);
+
 
                 /**
                  * Move a sprite to the specified position.
@@ -234,70 +444,19 @@ namespace Dumb {
                  * @param scale Scaling ratio.
                  */
                 void scale(Identifier id, float scale);
-
-                /**
-                 * Set engine drawing viewport.
-                 * @param x Center origin coordinate on X axis in pixel.
-                 * @param y Center origin coordinate on Y axis in pixel.
-                 * @param width Width in pixel.
-                 * @param height Height in pixel.
-                 * @param scale Scale.
-                 */
-                void viewport(float x, float y,
-                        unsigned int width, unsigned int height,
-                        float scale = 1.0f);
-
-                /**
-                 * Translate the viewport given a logical displacement.
-                 * @param relX Displacement in world coordinate (X coordinate).
-                 * @param relY Displacement in world coordinate (Y coordinate).
-                 */
-                void translate(float relX, float relY);
-
-                /**
-                 * Translate the viewport given a pixel displacement.
-                 * @param relX Number of pixel in the X axis.
-                 * @param relY Number of pixel in the Y axis.
-                 */
-                void translate(int relX, int relY);
-
-                /**
-                 * Adjust the viewport to the specified zooming scale at the
-                 * targetd position.
-                 * @param x Zoom center of interest (in pixels).
-                 * @param y Zoom center of interest (in pixels).
-                 * @param scale Scaling factor.
-                 */
-                void zoom(int x, int y, float scale);
-
-                /**
-                 * Render the sprites.
-                 */
-                void render();
-
             private:
                 /**
-                 * Debug : Display lookup table.
+                 * Copy sprite content to a cell.
+                 * @param [in] sprite Source frame.
+                 * @param [in] cell Destination cell.
+                 * @param [in] x Display position of the frame (on x axis).
+                 * @param [in] y Display position of the frame (on y axis)
+                 * @param [in] angle Sprite angle.
+                 * @param [in] scale Sprite scaling factor.
+                 * @param [in] layer Sprite layer.
                  */
-                void displayTable();
-
-                /**
-                 * Copy frame content to a cell.
-                 * @param frame Source frame.
-                 * @param cell Destination cell.
-                 * @param x Display position of the frame (on x axis).
-                 * @param y Display position of the frame (on y axis)
-                 * @param angle Sprite angle.
-                 * @param scale Sprite scaling factor.
-                 * @param layer Sprite layer.
-                 */
-                inline void assignFrameToCell(Frame const* frame, Cell *cell,
+                inline void assignSpriteToCell(const Sprite *sprite, Cell *cell,
                         double x, double y, float angle, float scale);
-
-                /**
-                 * Animate sprites.
-                 */
-                void animate();
 
                 /**
                  * Swap instances.
@@ -308,59 +467,13 @@ namespace Dumb {
                 void swapInstances(Identifier id, Identifier a, Identifier b);
 
             private:
-
                 /**
-                 * Associated atlas.
+                 * Attached Sprite Atlas.
                  */
-                Atlas *_atlas;
+                const Atlas &_atlas;
 
                 /**
-                 * Vertex Stream.
-                 */
-                Framework::Render::VertexStream _stream;
-
-                /**
-                 * Vertex Buffer Object.
-                 */
-                Framework::Render::VertexBuffer _buffer;
-
-                /**
-                 * GLSL Program identifier.
-                 */
-                Framework::Render::Program _program;
-
-                /**
-                 * Sprite Atlas texture.
-                 */
-                Framework::Render::Texture2D const* _texture;
-
-                /**
-                 * Sprite Atlas uniform binding.
-                 */
-                GLuint _uniformTexture;
-
-                /**
-                 * Projection Matrix uniform binding.
-                 */
-                GLuint _uniformMatrix;
-
-                /**
-                 * Projection Matrix.
-                 */
-                glm::mat4 _matrix;
-
-                /**
-                 * Timestamp of last drawing call (in seconds).
-                 */
-                double _time;
-
-                /**
-                 * Elapsed time since first call.
-                 */
-                double _elapsed;
-
-                /**
-                 * Number of manageable sprite instance.
+                 * Sprite instance capacity.
                  */
                 unsigned int _capacity;
 
@@ -398,35 +511,151 @@ namespace Dumb {
                  * Pointer to lastly allocated slot.
                  */
                 int _last;
-
-                /**
-                 * Center (X-coordinate).
-                 */
-                float _centerX;
-
-                /**
-                 * Center (y-coordinate).
-                 */
-                float _centerY;
-
-                /**
-                 * Scale.
-                 */
-                float _scale;
-
-                /**
-                 * Viewport width.
-                 */
-                float _width;
-
-                /**
-                 * Viewport height.
-                 */
-                float _height;
         };
 
+        /**
+         * Sprite engine delegation class.
+         * By itself, the sprite engine doesn't do much.
+         * It only stores an Atlas from which can be extracted 'Artifacts'.
+         * Artifacts are the base for sprites and sprite animations.
+         * The computation of what must be drawn is done out of the box.
+         * A 'Cache' structure is passed to the delegation class for any update.
+         */
+        class Delegate {
+            public:
+                /**
+                 * Create a delegation object attached to an Atlas.
+                 * @param [in] atlas Sprite atlas.
+                 */
+                Delegate(Atlas &atlas) : _atlas(atlas) {}
+
+                /**
+                 * Amical destructor.
+                 */
+                ~Delegate() {}
+
+                // And now, the methods satisfying the 'Delegate' Concept.
+
+                /**
+                 * @return List of shaders used for rendering.
+                 */
+                std::vector<std::pair<Framework::Render::Shader::Type, const char *> >
+                    shaders() const;
+
+                /**
+                 * @return Vertex stream composition.
+                 */
+                std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute> >
+                    attributes() const;
+
+                /**
+                 * @return Drawing mode.
+                 */
+                inline GLenum primitive() const { return GL_TRIANGLE_STRIP; }
+
+                /**
+                 * @return 'true' if the drawing is instanced.
+                 */
+                inline bool isInstanced() const { return true; }
+
+                /**
+                 * @return The instanciation cardinality.
+                 */
+                inline GLsizei instanceCardinality() const { return 4; }
+
+                /**
+                 * Initialisation.
+                 * @param [in] program Compiled program that will be used for rendering.
+                 */
+                void init(Framework::Render::Program &program);
+
+                /**
+                 * Program update at rendering time.
+                 * @param [in] program Program used for rendering.
+                 */
+                void update(Framework::Render::Program &program);
+
+                /**
+                 * Post-render context cleaning.
+                 */
+                void postRender();
+
+                /**
+                 * Directly print the content of a precomputed buffer.
+                 * @param [in] ptr Buffer to update.
+                 * @param [in] capacity Buffer capacity (number of elements).
+                 * @param [in] cache Vertex buffer data.
+                 * @param [in] size Number of artifacts to draw.
+                 * @return The number of updated elements.
+                 */
+                GLsizei update(void *ptr, GLsizei capacity,
+                        const void *cache, unsigned int size);
+
+                /**
+                 * Update using an Atlas cache.
+                 * @param [in] ptr Buffer to update.
+                 * @param [in] capacity Buffer capacity (number of elements).
+                 * @param [in] cache Artifacts cache.
+                 * @return The number of updated elements.
+                 */
+                GLsizei update(void *ptr, GLsizei capacity,
+                        const Cache *cache);
+
+                /**
+                 * Set the viewport.
+                 * @param [in] startX Viewport starting point on X-axis.
+                 * @param [in] startY Viewport starting point on Y-axis.
+                 * @param [in] width Width.
+                 * @param [in] height Height.
+                 */
+                void viewport(GLfloat startX, GLfloat startY, GLfloat width, GLfloat height);
+
+                /**
+                 * @return The projection matrix.
+                 */
+                inline glm::mat4 viewport() { return _matrix; }
+
+                /**
+                 * Provide access to the Atlas.
+                 * @return Sprite atlas.
+                 */
+                Atlas &getAtlas() const { return _atlas; }
+
+            private:
+                // Some protections.
+
+                /**
+                 * Private copy operator.
+                 */
+                Delegate &operator=(const Delegate &) { return *this; }
+
+            private:
+                /**
+                 * Atlas.
+                 */
+                Atlas &_atlas;
+
+                /**
+                 * Texture uniform binding.
+                 */
+                GLuint _uniformTexture;
+
+                /**
+                 * Projection Matrix uniform binding.
+                 */
+                GLuint _uniformMatrix;
+
+                /**
+                 * Projection Matrix.
+                 */
+                glm::mat4 _matrix;
+        };
+
+        /**
+         * Sprite Engine Declaration/Definition.
+         */
+        typedef Dumb::Core::Engine<Delegate> Engine;
     } // 'Sprite' namespace.
 } // 'Dumb' namespace.
-
 
 #endif

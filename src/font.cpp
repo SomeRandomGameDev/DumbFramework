@@ -40,7 +40,7 @@ namespace Dumb {
         const char *s_dfe_fragmentShader = R"EOT(
 #version 410 core
 
-            layout (binding=0) uniform sampler2D un_texture;
+        layout (binding=0) uniform sampler2D un_texture;
 
         in vec2 fs_tex;
         in vec4 fs_color;
@@ -56,7 +56,7 @@ namespace Dumb {
         const char *s_dfe_vertexShaderInstanced = R"EOT(
 #version 410 core
 
-            uniform mat4 un_matrix;
+        uniform mat4 un_matrix;
 
         layout (location=0) in vec2 vs_position;
         layout (location=1) in vec2 vs_dimension;

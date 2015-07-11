@@ -128,6 +128,19 @@ namespace Dumb {
                 inline T &delegate() { return *_delegate; }
 
                 /**
+                 * Variadic update (no render).
+                 * @param [in] args Variadic arguments.
+                 */
+                template <typename... A> void update(A... args) {
+                    _buffer.bind();
+                    void *ptr = _buffer.map(Framework::Render::BufferObject::Access::Policy::WRITE_ONLY);
+                    GLsizei count = _delegate->update(ptr, _capacity, args...);
+                    _count = count;
+                    _buffer.unmap();
+                    _buffer.unbind();
+                }
+
+                /**
                  * Variadic render.
                  * @param [in] args Variadic arguments.
                  */
@@ -136,10 +149,12 @@ namespace Dumb {
                     renderer.depthBufferWrite(false);
                     _program.begin();
                     renderer.setActiveTextureUnit(0);
-                    _delegate->update(_program); // Delegate the program update.
+                    // Delegate the program update.
+                    _delegate->update(_program);
                     _buffer.bind();
                     void *ptr = _buffer.map(Framework::Render::BufferObject::Access::Policy::WRITE_ONLY);
-                    GLsizei count = _delegate->update(ptr, _capacity, args...); // Delegate the buffer update.
+                    // Delegate the buffer update.
+                    GLsizei count = _delegate->update(ptr, _capacity, args...);
                     _count = count;
                     _buffer.unmap();
                     _buffer.unbind();
