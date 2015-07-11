@@ -150,6 +150,13 @@ namespace Dumb {
                 inline void unbind() const {
                     _texture.unbind();
                 }
+
+                /**
+                 * @return Atlas size.
+                 */
+                inline glm::vec2 size() {
+                    return _size;
+                }
             private:
                 /**
                  * Texture array identifier.
@@ -337,7 +344,7 @@ namespace Dumb {
                  * @param [in] atlas Sprite Atlas.
                  * @param [in] capacity Instance capacity.
                  */
-                Cache(const Atlas &atlas, unsigned int capacity);
+                Cache(const Atlas *atlas, unsigned int capacity);
 
                 /**
                  * Destructor.
@@ -470,7 +477,7 @@ namespace Dumb {
                 /**
                  * Attached Sprite Atlas.
                  */
-                const Atlas &_atlas;
+                const Atlas *_atlas;
 
                 /**
                  * Sprite instance capacity.
@@ -527,7 +534,7 @@ namespace Dumb {
                  * Create a delegation object attached to an Atlas.
                  * @param [in] atlas Sprite atlas.
                  */
-                Delegate(Atlas &atlas) : _atlas(atlas) {}
+                Delegate(Atlas *atlas) : _atlas(atlas) {}
 
                 /**
                  * Amical destructor.
@@ -619,7 +626,7 @@ namespace Dumb {
                  * Provide access to the Atlas.
                  * @return Sprite atlas.
                  */
-                Atlas &getAtlas() const { return _atlas; }
+                Atlas *getAtlas() const { return _atlas; }
 
             private:
                 // Some protections.
@@ -633,17 +640,17 @@ namespace Dumb {
                 /**
                  * Atlas.
                  */
-                Atlas &_atlas;
+                Atlas *_atlas;
 
                 /**
                  * Texture uniform binding.
                  */
-                GLuint _uniformTexture;
+                GLint _uniformTexture;
 
                 /**
                  * Projection Matrix uniform binding.
                  */
-                GLuint _uniformMatrix;
+                GLint _uniformMatrix;
 
                 /**
                  * Projection Matrix.

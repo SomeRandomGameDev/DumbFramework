@@ -219,6 +219,7 @@ bool load(Texture2D& out, std::vector<std::string> const& filenameList, PixelFor
         Log_Error(Module::Base, "Invalid height. Expected %d but is %d (%s)", size.y, imageSize.y, filenameList[0].c_str());
         ret = false;
     }
+    Log_Info(Module::Base, "Texture Size : %dx%d", imageSize.x, imageSize.y);
     ret = out.create(imageSize, imageFormat, filenameList.size());
     if(ret)
     {

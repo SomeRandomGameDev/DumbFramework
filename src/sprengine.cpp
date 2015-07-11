@@ -47,18 +47,20 @@ namespace Dumb {
         // Shaders
         const char *s_dse_fragmentShader = R"Shader(
 #version 410 core
-            layout (binding=0) uniform sampler2DArray un_texture;
+        layout (binding=0) uniform sampler2DArray un_texture;
         flat in int fs_index;
         in vec2 fs_tex;
-        out vec4 out_Color;
-        void main() {
-            out_Color = texture(un_texture, vec3(fs_tex, fs_index));
+        layout (location=0) out vec4 color;
+
+        void main()
+        {
+            color = texture(un_texture, vec3(fs_tex, fs_index));
         }
         )Shader";
 
         const char *s_dse_vertexShaderInstanced = R"Shader(
 #version 410 core
-            uniform mat4 pMatrix;
+        uniform mat4 un_matrix;
         layout (location=0) in vec2 vs_position;
         layout (location=1) in vec2 vs_offset;
         layout (location=2) in vec2 vs_dimension;
@@ -69,20 +71,17 @@ namespace Dumb {
         layout (location=7) in int vs_index;
         flat out int fs_index;
         out vec2 fs_tex;
-        const vec2 quad[4] = { vec2(-0.5, 0.5),
-            vec2( 0.5, 0.5),
-            vec2(-0.5,-0.5),
-            vec2( 0.5,-0.5) };
+        const vec2 quad[4] = { vec2(0, 0), vec2(0, 1), vec2(1, 0), vec2(1, 1) };
         void main() {
             vec2 point = quad[gl_VertexID];
             vec2 dimPt = vs_dimension * point;
             float cs = cos(vs_angle);
             float sn = sin(vs_angle);
             vec3 rot = vec3(cs, sn, -sn);
-            fs_index = vs_index;
-            fs_tex = mix(vs_toptex, vs_bottomtex, point + vec2(0.5));
             vec2 tpos = vec2(dot(dimPt, rot.xy), dot(dimPt, rot.zx)) * vs_scale;
-            gl_Position = pMatrix * vec4(vs_position + vs_offset + tpos, 0.0, 1.0);
+            fs_tex = mix(vs_toptex, vs_bottomtex, point);
+            fs_index = vs_index;
+            gl_Position = un_matrix * vec4(vs_position + vs_offset + tpos, 0.0, 1.0);
         }
         )Shader";
 
@@ -129,7 +128,7 @@ namespace Dumb {
         Atlas::Atlas(const std::vector<std::string> &paths, unsigned int capacity) {
             bool valid;
             valid = Framework::Render::Texture::load(_texture,
-                    paths, Framework::Render::Texture::PixelFormat::RGB_8);
+                    paths, Framework::Render::Texture::PixelFormat::RGBA_8);
             if(valid) {
                 _texture.bind();
                 _texture.setMinFilter(Framework::Render::Texture::MinFilter::LINEAR_TEXEL);
@@ -138,7 +137,7 @@ namespace Dumb {
                         Framework::Render::Texture::Wrap::CLAMP_TO_EDGE);
                 _texture.unbind();
                 _size = _texture.size();
-                Log_Info(Framework::Module::Render, "Atlas Size : %d x %d", _size.x, _size.y);
+                Log_Info(Framework::Module::Render, "Atlas Size : %dx%d", (int)_size.x, (int)_size.y);
             } else {
                 _size = glm::vec2(0, 0);
             }
@@ -186,8 +185,9 @@ namespace Dumb {
 
         // ## CACHE ###########################################################
 
-        Cache::Cache(const Atlas &atlas, unsigned int capacity) :
-            _atlas(atlas), _capacity(capacity) {
+        Cache::Cache(const Atlas *atlas, unsigned int capacity) :
+            _atlas(atlas), _capacity(capacity),
+            _count(0), _used(-1), _free(0), _last(0) {
                 _instance = new Instance[capacity];
                 _cell = new Cell[capacity];
                 _table = new LookupItem[capacity];
@@ -268,7 +268,7 @@ namespace Dumb {
 
             // Add an entry into the instance table.
             Identifier inside = _count++;
-            const Sprite *sprite = _atlas.get(definitionId);
+            const Sprite *sprite = _atlas->get(definitionId);
             if(0 == sprite) {
                 Log_Error(Framework::Module::Render,
                         "No Definition in Atlas for identifier (%d)", definitionId);
@@ -327,7 +327,7 @@ namespace Dumb {
 
         bool Cache::set(Identifier id, glm::vec2 pos, unsigned int spriteId,
                 float angle, float scale, unsigned int layer) {
-            return set(id, pos, _atlas.get(spriteId), angle, scale, layer);
+            return set(id, pos, _atlas->get(spriteId), angle, scale, layer);
         }
 
         bool Cache::set(Identifier id, glm::vec2 pos, const Sprite *sprite,
@@ -372,8 +372,8 @@ namespace Dumb {
             cell->_posX = x;
             cell->_posY = y;
             glm::vec2 twoVec = sprite->getAnchor();
-            cell->_offsetX = twoVec.x;
-            cell->_offsetY = twoVec.y;
+            cell->_offsetX = -twoVec.x;
+            cell->_offsetY = -twoVec.y;
             twoVec = sprite->getSize();
             cell->_sizeX = twoVec.x;
             cell->_sizeY = twoVec.y;
@@ -414,20 +414,20 @@ namespace Dumb {
 
         //   --------------
         void Delegate::init(Framework::Render::Program &program) {
-            _uniformMatrix  = program.getUniformLocation("un_matrix");
-            _uniformTexture = program.getUniformLocation("un_texture");
+            _uniformMatrix  = static_cast<GLint>(program.getUniformLocation("un_matrix"));
+            _uniformTexture = static_cast<GLint>(program.getUniformLocation("un_texture"));
         }
 
         //   ----------------
         void Delegate::update(Framework::Render::Program &program) {
+            _atlas->bind();
             program.uniform(_uniformMatrix, false, _matrix);
             program.uniform(_uniformTexture, 0);
-            _atlas.bind();
         }
 
         //   --------------------
         void Delegate::postRender() {
-            _atlas.unbind();
+            _atlas->unbind();
         }
 
         //      ----------------

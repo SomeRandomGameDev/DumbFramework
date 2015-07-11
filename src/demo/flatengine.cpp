@@ -23,8 +23,7 @@
 class TestEngine {
     DECLARE_WRAPPER_METHODS
     public:
-        TestEngine() : TestEngine(1024, 768) {}
-        TestEngine(int, int);
+        TestEngine();
     private:
         Dumb::Sprite::Atlas *_atlas;
         Dumb::Sprite::Engine *_engine;
@@ -66,27 +65,29 @@ class TestEngine {
 
 #define SCALE_FACTOR 0.2f
 
-TestEngine::TestEngine(int w, int h) : _atlas(0), _engine(0), _centerX(0), _centerY(0),
-    _width(w), _height(h),
+TestEngine::TestEngine() :
+    _atlas(0), _engine(0), _cache(0),
+    _init(false), _quit(false), _pressed(false),
+    _centerX(0), _centerY(0),
     _scale(1.0), _evilScale(1.0),
     _lastWheelPosition(0), _rightPressed(false),
-    _rotate(0) { _pressed = _init = _quit = false;
+    _middlePressed(false), _rotate(0) {
 }
 
-    bool TestEngine::render() {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+bool TestEngine::render() {
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        double current = glfwGetTime();
-        _elapsed += current - _start;
-        _start = current;
+   double current = glfwGetTime();
+   _elapsed += current - _start;
+   _start = current;
 
-        //_engine->move(_identifier, glm::vec2(100, 100 + 50*sin(_elapsed)));
-        _engine->render(_cache);
-        return !_quit;
-    }
+   //_engine->move(_identifier, glm::vec2(100, 100 + 50*sin(_elapsed)));
+   _engine->render(_cache);
+  return !_quit;
+}
 
 void TestEngine::handleMouseScroll(double, double wheel) {
-    int diff = wheel;
+  /*  int diff = wheel;
     _lastWheelPosition = wheel;
     if(_rightPressed) {
         _rotate += (diff * 5);
@@ -107,23 +108,23 @@ void TestEngine::handleMouseScroll(double, double wheel) {
             if(_pressed) {
                 _cache->scale(_evilTwin, _evilScale);
             } else {
-                // TODO _engine->zoom(_initX, _initY, _scale);
+                _engine->zoom(_initX, _initY, _scale);
             }
         }
-    }
+    }*/
 }
 
 void TestEngine::handleMousePosition(double x, double y) {
-    if(_pressed) {
+/*    if(_pressed) {
         _centerX = _lastX + (_initX - x) * _scale;
         _centerY = _lastY + (_initY - y) * _scale;
-        if(_init) _engine->viewport(_centerX, _centerY, _width, _height); // TODO modify viewport invocation.
+        if(_init) _engine->viewport(0, 0, _width, _height);
     } else {
         _initX = x;
         _initY = y;
         _lastX = _centerX;
         _lastY = _centerY;
-    }
+    }*/
 }
 
 void TestEngine::init(Dumb::Core::Application::Adviser *adviser) {
@@ -151,55 +152,64 @@ void TestEngine::handleMouseButton(int button, int action, int /* mods */) {
 }
 
 void TestEngine::handleKey(int key, int /* scancode */, int action, int /* mods */) {
-    static int last = 2;
+ //   static int last = 2;
     _quit = (GLFW_PRESS == action) && (GLFW_KEY_ESCAPE == key);
-
+/*
     if((GLFW_PRESS == action) && (GLFW_KEY_SPACE == key)) {
         _cache->copy(_evilTwin, _identifier);
     }
 
     if((GLFW_PRESS == action) && (GLFW_KEY_RIGHT_CONTROL == key)) {
-        /*  Sprite::Identifier fantom = _engine->clone(_evilTwin);
+          Sprite::Identifier fantom = _engine->clone(_evilTwin);
             if(fantom >= 0) {
             _engine->move(fantom, glm::vec2(0, 0));
-            }*/
+         }
         _cache->setLayer(_identifier, last);
         last = (last == 0)?2:0;
     }
+    */
 }
 
 void TestEngine::postInit() {
     if(0 == _atlas) {
-        std::string texture = Framework::File::executableDirectory() + "/resources/textures/cubeTex.png";
         std::vector<std::string> textures;
+        std::string texture = Framework::File::executableDirectory() + "/resources/textures/atlas1.png";
+        textures.push_back(texture);
+        texture = Framework::File::executableDirectory() + "/resources/textures/atlas2.png";
         textures.push_back(texture);
         // Create an Atlas from one texture file with 32 possible Sprite definition slots.
         _atlas = new Dumb::Sprite::Atlas(textures, 32);
         // Create a Sprite cache from the atlas with 128 sprite instances max.
-        _cache = new Dumb::Sprite::Cache(*_atlas, 128);
+        _cache = new Dumb::Sprite::Cache(_atlas, 128);
         // Define a sprite at slot 0.
-        (void) _atlas->define(0, glm::vec4(0, 0, 128, 128), glm::vec2(0, 0), 0);
-        // Create a sprite instance out of sprite definition #0 at position (100, 100).
-        _identifier = _cache->create(0, glm::vec2(100, 100));
-        std::cout << "Identifier is " << _identifier << std::endl;
+        (void) _atlas->define(0, glm::vec4(0, 0, 128, 128), glm::vec2(64, 128), 1);
+        // Create a sprite instance out of sprite definition #0 at position (200, 200).
+        _identifier = _cache->create(0, glm::vec2(200, 200));
+        Log_Info(Framework::Module::Base, "Identifier is %d", _identifier);
         // Create a sprite engine out of the Sprite atlas that can contains up to 1024 sprite instance.
         // I know, it's a bit redundant with the cache capacity. But keep in mind that cache and engine are
         // not correlated at all and that a sprite engine can switch from a cache to another.
-        _engine = new Dumb::Sprite::Engine(1024, *_atlas);
+        _engine = new Dumb::Sprite::Engine(1024, _atlas);
         _init = true;
+        glm::vec2 sz = _atlas->size();
+        Log_Info(Framework::Module::Base, "Atlas size is still %dx%d", (int) sz.x, (int) sz.y);
     }
-    _engine->viewport(_centerX, _centerY, _width, _height);
+    _engine->viewport(0, 0, _width, _height);
+    Log_Info(Framework::Module::Base, "Window size is %dx%d", _width, _height);
     glViewport(0, 0, _width, _height);
-    glClearColor(1.0f, 0.0f, 1.0f, 0.0f);
+    //glClearColor(1.0f, 0.0f, 1.0f, 0.0f);
+    glClearColor(0.0, 0.0, 0.0, 0.0);
 
     _start = glfwGetTime();
     _elapsed = 0;
 
     Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
-    renderer.depthTest(true);
+    renderer.depthTest(false);
+    renderer.culling(false);
     renderer.texture2D(true);
     renderer.blend(true);
-    renderer.blendFunc(Framework::Render::BlendFunc::SRC_ALPHA, Framework::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
+    renderer.blendFunc(Framework::Render::BlendFunc::SRC_ALPHA,
+            Framework::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
 }
 
 void TestEngine::handleWindowClose() {}
@@ -208,14 +218,6 @@ void TestEngine::handleWindowIconify(int) {}
 void TestEngine::handleUnicodeCharacter(unsigned int) {}
 void TestEngine::handleUnicodeModifierCharacter(unsigned int,int) {}
 
-void TestEngine::close() {
-    delete _engine;
-    delete _cache;
-    delete _atlas;
-
-    _engine = 0;
-    _cache = 0;
-    _atlas = 0;
-}
+void TestEngine::close() {}
 
 SIMPLE_APP(TestEngine)

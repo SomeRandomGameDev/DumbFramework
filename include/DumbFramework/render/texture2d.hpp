@@ -69,7 +69,7 @@ class Texture2D
          *             Any value equal or less than zero will force the creation of a single standard texture.
          * @return true if the texture was succesfully created.
          */
-        bool create(const glm::ivec2& size, Texture::PixelFormat format, int layers=-1);
+        bool create(const glm::ivec2 size, Texture::PixelFormat format, int layers=-1);
         /**
          * Destroy texture.
          */
@@ -136,7 +136,7 @@ class Texture2D
          * Get texture width and height
          * @return texture width and height as a glm::ivec2
          */
-        const glm::ivec2& size() const;
+        const glm::ivec2 size() const;
         /**
          * Get texture pixel format.
          * @return pixel format.

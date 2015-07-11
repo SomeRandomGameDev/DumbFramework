@@ -73,7 +73,7 @@ Texture2D::~Texture2D()
  *             Any value equal or less than zero will force the creation of a single standard texture.
  * @return true if the texture was succesfully created.
  */
-bool Texture2D::create(const glm::ivec2& size, Texture::PixelFormat format, int layers)
+bool Texture2D::create(const glm::ivec2 size, Texture::PixelFormat format, int layers)
 {
     if(_id)
     {
@@ -277,7 +277,7 @@ void Texture2D::buildMipmap()
  * Get texture width and height
  * @return texture width and height as a glm::ivec2
  */
-const glm::ivec2& Texture2D::size() const
+const glm::ivec2 Texture2D::size() const
 {
     return _size;
 }
