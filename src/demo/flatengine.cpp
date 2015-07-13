@@ -81,7 +81,11 @@ bool TestEngine::render() {
    _elapsed += current - _start;
    _start = current;
 
-   //_engine->move(_identifier, glm::vec2(100, 100 + 50*sin(_elapsed)));
+    float angularSpeed = 3.0 * M_PI / 4.0; // rad per seconds
+    float angle  = angularSpeed * _elapsed;
+    float radius = 80.0f;
+    
+   _cache->move(_identifier, glm::vec2(_width*0.5  + radius*cos(angle), _height*0.5 + radius*sin(angle)));
    _engine->render(_cache);
   return !_quit;
 }

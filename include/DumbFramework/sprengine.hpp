@@ -42,8 +42,8 @@ namespace Dumb {
                  * @param [in] anchor Anchor coordinates.
                  * @param [in] layer Texture layer.
                  */
-                inline void set(glm::vec4 coord, glm::vec2 size,
-                        glm::vec2 anchor, unsigned int layer) {
+                inline void set(glm::vec4 const& coord, glm::vec2 const& size,
+                        glm::vec2 const& anchor, unsigned int layer) {
                     _coordinates = coord;
                     _size = size;
                     _anchor = anchor;
@@ -116,8 +116,8 @@ namespace Dumb {
                  * @param [in] layer Texture layer.
                  * @return Sprite definition or null if not in capacity range.
                  */
-                const Sprite *define(unsigned int id, glm::vec4 coord,
-                        glm::vec2 size, glm::vec2 anchor, unsigned int layer);
+                const Sprite *define(unsigned int id, glm::vec4 const& coord,
+                        glm::vec2 const& size, glm::vec2 const& anchor, unsigned int layer);
 
                 /**
                  * Define a sprite with pixel coordinates.
@@ -127,8 +127,8 @@ namespace Dumb {
                  * @param [in] layer Texture layer.
                  * @return Sprite definition or null if not in capacity range.
                  */
-                const Sprite *define(unsigned int id, glm::vec4 coord,
-                        glm::vec2 anchor, unsigned int layer);
+                const Sprite *define(unsigned int id, glm::vec4 const& coord,
+                        glm::vec2 const& anchor, unsigned int layer);
 
                 /**
                  * Retrieve sprite definition.
@@ -154,7 +154,7 @@ namespace Dumb {
                 /**
                  * @return Atlas size.
                  */
-                inline glm::vec2 size() {
+                inline glm::vec2 size() const {
                     return _size;
                 }
             private:
@@ -375,8 +375,8 @@ namespace Dumb {
                  * @return An identifier to sprite instance or a negative value in case of
                  * invalid parameters.
                  */
-                Identifier create(unsigned int definitionId, glm::vec2 pos,
-                        float angle=0.0f, float scale=1.0f, unsigned int layer=0.0f);
+                Identifier create(unsigned int definitionId, glm::vec2 const& pos,
+                        float angle=0.0f, float scale=1.0f, unsigned int layer=0);
 
                 /**
                  * Destroy/Remove a sprite instance for the engine.
@@ -408,7 +408,7 @@ namespace Dumb {
                  * @param [in] layer Layer.
                  * @return <code>false</code> in case of invalid parameters.
                  */
-                bool set(Identifier id, glm::vec2 pos, unsigned int spriteId,
+                bool set(Identifier id, glm::vec2 const& pos, unsigned int spriteId,
                         float angle=0.0f, float scale=1.0f, unsigned int layer=0.0f);
 
                 /**
@@ -421,7 +421,7 @@ namespace Dumb {
                  * @param [in] layer Layer.
                  * @return <code>false</code> in case of invalid parameters.
                  */
-                bool set(Identifier id, glm::vec2 pos, const Sprite *sprite,
+                bool set(Identifier id, glm::vec2 const& pos, const Sprite *sprite,
                         float angle=0.0f, float scale=1.0f, unsigned int layer=0.0f);
 
 
@@ -429,7 +429,7 @@ namespace Dumb {
                  * Move a sprite to the specified position.
                  * @param pos Position in pixel.
                  */
-                void move(Identifier id, glm::vec2 pos);
+                void move(Identifier id, glm::vec2 const& pos);
 
                 /**
                  * Rotate a sprite to the specified angle.

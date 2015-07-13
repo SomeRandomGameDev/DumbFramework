@@ -151,8 +151,8 @@ namespace Dumb {
         }
 
         // --------------
-        const Sprite *Atlas::define(unsigned int id, glm::vec4 coord,
-                glm::vec2 size, glm::vec2 anchor, unsigned int layer) {
+        const Sprite *Atlas::define(unsigned int id, glm::vec4 const& coord,
+                glm::vec2 const& size, glm::vec2 const& anchor, unsigned int layer) {
             Sprite *result = 0;
             if(id < _capacity) {
                 result = _sprites + id;
@@ -162,8 +162,8 @@ namespace Dumb {
         }
 
         // --------------
-        const Sprite *Atlas::define(unsigned int id, glm::vec4 coord,
-                glm::vec2 anchor, unsigned int layer) {
+        const Sprite *Atlas::define(unsigned int id, glm::vec4 const& coord,
+                glm::vec2 const& anchor, unsigned int layer) {
             double startX = coord.x / _size.x;
             double startY = coord.y / _size.y;
             double endX = (coord.x + coord.z) / _size.x;
@@ -206,7 +206,7 @@ namespace Dumb {
             delete []_table;
         }
 
-        void Cache::move(Identifier id, glm::vec2 pos) {
+        void Cache::move(Identifier id, glm::vec2 const& pos) {
             if(!_table[id]._free) {
                 Cell * cell = _cell + _table[id]._target;
                 cell->_posX = pos.x;
@@ -259,7 +259,7 @@ namespace Dumb {
             return result;
         }
 
-        Identifier Cache::create(unsigned int definitionId, glm::vec2 pos,
+        Identifier Cache::create(unsigned int definitionId, glm::vec2 const& pos,
                 float angle, float scale, unsigned int layer) {
             // Size check.
             if(_count == _capacity) {
@@ -325,15 +325,15 @@ namespace Dumb {
             }
         }
 
-        bool Cache::set(Identifier id, glm::vec2 pos, unsigned int spriteId,
+        bool Cache::set(Identifier id, glm::vec2 const& pos, unsigned int spriteId,
                 float angle, float scale, unsigned int layer) {
             return set(id, pos, _atlas->get(spriteId), angle, scale, layer);
         }
 
-        bool Cache::set(Identifier id, glm::vec2 pos, const Sprite *sprite,
+        bool Cache::set(Identifier id, glm::vec2 const& pos, const Sprite *sprite,
                 float angle, float scale, unsigned int layer) {
             bool result = false;
-            if((id < (int) _count) && (_table[id]._free != true)) {
+            if((id < (int) _capacity) && (_table[id]._free != true)) {
                 Identifier inside = _table[id]._target;
                 Instance *instance = _instance + inside;
                 instance->setSprite(sprite);
