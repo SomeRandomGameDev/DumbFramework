@@ -1,0 +1,5 @@
+wopr is a simple tic-tac-toe game.
+
+To create debian package:
+cmake .. -DGENERATE_PACKAGE_TARGET=1 -DDUMB_FRAMEWORK_LIBPATH=/home/mooz/Dev/DumbFramework/master/build/Release -DCMAKE_BUILD_TYPE=Release
+cpack -G DEB ..

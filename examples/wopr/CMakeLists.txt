@@ -1,8 +1,15 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8)
 include(CheckCXXSymbolExists)
 
 project(wopr)
+set(WOPR_MAJOR "0")
+set(WOPR_MINOR "1")
+set(WOPR_PATCH "0")
+set(VERSION "${WOPR_MAJOR}.${WOPR_MINOR}.${WOPR_PATCH}")
 set(PROJECT_NAME wopr)
+set(PACKAGE wopr)
+set(PACKAGE_VERSION "${VERSION}")
+add_definitions(-DPACKAGE_VERSION="${PACKAGE_VERSION}")
 
 # Force build type to Debug if none was specified.
 if(NOT CMAKE_BUILD_TYPE)
@@ -22,6 +29,10 @@ set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 set(ARCHIVE_OUTPUT_PATH    "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 
 add_definitions(-DGLM_FORCE_RADIANS)
+
+if(GENERATE_PACKAGE_TARGET)
+    add_definitions(-DBUILD_PACKAGE)
+endif(GENERATE_PACKAGE_TARGET)
 
 if(MSVC)
     add_definitions (/D "_CRT_SECURE_NO_WARNINGS")
@@ -70,3 +81,35 @@ target_link_libraries(wopr DumbFramework
                            ${FREETYPE_GL_LIBRARY}
                            ${CMAKE_THREAD_LIBS_INIT}
                            ${ICU_LIBRARIES} )
+
+install(TARGETS wopr DESTINATION "games/")
+install(FILES "${EXECUTABLE_OUTPUT_PATH}/resources/atlas.png" DESTINATION "share/wopr/")
+
+if(GENERATE_PACKAGE_TARGET)
+    include(InstallRequiredSystemLibraries)
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "wopr is a simple tic-tac-toe game")
+    set(CPACK_PACKAGE_VENDOR "Stoned Xander and MooZ")
+    set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
+    set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${WOPR_MAJOR}.${WOPR_MINOR}.${WOPR_PATCH}")
+    set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${WOPR_MAJOR}.${WOPR_MINOR}.${WOPR_PATCH}")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+    set(CPACK_PACKAGE_VERSION_MAJOR ${WOPR_MAJOR})
+    set(CPACK_PACKAGE_VERSION_MINOR ${WOPR_MINOR})
+    set(CPACK_PACKAGE_VERSION_PATCH ${WOPR_PATCH})
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "wopr")
+    set(CPACK_SOURCE_GENERATOR "TGZ")
+    set(CPACK_GENERATOR "TGZ")
+    set(CPACK_STRIP_FILES "bin/wopr")
+    set(CPACK_PACKAGE_EXECUTABLES "wopr" "wopr")
+    set(CPACK_SOURCE_IGNORE_FILES "/CVS/" "/.svn/" "/.git/" "build/" "installers/" "/CMakeLists.txt.user$" "~$" "\\\\.swp$" "\\\\.#" "/#")
+    set(CPACK_RPM_PACKAGE_LICENSE "Apache License, Version 2.0")
+    set(CPACK_RPM_PACKAGE_GROUP "Amusements/Graphics")
+    set(CPACK_RPM_PACKAGE_URL "http://blockos.org/")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR} <contact@blockos.org>")
+    set(CPACK_DEBIAN_PACKAGE_SECTION "games")
+    set(CPACK_DEBIAN_PACKAGE_VERSION "${VERSION}+deb1")
+    set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "${CPACK_RPM_PACKAGE_URL}")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libtinyxml2-2, libglew1.7, libglfw3 (>= 3.0.4), libicu52, libc6 (>= 2.14), libstdc++6 (>= 4.9)")
+    set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
+    include(CPack)
+endif()

@@ -59,6 +59,7 @@ class MainApp
         static const glm::vec4  _spriteDefs[3];
         static const glm::ivec2 _spriteAnchors[3];
         static const float      _cpuDelay;
+        static const float      _respawnDelay;
 };
 
 const glm::vec2 MainApp::_cell[9][2] =
@@ -88,7 +89,8 @@ const glm::ivec2 MainApp::_spriteAnchors[3] =
     glm::ivec2(198, 198)  // Board
 };
 
-const float MainApp::_cpuDelay = 0.350f;
+const float MainApp::_cpuDelay     = 0.350f;
+const float MainApp::_respawnDelay = 2.0f;
 
 MainApp::MainApp()
     : _board()
@@ -137,7 +139,13 @@ void MainApp::postInit()
     if(nullptr == _atlas)
     {
         std::vector<std::string> filenameList;
+// [todo]
+#if defined(BUILD_PACKAGE)
+        std::string filename = "/usr/share/wopr/atlas.png";
+#else
         std::string filename = Framework::File::executableDirectory() + "/resources/atlas.png";
+#endif // BUILD_PACKAGE
+
         filenameList.push_back(filename);
         
         // Create an Atlas from one texture file with 8 possible Sprite definition slots.
@@ -181,7 +189,7 @@ bool MainApp::render()
         (WOPR::Win   == _status) || 
         (WOPR::Loose == _status) )
     {
-        if(elapsed >= 2.0)
+        if(elapsed >= _respawnDelay)
         {
             _boardPosition.x = _boardPosition.y = -1;
             _turn = 0;
@@ -213,8 +221,8 @@ bool MainApp::render()
         {
             _status = _board.put(_boardPosition.x, _boardPosition.y, item);
         }
-        bool gameEnded = (WOPR::Draw  == _status) || (WOPR::Win   == _status) || (WOPR::Loose == _status);
 
+        bool gameEnded = (WOPR::Draw  == _status) || (WOPR::Win   == _status) || (WOPR::Loose == _status);
         if((WOPR::OK == _status) || gameEnded)
         {
             Dumb::Sprite::Identifier id;
