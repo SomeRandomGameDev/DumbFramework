@@ -37,8 +37,8 @@ class MainApp
         Status _status;
         int    _turn;
         
-        glm::ivec2 _screenSize;
-        glm::ivec2 _mousePosition;
+        glm::vec2  _screenSize;
+        glm::vec2  _mousePosition;
         glm::ivec2 _boardPosition;
         
         Dumb::Sprite::Atlas  *_atlas;
@@ -46,29 +46,32 @@ class MainApp
         Dumb::Sprite::Cache  *_cache;
         
         Dumb::Sprite::Identifier _boardSpriteId;
-        glm::ivec2               _boardSize;
+        glm::vec2                _boardSize;
         
         std::vector<Dumb::Sprite::Identifier> _itemSpriteId;
         
         double _start;
         bool   _quit;
         
-        static const glm::ivec2 _cell[9][2];
+        float _scale;
+
+        static const glm::vec2  _cell[9][2];
         static const glm::vec4  _spriteDefs[3];
         static const glm::ivec2 _spriteAnchors[3];
+        static const float      _cpuDelay;
 };
 
-const glm::ivec2 MainApp::_cell[9][2] =
+const glm::vec2 MainApp::_cell[9][2] =
 {
-    { glm::ivec2(  0,  0), glm::ivec2(125,125) },
-    { glm::ivec2(138,  0), glm::ivec2(120,125) },
-    { glm::ivec2(271,  0), glm::ivec2(125,125) },
-    { glm::ivec2(  0,138), glm::ivec2(125,120) }, 
-    { glm::ivec2(138,138), glm::ivec2(120,120) }, 
-    { glm::ivec2(271,138), glm::ivec2(125,120) },
-    { glm::ivec2(  0,271), glm::ivec2(125,125) },
-    { glm::ivec2(138,271), glm::ivec2(120,125) },
-    { glm::ivec2(271,271), glm::ivec2(125,125) }
+    { glm::vec2(  0,  0), glm::vec2(125,125) },
+    { glm::vec2(138,  0), glm::vec2(120,125) },
+    { glm::vec2(271,  0), glm::vec2(125,125) },
+    { glm::vec2(  0,138), glm::vec2(125,120) },
+    { glm::vec2(138,138), glm::vec2(120,120) },
+    { glm::vec2(271,138), glm::vec2(125,120) },
+    { glm::vec2(  0,271), glm::vec2(125,125) },
+    { glm::vec2(138,271), glm::vec2(120,125) },
+    { glm::vec2(271,271), glm::vec2(125,125) }
 };
 
 const glm::vec4 MainApp::_spriteDefs[3] =
@@ -85,11 +88,13 @@ const glm::ivec2 MainApp::_spriteAnchors[3] =
     glm::ivec2(198, 198)  // Board
 };
 
+const float MainApp::_cpuDelay = 0.350f;
+
 MainApp::MainApp()
     : _board()
     , _status(WOPR::OK)
     , _turn(0)
-    , _screenSize(0)
+    , _screenSize(0.0f)
     , _mousePosition(0)
     , _boardPosition(-1)
     , _atlas(nullptr)
@@ -107,7 +112,7 @@ void MainApp::init(Dumb::Core::Application::Adviser *adviser)
     Dumb::Core::Application::Video::Monitor monitor = adviser->getPrimaryMonitor();
     Dumb::Core::Application::Video::Mode mode = monitor.getCurrentMode();
 #else
-    Dumb::Core::Application::Video::Mode mode(glm::vec2(1024, 768), glm::vec3(8, 8, 8), 60);
+    Dumb::Core::Application::Video::Mode mode(glm::vec2(1024, 576), glm::vec3(8, 8, 8), 60);
     Dumb::Core::Application::Video::Monitor monitor(0);
 #endif
     
@@ -115,6 +120,8 @@ void MainApp::init(Dumb::Core::Application::Adviser *adviser)
     adviser->setVideoMode(mode);
     
     _screenSize = mode.getResolution();
+    _scale      = _screenSize.y / 900.0;
+
     adviser->setTitle("WOPR");
     
     _itemSpriteId.reserve(9);
@@ -141,13 +148,13 @@ void MainApp::postInit()
         
         for(int i=0; i<3; i++)
         {
-            (void) _atlas->define(i, _spriteDefs[i], _spriteAnchors[i], 0);
+            (void) _atlas->define(i, _spriteDefs[i], glm::vec2(_spriteAnchors[i])*_scale, 0);
         }
         
-        _boardSize = glm::ivec2(_spriteDefs[2].z, _spriteDefs[2].w);
+        _boardSize = glm::vec2(_spriteDefs[2].z, _spriteDefs[2].w) * _scale;
         
         // Create board sprite.
-        _boardSpriteId = _cache->create(2, _screenSize/2);
+        _boardSpriteId = _cache->create(2, _screenSize/2.0f, 0.0f, _scale);
         
         _engine = new Dumb::Sprite::Engine(32, _atlas);
     }
@@ -168,11 +175,12 @@ void MainApp::postInit()
 
 bool MainApp::render()
 {
+    double elapsed = glfwGetTime() - _start;
+
     if( (WOPR::Draw  == _status) || 
         (WOPR::Win   == _status) || 
         (WOPR::Loose == _status) )
     {
-        double elapsed = glfwGetTime() - _start;
         if(elapsed >= 2.0)
         {
             _boardPosition.x = _boardPosition.y = -1;
@@ -189,32 +197,41 @@ bool MainApp::render()
     else
     {
         Board::Item item = _turn ? Board::Cross : Board::Circle;
-        
         if(_turn)
         {
-            _board.find_best(item, _boardPosition.x, _boardPosition.y);
+            if(elapsed < _cpuDelay)
+            {
+                _status = WOPR::OutOfBound;
+            }
+            else
+            {
+                _board.find_best(item, _boardPosition.x, _boardPosition.y);
+                _status = _board.put(_boardPosition.x, _boardPosition.y, item);
+            }
         }
-        _status = _board.put(_boardPosition.x, _boardPosition.y, item);
-
+        else
+        {
+            _status = _board.put(_boardPosition.x, _boardPosition.y, item);
+        }
         bool gameEnded = (WOPR::Draw  == _status) || (WOPR::Win   == _status) || (WOPR::Loose == _status);
 
-        if((WOPR::OK    == _status) || gameEnded)
+        if((WOPR::OK == _status) || gameEnded)
         {
             Dumb::Sprite::Identifier id;
             unsigned int index = _boardPosition.x + (3*_boardPosition.y);
-            glm::ivec2 itemPos = _cell[index][0] + _cell[index][1]/2;
+            glm::vec2 itemPos = (_cell[index][0] + _cell[index][1] / 2.0f) * _scale;
             
-            itemPos += (_screenSize - _boardSize) / 2;
-            id = _cache->create(_turn, itemPos);
+            itemPos += (_screenSize - _boardSize) / 2.0f;
+            id = _cache->create(_turn, itemPos, 0.0f, _scale);
             
             _itemSpriteId.push_back(id);
             
             _boardPosition.x = _boardPosition.y = -1;
             _turn ^= 1;
             
+            _start = glfwGetTime();
             if(gameEnded)
             {
-                _start = glfwGetTime();
                 Log_Info(Framework::Module::Base, "%s", (WOPR::Draw == _status) ? "Draw" : ((WOPR::Win == _status) ? "You loose" : "You win"));
             }
         }
@@ -241,22 +258,22 @@ void MainApp::handleMouseButton(int button, int action, int /* mods */)
 {
     if((GLFW_PRESS == action) && (GLFW_MOUSE_BUTTON_LEFT == button))
     {
-        glm::ivec2 bmin = (_screenSize - _boardSize) / 2;
-        glm::ivec2 bmax = (_screenSize + _boardSize) / 2;
+        glm::vec2 bmin = (_screenSize - _boardSize) / 2.0f;
+        glm::vec2 bmax = (_screenSize + _boardSize) / 2.0f;
         
         _boardPosition.x = _boardPosition.y = -1;
 
         if(((_mousePosition.x > bmin.x) && (_mousePosition.x < bmax.x)) &&
            ((_mousePosition.y > bmin.y) && (_mousePosition.y < bmax.y)))
         {
-            glm::ivec2 pos = _mousePosition - bmin;
+            glm::vec2 pos = _mousePosition - bmin;
             bool found = false;
             for(int j=0, k=0; (j<3) && (!found); j++)
             {
                 for(int i=0; (i<3) && (!found); i++, k++)
                 {
-                    bmin = _cell[k][0];
-                    bmax = bmin + _cell[k][1];
+                    bmin = _cell[k][0] * _scale;
+                    bmax = bmin + _cell[k][1] * _scale;
                     
                     if( ((pos.x >= bmin.x) && (pos.x <= bmax.x)) &&
                         ((pos.y >= bmin.y) && (pos.y <= bmax.y)) )
