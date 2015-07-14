@@ -168,8 +168,7 @@ endif()
 
 add_custom_target( resources ALL
 #    COMMAND ${CMAKE_COMMAND} -E make_directory "${EXECUTABLE_OUTPUT_PATH}"
-    COMMAND rsync -r "${CMAKE_SOURCE_DIR}/resources" "${EXECUTABLE_OUTPUT_PATH}/"
-    COMMAND rsync -r "${CMAKE_SOURCE_DIR}/examples/wopr/resources" "${EXECUTABLE_OUTPUT_PATH}/") # [todo] make a cmakelists for examples
+    COMMAND rsync -r "${CMAKE_SOURCE_DIR}/resources" "${EXECUTABLE_OUTPUT_PATH}/")
 
 add_executable(flatengine src/demo/flatengine.cpp)
 add_dependencies(resources flatengine)
@@ -195,7 +194,3 @@ add_custom_target(doc
          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
          COMMENT "Generating API documentation with Doxygen"
          VERBATIM )
-
-add_executable(wopr examples/wopr/wopr.cpp examples/wopr/board.cpp)
-add_dependencies(resources wopr)
-target_link_libraries(wopr DumbFramework)
