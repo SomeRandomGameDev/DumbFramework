@@ -66,8 +66,9 @@ include_directories( ${EXPAT_INCLUDE_DIR}
                      ${GLEW_INCLUDE_DIRS}
                      ${GLM_INCLUDE_DIRS}
                      ${SOIL_INCLUDE_DIRS}
-                     ${FREETYPE_GL_INCLUDE_DIRS}
-                     ${CMAKE_CURRENT_SOURCE_DIR} 
+                     #                     ${FREETYPE_GL_INCLUDE_DIRS}
+                     ${CAIRO_INCLUDE_DIRS}
+                     ${CMAKE_CURRENT_SOURCE_DIR}
                      include/
                      external/)
 
@@ -142,10 +143,10 @@ target_link_libraries(DumbFramework ${GLEW_LIBRARY} )
 target_link_libraries(DumbFramework ${PTHREADS_LIBRARY} )
 target_link_libraries(DumbFramework ${SOIL_LIBRARIES} )
 target_link_libraries(DumbFramework ${THREAD_LIBRARY} )
-target_link_libraries(DumbFramework ${FREETYPE_GL_LIBRARY} )
+# target_link_libraries(DumbFramework ${FREETYPE_GL_LIBRARY} )
 target_link_libraries(DumbFramework ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(DumbFramework ${ICU_LIBRARIES})
-
+target_link_libraries(DumbFramework ${CAIRO_LIBRARIES})
 
 if(BUILD_TESTS)
     find_package(UnitTest++)
@@ -171,6 +172,7 @@ add_custom_target( resources ALL
 #    COMMAND ${CMAKE_COMMAND} -E make_directory "${EXECUTABLE_OUTPUT_PATH}"
     COMMAND rsync -r "${CMAKE_SOURCE_DIR}/resources" "${EXECUTABLE_OUTPUT_PATH}/")
 
+# Ultra-Basic Sprite Engine Demo.
 add_executable(flatengine src/demo/flatengine.cpp)
 add_dependencies(resources flatengine)
 target_link_libraries(flatengine DumbFramework)
@@ -180,9 +182,15 @@ target_link_libraries(flatengine DumbFramework)
 #add_dependencies(resources gui)
 #target_link_libraries(gui DumbFramework)
 
+# Basic Font Demo.
 add_executable(font-basic src/demo/font/basic.cpp)
 add_dependencies(resources font-basic)
 target_link_libraries(font-basic DumbFramework)
+
+# Cairo Support Demo.
+add_executable(cairo-test src/demo/cairo.cpp)
+add_dependencies(resources cairo-test)
+target_link_libraries(cairo-test DumbFramework)
 
 set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
 set(DOXYFILE ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
