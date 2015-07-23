@@ -74,14 +74,14 @@ namespace Dumb {
         const vec2 quad[4] = { vec2(0, 0), vec2(0, 1), vec2(1, 0), vec2(1, 1) };
         void main() {
             vec2 point = quad[gl_VertexID];
-            vec2 dimPt = vs_dimension * point;
+            vec2 dimPt = (vs_dimension * point) + vs_offset;
             float cs = cos(vs_angle);
             float sn = sin(vs_angle);
             vec3 rot = vec3(cs, sn, -sn);
             vec2 tpos = vec2(dot(dimPt, rot.xy), dot(dimPt, rot.zx)) * vs_scale;
             fs_tex = mix(vs_toptex, vs_bottomtex, point);
             fs_index = vs_index;
-            gl_Position = un_matrix * vec4(vs_position + vs_offset + tpos, 0.0, 1.0);
+            gl_Position = un_matrix * vec4(vs_position + tpos, 0.0, 1.0);
         }
         )Shader";
 
