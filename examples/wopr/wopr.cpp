@@ -156,7 +156,7 @@ void MainApp::postInit()
         
         for(int i=0; i<3; i++)
         {
-            (void) _atlas->define(i, _spriteDefs[i], glm::vec2(_spriteAnchors[i])*_scale, 0);
+            (void) _atlas->define(i, _spriteDefs[i], glm::vec2(_spriteAnchors[i]), 0);
         }
         
         _boardSize = glm::vec2(_spriteDefs[2].z, _spriteDefs[2].w) * _scale;
