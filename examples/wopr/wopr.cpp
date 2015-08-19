@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include <iostream>
 
 #include <DumbFramework/runner.hpp>
@@ -21,7 +20,11 @@
 #include <DumbFramework/sprengine.hpp>
 #include <DumbFramework/render/renderer.hpp>
 
-#include "board.h"
+#include "board.hpp"
+#include "displayconfig.hpp"
+#include "mousecontroler.hpp"
+#include "absolutekeycontroler.hpp"
+#include "relativekeycontroler.hpp"
 
 namespace WOPR {
 
@@ -37,56 +40,34 @@ class MainApp
         Status _status;
         int    _turn;
         
-        glm::vec2  _screenSize;
-        glm::vec2  _mousePosition;
         glm::ivec2 _boardPosition;
+
+        Input _input;
+        
+        enum ControlerType
+        {
+            Mouse,
+            AbsoluteKey,
+            RelativeKey,
+            ControlerTypeCount
+        };
+        InputControler *_controler[ControlerTypeCount];
+        ControlerType   _currentControler;
+        
+        DisplayConfig _displayCfg;
         
         Dumb::Sprite::Atlas  *_atlas;
         Dumb::Sprite::Engine *_engine;
         Dumb::Sprite::Cache  *_cache;
         
         Dumb::Sprite::Identifier _boardSpriteId;
-        glm::vec2                _boardSize;
-        
         std::vector<Dumb::Sprite::Identifier> _itemSpriteId;
         
         double _start;
         bool   _quit;
-        
-        float _scale;
 
-        static const glm::vec2  _cell[9][2];
-        static const glm::vec4  _spriteDefs[3];
-        static const glm::ivec2 _spriteAnchors[3];
         static const float      _cpuDelay;
         static const float      _respawnDelay;
-};
-
-const glm::vec2 MainApp::_cell[9][2] =
-{
-    { glm::vec2(  0,  0), glm::vec2(125,125) },
-    { glm::vec2(138,  0), glm::vec2(120,125) },
-    { glm::vec2(271,  0), glm::vec2(125,125) },
-    { glm::vec2(  0,138), glm::vec2(125,120) },
-    { glm::vec2(138,138), glm::vec2(120,120) },
-    { glm::vec2(271,138), glm::vec2(125,120) },
-    { glm::vec2(  0,271), glm::vec2(125,125) },
-    { glm::vec2(138,271), glm::vec2(120,125) },
-    { glm::vec2(271,271), glm::vec2(125,125) }
-};
-
-const glm::vec4 MainApp::_spriteDefs[3] =
-{
-    glm::vec4(  0, 143, 111, 111), // Circle
-    glm::vec4(  0,   9, 111, 111), // Cross
-    glm::vec4(116,   0, 396, 396)  // Board
-};
-
-const glm::ivec2 MainApp::_spriteAnchors[3] =
-{
-    glm::ivec2( 56,  56), // Circle
-    glm::ivec2( 56,  56), // Cross
-    glm::ivec2(198, 198)  // Board
 };
 
 const float MainApp::_cpuDelay     = 0.350f;
@@ -96,17 +77,22 @@ MainApp::MainApp()
     : _board()
     , _status(WOPR::OK)
     , _turn(0)
-    , _screenSize(0.0f)
-    , _mousePosition(0)
     , _boardPosition(-1)
+    , _input()
+    , _currentControler(Mouse)
+    , _displayCfg()
     , _atlas(nullptr)
     , _engine(nullptr)
     , _cache(nullptr)
     , _boardSpriteId(-1)
-    , _boardSize(0)
     , _start(0.0)
     , _quit(false)
-{}
+{
+    for(int i=0; i<ControlerTypeCount; i++)
+    {
+        _controler[i] = nullptr;
+    }
+}
 
 void MainApp::init(Dumb::Core::Application::Adviser *adviser)
 {
@@ -121,9 +107,13 @@ void MainApp::init(Dumb::Core::Application::Adviser *adviser)
     adviser->setMonitor(monitor);
     adviser->setVideoMode(mode);
     
-    _screenSize = mode.getResolution();
-    _scale      = _screenSize.y / 900.0;
-
+    _displayCfg.init(mode);
+    
+    // [todo] temporary
+    _controler[Mouse]       = new MouseControler      (&_displayCfg, GLFW_MOUSE_BUTTON_LEFT);
+    _controler[AbsoluteKey] = new AbsoluteKeyControler();
+    _controler[RelativeKey] = new RelativeKeyControler();
+    
     adviser->setTitle("WOPR");
     
     _itemSpriteId.reserve(9);
@@ -156,20 +146,18 @@ void MainApp::postInit()
         
         for(int i=0; i<3; i++)
         {
-            (void) _atlas->define(i, _spriteDefs[i], glm::vec2(_spriteAnchors[i]), 0);
+            (void) _atlas->define(i, _displayCfg.spriteDefs[i], glm::vec2(_displayCfg.spriteAnchors[i]), 0);
         }
         
-        _boardSize = glm::vec2(_spriteDefs[2].z, _spriteDefs[2].w) * _scale;
-        
         // Create board sprite.
-        _boardSpriteId = _cache->create(2, _screenSize/2.0f, 0.0f, _scale);
+        _boardSpriteId = _cache->create(2, _displayCfg.screenSize/2.0f, 0.0f, _displayCfg.scale);
         
         _engine = new Dumb::Sprite::Engine(32, _atlas);
     }
     
-    _engine->viewport(0, 0, _screenSize.x, _screenSize.y);
+    _engine->viewport(0, 0, _displayCfg.screenSize.x, _displayCfg.screenSize.y);
 
-    glViewport(0, 0, _screenSize.x, _screenSize.y);
+    glViewport(0, 0, _displayCfg.screenSize.x, _displayCfg.screenSize.y);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
@@ -184,7 +172,8 @@ void MainApp::postInit()
 bool MainApp::render()
 {
     double elapsed = glfwGetTime() - _start;
-
+    bool put = _controler[_currentControler]->update(_input, _boardPosition);
+    
     if( (WOPR::Draw  == _status) || 
         (WOPR::Win   == _status) || 
         (WOPR::Loose == _status) )
@@ -219,7 +208,14 @@ bool MainApp::render()
         }
         else
         {
-            _status = _board.put(_boardPosition.x, _boardPosition.y, item);
+            if(true == put)
+            {
+                _status = _board.put(_boardPosition.x, _boardPosition.y, item);
+            }
+            else
+            {
+                _status = WOPR::OutOfBound; // [todo] add a new "Playing" or "OnHold" state.
+            }
         }
 
         bool gameEnded = (WOPR::Draw  == _status) || (WOPR::Win   == _status) || (WOPR::Loose == _status);
@@ -227,10 +223,10 @@ bool MainApp::render()
         {
             Dumb::Sprite::Identifier id;
             unsigned int index = _boardPosition.x + (3*_boardPosition.y);
-            glm::vec2 itemPos = (_cell[index][0] + _cell[index][1] / 2.0f) * _scale;
+            glm::vec2 itemPos = (_displayCfg.cell[index][0] + _displayCfg.cell[index][1] / 2.0f) * _displayCfg.scale;
             
-            itemPos += (_screenSize - _boardSize) / 2.0f;
-            id = _cache->create(_turn, itemPos, 0.0f, _scale);
+            itemPos += (_displayCfg.screenSize - _displayCfg.boardSize) / 2.0f;
+            id = _cache->create(_turn, itemPos, 0.0f, _displayCfg.scale);
             
             _itemSpriteId.push_back(id);
             
@@ -258,46 +254,24 @@ void MainApp::handleMouseScroll(double, double)
 
 void MainApp::handleMousePosition(double x, double y)
 {
-    _mousePosition.x = x;
-    _mousePosition.y = y;
+    _input.mouse.position.x = x;
+    _input.mouse.position.y = y;
 }
 
-void MainApp::handleMouseButton(int button, int action, int /* mods */)
+void MainApp::handleMouseButton(int button, int action, int mods)
 {
-    if((GLFW_PRESS == action) && (GLFW_MOUSE_BUTTON_LEFT == button))
-    {
-        glm::vec2 bmin = (_screenSize - _boardSize) / 2.0f;
-        glm::vec2 bmax = (_screenSize + _boardSize) / 2.0f;
-        
-        _boardPosition.x = _boardPosition.y = -1;
-
-        if(((_mousePosition.x > bmin.x) && (_mousePosition.x < bmax.x)) &&
-           ((_mousePosition.y > bmin.y) && (_mousePosition.y < bmax.y)))
-        {
-            glm::vec2 pos = _mousePosition - bmin;
-            bool found = false;
-            for(int j=0, k=0; (j<3) && (!found); j++)
-            {
-                for(int i=0; (i<3) && (!found); i++, k++)
-                {
-                    bmin = _cell[k][0] * _scale;
-                    bmax = bmin + _cell[k][1] * _scale;
-                    
-                    if( ((pos.x >= bmin.x) && (pos.x <= bmax.x)) &&
-                        ((pos.y >= bmin.y) && (pos.y <= bmax.y)) )
-                    {
-                        _boardPosition.x = i;
-                        _boardPosition.y = j;
-                        found = true;
-                    }
-                }
-            }
-        }
-    }
+    _input.mouse.button = button;
+    _input.mouse.action = action;
+    _input.mouse.mods   = mods;
 }
 
-void MainApp::handleKey(int key, int /* scancode */, int action, int /* mods */)
+void MainApp::handleKey(int key, int scancode, int action, int mods)
 {
+    _input.key.code     = key;
+    _input.key.scancode = scancode;
+    _input.key.action   = action;
+    _input.key.mods     = mods;
+
     _quit = (GLFW_PRESS == action) && (GLFW_KEY_ESCAPE == key);
 }
 
