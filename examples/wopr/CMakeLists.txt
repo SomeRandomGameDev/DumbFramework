@@ -68,7 +68,12 @@ link_directories( ${DUMB_FRAMEWORK_LIBPATH} )
 add_custom_target( resources ALL
     COMMAND rsync -r "${CMAKE_SOURCE_DIR}/resources" "${EXECUTABLE_OUTPUT_PATH}/")
 
-add_executable(wopr wopr.cpp board.cpp)
+add_executable(wopr
+    absolutekeycontroler.cpp  inputcontroler.cpp        wopr.cpp
+    board.cpp                 mousecontroler.cpp
+    displayconfig.cpp         relativekeycontroler.cpp
+)
+
 add_dependencies(resources wopr)
 target_link_libraries(wopr DumbFramework 
                            ${TINYXML2_LIBRARY}
