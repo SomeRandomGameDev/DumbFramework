@@ -3,6 +3,7 @@
 
 #include <DumbFramework/config.hpp>
 #include <DumbFramework/log.hpp>
+#include <DumbFramework/render.hpp>
 
 namespace Framework {
 namespace Render    {
@@ -57,7 +58,7 @@ class Shader
         bool getSource(char* out, size_t outSize, size_t& length) const;
 
         /** Retrieve internal shader info logs. **/
-        void infoLog(Framework::Severity severity = Framework::Severity::Error) const;
+        void infoLog(Dumb::Severity severity = Dumb::Severity::Error) const;
 
     private:
         /** Id  */

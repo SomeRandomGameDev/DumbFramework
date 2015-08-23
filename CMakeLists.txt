@@ -114,6 +114,7 @@ set(DUMB_FRAMEWORK_SOURCES
     src/module.cpp
     src/severity.cpp
     src/log.cpp
+    src/render.cpp
     src/sprengine.cpp
     src/sprite.cpp
     src/joystick.cpp

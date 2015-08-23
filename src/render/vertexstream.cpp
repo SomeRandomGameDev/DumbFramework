@@ -32,7 +32,7 @@ bool VertexStream::create()
     GLenum err = glGetError();
     if(GL_NONE != err)
     {
-        Log_Error(Framework::Module::Render, "An error occured while creating vertex array object: %s", gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "An error occured while creating vertex array object: %s", gluErrorString(err));
         return false;
     }
     
@@ -80,7 +80,7 @@ bool VertexStream::add(VertexBuffer const* vertexBuffer, unsigned int index, Geo
 {
     if(nullptr == vertexBuffer)
     {
-        Log_Error(Framework::Module::Render, "Invalid vertex buffer.");
+        Log_Error(Dumb::Module::Render, "Invalid vertex buffer.");
         return false;
     }
     
@@ -103,7 +103,7 @@ bool VertexStream::add(VertexBuffer const* vertexBuffer, std::initializer_list<s
 {
     if(nullptr == vertexBuffer)
     {
-        Log_Error(Framework::Module::Render, "Invalid vertex buffer.");
+        Log_Error(Dumb::Module::Render, "Invalid vertex buffer.");
         return false;
     }
     unsigned int biggestIndex = 0;
@@ -146,12 +146,12 @@ bool VertexStream::compile()
     // Sanity check
     if(!_vao)
     {
-        Log_Error(Framework::Module::Render, "Invalid vertex array object id: %x\n", _vao);
+        Log_Error(Dumb::Module::Render, "Invalid vertex array object id: %x\n", _vao);
         return false;
     }
     if(0 == _attributes.size())
     {
-        Log_Error(Framework::Module::Render, "Empty attributes.");
+        Log_Error(Dumb::Module::Render, "Empty attributes.");
         return false;
     }
 
@@ -160,7 +160,7 @@ bool VertexStream::compile()
     {
         if(0 == _attributes[i].second.size)
         {
-            Log_Error(Framework::Module::Render, "Attributes %d is not set.", i);
+            Log_Error(Dumb::Module::Render, "Attributes %d is not set.", i);
             return false;
         }
     }
@@ -186,7 +186,7 @@ bool VertexStream::compile()
     GLenum err = glGetError();
     if(GL_NO_ERROR != err)
     {
-        Log_Error(Framework::Module::Render, "An error occured %d: %s.", err, gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "An error occured %d: %s.", err, gluErrorString(err));
         return false;
     }
     return true;
@@ -201,7 +201,7 @@ void VertexStream::bind() const
     // Warning! This may spam your logs!
     if(!_vao)
     {
-        Log_Warning(Module::Render, "You are trying to bind an invalid vertex stream!");
+        Log_Warning(Dumb::Module::Render, "You are trying to bind an invalid vertex stream!");
     }
     else
     {
@@ -209,7 +209,7 @@ void VertexStream::bind() const
         glGetIntegerv(GL_VERTEX_ARRAY_BINDING, (GLint*)&current);
         if(current && (current != _vao))
         {
-            Log_Warning(Module::Render, "Vertex stream %d is currently bound.", current);
+            Log_Warning(Dumb::Module::Render, "Vertex stream %d is currently bound.", current);
         }
     }
 #endif // SANITY_CHECK
@@ -228,12 +228,12 @@ void VertexStream::unbind() const
     {
         if(_vao)
         {
-            Log_Warning(Module::Render, "You are trying to unbind vertex stream %d whereas the current bound vertex stream is %d", _vao, current);
-            Log_Warning(Module::Render, "If you really want to unbind the currently bound stream use the unbindAll() (static) method instead.");
+            Log_Warning(Dumb::Module::Render, "You are trying to unbind vertex stream %d whereas the current bound vertex stream is %d", _vao, current);
+            Log_Warning(Dumb::Module::Render, "If you really want to unbind the currently bound stream use the unbindAll() (static) method instead.");
         }
         else
         {
-            Log_Warning(Module::Render, "There is no vertex stream bound.");
+            Log_Warning(Dumb::Module::Render, "There is no vertex stream bound.");
         }
     }
 #endif // SANITY_CHECK
@@ -273,11 +273,11 @@ void VertexStream::draw(Geometry::Primitive primitive, size_t offset, size_t cou
     {
         if(_vao)
         {
-            Log_Warning(Module::Render, "You are trying to issue a draw call on an unbound vertex stream.");
+            Log_Warning(Dumb::Module::Render, "You are trying to issue a draw call on an unbound vertex stream.");
         }
         else
         {
-            Log_Warning(Module::Render, "There is no vertex stream bound.");
+            Log_Warning(Dumb::Module::Render, "There is no vertex stream bound.");
         }
     }
 #endif // SANITY_CHECK
@@ -288,7 +288,7 @@ void VertexStream::draw(Geometry::Primitive primitive, size_t offset, size_t cou
     GLenum err = glGetError();
     if(GL_NO_ERROR != err)
     {
-        Log_Error(Framework::Module::Render, "An error occured %d: %s", _vao, gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "An error occured %d: %s", _vao, gluErrorString(err));
     }
 #endif // SANITY_CHECK
 }

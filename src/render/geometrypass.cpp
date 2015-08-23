@@ -109,7 +109,7 @@ bool GeometryPass::create(glm::ivec2 const& viewportSize)
     ret = _output.create(viewportSize, Texture::PixelFormat::RGBA_32F, OUTPUT_LAYER_COUNT);
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create geometry pass output texture.");
+        Log_Error(Dumb::Module::Render, "Failed to create geometry pass output texture.");
         return false;
     }
     _output.bind();
@@ -121,7 +121,7 @@ bool GeometryPass::create(glm::ivec2 const& viewportSize)
     ret = _depthbuffer.create(viewportSize, Texture::PixelFormat::DEPTH_24);
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create depth render buffer.");
+        Log_Error(Dumb::Module::Render, "Failed to create depth render buffer.");
         return false;
     }
 
@@ -129,7 +129,7 @@ bool GeometryPass::create(glm::ivec2 const& viewportSize)
     GLenum err = glGetError(); 
     if(GL_NO_ERROR != err)
     {
-        Log_Error(Module::Render, (const char*)gluErrorString(err));
+        Log_Error(Dumb::Module::Render, (const char*)gluErrorString(err));
         return false;
     }
     glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer);
@@ -145,7 +145,7 @@ bool GeometryPass::create(glm::ivec2 const& viewportSize)
     if(GL_FRAMEBUFFER_COMPLETE != status)
     {
         GLenum err = glGetError();
-        Log_Error(Module::Render, "%s",(const char*)gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "%s",(const char*)gluErrorString(err));
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return false;
     }
@@ -156,21 +156,21 @@ bool GeometryPass::create(glm::ivec2 const& viewportSize)
                             {Render::Shader::Type::FRAGMENT_SHADER, g_fragmentShader}} );
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create program.");
+        Log_Error(Dumb::Module::Render, "Failed to create program.");
         return false;
     }
 
     ret = _program.link();
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to link program.");
+        Log_Error(Dumb::Module::Render, "Failed to link program.");
         return false;
     }
 
     ret = _view.create(sizeof(float[16]), nullptr, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create point view matrices buffer.");
+        Log_Error(Dumb::Module::Render, "Failed to create point view matrices buffer.");
         return false;
     }
 

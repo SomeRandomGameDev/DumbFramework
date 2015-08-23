@@ -517,7 +517,7 @@ namespace Dumb {
         Delegate::~Delegate() {
             std::map<std::string, Wrapper *>::iterator it;
             for(it = _wrappers.begin(); it != _wrappers.end(); ++it) {
-                Log_Info(Framework::Module::App, "Flushing '%s'", it->first.c_str());
+                Log_Info(Dumb::Module::App, "Flushing '%s'", it->first.c_str());
                 delete it->second;
             }
         }
@@ -542,14 +542,14 @@ namespace Dumb {
                 range->chardata_for_range = new stbtt_packedchar[range->num_chars_in_range];
                 Wrapper *wrapper = new Wrapper(spec, range->chardata_for_range);
                 const std::string &name = spec.getIdentifier();
-                Log_Info(Framework::Module::App, "Register '%s'", name.c_str());
+                Log_Info(Dumb::Module::App, "Register '%s'", name.c_str());
                 _wrappers.insert(std::pair<std::string, Wrapper *>(name, wrapper));
             }
             glm::vec2 ovr = oversample.getOversample();
             stbtt_PackSetOversampling(&context, (unsigned int) ovr.x, (unsigned int) ovr.y);
             if(stbtt_PackFontRanges(&context, reinterpret_cast<unsigned char*>(font),
                         0, packRange, count) == 0) {
-                Log_Error(Framework::Module::App, "Font range loading failure");
+                Log_Error(Dumb::Module::App, "Font range loading failure");
             }
             delete []packRange;
         }
@@ -560,7 +560,7 @@ namespace Dumb {
             fontFile.open(resource.getPath().c_str(), std::ios::binary|std::ios::ate|std::ios::in);
             // Font file check.
             if(fontFile.is_open()) {
-                Log_Info(Framework::Module::App, "Loading '%s'", resource.getPath().c_str());
+                Log_Info(Dumb::Module::App, "Loading '%s'", resource.getPath().c_str());
                 // Font file is ok. Let's load it.
                 std::streampos size = fontFile.tellg();
                 char *fontFileContent = new char[size];
@@ -573,7 +573,7 @@ namespace Dumb {
                 // We're done here.
                 delete []fontFileContent;
             } else {
-                Log_Error(Framework::Module::App, "Failed to open '%s'", resource.getPath().c_str());
+                Log_Error(Dumb::Module::App, "Failed to open '%s'", resource.getPath().c_str());
             }
         }
 

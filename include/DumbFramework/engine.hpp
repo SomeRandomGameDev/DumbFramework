@@ -93,11 +93,11 @@ namespace Dumb {
                     _stream.compile();
                     // Create program and initialize program.
                     _program.create();
-                    _program.infoLog(Framework::Severity::Info);
+                    _program.infoLog(Dumb::Severity::Info);
                     for(auto &i : shaders) {
                         Framework::Render::Shader shader;
                         shader.create(i.first, i.second);
-                        shader.infoLog(Framework::Severity::Info);
+                        shader.infoLog(Dumb::Severity::Info);
                         _program.attach(shader);
                     }
                     _program.link();

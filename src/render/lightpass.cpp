@@ -41,7 +41,7 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
     ret = _output.create(gbuffer->size(), Texture::PixelFormat::RGBA_32F);
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create light pass output texture.");
+        Log_Error(Dumb::Module::Render, "Failed to create light pass output texture.");
         return false;
     }
     _output.bind();
@@ -54,7 +54,7 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
     GLenum err = glGetError();
     if(GL_NO_ERROR != err)
     {
-        Log_Error(Module::Render, (const char*)gluErrorString(err));
+        Log_Error(Dumb::Module::Render, (const char*)gluErrorString(err));
         return false;
     }
 
@@ -65,7 +65,7 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
     if(GL_FRAMEBUFFER_COMPLETE != status)
     {
         GLenum err = glGetError();
-        Log_Error(Module::Render, "%s %x",(const char*)gluErrorString(err), status);
+        Log_Error(Dumb::Module::Render, "%s %x",(const char*)gluErrorString(err), status);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return false;
     }
@@ -74,7 +74,7 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
     ret = createOccluders();
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create occluders.");
+        Log_Error(Dumb::Module::Render, "Failed to create occluders.");
         return false;
     }
 
@@ -82,21 +82,21 @@ bool LightPass::create(Texture2D* gbuffer, Renderbuffer* depthbuffer)
     ret = createProgram(LightType::POINT_LIGHT, "/resources/shaders/pointlight.vs", "/resources/shaders/pointlight.fs");
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create point light shader.");
+        Log_Error(Dumb::Module::Render, "Failed to create point light shader.");
         return false;
     }
 
     ret = createProgram(LightType::SPOT_LIGHT, "/resources/shaders/spotlight.vs", "/resources/shaders/spotlight.fs");
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create point light shader.");
+        Log_Error(Dumb::Module::Render, "Failed to create point light shader.");
         return false;
     }
 
     ret = _view.create(2 * sizeof(float[16]), nullptr, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create point view matrices buffer.");
+        Log_Error(Dumb::Module::Render, "Failed to create point view matrices buffer.");
         return false;
     }
 
@@ -110,20 +110,20 @@ bool LightPass::createProgram(LightType type, std::string const& vertexShaderFil
     std::string shaderData[2];
     std::string filename[2] =
     {
-        Framework::File::executableDirectory() + vertexShaderFilename,
-        Framework::File::executableDirectory() + fragmentShaderFilename
+        Dumb::File::executableDirectory() + vertexShaderFilename,
+        Dumb::File::executableDirectory() + fragmentShaderFilename
     };
 
     bool ret;
     for(size_t i=0; i<2; i++)
     {
-        File input;
+        Dumb::File input;
         size_t nRead;
 
-        ret = input.open(filename[i], File::READ_ONLY);
+        ret = input.open(filename[i], Dumb::File::READ_ONLY);
         if(false == ret)
         {
-            Log_Error(Module::Render, "Failed to open shader %s", filename[i].c_str());
+            Log_Error(Dumb::Module::Render, "Failed to open shader %s", filename[i].c_str());
             return false;
         }
         shaderData[i].resize(input.size());
@@ -131,7 +131,7 @@ bool LightPass::createProgram(LightType type, std::string const& vertexShaderFil
         input.close();
         if(nRead != shaderData[i].size())
         {
-            Log_Error(Module::Render, "Failed to read shader %s", filename[i].c_str());
+            Log_Error(Dumb::Module::Render, "Failed to read shader %s", filename[i].c_str());
             return false;
         }
     }
@@ -140,14 +140,14 @@ bool LightPass::createProgram(LightType type, std::string const& vertexShaderFil
                                   {Render::Shader::Type::FRAGMENT_SHADER, shaderData[1].c_str()}} );
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create program.");
+        Log_Error(Dumb::Module::Render, "Failed to create program.");
         return false;
     }
 
     ret = _program[type].link();
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to link program.");
+        Log_Error(Dumb::Module::Render, "Failed to link program.");
         return false;
     }
     return true;
@@ -160,7 +160,7 @@ bool LightPass::createOccluders()
     ret = Light::createOccluders(_occludersVertexBuffer, _occludersIndexBuffer, occluderAttributes);
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create occluders.");
+        Log_Error(Dumb::Module::Render, "Failed to create occluders.");
         return false;
     }
 
@@ -169,21 +169,21 @@ bool LightPass::createOccluders()
         ret = _buffer[i].create(LightType::maxCount[i] * LightType::elementCount[i] * sizeof(float), nullptr, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
         if(false == ret)
         {
-            Log_Error(Module::Render, "Failed to create light buffer %d.", i);
+            Log_Error(Dumb::Module::Render, "Failed to create light buffer %d.", i);
             return false;
         }
         
         ret = _occluders[i].create();
         if(false == ret)
         {
-            Log_Error(Module::Render, "Failed to create occluder stream %d.", i);
+            Log_Error(Dumb::Module::Render, "Failed to create occluder stream %d.", i);
             return ret;
         }
 
         ret = _occluders[i].add(&_occludersVertexBuffer, 0, occluderAttributes[i]);
         if(false == ret)
         {
-            Log_Error(Module::Render, "Failed to create occluder stream %d.", i);
+            Log_Error(Dumb::Module::Render, "Failed to create occluder stream %d.", i);
             return ret;
         }
     }
@@ -193,7 +193,7 @@ bool LightPass::createOccluders()
     ret = ret && _occluders[LightType::POINT_LIGHT].add(&_buffer[LightType::POINT_LIGHT], 2, Geometry::ComponentType::FLOAT, 4, false, sizeof(float[8]), sizeof(float[4]), 1);
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create occluder stream.");
+        Log_Error(Dumb::Module::Render, "Failed to create occluder stream.");
         return ret;
     }
 
@@ -205,7 +205,7 @@ bool LightPass::createOccluders()
         ret = _occluders[i].compile();
         if(false == ret)
         {
-            Log_Error(Module::Render, "Failed to compile occluder stream %d.", i);
+            Log_Error(Dumb::Module::Render, "Failed to compile occluder stream %d.", i);
             return false;
        }
     }
@@ -249,7 +249,7 @@ bool LightPass::add(PointLight const& light)
 {
     if(_count[LightType::POINT_LIGHT] >= LightType::maxCount[LightType::POINT_LIGHT])
     {
-        Log_Error(Module::Render, "Reached maximum number of point lights.");
+        Log_Error(Dumb::Module::Render, "Reached maximum number of point lights.");
         return false;
     }
     
@@ -259,7 +259,7 @@ bool LightPass::add(PointLight const& light)
     if(nullptr == ptr)
     {
         _buffer[LightType::POINT_LIGHT].unbind();
-        Log_Error(Module::Render, "Failed to add point light.");
+        Log_Error(Dumb::Module::Render, "Failed to add point light.");
         return false;
     }
 
@@ -282,7 +282,7 @@ bool LightPass::add(SpotLight const& light)
 {
     if(_count[LightType::SPOT_LIGHT] >= LightType::maxCount[LightType::SPOT_LIGHT])
     {
-        Log_Error(Module::Render, "Reached maximum number of spot lights.");
+        Log_Error(Dumb::Module::Render, "Reached maximum number of spot lights.");
         return false;
     }
     
@@ -292,7 +292,7 @@ bool LightPass::add(SpotLight const& light)
     if(nullptr == ptr)
     {
         _buffer[LightType::SPOT_LIGHT].unbind();
-        Log_Error(Module::Render, "Failed to add spot light.");
+        Log_Error(Dumb::Module::Render, "Failed to add spot light.");
         return false;
     }
 

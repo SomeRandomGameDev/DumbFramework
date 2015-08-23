@@ -147,7 +147,7 @@ namespace Dumb {
         {
             if(_dict.end() != _dict.find(animation.name()))
             {
-                Log_Error(Framework::Module::Render, "The definition \"%s\" already contains an animation called \"%s\"", _name.c_str(), animation.name().c_str());
+                Log_Error(Dumb::Module::Render, "The definition \"%s\" already contains an animation called \"%s\"", _name.c_str(), animation.name().c_str());
                 return false;
             }
             _animations.push_back(animation); // <- performance issue
@@ -414,7 +414,7 @@ namespace Dumb {
 
             if(0 == size)
             {
-                Log_Error(Framework::Module::Render, "Missing animation for definition %s", name);
+                Log_Error(Dumb::Module::Render, "Missing animation for definition %s", name);
                 return false;
             }
 
@@ -429,13 +429,13 @@ namespace Dumb {
                 animName = animElement->Attribute("name");
                 if(NULL == animName)
                 {
-                    Log_Error(Framework::Module::Render, "Missing animation name!"); 
+                    Log_Error(Dumb::Module::Render, "Missing animation name!"); 
                     return false;
                 }
                 // Check if there is not already an animation with the same name.
                 if(definition._dict.end() != definition._dict.find(animName))
                 {
-                    Log_Error(Framework::Module::Render, "Duplication animation \"%s\"", animName);
+                    Log_Error(Dumb::Module::Render, "Duplication animation \"%s\"", animName);
                     return false;
                 }
 
@@ -461,7 +461,7 @@ namespace Dumb {
             err = xml.LoadFile(filename.c_str());
             if(tinyxml2::XML_NO_ERROR != err)
             {
-                Log_Error(Framework::Module::Render, "An error occured while parsing %s: %s (%s)", filename.c_str(), xml.GetErrorStr1(), xml.GetErrorStr2());
+                Log_Error(Dumb::Module::Render, "An error occured while parsing %s: %s (%s)", filename.c_str(), xml.GetErrorStr1(), xml.GetErrorStr2());
                 return false; 
             }
 
@@ -469,7 +469,7 @@ namespace Dumb {
             tinyxml2::XMLElement *root = xml.FirstChildElement("atlas");
             if(NULL == root)
             {
-                Log_Error(Framework::Module::Render, "Missing atlas element!");
+                Log_Error(Dumb::Module::Render, "Missing atlas element!");
                 return false;
             }
 
@@ -477,7 +477,7 @@ namespace Dumb {
             char const* imageFilenames = root->Attribute("path");
             if(NULL == imageFilenames)
             {
-                Log_Error(Framework::Module::Render, "Invalid path to texture");
+                Log_Error(Dumb::Module::Render, "Invalid path to texture");
                 return false;
             }
 
@@ -508,11 +508,11 @@ namespace Dumb {
 
             if(0 == size)
             {
-                Log_Error(Framework::Module::Render, "Missing definition for atlas");
+                Log_Error(Dumb::Module::Render, "Missing definition for atlas");
                 return false;
             }
 
-            Log_Info(Framework::Module::Render, "Prepare to process %d sprite definition(s).", size);
+            Log_Info(Dumb::Module::Render, "Prepare to process %d sprite definition(s).", size);
             _definitions.resize(size);
 
             // Definitions
@@ -523,13 +523,13 @@ namespace Dumb {
                 const char *defName = defElement->Attribute("name");
                 if(NULL == defName)
                 {
-                    Log_Error(Framework::Module::Render, "Missing definition name!"); 
+                    Log_Error(Dumb::Module::Render, "Missing definition name!"); 
                     return false;
                 }
                 // Check if there is not already an animation with the same name.
                 if(_dict.end() != _dict.find(defName))
                 {
-                    Log_Error(Framework::Module::Render, "Duplication definition \"%s\"", defName);
+                    Log_Error(Dumb::Module::Render, "Duplication definition \"%s\"", defName);
                     return false;
                 }
                 _dict[defName] = i;
@@ -540,7 +540,7 @@ namespace Dumb {
 
             if(!ret)
             {
-                Log_Error(Framework::Module::Render, "An error occured while parsing %s: %s (%s)", filename.c_str(), xml.GetErrorStr1(), xml.GetErrorStr2());
+                Log_Error(Dumb::Module::Render, "An error occured while parsing %s: %s (%s)", filename.c_str(), xml.GetErrorStr1(), xml.GetErrorStr2());
                 return false;
             }
 
@@ -576,7 +576,7 @@ namespace Dumb {
 
                 _size = _texture.size();
 
-                Log_Info(Framework::Module::Render, "Atlas Size : %d x %d", _size.x, _size.y);
+                Log_Info(Dumb::Module::Render, "Atlas Size : %d x %d", _size.x, _size.y);
             }
             return ret;
         }

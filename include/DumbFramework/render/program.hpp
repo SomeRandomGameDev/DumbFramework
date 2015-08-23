@@ -128,7 +128,7 @@ class Program
         /**
          * Output link status. 
          */
-        void infoLog(Framework::Severity severity = Framework::Severity::Error) const;
+        void infoLog(Dumb::Severity severity = Dumb::Severity::Error) const;
         /**
          * Delete attached shaders.
          */

@@ -76,7 +76,7 @@ bool Program::create(std::initializer_list<std::pair<Shader::Type, char const *>
         ret = shader.create(it->first, it->second);
         if(false == ret)
         {
-            Log_Error(Module::Render, "Failed to create shader #%d", i);
+            Log_Error(Dumb::Module::Render, "Failed to create shader #%d", i);
         }
         else
         {
@@ -93,14 +93,14 @@ bool Program::attach(Shader const& shader)
 { 
     if(false == _id)
     {
-        Log_Error(Framework::Module::Render, "Can't attach shader to an uninitialized program!");
+        Log_Error(Dumb::Module::Render, "Can't attach shader to an uninitialized program!");
         return false;
     }
     glAttachShader(*_id, shader._id);
     GLenum err = glGetError();
     if(GL_NO_ERROR != err)
     {
-        Log_Error(Framework::Module::Render, "Can't attach shader (%x) to program (%x) : %s", shader._id, *_id, gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "Can't attach shader (%x) to program (%x) : %s", shader._id, *_id, gluErrorString(err));
         return false;
     }
     
@@ -156,7 +156,7 @@ bool Program::begin() const
     glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&current);
     if(current && (current != *_id))
     {
-        Log_Warning(Module::Render, "Program %d is currently in use.", current);
+        Log_Warning(Dumb::Module::Render, "Program %d is currently in use.", current);
     }
 #endif // SANITY_CHECK
     glUseProgram(*_id);
@@ -175,8 +175,8 @@ void Program::end() const
     glGetIntegerv(GL_CURRENT_PROGRAM, (GLint*)&current);
     if((true == _id) && (current != *_id))
     {
-        Log_Warning(Module::Render, "You are trying to end using program %d whereas the current active program is %d", _id, current);
-        Log_Warning(Module::Render, "If you really want to end any program currently in use, call Program::endAny() (static) instead.");
+        Log_Warning(Dumb::Module::Render, "You are trying to end using program %d whereas the current active program is %d", _id, current);
+        Log_Warning(Dumb::Module::Render, "If you really want to end any program currently in use, call Program::endAny() (static) instead.");
     }
 #endif // SANITY_CHECK
     glUseProgram(0);
@@ -211,7 +211,7 @@ void Program::destroy()
 /**
  * Output link status. 
  */
-void Program::infoLog(Framework::Severity severity) const
+void Program::infoLog(Dumb::Severity severity) const
 {
     if(!_id)
     {
@@ -228,12 +228,12 @@ void Program::infoLog(Framework::Severity severity) const
     log = new GLchar[maxLogLength];
     if(log == NULL)
     {
-        Log_Error(Framework::Module::Render, "Not enough memory");
+        Log_Error(Dumb::Module::Render, "Not enough memory");
         return;
     }
 
     glGetProgramInfoLog(*_id, maxLogLength, &logLength, log);
-    Log_Ex(Framework::Module::Render, severity, log);
+    Log_Ex(Dumb::Module::Render, severity, log);
 
     delete [] log;
 }
@@ -325,7 +325,7 @@ int Program::getUniformLocation(char const* name)
     GLenum err = glGetError();
     if(err != GL_NO_ERROR)
     {
-        Log_Error(Framework::Module::Render, "Unable to retrieve uniform %s id: %s", name, gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "Unable to retrieve uniform %s id: %s", name, gluErrorString(err));
     }
     return static_cast<int>(uid);
 }
@@ -340,13 +340,13 @@ int Program::getAttribLocation(char const* name)
     GLenum err = glGetError();
     if(err != GL_NO_ERROR)
     {
-        Log_Error(Framework::Module::Render, "Unable to retrieve attribute %s id: %s", name, gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "Unable to retrieve attribute %s id: %s", name, gluErrorString(err));
     }
     return static_cast<int>(uid);
 }
 
 #if defined(SANITY_CHECK)
-#define CHECK_GL_ERRORS do { GLenum err = glGetError(); if(GL_NO_ERROR != err) {Log_Error(Framework::Module::Render, (const char*)gluErrorString(err)); } } while(0); \
+#define CHECK_GL_ERRORS do { GLenum err = glGetError(); if(GL_NO_ERROR != err) {Log_Error(Dumb::Module::Render, (const char*)gluErrorString(err)); } } while(0); \
 
 #else
 #define CHECK_GL_ERRORS

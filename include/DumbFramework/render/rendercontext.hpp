@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <DumbFramework/config.hpp>
+#include <DumbFramework/render.hpp>
 #include <DumbFramework/render/texture2d.hpp>
 #include <DumbFramework/render/renderbuffer.hpp>
 

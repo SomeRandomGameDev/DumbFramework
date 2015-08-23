@@ -52,14 +52,14 @@ bool Mesh::create(size_t vertexCount, size_t triangleCount, uint32_t mask, void*
     ret = _indexBuffer.create(3 * triangleCount * sizeof(GLuint), indexData, BufferObject::Access::Frequency::STATIC, BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create index buffer!");
+        Log_Error(Dumb::Module::Render, "Failed to create index buffer!");
         return false;
     }
     
     ret = _vertexBuffer.create(vertexCount * vertexSize, vertexData, BufferObject::Access::Frequency::DYNAMIC, BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create vertex buffer!");
+        Log_Error(Dumb::Module::Render, "Failed to create vertex buffer!");
         return false;
     }
 
@@ -96,7 +96,7 @@ bool Mesh::setAttribute(AttributeId id, uint8_t* ptr)
 {
     if(nullptr == ptr)
     {
-        Log_Error(Module::Render, "Invalid data pointer.");
+        Log_Error(Dumb::Module::Render, "Invalid data pointer.");
         return false;
     }
     bool ret;
@@ -323,7 +323,7 @@ bool Mesh::createVertexStream()
         ret = _stream.add(&_vertexBuffer, i, attributes[i]);
         if(false == ret)
         {
-            Log_Error(Module::Render, "Failed to add attribute %d to stream.", i);
+            Log_Error(Dumb::Module::Render, "Failed to add attribute %d to stream.", i);
             return false;
         }
     }
@@ -332,7 +332,7 @@ bool Mesh::createVertexStream()
     ret = _stream.compile();
     if(false == ret)
     {
-        Log_Error(Module::Render, "Stream compilation failed.");
+        Log_Error(Dumb::Module::Render, "Stream compilation failed.");
         return false;
     }
     return true;

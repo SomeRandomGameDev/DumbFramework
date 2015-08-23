@@ -3,6 +3,7 @@
 
 #include <DumbFramework/config.hpp>
 #include <DumbFramework/log.hpp>
+#include <DumbFramework/render.hpp>
 
 namespace Framework    {
 namespace Render       {

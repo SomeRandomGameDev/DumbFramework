@@ -122,7 +122,7 @@ bool createOccluders(VertexBuffer &buffer, IndexBuffer &index, std::array<Geomet
     ret = buffer.create(pointSize, (void*)g_points, BufferObject::Access::Frequency::STATIC, BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create vertex buffer.");
+        Log_Error(Dumb::Module::Render, "Failed to create vertex buffer.");
         return false;
     }
     
@@ -130,7 +130,7 @@ bool createOccluders(VertexBuffer &buffer, IndexBuffer &index, std::array<Geomet
     ret = index.create(indexCount * sizeof(uint8_t[3]), (void*)g_triangles, BufferObject::Access::Frequency::STATIC, BufferObject::Access::Type::DRAW);
     if(false == ret)
     {
-        Log_Error(Module::Render, "Failed to create index buffer.");
+        Log_Error(Dumb::Module::Render, "Failed to create index buffer.");
         return false;
     }
 

@@ -1,5 +1,4 @@
 #include <DumbFramework/log.hpp>
-
 #include <DumbFramework/render/textureloader.hpp>
 
 namespace Framework {
@@ -41,7 +40,7 @@ bool load(Texture2D& out, std::string const& filename, PixelFormat const& format
     data = stbi_load(filename.c_str(), &imageSize.x, &imageSize.y, &comp, 0);
     if(nullptr == data)
     {
-        Log_Error(Module::Base, "Failed to load image: %s", filename.c_str());
+        Log_Error(Dumb::Module::Base, "Failed to load image: %s", filename.c_str());
         return false;
     }
 
@@ -61,24 +60,24 @@ bool load(Texture2D& out, std::string const& filename, PixelFormat const& format
             break;
         default:
             ret = false;
-            Log_Error(Module::Base, "Unsupported pixel format (%s)", filename.c_str());
+            Log_Error(Dumb::Module::Base, "Unsupported pixel format (%s)", filename.c_str());
             break;
     }
     
     if((PixelFormat::UNKNOWN != format) &&
        (imageFormat != format))
     {
-        Log_Error(Module::Base, "Invalid pixel format (%s)", filename.c_str());
+        Log_Error(Dumb::Module::Base, "Invalid pixel format (%s)", filename.c_str());
         ret = false;
     }
     if((-1 != size.x) && (imageSize.x != size.x))
     {
-        Log_Error(Module::Base, "Invalid width. Expected %d but is %d (%s)", size.x, imageSize.x, filename.c_str());
+        Log_Error(Dumb::Module::Base, "Invalid width. Expected %d but is %d (%s)", size.x, imageSize.x, filename.c_str());
         ret = false;
     }
     if((-1 != size.y) && (imageSize.y != size.y))
     {
-        Log_Error(Module::Base, "Invalid height. Expected %d but is %d (%s)", size.y, imageSize.y, filename.c_str());
+        Log_Error(Dumb::Module::Base, "Invalid height. Expected %d but is %d (%s)", size.y, imageSize.y, filename.c_str());
         ret = false;
     }
     if(ret)
@@ -86,14 +85,14 @@ bool load(Texture2D& out, std::string const& filename, PixelFormat const& format
         ret = out.create(imageSize, imageFormat);
         if(false == ret)
         {
-            Log_Error(Module::Base, "Failed to create texture.");
+            Log_Error(Dumb::Module::Base, "Failed to create texture.");
         }
         else
         {
             ret = out.setData(data);
             if(false == ret)
             {
-                Log_Error(Module::Base, "Failed to set texture data.");
+                Log_Error(Dumb::Module::Base, "Failed to set texture data.");
             }
         }
     }
@@ -114,7 +113,7 @@ bool loadLayer(Texture2D& out, std::string const& filename, int layer)
 {
     if(layer >= out.layerCount())
     {
-        Log_Error(Module::Base, "Invalid layer %d (max: %d)", layer, out.layerCount());
+        Log_Error(Dumb::Module::Base, "Invalid layer %d (max: %d)", layer, out.layerCount());
         return false;
     }
     
@@ -126,13 +125,13 @@ bool loadLayer(Texture2D& out, std::string const& filename, int layer)
     data = stbi_load(filename.c_str(), &size.x, &size.y, &comp, 0);
     if(nullptr == data)
     {
-        Log_Error(Module::Base, "Failed to load image: %s", filename.c_str());
+        Log_Error(Dumb::Module::Base, "Failed to load image: %s", filename.c_str());
         return false;
     }
     
     if(size != out.size())
     {
-        Log_Error(Module::Base, "Incorrect image size %s: [%d,%d], texture: [%d;%d]", 
+        Log_Error(Dumb::Module::Base, "Incorrect image size %s: [%d,%d], texture: [%d;%d]", 
                                 filename.c_str(), size.x, size.y, out.size().x, out.size().y);
         ret = false;
     }
@@ -140,7 +139,7 @@ bool loadLayer(Texture2D& out, std::string const& filename, int layer)
     PixelFormat format = compToFormat(comp);
     if(format != out.pixelFormat())
     {
-        Log_Error(Module::Base, "Incorrect pixel format %s: %x, texture: %x", 
+        Log_Error(Dumb::Module::Base, "Incorrect pixel format %s: %x, texture: %x", 
                                 filename.c_str(), format, out.pixelFormat());
         ret = false;
     }
@@ -150,7 +149,7 @@ bool loadLayer(Texture2D& out, std::string const& filename, int layer)
         ret = out.setData(data, layer);
         if(false == ret)
         {
-            Log_Error(Module::Base, "Failed to set texture data.");
+            Log_Error(Dumb::Module::Base, "Failed to set texture data.");
         }
     }
 
@@ -198,7 +197,7 @@ bool load(Texture2D& out, std::vector<std::string> const& filenameList, PixelFor
     data = stbi_load(filenameList[0].c_str(), &imageSize.x, &imageSize.y, &comp, 0);
     if(nullptr == data)
     {
-        Log_Error(Module::Base, "Failed to load image: %s", filenameList[0].c_str());
+        Log_Error(Dumb::Module::Base, "Failed to load image: %s", filenameList[0].c_str());
         return false;
     }
     
@@ -206,32 +205,32 @@ bool load(Texture2D& out, std::vector<std::string> const& filenameList, PixelFor
     if((PixelFormat::UNKNOWN != format) &&
        (imageFormat != format))
     {
-        Log_Error(Module::Base, "Invalid pixel format (%s)", filenameList[0].c_str());
+        Log_Error(Dumb::Module::Base, "Invalid pixel format (%s)", filenameList[0].c_str());
         ret = false;
     }
     if((-1 != size.x) && (imageSize.x != size.x))
     {
-        Log_Error(Module::Base, "Invalid width. Expected %d but is %d (%s)", size.x, imageSize.x, filenameList[0].c_str());
+        Log_Error(Dumb::Module::Base, "Invalid width. Expected %d but is %d (%s)", size.x, imageSize.x, filenameList[0].c_str());
         ret = false;
     }
     if((-1 != size.y) && (imageSize.y != size.y))
     {
-        Log_Error(Module::Base, "Invalid height. Expected %d but is %d (%s)", size.y, imageSize.y, filenameList[0].c_str());
+        Log_Error(Dumb::Module::Base, "Invalid height. Expected %d but is %d (%s)", size.y, imageSize.y, filenameList[0].c_str());
         ret = false;
     }
-    Log_Info(Module::Base, "Texture Size : %dx%d", imageSize.x, imageSize.y);
+    Log_Info(Dumb::Module::Base, "Texture Size : %dx%d", imageSize.x, imageSize.y);
     ret = out.create(imageSize, imageFormat, filenameList.size());
     if(ret)
     {
         ret = out.setData(data, 0);
         if(false == ret)
         {
-            Log_Error(Module::Base, "Failed to set texture data for layer 0.");
+            Log_Error(Dumb::Module::Base, "Failed to set texture data for layer 0.");
         }
     }
     else
     {
-        Log_Error(Module::Base, "Failed to create texture.");
+        Log_Error(Dumb::Module::Base, "Failed to create texture.");
     }
 
     for(size_t i=1; ret && (i<filenameList.size()); i++)
@@ -239,12 +238,11 @@ bool load(Texture2D& out, std::vector<std::string> const& filenameList, PixelFor
         ret = loadLayer(out, filenameList[i], i);
         if(false == ret)
         {
-            Log_Error(Module::Base, "Failed to load layer %d.", i);
+            Log_Error(Dumb::Module::Base, "Failed to load layer %d.", i);
         }
     }
     return ret;
 }
-
 
 } // Texture
 } // Render

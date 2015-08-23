@@ -114,7 +114,7 @@ bool Shader::getSource(char* out, size_t outSize, size_t& length) const
 }
 
 /** Retrieve internal shader info logs. */
-void Shader::infoLog(Framework::Severity severity) const
+void Shader::infoLog(Dumb::Severity severity) const
 {
     GLsizei maxLogLength, loglength;
     GLchar* log;
@@ -132,7 +132,7 @@ void Shader::infoLog(Framework::Severity severity) const
     }
 
     glGetShaderInfoLog(_id, maxLogLength, &loglength, log);
-    Log_Ex(Framework::Module::Render, severity, log);
+    Log_Ex(Dumb::Module::Render, severity, log);
     delete [] log;
 }
 

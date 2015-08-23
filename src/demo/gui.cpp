@@ -22,6 +22,7 @@
 #include <DumbFramework/log.hpp>
 #include <DumbFramework/imguidelegate.hpp>
 #include <DumbFramework/camera.hpp>
+#include <DumbFramework/render.hpp>
 #include <DumbFramework/render/renderer.hpp>
 #include <DumbFramework/render/texture.hpp>
 #include <DumbFramework/render/textureloader.hpp>
@@ -273,7 +274,7 @@ int main()
        wrapper.mouse.onMouseButton +=
        [](Framework::Input::Mouse::Button button, bool state, int modifier)
        {
-       Log_Info(Module::Base, "button %x %s %d", button, state ? "pressed " : "released", modifier);
+       Log_Info(Dumb::Module::Base, "button %x %s %d", button, state ? "pressed " : "released", modifier);
        };
      */
 

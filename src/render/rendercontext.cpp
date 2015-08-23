@@ -25,7 +25,7 @@ bool Context::create()
 {
     if(Context::UNITIALIZED != _state)
     {
-        Log_Error(Module::Render, "Invalid context state (expected: %d, current: %d).", Context::UNITIALIZED, _state);
+        Log_Error(Dumb::Module::Render, "Invalid context state (expected: %d, current: %d).", Context::UNITIALIZED, _state);
         return false;
     }
     
@@ -33,7 +33,7 @@ bool Context::create()
     GLenum err = glGetError(); 
     if(GL_NO_ERROR != err)
     {
-        Log_Error(Module::Render, (const char*)gluErrorString(err));
+        Log_Error(Dumb::Module::Render, (const char*)gluErrorString(err));
         return false;
     }
     
@@ -86,7 +86,7 @@ bool Context::compile()
 {
     if(Context::COMPILATION_NEEDED != _state)
     {
-        Log_Error(Module::Render, "Invalid context state (expected: %d, current: %d).", Context::UNITIALIZED, _state);
+        Log_Error(Dumb::Module::Render, "Invalid context state (expected: %d, current: %d).", Context::UNITIALIZED, _state);
         return false;
     }
     
@@ -94,7 +94,7 @@ bool Context::compile()
     {
         if(false == _targets[i].complete())
         {
-            Log_Error(Module::Render, "There is no target for output %d.", i);
+            Log_Error(Dumb::Module::Render, "There is no target for output %d.", i);
             return false;
         }
     }
@@ -115,7 +115,7 @@ bool Context::compile()
         GLenum err = glGetError();
         if(GL_NO_ERROR != err)
         {
-            Log_Error(Module::Render, "Unable to attach output %d : %s", i, (const char*)gluErrorString(err));
+            Log_Error(Dumb::Module::Render, "Unable to attach output %d : %s", i, (const char*)gluErrorString(err));
         }
 #endif // SANITY_CHECK
      }
@@ -124,7 +124,7 @@ bool Context::compile()
     if(GL_FRAMEBUFFER_COMPLETE != status)
     {
         GLenum err = glGetError();
-        Log_Error(Module::Render, "%s",(const char*)gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "%s",(const char*)gluErrorString(err));
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         return false;
     }
@@ -157,7 +157,7 @@ bool Context::addNewAttachment(Attachment point,  glm::ivec2 const& size)
 {
     if(point >= _targetCapacity)
     {
-        Log_Error(Module::Render, "Invalid attachment point.");
+        Log_Error(Dumb::Module::Render, "Invalid attachment point.");
         return false;
     }
 
@@ -176,7 +176,7 @@ bool Context::addNewAttachment(Attachment point,  glm::ivec2 const& size)
     
     if((false == empty) && (size != contextSize))
     {
-        Log_Error(Module::Render, "Attachment dimension mismatch. All outputs must have the same size (%d,%d).", contextSize.x, contextSize.y);
+        Log_Error(Dumb::Module::Render, "Attachment dimension mismatch. All outputs must have the same size (%d,%d).", contextSize.x, contextSize.y);
         return false;
     }
 
@@ -184,7 +184,7 @@ bool Context::addNewAttachment(Attachment point,  glm::ivec2 const& size)
     size_t pos;
     if(_targetIndex[index] != -1)
     {
-        Log_Warning(Module::Render, "Something is already attached to attachment %d! It will replaced.", point.to());
+        Log_Warning(Dumb::Module::Render, "Something is already attached to attachment %d! It will replaced.", point.to());
         pos = _targetIndex[index];
     }
     else

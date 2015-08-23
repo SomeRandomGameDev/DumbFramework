@@ -137,7 +137,7 @@ namespace Dumb {
                         Framework::Render::Texture::Wrap::CLAMP_TO_EDGE);
                 _texture.unbind();
                 _size = _texture.size();
-                Log_Info(Framework::Module::Render, "Atlas Size : %dx%d", (int)_size.x, (int)_size.y);
+                Log_Info(Dumb::Module::Render, "Atlas Size : %dx%d", (int)_size.x, (int)_size.y);
             } else {
                 _size = glm::vec2(0, 0);
             }
@@ -270,7 +270,7 @@ namespace Dumb {
             Identifier inside = _count++;
             const Sprite *sprite = _atlas->get(definitionId);
             if(0 == sprite) {
-                Log_Error(Framework::Module::Render,
+                Log_Error(Dumb::Module::Render,
                         "No Definition in Atlas for identifier (%d)", definitionId);
             }
 

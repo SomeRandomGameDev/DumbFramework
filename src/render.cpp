@@ -13,33 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <DumbFramework/severity.hpp>
+#include <DumbFramework/render.hpp>
 
-namespace Dumb {
-
-/**
- * Convert severity value to string.
- * Severity | String
- * -------- | -------
- * Info     | info
- * Warning  | warning
- * Error    | error
- * 
- * @return Severity as string. 
- */
-char const* Severity::toString() const
-{
-    switch(value)
-    {
-        case Severity::Info:
-            return "info";
-        case Severity::Warning:
-            return "warning";
-        case Severity::Error:
-            return "error";
-        default:
-            return "     ";
-    }
-}
-
+namespace Dumb   {
+namespace Module {
+// nothing atm.
+} // Module
 } // Dumb

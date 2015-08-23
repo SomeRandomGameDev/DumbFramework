@@ -50,7 +50,7 @@ void Renderer::setActiveTextureUnit(unsigned int unit)
     glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, (GLint*)&maxTextureUnitCount);
     if(unit >= maxTextureUnitCount)
     {
-        Log_Error(Module::Render, "Texture unit number out of bound %d (max %d).", unit, maxTextureUnitCount-1);
+        Log_Error(Dumb::Module::Render, "Texture unit number out of bound %d (max %d).", unit, maxTextureUnitCount-1);
     }
 #endif // SANITY_CHECK
     
@@ -61,7 +61,7 @@ void Renderer::setActiveTextureUnit(unsigned int unit)
     GLenum err= glGetError();
     if(GL_NO_ERROR != err)
     {
-        Log_Error(Module::Render, "An error occured while setting texture unit %d active: %s.", unit, gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "An error occured while setting texture unit %d active: %s.", unit, gluErrorString(err));
     }
 #endif
 }
@@ -78,7 +78,7 @@ unsigned int Renderer::getActiveTextureUnit()
     GLenum err= glGetError();
     if(GL_NO_ERROR != err)
     {
-        Log_Error(Module::Render, "An error occured while retrieving currently active texture unit: %s.", unit, gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "An error occured while retrieving currently active texture unit: %s.", unit, gluErrorString(err));
     }
 #endif
     return (unit - GL_TEXTURE0);

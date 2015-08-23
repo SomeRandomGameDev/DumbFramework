@@ -146,7 +146,7 @@ bool Texture2D::setData(void* data, int layer)
         }
         else
         {
-            Log_Error(Module::Render, "Invalid layer %d, layer count is %d", layer, _layers);
+            Log_Error(Dumb::Module::Render, "Invalid layer %d, layer count is %d", layer, _layers);
             glBindTexture(_target, 0);
             return false;
         }
@@ -155,7 +155,7 @@ bool Texture2D::setData(void* data, int layer)
     bool ret = (GL_NO_ERROR == err);
     if(!ret)
     {
-        Log_Error(Module::Render, "Unable to set texture data: %s", gluErrorString (err));
+        Log_Error(Dumb::Module::Render, "Unable to set texture data: %s", gluErrorString (err));
     }
     glBindTexture(_target, 0);
     return ret;
@@ -169,14 +169,14 @@ void Texture2D::bind() const
     // Warning! This may spam your logs!
     if(!isValid())
     {
-        Log_Warning(Module::Render, "You are trying to bind an invalid texture for target %s", GetTextureTargetName(_target));
+        Log_Warning(Dumb::Module::Render, "You are trying to bind an invalid texture for target %s", GetTextureTargetName(_target));
     }
     else
     {
         GLuint texID = GetCurrentTextureId(_target);
         if(texID && (texID != _id))
         {
-            Log_Warning(Module::Render, "Texture %d is currently bound for target %s", texID, GetTextureTargetName(_target));
+            Log_Warning(Dumb::Module::Render, "Texture %d is currently bound for target %s", texID, GetTextureTargetName(_target));
         }
     }
 #endif // SANITY_CHECK
@@ -196,12 +196,12 @@ void Texture2D::unbind() const
         char const* targetName = GetTextureTargetName(_target);
         if(texID)
         {
-            Log_Warning(Module::Render, "You are trying to unbind texture %d whereas the current bound texture for target %s is %d", _id, texID, targetName);
-            Log_Warning(Module::Render, "If you really want to unbind currently bound textures use Texture2D::unbindAll() (static) instead.");
+            Log_Warning(Dumb::Module::Render, "You are trying to unbind texture %d whereas the current bound texture for target %s is %d", _id, texID, targetName);
+            Log_Warning(Dumb::Module::Render, "If you really want to unbind currently bound textures use Texture2D::unbindAll() (static) instead.");
         }
         else
         {
-            Log_Warning(Module::Render, "No texture was bound for target %s", targetName);
+            Log_Warning(Dumb::Module::Render, "No texture was bound for target %s", targetName);
         }
     }
 #endif // SANITY_CHECK

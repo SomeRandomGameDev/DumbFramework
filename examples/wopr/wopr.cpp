@@ -133,7 +133,7 @@ void MainApp::postInit()
 #if defined(BUILD_PACKAGE)
         std::string filename = "/usr/share/wopr/atlas.png";
 #else
-        std::string filename = Framework::File::executableDirectory() + "/resources/atlas.png";
+        std::string filename = Dumb::File::executableDirectory() + "/resources/atlas.png";
 #endif // BUILD_PACKAGE
 
         filenameList.push_back(filename);
@@ -236,7 +236,7 @@ bool MainApp::render()
             _start = glfwGetTime();
             if(gameEnded)
             {
-                Log_Info(Framework::Module::Base, "%s", (WOPR::Draw == _status) ? "Draw" : ((WOPR::Win == _status) ? "You loose" : "You win"));
+                Log_Info(Dumb::Module::App, "%s", (WOPR::Draw == _status) ? "Draw" : ((WOPR::Win == _status) ? "You loose" : "You win"));
             }
         }
     }

@@ -17,6 +17,7 @@
 #include <DumbFramework/font.hpp>
 #include <DumbFramework/file.hpp>
 #include <DumbFramework/log.hpp>
+#include <DumbFramework/render.hpp>
 
 #include <random>
 #include <sstream>
@@ -162,7 +163,7 @@ void Example::init(Dumb::Core::Application::Adviser *adviser) {
 
 void Example::postInit() {
     using namespace Dumb::Font;
-    std::string fontPath = Framework::File::executableDirectory() + "/resources/fonts/";
+    std::string fontPath = Dumb::File::executableDirectory() + "/resources/fonts/";
     // Now, load the font and build the font atlas.
     std::vector<Range> range;
     std::vector<Oversample> oversample;
@@ -285,10 +286,10 @@ void Example::handleUnicodeModifierCharacter(unsigned int,int) {}
 void Example::handleKey(int key,int,int,int) {
     if(GLFW_KEY_ESCAPE == key) {
         if(_frames > 0) {
-            Log_Info(Framework::Module::Render, "Time per frame : %.0fns",
+            Log_Info(Dumb::Module::Render, "Time per frame : %.0fns",
                     ((_elapsed * 1000000000) / (double) _frames));
             double elapsed = glfwGetTime() - _start;
-            Log_Info(Framework::Module::Render, "FPS : %.3f",
+            Log_Info(Dumb::Module::Render, "FPS : %.3f",
                     _frames / elapsed);
         }
         _closeFlag = false; } else {
