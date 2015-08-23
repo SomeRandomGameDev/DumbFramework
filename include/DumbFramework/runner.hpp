@@ -239,5 +239,62 @@ void handleWindowSize(int, int);\
 void handleWindowIconify(int);\
 void close();
 
+// Declare wrapper core methods.
+#define DECLARE_WRAPPER_CORE \
+    public:\
+void init(Dumb::Core::Application::Adviser *);\
+void postInit();\
+bool render();\
+void close();
+
+// Declare Unicode methods
+#define DECLARE_WRAPPER_UNICODE\
+    public:\
+void handleUnicodeCharacter(unsigned int);\
+void handleUnicodeModifierCharacter(unsigned int,int);
+
+// Declare Key method
+#define DECLARE_WRAPPER_KEY\
+    public:\
+void handleKey(int,int,int,int);
+
+// Declare Mouse methods
+#define DECLARE_WRAPPER_MOUSE\
+    public:\
+void handleMousePosition(double,double);\
+void handleMouseButton(int,int,int);\
+void handleMouseScroll(double,double);
+
+// Declare Window methods
+#define DECLARE_WRAPPER_WINDOW\
+    public:\
+void handleWindowClose();\
+void handleWindowSize(int, int);\
+void handleWindowIconify(int);
+
+// Declare and Stub Unicode methods
+#define STUB_WRAPPER_UNICODE\
+    public:\
+void handleUnicodeCharacter(unsigned int) {}\
+void handleUnicodeModifierCharacter(unsigned int,int) {}
+
+// Declare and Stub Key method
+#define STUB_WRAPPER_KEY\
+    public:\
+void handleKey(int,int,int,int) {}
+
+// Declare and Stub Mouse methods
+#define STUB_WRAPPER_MOUSE\
+    public:\
+void handleMousePosition(double,double) {}\
+void handleMouseButton(int,int,int) {}\
+void handleMouseScroll(double,double) {}
+
+// Declare and Stub Window methods
+#define STUB_WRAPPER_WINDOW\
+    public:\
+void handleWindowClose() {}\
+void handleWindowSize(int, int) {}\
+void handleWindowIconify(int) {}
 
 #endif
