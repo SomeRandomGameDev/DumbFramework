@@ -17,7 +17,6 @@
 #include <DumbFramework/font.hpp>
 #include <DumbFramework/file.hpp>
 #include <DumbFramework/log.hpp>
-#include <DumbFramework/render.hpp>
 
 #include <random>
 #include <sstream>

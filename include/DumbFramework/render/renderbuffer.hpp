@@ -17,7 +17,6 @@
 #define _DUMB_FW_RENDERBUFFER_
 
 #include <glm/glm.hpp>
-#include <DumbFramework/render.hpp>
 #include <DumbFramework/render/texture.hpp>
 
 namespace Dumb   {

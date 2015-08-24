@@ -18,10 +18,9 @@
 
 #include <DumbFramework/config.hpp>
 #include <DumbFramework/log.hpp>
-#include <DumbFramework/render.hpp>
 
-namespace Dumb         {
-namespace Render       {
+namespace Dumb   {
+namespace Render {
 /**
  * @defgroup DUMB_FW_BUFFER_OBJECT Buffer object management.
  * @ingroup DUMB_FW_RENDERING

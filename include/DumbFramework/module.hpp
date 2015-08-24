@@ -55,7 +55,9 @@ static const Identifier Base("Base");
 /// App module identifier.
 /// @ingroup DUMB_FW_LOG_MODULES
 static const Identifier App("App");
-
+/// Render module identifier.
+/// @ingroup DUMB_FW_LOG_MODULES
+static const Identifier Render("Render");
 } // Module
 } // Dumb
 

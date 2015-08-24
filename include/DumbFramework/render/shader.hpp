@@ -18,7 +18,6 @@
 
 #include <DumbFramework/config.hpp>
 #include <DumbFramework/log.hpp>
-#include <DumbFramework/render.hpp>
 
 namespace Dumb   {
 namespace Render {
