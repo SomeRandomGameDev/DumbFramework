@@ -161,7 +161,7 @@ namespace Dumb {
                 /**
                  * Texture array identifier.
                  */
-                Framework::Render::Texture2D _texture;
+                Dumb::Render::Texture2D _texture;
 
                 /**
                  * Atlas Size in pixels.
@@ -546,13 +546,13 @@ namespace Dumb {
                 /**
                  * @return List of shaders used for rendering.
                  */
-                std::vector<std::pair<Framework::Render::Shader::Type, const char *> >
+                std::vector<std::pair<Dumb::Render::Shader::Type, const char *> >
                     shaders() const;
 
                 /**
                  * @return Vertex stream composition.
                  */
-                std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute> >
+                std::vector<std::pair<unsigned int, Dumb::Render::Geometry::Attribute> >
                     attributes() const;
 
                 /**
@@ -574,13 +574,13 @@ namespace Dumb {
                  * Initialisation.
                  * @param [in] program Compiled program that will be used for rendering.
                  */
-                void init(Framework::Render::Program &program);
+                void init(Dumb::Render::Program &program);
 
                 /**
                  * Program update at rendering time.
                  * @param [in] program Program used for rendering.
                  */
-                void update(Framework::Render::Program &program);
+                void update(Dumb::Render::Program &program);
 
                 /**
                  * Post-render context cleaning.

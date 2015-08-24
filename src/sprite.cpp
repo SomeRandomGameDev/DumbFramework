@@ -226,7 +226,7 @@ namespace Dumb {
          * Access texture.
          * @return texture object.
          */
-        Framework::Render::Texture2D const& Atlas::texture() const
+        Dumb::Render::Texture2D const& Atlas::texture() const
         {
             return _texture;
         }
@@ -565,13 +565,13 @@ namespace Dumb {
             }
 
             bool ret;
-            ret = Framework::Render::Texture::load(_texture, items, Framework::Render::Texture::PixelFormat::RGBA_8);
+            ret = Dumb::Render::Texture::load(_texture, items, Dumb::Render::Texture::PixelFormat::RGBA_8);
             if(ret)
             {
                 _texture.bind();
-                _texture.setMinFilter(Framework::Render::Texture::MinFilter::LINEAR_TEXEL);
-                _texture.setMagFilter(Framework::Render::Texture::MagFilter::LINEAR_TEXEL);
-                _texture.setWrap(Framework::Render::Texture::Wrap::CLAMP_TO_EDGE, Framework::Render::Texture::Wrap::CLAMP_TO_EDGE);
+                _texture.setMinFilter(Dumb::Render::Texture::MinFilter::LINEAR_TEXEL);
+                _texture.setMagFilter(Dumb::Render::Texture::MagFilter::LINEAR_TEXEL);
+                _texture.setWrap(Dumb::Render::Texture::Wrap::CLAMP_TO_EDGE, Dumb::Render::Texture::Wrap::CLAMP_TO_EDGE);
                 _texture.unbind();
 
                 _size = _texture.size();

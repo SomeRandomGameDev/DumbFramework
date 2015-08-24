@@ -85,40 +85,40 @@ namespace Dumb {
         }
         )Shader";
 
-        std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute>> s_attributes =
-            std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute>>(
+        std::vector<std::pair<unsigned int, Dumb::Render::Geometry::Attribute>> s_attributes =
+            std::vector<std::pair<unsigned int, Dumb::Render::Geometry::Attribute>>(
                     {
                     { VERTEX_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT,
                             2, false, VBO_STRIDE, 0,                  1) },
                     { OFFSET_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT,
                             2, false, VBO_STRIDE, sizeof(float) *  2, 1) },
                     { SIZE_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT,
                             2, false, VBO_STRIDE, sizeof(float) *  4, 1) },
                     { TOP_TEX_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT,
                             2, false, VBO_STRIDE, sizeof(float) *  6, 1) },
                     { DOWN_TEX_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT,
                             2, false, VBO_STRIDE, sizeof(float) *  8, 1) },
                     { ROTATE_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT,
                             1, false, VBO_STRIDE, sizeof(float) * 10, 1) },
                     { SCALE_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT,
                             1, false, VBO_STRIDE, sizeof(float) * 11, 1) },
                     { TEXTURE_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::UNSIGNED_INT,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::UNSIGNED_INT,
                             1, false, VBO_STRIDE, sizeof(float) * 12, 1) }
                     });
 
@@ -127,14 +127,14 @@ namespace Dumb {
         // ---------
         Atlas::Atlas(const std::vector<std::string> &paths, unsigned int capacity) {
             bool valid;
-            valid = Framework::Render::Texture::load(_texture,
-                    paths, Framework::Render::Texture::PixelFormat::RGBA_8);
+            valid = Dumb::Render::Texture::load(_texture,
+                    paths, Dumb::Render::Texture::PixelFormat::RGBA_8);
             if(valid) {
                 _texture.bind();
-                _texture.setMinFilter(Framework::Render::Texture::MinFilter::LINEAR_TEXEL);
-                _texture.setMagFilter(Framework::Render::Texture::MagFilter::LINEAR_TEXEL);
-                _texture.setWrap(Framework::Render::Texture::Wrap::CLAMP_TO_EDGE,
-                        Framework::Render::Texture::Wrap::CLAMP_TO_EDGE);
+                _texture.setMinFilter(Dumb::Render::Texture::MinFilter::LINEAR_TEXEL);
+                _texture.setMagFilter(Dumb::Render::Texture::MagFilter::LINEAR_TEXEL);
+                _texture.setWrap(Dumb::Render::Texture::Wrap::CLAMP_TO_EDGE,
+                        Dumb::Render::Texture::Wrap::CLAMP_TO_EDGE);
                 _texture.unbind();
                 _size = _texture.size();
                 Log_Info(Dumb::Module::Render, "Atlas Size : %dx%d", (int)_size.x, (int)_size.y);
@@ -396,30 +396,30 @@ namespace Dumb {
         }
 
         //    ----------------------------------------------------------------
-        std::vector<std::pair<Framework::Render::Shader::Type, const char *> >
+        std::vector<std::pair<Dumb::Render::Shader::Type, const char *> >
             Delegate::shaders() const {
-                return std::vector<std::pair<Framework::Render::Shader::Type, const char *> >(
+                return std::vector<std::pair<Dumb::Render::Shader::Type, const char *> >(
                         {
-                        { Framework::Render::Shader::VERTEX_SHADER,   s_dse_vertexShaderInstanced },
-                        { Framework::Render::Shader::FRAGMENT_SHADER, s_dse_fragmentShader }
+                        { Dumb::Render::Shader::VERTEX_SHADER,   s_dse_vertexShaderInstanced },
+                        { Dumb::Render::Shader::FRAGMENT_SHADER, s_dse_fragmentShader }
                         });
             }
 
         //    -----------------------------------------------------------------------
-        std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute> >
+        std::vector<std::pair<unsigned int, Dumb::Render::Geometry::Attribute> >
             Delegate::attributes() const {
                 return s_attributes;
             }
 
 
         //   --------------
-        void Delegate::init(Framework::Render::Program &program) {
+        void Delegate::init(Dumb::Render::Program &program) {
             _uniformMatrix  = static_cast<GLint>(program.getUniformLocation("un_matrix"));
             _uniformTexture = static_cast<GLint>(program.getUniformLocation("un_texture"));
         }
 
         //   ----------------
-        void Delegate::update(Framework::Render::Program &program) {
+        void Delegate::update(Dumb::Render::Program &program) {
             _atlas->bind();
             program.uniform(_uniformMatrix, false, _matrix);
             program.uniform(_uniformTexture, 0);

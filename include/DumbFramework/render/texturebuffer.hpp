@@ -10,7 +10,7 @@ namespace Render    {
 /**
  * @brief Texture buffer storage.
  * @ingroup DUMB_FW_BUFFER_OBJECT
- * @see Framework::BufferObject::Detail
+ * @see Dumb::BufferObject::Detail
  */
 typedef BufferObject::Detail<BufferObject::TEXTURE_BUFFER> Storage;
 

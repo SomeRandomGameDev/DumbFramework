@@ -37,17 +37,19 @@ namespace Dumb {
         /**
          * Dumb Core Engine.
          * The processing delegation must implement the following concept:
+         * @code
          * Constructor(...);
-         * std::vector<std::pair<Framework::Render::Shader::Type, const char *> > shaders() const;
-         * std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute> > attributes() const;
+         * std::vector<std::pair<Dumb::Render::Shader::Type, const char *> > shaders() const;
+         * std::vector<std::pair<unsigned int, Dumb::Render::Geometry::Attribute> > attributes() const;
          * GLenum primitive() const;
          * bool isInstanced() const;
          * void viewport(GLfloat, GLfloat, GLfloat, GLfloat);
          * GLsizei instanceCardinality() const;
-         * void init(Framework::Render::Program &);
-         * void update(Framework::Render::Program &);
+         * void init(Dumb::Render::Program &);
+         * void update(Dumb::Render::Program &);
          * GLsizei update(void *, GLsizei, ...);
          * void postRender();
+         * @endcode
          * This last method is in fact a set of methods which first argument
          * is a pointer to the vertex buffer mapping and other arguments are
          * variadic. Hence, it's up to the delegation to implement whatever
@@ -65,8 +67,8 @@ namespace Dumb {
                 template <typename... A> Engine(unsigned int capacity, A... args) : _count(0) {
                     // First, create the delegate object.
                     _delegate = new T(args...);
-                    std::vector< std::pair<Framework::Render::Shader::Type, const char*> > shaders;
-                    std::vector< std::pair<unsigned int, Framework::Render::Geometry::Attribute> > attributes;
+                    std::vector< std::pair<Dumb::Render::Shader::Type, const char*> > shaders;
+                    std::vector< std::pair<unsigned int, Dumb::Render::Geometry::Attribute> > attributes;
                     shaders = _delegate->shaders();
                     attributes = _delegate->attributes();
                     _mode = _delegate->primitive();
@@ -77,7 +79,7 @@ namespace Dumb {
                     // Then, determine the stride.
                     unsigned int stride = 0;
                     for(auto &i : attributes) {
-                        Framework::Render::Geometry::Attribute &attribute = i.second;
+                        Dumb::Render::Geometry::Attribute &attribute = i.second;
                         if(attribute.stride > stride) {
                             stride = attribute.stride; // It should not differ from one attribute to another.
                         }
@@ -95,7 +97,7 @@ namespace Dumb {
                     _program.create();
                     _program.infoLog(Dumb::Severity::Info);
                     for(auto &i : shaders) {
-                        Framework::Render::Shader shader;
+                        Dumb::Render::Shader shader;
                         shader.create(i.first, i.second);
                         shader.infoLog(Dumb::Severity::Info);
                         _program.attach(shader);
@@ -133,7 +135,7 @@ namespace Dumb {
                  */
                 template <typename... A> void update(A... args) {
                     _buffer.bind();
-                    void *ptr = _buffer.map(Framework::Render::BufferObject::Access::Policy::WRITE_ONLY);
+                    void *ptr = _buffer.map(Dumb::Render::BufferObject::Access::Policy::WRITE_ONLY);
                     GLsizei count = _delegate->update(ptr, _capacity, args...);
                     _count = count;
                     _buffer.unmap();
@@ -145,14 +147,14 @@ namespace Dumb {
                  * @param [in] args Variadic arguments.
                  */
                 template <typename... A> void render(A... args) {
-                    Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
+                    Dumb::Render::Renderer& renderer = Dumb::Render::Renderer::instance();
                     renderer.depthBufferWrite(false);
                     _program.begin();
                     renderer.setActiveTextureUnit(0);
                     // Delegate the program update.
                     _delegate->update(_program);
                     _buffer.bind();
-                    void *ptr = _buffer.map(Framework::Render::BufferObject::Access::Policy::WRITE_ONLY);
+                    void *ptr = _buffer.map(Dumb::Render::BufferObject::Access::Policy::WRITE_ONLY);
                     // Delegate the buffer update.
                     GLsizei count = _delegate->update(ptr, _capacity, args...);
                     _count = count;
@@ -176,7 +178,7 @@ namespace Dumb {
                  */
                 void render() {
                     if(_count > 0) {
-                        Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
+                        Dumb::Render::Renderer& renderer = Dumb::Render::Renderer::instance();
                         renderer.depthBufferWrite(false);
                         _program.begin();
                         renderer.setActiveTextureUnit(0);
@@ -207,17 +209,17 @@ namespace Dumb {
                 /**
                  * Vertex Stream.
                  */
-                Framework::Render::VertexStream _stream;
+                Dumb::Render::VertexStream _stream;
 
                 /**
                  * Vertex Buffer Object.
                  */
-                Framework::Render::VertexBuffer _buffer;
+                Dumb::Render::VertexBuffer _buffer;
 
                 /**
                  * GLSL Program identifier.
                  */
-                Framework::Render::Program _program;
+                Dumb::Render::Program _program;
 
                 /**
                  * Primitive.

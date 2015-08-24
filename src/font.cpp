@@ -84,28 +84,28 @@ namespace Dumb {
         }
         )EOT";
 
-        std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute>> s_attributes =
-            std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute>>(
+        std::vector<std::pair<unsigned int, Dumb::Render::Geometry::Attribute>> s_attributes =
+            std::vector<std::pair<unsigned int, Dumb::Render::Geometry::Attribute>>(
                     {
                     { DFE_POSITION_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT, 2, false,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT, 2, false,
                             DFE_BUFFER_STRIDE,                    0, 1) },
                     { DFE_SIZE_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT, 2, false,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT, 2, false,
                             DFE_BUFFER_STRIDE, sizeof(GLfloat) *  2, 1) },
                     { DFE_TOP_TEX_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT, 2, false,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT, 2, false,
                             DFE_BUFFER_STRIDE, sizeof(GLfloat) *  4, 1) },
                     { DFE_DOWN_TEX_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT, 2, false,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT, 2, false,
                             DFE_BUFFER_STRIDE, sizeof(GLfloat) *  6, 1) },
                     { DFE_COLOR_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::UNSIGNED_BYTE, 4, false,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::UNSIGNED_BYTE, 4, false,
                             DFE_BUFFER_STRIDE, sizeof(GLfloat) *  8, 1) },
                     });
 
@@ -603,30 +603,30 @@ namespace Dumb {
         }
 
         //    ----------------------------------------------------------------
-        std::vector<std::pair<Framework::Render::Shader::Type, const char *> >
+        std::vector<std::pair<Dumb::Render::Shader::Type, const char *> >
             Delegate::shaders() const {
-                return std::vector<std::pair<Framework::Render::Shader::Type, const char *> >(
+                return std::vector<std::pair<Dumb::Render::Shader::Type, const char *> >(
                         {
-                        { Framework::Render::Shader::VERTEX_SHADER,   s_dfe_vertexShaderInstanced },
-                        { Framework::Render::Shader::FRAGMENT_SHADER, s_dfe_fragmentShader }
+                        { Dumb::Render::Shader::VERTEX_SHADER,   s_dfe_vertexShaderInstanced },
+                        { Dumb::Render::Shader::FRAGMENT_SHADER, s_dfe_fragmentShader }
                         });
             }
 
         //    -----------------------------------------------------------------------
-        std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute> >
+        std::vector<std::pair<unsigned int, Dumb::Render::Geometry::Attribute> >
             Delegate::attributes() const {
                 return s_attributes;
             }
 
 
         //   --------------
-        void Delegate::init(Framework::Render::Program &program) {
+        void Delegate::init(Dumb::Render::Program &program) {
             _uniformMatrix  = program.getUniformLocation("un_matrix");
             _uniformTexture = program.getUniformLocation("un_texture");
         }
 
         //   ----------------
-        void Delegate::update(Framework::Render::Program &program) {
+        void Delegate::update(Dumb::Render::Program &program) {
             program.uniform(_uniformMatrix, false, _matrix);
             glBindTexture(GL_TEXTURE_2D, _atlas);
         }

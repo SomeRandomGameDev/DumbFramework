@@ -160,13 +160,13 @@ void MainApp::postInit()
     glViewport(0, 0, _displayCfg.screenSize.x, _displayCfg.screenSize.y);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-    Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
+    Dumb::Render::Renderer& renderer = Dumb::Render::Renderer::instance();
     renderer.depthTest(false);
     renderer.culling(false);
     renderer.texture2D(true);
     renderer.blend(true);
-    renderer.blendFunc(Framework::Render::BlendFunc::SRC_ALPHA,
-                       Framework::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
+    renderer.blendFunc(Dumb::Render::BlendFunc::SRC_ALPHA,
+                       Dumb::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
 }
 
 bool MainApp::render()
