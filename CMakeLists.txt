@@ -117,8 +117,6 @@ set(DUMB_FRAMEWORK_SOURCES
     src/render.cpp
     src/sprengine.cpp
     src/sprite.cpp
-    src/joystick.cpp
-    src/mouse.cpp
     src/adviser.cpp
     src/font.cpp)
 
