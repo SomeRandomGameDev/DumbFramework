@@ -25,6 +25,7 @@
 #include <DumbFramework/render/vertexbuffer.hpp>
 #include <DumbFramework/render/vertexstream.hpp>
 #include <DumbFramework/render/renderer.hpp>
+#include <DumbFramework/runner.hpp>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -48,6 +49,7 @@ template <typename T>
 class ImGuiDelegate
 {
     DECLARE_WRAPPER_METHODS
+    
     public:
         /** 
          * Constructor.
@@ -61,6 +63,7 @@ class ImGuiDelegate
          * Destructor.
          */
         ~ImGuiDelegate();
+
     protected:
         static void renderDrawLists(ImDrawList** const cmd_lists, int cmd_lists_count);
         static const char* getClipboardText();
@@ -93,8 +96,8 @@ class ImGuiDelegate
         T *_delegate;
 };
 
-} // Dumb
-
 #include "imguidelegate.inl"
+
+} // Dumb
 
 #endif // _DUMB_FW_IMGUI_DELEGATE_
