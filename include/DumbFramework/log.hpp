@@ -69,7 +69,8 @@
  * @ingroup DUMB_FW_LOG
  * Emit log with the severity set to Dumb::Severity::Info.
  * 
- * @a module is one of the module defined in Dumb::Module. \n
+ * @a module is a module identifier. It can be an \ref DUMB_FW_LOG_MODULES "existing module identifier"
+ *    or one provided by the user.\n
  * @a format is similar is similar to @c printf. \n
  *
  * The source information (file, line number, function name) is
@@ -82,7 +83,8 @@
  * @ingroup DUMB_FW_LOG
  * Emit log with the severity set to Dumb::Severity::Warning.
  * 
- * @a module is one of the module defined in Dumb::Module. \n
+ * @a module is a module identifier. It can be an \ref DUMB_FW_LOG_MODULES "existing module identifier"
+ *    or one provided by the user.\n
  * @a format is similar to @c printf. \n
  *
  * The source information (file, line number, function name) is
@@ -95,8 +97,9 @@
  * @ingroup DUMB_FW_LOG
  * Emit log with the severity set to Dumb::Severity::Error.
  * 
- * @a module is one of the module defined in Dumb::Module. \n
- * @a format is similar to @c printf. \n
+ * @a module is a module identifier. It can be an \ref DUMB_FW_LOG_MODULES "existing module identifier"
+ *    or one provided by the user.\n
+* @a format is similar to @c printf. \n
  * 
  * The source information (file, line number, function name) is
  * automatically set. 
@@ -137,12 +140,38 @@
  * 
  * @endcode
  * 
- * @a module is one of the module defined in Dumb::Module. \n
+ * @a module is a module identifier. It can be an \ref DUMB_FW_LOG_MODULES "existing module identifier"
+ *    or one provided by the user.\n
  * @a severity is one of the module defined in Dumb::Severity. \n
  * @a format is similar to @c printf. \n
  * 
  * The source information (file, line number, function name) is
  * automatically set. 
+ */
+
+/**
+ * @def SIMPLE_LOGGING(procesor)
+ * @hideinitializer
+ * @ingroup DUMB_FW_LOG
+ * Creates and starts a simple console logging system.
+ * More precisely it will create a Dumb::Log::LogBuilder with an all-pass 
+ * filter (Dumb::Log::AllPassFilter) and a Dumb::Log::SimpleMessageFormat.
+ * The log messages will be output to the standard output using a Dumb::Log::ConsoleOutputPolicy.
+ * @a processor is the name of the Dumb::Log::LogProcessor instance reference.
+ *
+ * For example SIMPLE_LOGGING(logProcessor) will produce:
+ * @code
+ * Dumb::Log::LogBuilder<Dumb::Log::AllPassFilter, Dumb::Log::SimpleMessageFormat> msgBuilder;
+ * Dumb::Log::ConsoleOutputPolicy output;
+ * Dumb::Log::LogProcessor& logProcessor = Dumb::Log::LogProcessor::instance();
+ * logProcessor.start(&msgBuilder, &output);
+ * @endcode
+ * 
+ * @note It is up to the user to stop the log processor either by using
+ *       the reference name declared with the macro or by calling
+ * @code
+ * Dumb::Log::LogProcessor::instance().stop();
+ * @endcode
  */
 
 namespace Dumb {
@@ -496,6 +525,13 @@ namespace Log  {
 #define Log_Error(module, format, ...)   do { Dumb::Log::LogProcessor::instance().write(module, Dumb::Severity::Error,   Dumb::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
 
 #define Log_Ex(module, severity, format, ...) do { Dumb::Log::LogProcessor::instance().write(module, severity, Dumb::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
+
+#define SIMPLE_LOGGING(procesor) \
+Dumb::Log::LogBuilder<Dumb::Log::AllPassFilter, Dumb::Log::SimpleMessageFormat> msgBuilder;\
+Dumb::Log::ConsoleOutputPolicy output;\
+Dumb::Log::LogProcessor& processor = Dumb::Log::LogProcessor::instance();\
+processor.start(&msgBuilder, &output);\
+
 
 #include "log.inl"
 

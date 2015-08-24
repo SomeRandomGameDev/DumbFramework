@@ -210,11 +210,7 @@ namespace Dumb {
 // Create a simple application.
 #define SIMPLE_APP(W) \
     int main(void){ \
-        Dumb::Log::LogBuilder<Dumb::Log::AllPassFilter,\
-        Dumb::Log::SimpleMessageFormat> msgBuilder;\
-        Dumb::Log::ConsoleOutputPolicy output;\
-        Dumb::Log::LogProcessor& processor = Dumb::Log::LogProcessor::instance();\
-        processor.start(&msgBuilder, &output);\
+        SIMPLE_LOGGING(procesor)\
         W *w = new W();Dumb::Core::Application::Runner<W> runner(w);\
         int result = runner.start();delete w;\
         Log_Info(Dumb::Module::App, "End ...");\

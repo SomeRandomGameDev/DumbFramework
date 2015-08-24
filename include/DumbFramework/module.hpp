@@ -21,6 +21,7 @@
 namespace Dumb   {
 namespace Module {
 /// @brief Application module identifier.
+/// @ingroup DUMB_FW_LOG
 /// Identifier of the current application module.
 class Identifier
 {
@@ -30,6 +31,12 @@ class Identifier
         Identifier(std::string const& name);
         /// Destructor.
         ~Identifier();
+        /// Check if two identifiers are equal.
+        /// @param [in] id Module identifier.
+        bool operator== (Identifier const& id);
+        /// Check if two identifiers are different.
+        /// @param [in] id Module identifier.
+        bool operator!= (Identifier const& id);
         /// Get module name.
         /// @return Module name.
         std::string const& toString() const;
@@ -38,9 +45,15 @@ class Identifier
         std::string _name;
 };
 
+/// @defgroup DUMB_FW_LOG_MODULES Module identifiers.
+/// @ingroup DUMB_FW_LOG
+/// List of module identifiers.
+
 /// Base module identifier.
+/// @ingroup DUMB_FW_LOG_MODULES
 static const Identifier Base("Base");
 /// App module identifier.
+/// @ingroup DUMB_FW_LOG_MODULES
 static const Identifier App("App");
 
 } // Module

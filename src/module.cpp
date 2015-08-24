@@ -32,6 +32,18 @@ std::string const& Identifier::toString() const
 {
     return _name;
 }
+/// Check if two identifiers are equal.
+/// @param [in] id Module identifier.
+bool Identifier::operator== (Identifier const& id)
+{
+    return (_name == id._name);
+}
+/// Check if two identifiers are different.
+/// @param [in] id Module identifier.
+bool Identifier::operator!= (Identifier const& id)
+{
+    return (_name != id._name);
+}
 
 } // Module
 } // Dumb

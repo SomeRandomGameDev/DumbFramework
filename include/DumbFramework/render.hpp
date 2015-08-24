@@ -21,6 +21,7 @@
 namespace Dumb   {
 namespace Module {
 /// Render module identifier.
+/// @ingroup DUMB_FW_LOG_MODULES
 static const Identifier Render("Render");
 } // Module
 
