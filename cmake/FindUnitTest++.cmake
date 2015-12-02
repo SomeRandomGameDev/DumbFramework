@@ -1,6 +1,6 @@
 find_path( UNITTEST++_INCLUDE_DIR 
     NAMES
-        unittest++/UnitTest++.h
+        UnitTest++/UnitTest++.h
     PATHS
         "${UNITTEST++_LOCATION}/include"
         "$ENV{UNITTEST++_LOCATION}/include"
