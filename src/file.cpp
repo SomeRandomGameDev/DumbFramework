@@ -238,7 +238,7 @@ size_t File::size() const
 }
 
 /** @brief Get current file offset in bytes. */
-off_t File::offset() const
+off_t File::tell() const
 {
     if(_handle)
     {

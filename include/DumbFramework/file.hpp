@@ -174,19 +174,19 @@ class File
          * If File::open is called, the same file will be reopened using
          * the same mode. 
          */
-        void close();
+        void close ();
 
         /** @brief Check if the file is opened. */
-        bool isOpened() const;
+        bool isOpened () const;
 
         /** @brief Get filename. */
-        std::string const& name  () const;
+        std::string const& name () const;
         /** @brief Get file size in bytes. */
-        size_t             size  () const;
+        size_t size () const;
         /** @brief Get current file offset in bytes. */
-        off_t              offset() const;
+        off_t tell () const;
         /** @brief Get current opening mode. */
-        File::OpenMode     mode  () const;
+        File::OpenMode mode () const;
         
         /** 
          * @brief Read data from file.
