@@ -1,4 +1,19 @@
-namespace Framework    {
+/*
+ * Copyright 2015 MooZ
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+namespace Dumb         {
 namespace Render       {
 namespace BufferObject {
 
@@ -63,7 +78,7 @@ bool Detail<t>::create(size_t size, void* data, Access::Frequency freq, Access::
 
     if(GL_NO_ERROR != err)
     {
-        Log_Error(Framework::Module::Render, "An error occured while creating buffer object %d: %s", _id, gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "An error occured while creating buffer object %d: %s", _id, gluErrorString(err));
         return false;
     }
     return true;
@@ -96,13 +111,13 @@ bool Detail<t>::set(off_t offset, size_t size, void* data)
 {
     if((size_t)offset >= _size)
     {
-        Log_Error(Framework::Module::Render, "Offset (%d) out of bound (buffer size: %d)", offset, _size);
+        Log_Error(Dumb::Module::Render, "Offset (%d) out of bound (buffer size: %d)", offset, _size);
         return false;
     }
 
     if((offset+size) > _size)
     {
-        Log_Error(Framework::Module::Render, "Buffer overflow (offset: %d, size: %d, buffer size: %d)", offset, size, _size);
+        Log_Error(Dumb::Module::Render, "Buffer overflow (offset: %d, size: %d, buffer size: %d)", offset, size, _size);
         return false;
     }
     glBufferSubData(_infos.target, offset, size, data);
@@ -128,7 +143,7 @@ void Detail<t>::bind() const
     // Warning! This may spam your logs!
     if(!isValid())
     {
-        Log_Warning(Module::Render, "You are trying to bind an invalid %s buffer!", _infos.name);
+        Log_Warning(Dumb::Module::Render, "You are trying to bind an invalid %s buffer!", _infos.name);
     }
     else
     {
@@ -136,7 +151,7 @@ void Detail<t>::bind() const
         glGetIntegerv(_infos.query, (GLint*)&bufferId);
         if(bufferId && (bufferId != _id))
         {
-            Log_Warning(Module::Render, "%s buffer %d is currently bound.", _infos.name);
+            Log_Warning(Dumb::Module::Render, "%s buffer %d is currently bound.", _infos.name);
         }
     }
 #endif // SANITY_CHECK
@@ -156,12 +171,12 @@ void Detail<t>::unbind() const
     {
         if(_id)
         {
-            Log_Warning(Module::Render, "You are trying to unbind buffer %d whereas the current bound %s buffer is %d", _id, _infos.name, bufferId);
-            Log_Warning(Module::Render, "If you really want to unbind the currently bound buffer use the unbindAll() (static) method instead.");
+            Log_Warning(Dumb::Module::Render, "You are trying to unbind buffer %d whereas the current bound %s buffer is %d", _id, _infos.name, bufferId);
+            Log_Warning(Dumb::Module::Render, "If you really want to unbind the currently bound buffer use the unbindAll() (static) method instead.");
         }
         else
         {
-            Log_Warning(Module::Render, "No %s buffer was bound.", _infos.name);
+            Log_Warning(Dumb::Module::Render, "No %s buffer was bound.", _infos.name);
         }
     }
 #endif // SANITY_CHECK
@@ -199,7 +214,7 @@ void* Detail<t>::map(BufferObject::Access::Policy policy) const
     // Warning! This may spam your logs!
     if(isMapped())
     {
-        Log_Warning(Framework::Module::Render, "The buffer is alread mapped. Current mapping operation will fail!");
+        Log_Warning(Dumb::Module::Render, "The buffer is alread mapped. Current mapping operation will fail!");
     }
 #endif // SANITY_CHECK
 
@@ -208,7 +223,7 @@ void* Detail<t>::map(BufferObject::Access::Policy policy) const
     if(NULL == ptr)
     {
         GLenum err = glGetError();
-        Log_Error(Framework::Module::Render, "An error occured while mapping buffer %d: %s", _id, gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "An error occured while mapping buffer %d: %s", _id, gluErrorString(err));
     }
     return ptr;
 }
@@ -228,7 +243,7 @@ void* Detail<t>::map(BufferObject::Access::Policy policy, off_t offset, size_t l
     // Warning! This may spam your logs!
     if(isMapped())
     {
-        Log_Warning(Framework::Module::Render, "The buffer is alread mapped. Current mapping operation will fail!");
+        Log_Warning(Dumb::Module::Render, "The buffer is alread mapped. Current mapping operation will fail!");
     }
 #endif // SANITY_CHECK
     
@@ -251,7 +266,7 @@ void* Detail<t>::map(BufferObject::Access::Policy policy, off_t offset, size_t l
     if(NULL == ptr)
     {
         GLenum err = glGetError();
-        Log_Error(Framework::Module::Render, "An error occured while mapping buffer %d: %s", _id, gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "An error occured while mapping buffer %d: %s", _id, gluErrorString(err));
     }
     return static_cast<void*>(ptr);
 }
@@ -268,7 +283,7 @@ bool Detail<t>::unmap() const
     // Warning! This may spam your logs!
     if(!isMapped())
     {
-        Log_Warning(Framework::Module::Render, "The buffer was not mapped. Unmapping will fail!");
+        Log_Warning(Dumb::Module::Render, "The buffer was not mapped. Unmapping will fail!");
     }
 #endif // SANITY_CHECK
 
@@ -277,7 +292,7 @@ bool Detail<t>::unmap() const
     if(GL_FALSE == ret)
     {
         GLenum err = glGetError();
-        Log_Error(Framework::Module::Render, "An error occured while unmapping buffer %d: %s", _id, gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "An error occured while unmapping buffer %d: %s", _id, gluErrorString(err));
         return false;
     }
     return true;
@@ -330,5 +345,5 @@ Access::Type Detail<t>::accessType() const
 
 } // BufferObject
 } // Render
-} // Framework
+} // Dumb
 

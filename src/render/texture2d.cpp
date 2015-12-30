@@ -1,10 +1,25 @@
+/*
+ * Copyright 2015 MooZ
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <glm/gtc/type_ptr.hpp>
 
 #include <DumbFramework/log.hpp>
 #include <DumbFramework/render/texture2d.hpp>
 
-namespace Framework {
-namespace Render    {
+namespace Dumb   {
+namespace Render {
 
 /** @return OpengGL texture binding query according to texture target. **/
 static GLenum QueryFromTextureTarget(GLenum target)
@@ -146,7 +161,7 @@ bool Texture2D::setData(void* data, int layer)
         }
         else
         {
-            Log_Error(Module::Render, "Invalid layer %d, layer count is %d", layer, _layers);
+            Log_Error(Dumb::Module::Render, "Invalid layer %d, layer count is %d", layer, _layers);
             glBindTexture(_target, 0);
             return false;
         }
@@ -155,7 +170,7 @@ bool Texture2D::setData(void* data, int layer)
     bool ret = (GL_NO_ERROR == err);
     if(!ret)
     {
-        Log_Error(Module::Render, "Unable to set texture data: %s", gluErrorString (err));
+        Log_Error(Dumb::Module::Render, "Unable to set texture data: %s", gluErrorString (err));
     }
     glBindTexture(_target, 0);
     return ret;
@@ -169,14 +184,14 @@ void Texture2D::bind() const
     // Warning! This may spam your logs!
     if(!isValid())
     {
-        Log_Warning(Module::Render, "You are trying to bind an invalid texture for target %s", GetTextureTargetName(_target));
+        Log_Warning(Dumb::Module::Render, "You are trying to bind an invalid texture for target %s", GetTextureTargetName(_target));
     }
     else
     {
         GLuint texID = GetCurrentTextureId(_target);
         if(texID && (texID != _id))
         {
-            Log_Warning(Module::Render, "Texture %d is currently bound for target %s", texID, GetTextureTargetName(_target));
+            Log_Warning(Dumb::Module::Render, "Texture %d is currently bound for target %s", texID, GetTextureTargetName(_target));
         }
     }
 #endif // SANITY_CHECK
@@ -196,12 +211,12 @@ void Texture2D::unbind() const
         char const* targetName = GetTextureTargetName(_target);
         if(texID)
         {
-            Log_Warning(Module::Render, "You are trying to unbind texture %d whereas the current bound texture for target %s is %d", _id, texID, targetName);
-            Log_Warning(Module::Render, "If you really want to unbind currently bound textures use Texture2D::unbindAll() (static) instead.");
+            Log_Warning(Dumb::Module::Render, "You are trying to unbind texture %d whereas the current bound texture for target %s is %d", _id, texID, targetName);
+            Log_Warning(Dumb::Module::Render, "If you really want to unbind currently bound textures use Texture2D::unbindAll() (static) instead.");
         }
         else
         {
-            Log_Warning(Module::Render, "No texture was bound for target %s", targetName);
+            Log_Warning(Dumb::Module::Render, "No texture was bound for target %s", targetName);
         }
     }
 #endif // SANITY_CHECK
@@ -307,4 +322,4 @@ GLuint Texture2D::id() const
 }
 
 } // Render
-} // Framework
+} // Dumb

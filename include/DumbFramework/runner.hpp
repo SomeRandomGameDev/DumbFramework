@@ -90,7 +90,7 @@ namespace Dumb {
                                     // Setting up GLEW.
                                     GLenum glewError = glewInit();
                                     if(GLEW_OK != glewError) {
-                                        Log_Error(Framework::Module::App,
+                                        Log_Error(Module::App,
                                                 "Can't initialize GLEW : %s",
                                                 glewGetErrorString(glewError));
                                         glfwTerminate();
@@ -146,7 +146,7 @@ namespace Dumb {
                      * @param [in] desc Error description.
                      */
                     static void handleErrorMessage(int code, const char *desc) {
-                        Log_Error(Framework::Module::App, "%s (errcode : %d)", desc, code);
+                        Log_Error(Module::App, "%s (errcode : %d)", desc, code);
                     }
 
                     // Basic GLFW Callbacks.
@@ -210,14 +210,10 @@ namespace Dumb {
 // Create a simple application.
 #define SIMPLE_APP(W) \
     int main(void){ \
-        Framework::Log::LogBuilder<Framework::Log::AllPassFilter,\
-        Framework::Log::SimpleMessageFormat> msgBuilder;\
-        Framework::Log::ConsoleOutputPolicy output;\
-        Framework::Log::LogProcessor& processor = Framework::Log::LogProcessor::instance();\
-        processor.start(&msgBuilder, &output);\
+        SIMPLE_LOGGING(procesor)\
         W *w = new W();Dumb::Core::Application::Runner<W> runner(w);\
         int result = runner.start();delete w;\
-        Log_Info(Framework::Module::App, "End ...");\
+        Log_Info(Dumb::Module::App, "End ...");\
         processor.stop();\
         return result;\
     }

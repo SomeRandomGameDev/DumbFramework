@@ -178,9 +178,9 @@ void TestEngine::handleKey(int key, int /* scancode */, int action, int /* mods 
 void TestEngine::postInit() {
     if(0 == _atlas) {
         std::vector<std::string> textures;
-        std::string texture = Framework::File::executableDirectory() + "/resources/textures/atlas1.png";
+        std::string texture = Dumb::File::executableDirectory() + "/resources/textures/atlas1.png";
         textures.push_back(texture);
-        texture = Framework::File::executableDirectory() + "/resources/textures/atlas2.png";
+        texture = Dumb::File::executableDirectory() + "/resources/textures/atlas2.png";
         textures.push_back(texture);
         // Create an Atlas from one texture file with 32 possible Sprite definition slots.
         _atlas = new Dumb::Sprite::Atlas(textures, 32);
@@ -190,17 +190,17 @@ void TestEngine::postInit() {
         (void) _atlas->define(0, glm::vec4(0, 0, 128, 128), glm::vec2(64, 128), 1);
         // Create a sprite instance out of sprite definition #0 at position (200, 200).
         _identifier = _cache->create(0, glm::vec2(200, 200));
-        Log_Info(Framework::Module::Base, "Identifier is %d", _identifier);
+        Log_Info(Dumb::Module::Base, "Identifier is %d", _identifier);
         // Create a sprite engine out of the Sprite atlas that can contains up to 1024 sprite instance.
         // I know, it's a bit redundant with the cache capacity. But keep in mind that cache and engine are
         // not correlated at all and that a sprite engine can switch from a cache to another.
         _engine = new Dumb::Sprite::Engine(1024, _atlas);
         _init = true;
         glm::vec2 sz = _atlas->size();
-        Log_Info(Framework::Module::Base, "Atlas size is still %dx%d", (int) sz.x, (int) sz.y);
+        Log_Info(Dumb::Module::Base, "Atlas size is still %dx%d", (int) sz.x, (int) sz.y);
     }
     _engine->viewport(0, 0, _width, _height);
-    Log_Info(Framework::Module::Base, "Window size is %dx%d", _width, _height);
+    Log_Info(Dumb::Module::Base, "Window size is %dx%d", _width, _height);
     glViewport(0, 0, _width, _height);
     //glClearColor(1.0f, 0.0f, 1.0f, 0.0f);
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -208,13 +208,13 @@ void TestEngine::postInit() {
     _start = glfwGetTime();
     _elapsed = 0;
 
-    Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
+    Dumb::Render::Renderer& renderer = Dumb::Render::Renderer::instance();
     renderer.depthTest(false);
     renderer.culling(false);
     renderer.texture2D(true);
     renderer.blend(true);
-    renderer.blendFunc(Framework::Render::BlendFunc::SRC_ALPHA,
-            Framework::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
+    renderer.blendFunc(Dumb::Render::BlendFunc::SRC_ALPHA,
+            Dumb::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
 }
 
 void TestEngine::handleWindowClose() {}

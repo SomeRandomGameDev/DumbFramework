@@ -162,7 +162,7 @@ void Example::init(Dumb::Core::Application::Adviser *adviser) {
 
 void Example::postInit() {
     using namespace Dumb::Font;
-    std::string fontPath = Framework::File::executableDirectory() + "/resources/fonts/";
+    std::string fontPath = Dumb::File::executableDirectory() + "/resources/fonts/";
     // Now, load the font and build the font atlas.
     std::vector<Range> range;
     std::vector<Oversample> oversample;
@@ -246,13 +246,13 @@ void Example::postInit() {
     glViewport(0, 0, _screenSize.x, _screenSize.y);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-    Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
+    Dumb::Render::Renderer& renderer = Dumb::Render::Renderer::instance();
     renderer.depthTest(false);
     renderer.culling(false);
     renderer.texture2D(true);
     renderer.blend(true);
-    renderer.blendFunc(Framework::Render::BlendFunc::SRC_ALPHA,
-            Framework::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
+    renderer.blendFunc(Dumb::Render::BlendFunc::SRC_ALPHA,
+            Dumb::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
 
     _compute = true;
     _start = glfwGetTime();
@@ -285,10 +285,10 @@ void Example::handleUnicodeModifierCharacter(unsigned int,int) {}
 void Example::handleKey(int key,int,int,int) {
     if(GLFW_KEY_ESCAPE == key) {
         if(_frames > 0) {
-            Log_Info(Framework::Module::Render, "Time per frame : %.0fns",
+            Log_Info(Dumb::Module::Render, "Time per frame : %.0fns",
                     ((_elapsed * 1000000000) / (double) _frames));
             double elapsed = glfwGetTime() - _start;
-            Log_Info(Framework::Module::Render, "FPS : %.3f",
+            Log_Info(Dumb::Module::Render, "FPS : %.3f",
                     _frames / elapsed);
         }
         _closeFlag = false; } else {

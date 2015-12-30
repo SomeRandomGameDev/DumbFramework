@@ -84,28 +84,28 @@ namespace Dumb {
         }
         )EOT";
 
-        std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute>> s_attributes =
-            std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute>>(
+        std::vector<std::pair<unsigned int, Dumb::Render::Geometry::Attribute>> s_attributes =
+            std::vector<std::pair<unsigned int, Dumb::Render::Geometry::Attribute>>(
                     {
                     { DFE_POSITION_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT, 2, false,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT, 2, false,
                             DFE_BUFFER_STRIDE,                    0, 1) },
                     { DFE_SIZE_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT, 2, false,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT, 2, false,
                             DFE_BUFFER_STRIDE, sizeof(GLfloat) *  2, 1) },
                     { DFE_TOP_TEX_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT, 2, false,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT, 2, false,
                             DFE_BUFFER_STRIDE, sizeof(GLfloat) *  4, 1) },
                     { DFE_DOWN_TEX_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::FLOAT, 2, false,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::FLOAT, 2, false,
                             DFE_BUFFER_STRIDE, sizeof(GLfloat) *  6, 1) },
                     { DFE_COLOR_INDEX,
-                    Framework::Render::Geometry::Attribute(
-                            Framework::Render::Geometry::ComponentType::UNSIGNED_BYTE, 4, false,
+                    Dumb::Render::Geometry::Attribute(
+                            Dumb::Render::Geometry::ComponentType::UNSIGNED_BYTE, 4, false,
                             DFE_BUFFER_STRIDE, sizeof(GLfloat) *  8, 1) },
                     });
 
@@ -517,7 +517,7 @@ namespace Dumb {
         Delegate::~Delegate() {
             std::map<std::string, Wrapper *>::iterator it;
             for(it = _wrappers.begin(); it != _wrappers.end(); ++it) {
-                Log_Info(Framework::Module::App, "Flushing '%s'", it->first.c_str());
+                Log_Info(Dumb::Module::App, "Flushing '%s'", it->first.c_str());
                 delete it->second;
             }
         }
@@ -542,14 +542,14 @@ namespace Dumb {
                 range->chardata_for_range = new stbtt_packedchar[range->num_chars_in_range];
                 Wrapper *wrapper = new Wrapper(spec, range->chardata_for_range);
                 const std::string &name = spec.getIdentifier();
-                Log_Info(Framework::Module::App, "Register '%s'", name.c_str());
+                Log_Info(Dumb::Module::App, "Register '%s'", name.c_str());
                 _wrappers.insert(std::pair<std::string, Wrapper *>(name, wrapper));
             }
             glm::vec2 ovr = oversample.getOversample();
             stbtt_PackSetOversampling(&context, (unsigned int) ovr.x, (unsigned int) ovr.y);
             if(stbtt_PackFontRanges(&context, reinterpret_cast<unsigned char*>(font),
                         0, packRange, count) == 0) {
-                Log_Error(Framework::Module::App, "Font range loading failure");
+                Log_Error(Dumb::Module::App, "Font range loading failure");
             }
             delete []packRange;
         }
@@ -560,7 +560,7 @@ namespace Dumb {
             fontFile.open(resource.getPath().c_str(), std::ios::binary|std::ios::ate|std::ios::in);
             // Font file check.
             if(fontFile.is_open()) {
-                Log_Info(Framework::Module::App, "Loading '%s'", resource.getPath().c_str());
+                Log_Info(Dumb::Module::App, "Loading '%s'", resource.getPath().c_str());
                 // Font file is ok. Let's load it.
                 std::streampos size = fontFile.tellg();
                 char *fontFileContent = new char[size];
@@ -573,7 +573,7 @@ namespace Dumb {
                 // We're done here.
                 delete []fontFileContent;
             } else {
-                Log_Error(Framework::Module::App, "Failed to open '%s'", resource.getPath().c_str());
+                Log_Error(Dumb::Module::App, "Failed to open '%s'", resource.getPath().c_str());
             }
         }
 
@@ -603,30 +603,30 @@ namespace Dumb {
         }
 
         //    ----------------------------------------------------------------
-        std::vector<std::pair<Framework::Render::Shader::Type, const char *> >
+        std::vector<std::pair<Dumb::Render::Shader::Type, const char *> >
             Delegate::shaders() const {
-                return std::vector<std::pair<Framework::Render::Shader::Type, const char *> >(
+                return std::vector<std::pair<Dumb::Render::Shader::Type, const char *> >(
                         {
-                        { Framework::Render::Shader::VERTEX_SHADER,   s_dfe_vertexShaderInstanced },
-                        { Framework::Render::Shader::FRAGMENT_SHADER, s_dfe_fragmentShader }
+                        { Dumb::Render::Shader::VERTEX_SHADER,   s_dfe_vertexShaderInstanced },
+                        { Dumb::Render::Shader::FRAGMENT_SHADER, s_dfe_fragmentShader }
                         });
             }
 
         //    -----------------------------------------------------------------------
-        std::vector<std::pair<unsigned int, Framework::Render::Geometry::Attribute> >
+        std::vector<std::pair<unsigned int, Dumb::Render::Geometry::Attribute> >
             Delegate::attributes() const {
                 return s_attributes;
             }
 
 
         //   --------------
-        void Delegate::init(Framework::Render::Program &program) {
+        void Delegate::init(Dumb::Render::Program &program) {
             _uniformMatrix  = program.getUniformLocation("un_matrix");
             _uniformTexture = program.getUniformLocation("un_texture");
         }
 
         //   ----------------
-        void Delegate::update(Framework::Render::Program &program) {
+        void Delegate::update(Dumb::Render::Program &program) {
             program.uniform(_uniformMatrix, false, _matrix);
             glBindTexture(GL_TEXTURE_2D, _atlas);
         }

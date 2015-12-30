@@ -1,3 +1,18 @@
+/*
+ * Copyright 2015 MooZ
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #ifndef _DUMB_FW_LOG_
 #define _DUMB_FW_LOG_
 
@@ -15,14 +30,14 @@
  * Application logging system.
  * 
  * In order to use the logging system in your application, you must 
- * provide an object that implements Framework::Log::BaseLogBuilder
- * interface and an output policy to the Framework::Log::LogProcessor
+ * provide an object that implements Dumb::Log::BaseLogBuilder
+ * interface and an output policy to the Dumb::Log::LogProcessor
  * instance.
  * Here is an example using the convenience classes provided:
  * @code
  * #include <DumbFramework/log.hpp>
  * 
- * using namespace Framework;
+ * using namespace Dumb;
  * 
  * int main()
  * {
@@ -52,9 +67,10 @@
  * @def  Log_Info(module, format, ...)
  * @hideinitializer
  * @ingroup DUMB_FW_LOG
- * Emit log with the severity set to Framework::Severity::Info.
+ * Emit log with the severity set to Dumb::Severity::Info.
  * 
- * @a module is one of the module defined in Framework::Module. \n
+ * @a module is a module identifier. It can be an \ref DUMB_FW_LOG_MODULES "existing module identifier"
+ *    or one provided by the user.\n
  * @a format is similar is similar to @c printf. \n
  *
  * The source information (file, line number, function name) is
@@ -65,9 +81,10 @@
  * @def  Log_Warning(module, format, ...)
  * @hideinitializer
  * @ingroup DUMB_FW_LOG
- * Emit log with the severity set to Framework::Severity::Warning.
+ * Emit log with the severity set to Dumb::Severity::Warning.
  * 
- * @a module is one of the module defined in Framework::Module. \n
+ * @a module is a module identifier. It can be an \ref DUMB_FW_LOG_MODULES "existing module identifier"
+ *    or one provided by the user.\n
  * @a format is similar to @c printf. \n
  *
  * The source information (file, line number, function name) is
@@ -78,10 +95,11 @@
  * @def  Log_Error(module, format, ...)
  * @hideinitializer
  * @ingroup DUMB_FW_LOG
- * Emit log with the severity set to Framework::Severity::Error.
+ * Emit log with the severity set to Dumb::Severity::Error.
  * 
- * @a module is one of the module defined in Framework::Module. \n
- * @a format is similar to @c printf. \n
+ * @a module is a module identifier. It can be an \ref DUMB_FW_LOG_MODULES "existing module identifier"
+ *    or one provided by the user.\n
+* @a format is similar to @c printf. \n
  * 
  * The source information (file, line number, function name) is
  * automatically set. 
@@ -100,38 +118,64 @@
  * @b errno, we can decide that this is an error, or warning, or just
  * an information.
  * @code
- * Framework::Severity severity;
+ * Dumb::Severity severity;
  * int ret;
  * 
  * ret = some_system_function();
  * 
  * if(0 == ret)
  * {
- *    severity = Framework::Severity::Infos;
+ *    severity = Dumb::Severity::Infos;
  * }
  * else if((EINPROGRESS == errno) || (EALREADY == errno))
  * {
- *    severity = Framework::Severity::Warning;
+ *    severity = Dumb::Severity::Warning;
  * }
  * else
  * {
- *     severity = Framework::Severity::Error;
+ *     severity = Dumb::Severity::Error;
  * }
  * 
- * Log_Ex(Framework::Module::App, severity, "some_system_function result: %s", strerror(errno));
+ * Log_Ex(Dumb::Module::App, severity, "some_system_function result: %s", strerror(errno));
  * 
  * @endcode
  * 
- * @a module is one of the module defined in DumbFramework::Module. \n
- * @a severity is one of the module defined in DumbFramework::Severity. \n
+ * @a module is a module identifier. It can be an \ref DUMB_FW_LOG_MODULES "existing module identifier"
+ *    or one provided by the user.\n
+ * @a severity is one of the module defined in Dumb::Severity. \n
  * @a format is similar to @c printf. \n
  * 
  * The source information (file, line number, function name) is
  * automatically set. 
  */
 
-namespace Framework {
-namespace Log {
+/**
+ * @def SIMPLE_LOGGING(procesor)
+ * @hideinitializer
+ * @ingroup DUMB_FW_LOG
+ * Creates and starts a simple console logging system.
+ * More precisely it will create a Dumb::Log::LogBuilder with an all-pass 
+ * filter (Dumb::Log::AllPassFilter) and a Dumb::Log::SimpleMessageFormat.
+ * The log messages will be output to the standard output using a Dumb::Log::ConsoleOutputPolicy.
+ * @a processor is the name of the Dumb::Log::LogProcessor instance reference.
+ *
+ * For example SIMPLE_LOGGING(logProcessor) will produce:
+ * @code
+ * Dumb::Log::LogBuilder<Dumb::Log::AllPassFilter, Dumb::Log::SimpleMessageFormat> msgBuilder;
+ * Dumb::Log::ConsoleOutputPolicy output;
+ * Dumb::Log::LogProcessor& logProcessor = Dumb::Log::LogProcessor::instance();
+ * logProcessor.start(&msgBuilder, &output);
+ * @endcode
+ * 
+ * @note It is up to the user to stop the log processor either by using
+ *       the reference name declared with the macro or by calling
+ * @code
+ * Dumb::Log::LogProcessor::instance().stop();
+ * @endcode
+ */
+
+namespace Dumb {
+namespace Log  {
     /**
      * @brief Log source informations.
      * @ingroup DUMB_FW_LOG
@@ -242,7 +286,7 @@ namespace Log {
              * @param [in]  args     Format string arguments.
              * @return false if an error occured.
              */
-            virtual bool build(std::string & out, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args) = 0;
+            virtual bool build(std::string & out, Dumb::Module::Identifier const & module, Dumb::Severity const & severity, SourceInfos const & infos, char const * format, va_list args) = 0;
     };
 
     /**
@@ -257,14 +301,14 @@ namespace Log {
      * match the filter criterias. The log builder will dismiss every
      * log entry that failed filter evaluation.
      * @code
-     * bool eval(Framework::Module const & module, Framework::Severity const & severity);
+     * bool eval(Dumb::Module::Identifier const & module, Dumb::Severity const & severity);
      * @endcode
      * 
      * The @a FormatPolicy must implement a @c build method. This method
      * creates a string based on the module id, severy, source infos and
      * format data.
      * @code
-     * void build(std::string & buffer, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args);
+     * void build(std::string & buffer, Dumb::Module::Identifier const & module, Dumb::Severity const & severity, SourceInfos const & infos, char const * format, va_list args);
      * @endcode
      * 
      */
@@ -287,7 +331,7 @@ namespace Log {
              * @param [in]  args     Format string arguments.
              * @return false if an error occured.
              */
-            virtual bool build(std::string & out, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args);
+            virtual bool build(std::string & out, Dumb::Module::Identifier const & module, Dumb::Severity const & severity, SourceInfos const & infos, char const * format, va_list args);
 
         private:
             FilterPolicy _filter; /**< Message filter. */
@@ -325,7 +369,7 @@ namespace Log {
              * @param [in]  format   Format string.
              * @param [in]  ...      Format string arguments.
              */
-            void write(Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, ...);
+            void write(Dumb::Module::Identifier const & module, Dumb::Severity const & severity, SourceInfos const & infos, char const * format, ...);
             /**
              * Start logging task.
              * @param [in] builder       Log message builder.
@@ -392,7 +436,7 @@ namespace Log {
          * @param [in] severity Severity.
          * @return Allways true.
          */
-        bool eval(Framework::Module const & module, Framework::Severity const & severity);
+        bool eval(Dumb::Module::Identifier const & module, Dumb::Severity const & severity);
     };
 
     /** 
@@ -417,7 +461,7 @@ namespace Log {
          * @param [in]  format String format.
          * @param [in]  args Format argument list.
          */
-        void build(std::string & buffer, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args);
+        void build(std::string & buffer, Dumb::Module::Identifier const & module, Dumb::Severity const & severity, SourceInfos const & infos, char const * format, va_list args);
     };
 
     /** 
@@ -474,13 +518,20 @@ namespace Log {
     };
 
 } // Log
-} // Framework
+} // Dumb
 
-#define Log_Info(module, format, ...)    do { Framework::Log::LogProcessor::instance().write(module, Framework::Severity::Info,   Framework::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
-#define Log_Warning(module, format, ...) do { Framework::Log::LogProcessor::instance().write(module, Framework::Severity::Warning, Framework::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
-#define Log_Error(module, format, ...)   do { Framework::Log::LogProcessor::instance().write(module, Framework::Severity::Error,   Framework::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
+#define Log_Info(module, format, ...)    do { Dumb::Log::LogProcessor::instance().write(module, Dumb::Severity::Info,    Dumb::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
+#define Log_Warning(module, format, ...) do { Dumb::Log::LogProcessor::instance().write(module, Dumb::Severity::Warning, Dumb::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
+#define Log_Error(module, format, ...)   do { Dumb::Log::LogProcessor::instance().write(module, Dumb::Severity::Error,   Dumb::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
 
-#define Log_Ex(module, severity, format, ...) do { Framework::Log::LogProcessor::instance().write(module, severity,   Framework::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
+#define Log_Ex(module, severity, format, ...) do { Dumb::Log::LogProcessor::instance().write(module, severity, Dumb::Log::SourceInfos(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__); } while(0);
+
+#define SIMPLE_LOGGING(procesor) \
+Dumb::Log::LogBuilder<Dumb::Log::AllPassFilter, Dumb::Log::SimpleMessageFormat> msgBuilder;\
+Dumb::Log::ConsoleOutputPolicy output;\
+Dumb::Log::LogProcessor& processor = Dumb::Log::LogProcessor::instance();\
+processor.start(&msgBuilder, &output);\
+
 
 #include "log.inl"
 

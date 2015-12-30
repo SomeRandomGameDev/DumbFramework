@@ -133,7 +133,7 @@ void MainApp::postInit()
 #if defined(BUILD_PACKAGE)
         std::string filename = "/usr/share/wopr/atlas.png";
 #else
-        std::string filename = Framework::File::executableDirectory() + "/resources/atlas.png";
+        std::string filename = Dumb::File::executableDirectory() + "/resources/atlas.png";
 #endif // BUILD_PACKAGE
 
         filenameList.push_back(filename);
@@ -160,13 +160,13 @@ void MainApp::postInit()
     glViewport(0, 0, _displayCfg.screenSize.x, _displayCfg.screenSize.y);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-    Framework::Render::Renderer& renderer = Framework::Render::Renderer::instance();
+    Dumb::Render::Renderer& renderer = Dumb::Render::Renderer::instance();
     renderer.depthTest(false);
     renderer.culling(false);
     renderer.texture2D(true);
     renderer.blend(true);
-    renderer.blendFunc(Framework::Render::BlendFunc::SRC_ALPHA,
-                       Framework::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
+    renderer.blendFunc(Dumb::Render::BlendFunc::SRC_ALPHA,
+                       Dumb::Render::BlendFunc::ONE_MINUS_SRC_ALPHA);
 }
 
 bool MainApp::render()
@@ -236,7 +236,7 @@ bool MainApp::render()
             _start = glfwGetTime();
             if(gameEnded)
             {
-                Log_Info(Framework::Module::Base, "%s", (WOPR::Draw == _status) ? "Draw" : ((WOPR::Win == _status) ? "You loose" : "You win"));
+                Log_Info(Dumb::Module::App, "%s", (WOPR::Draw == _status) ? "Draw" : ((WOPR::Win == _status) ? "You loose" : "You win"));
             }
         }
     }

@@ -1,6 +1,7 @@
-#include <unittest++/UnitTest++.h>
+#include <UnitTest++/UnitTest++.h>
 #include <vector>
 #include <glm/gtc/random.hpp>
+#include <glm/gtx/io.hpp>                                                                                     
 #include <DumbFramework/geometry/boundingsphere.hpp>
 #include <DumbFramework/geometry/boundingbox.hpp>
 

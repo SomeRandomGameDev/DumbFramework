@@ -183,7 +183,7 @@ namespace Dumb {
                  * Access texture.
                  * @return texture object.
                  */
-                Framework::Render::Texture2D const& texture() const;
+                Dumb::Render::Texture2D const& texture() const;
 
                 /**
                  * @brief Access to definitions.
@@ -242,7 +242,7 @@ namespace Dumb {
                  */
                 std::unordered_map<std::string, unsigned int > _dict;
                 /** Texture. **/
-                Framework::Render::Texture2D _texture;
+                Dumb::Render::Texture2D _texture;
                 /** Atlas size in pixels. **/
                 glm::ivec2 _size;
         };

@@ -1,4 +1,4 @@
-#include <unittest++/UnitTest++.h>
+#include <UnitTest++/UnitTest++.h>
 #include <vector>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/random.hpp>

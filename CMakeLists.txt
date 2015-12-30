@@ -97,19 +97,12 @@ set(DUMB_FRAMEWORK_RENDER_SOURCES
     src/render/uniformbuffer.cpp
     src/render/geometry.cpp
     src/render/vertexstream.cpp
-    src/render/mesh.cpp
-    src/render/dummy.cpp
     src/render/shader.cpp
     src/render/program.cpp
-    src/render/material.cpp
     src/render/rendercontext.cpp
     src/render/renderbuffer.cpp
     src/render/texture2d.cpp
-    src/render/textureloader.cpp
-    src/render/light.cpp
-    src/render/light/occluders.cpp
-    src/render/lightpass.cpp
-    src/render/geometrypass.cpp)
+    src/render/textureloader.cpp)
 
 set(DUMB_FRAMEWORK_SOURCES
     ${DUMB_FRAMEWORK_GEOMETRY_SOURCES}
@@ -121,8 +114,6 @@ set(DUMB_FRAMEWORK_SOURCES
     src/log.cpp
     src/sprengine.cpp
     src/sprite.cpp
-    src/joystick.cpp
-    src/mouse.cpp
     src/adviser.cpp
     src/font.cpp)
 
@@ -181,12 +172,6 @@ add_executable(flatengine src/demo/flatengine.cpp)
 add_dependencies(resources flatengine)
 target_link_libraries(flatengine DumbFramework)
 
-# This one is extremely painful to port !
-#add_executable(gui src/demo/gui.cpp)
-#add_dependencies(resources gui)
-#target_link_libraries(gui DumbFramework)
-
-# Basic Font Demo.
 add_executable(font-basic src/demo/font/basic.cpp)
 add_dependencies(resources font-basic)
 target_link_libraries(font-basic DumbFramework)

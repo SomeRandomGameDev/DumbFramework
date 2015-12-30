@@ -1,10 +1,25 @@
+/*
+ * Copyright 2015 MooZ
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <GL/glew.h>
 
 #include <DumbFramework/log.hpp>
 #include <DumbFramework/render/renderer.hpp>
 
-namespace Framework {
-namespace Render    {
+namespace Dumb   {
+namespace Render {
 
 Renderer::Renderer()
 {}
@@ -50,7 +65,7 @@ void Renderer::setActiveTextureUnit(unsigned int unit)
     glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, (GLint*)&maxTextureUnitCount);
     if(unit >= maxTextureUnitCount)
     {
-        Log_Error(Module::Render, "Texture unit number out of bound %d (max %d).", unit, maxTextureUnitCount-1);
+        Log_Error(Dumb::Module::Render, "Texture unit number out of bound %d (max %d).", unit, maxTextureUnitCount-1);
     }
 #endif // SANITY_CHECK
     
@@ -61,7 +76,7 @@ void Renderer::setActiveTextureUnit(unsigned int unit)
     GLenum err= glGetError();
     if(GL_NO_ERROR != err)
     {
-        Log_Error(Module::Render, "An error occured while setting texture unit %d active: %s.", unit, gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "An error occured while setting texture unit %d active: %s.", unit, gluErrorString(err));
     }
 #endif
 }
@@ -78,7 +93,7 @@ unsigned int Renderer::getActiveTextureUnit()
     GLenum err= glGetError();
     if(GL_NO_ERROR != err)
     {
-        Log_Error(Module::Render, "An error occured while retrieving currently active texture unit: %s.", unit, gluErrorString(err));
+        Log_Error(Dumb::Module::Render, "An error occured while retrieving currently active texture unit: %s.", unit, gluErrorString(err));
     }
 #endif
     return (unit - GL_TEXTURE0);
@@ -283,4 +298,4 @@ void Renderer::scissor(glm::ivec2 const& pos, glm::ivec2 const& size)
 }
 
 } // Render
-} // Framework
+} // Dumb

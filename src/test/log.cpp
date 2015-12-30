@@ -1,15 +1,30 @@
-#include <unittest++/UnitTest++.h>
+/*
+ * Copyright 2015 MooZ
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#include <UnitTest++/UnitTest++.h>
 #include <iostream>
 #include <vector>
 #include <DumbFramework/log.hpp>
 
-using namespace Framework;
+using namespace Dumb;
 
 SUITE(Log)
 {
     struct DummyMessageFormat
     {
-        void build(std::string & buffer, Framework::Module const & module, Framework::Severity const & severity, Framework::Log::SourceInfos const & infos, 
+        void build(std::string & buffer, Module::Identifier const & module, Severity const & severity, Log::SourceInfos const & infos, 
                    char const * format, va_list args)
         {
             char data[1024];
@@ -22,7 +37,7 @@ SUITE(Log)
         }
     };
     
-    struct BufferOutputPolicy : public Framework::Log::OutputPolicyBase
+    struct BufferOutputPolicy : public Log::OutputPolicyBase
     {
         std::string expected[3];
         size_t index;
@@ -49,14 +64,14 @@ SUITE(Log)
         output.expected[1] = "[warning][Base] RunImpl warn    1!";
         output.expected[2] = "[error][Base] RunImpl error   2!";
 
-        Log_Info(Framework::Module::Base,    "info    %d!", i++);
-        Log_Warning(Framework::Module::Base, "warn    %d!", i++);
-        Log_Error(Framework::Module::Base,   "error   %d!", i++);
+        Log_Info(Module::Base,    "info    %d!", i++);
+        Log_Warning(Module::Base, "warn    %d!", i++);
+        Log_Error(Module::Base,   "error   %d!", i++);
         
         processor.stop();
     }
     
-    struct StringListOutputPolicy : public Framework::Log::OutputPolicyBase
+    struct StringListOutputPolicy : public Log::OutputPolicyBase
     {
         std::vector<std::string> msgList;
 
@@ -82,9 +97,9 @@ SUITE(Log)
         
         int i = 0;
                 
-        Log_Info(Framework::Module::Base,    "info    %d!", i++);
-        Log_Warning(Framework::Module::Base, "warn    %d!", i++);
-        Log_Error(Framework::Module::Base,   "error   %d!", i++);
+        Log_Info(Module::Base,    "info    %d!", i++);
+        Log_Warning(Module::Base, "warn    %d!", i++);
+        Log_Error(Module::Base,   "error   %d!", i++);
 
         processor.flush();
 

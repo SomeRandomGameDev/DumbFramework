@@ -1,8 +1,23 @@
+/*
+ * Copyright 2015 MooZ
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <DumbFramework/log.hpp>
 #include <DumbFramework/render/renderbuffer.hpp>
 
-namespace Framework {
-namespace Render    {
+namespace Dumb   {
+namespace Render {
 
 /** Constructor. **/
 Renderbuffer::Renderbuffer()
@@ -41,7 +56,7 @@ bool Renderbuffer::create(const glm::ivec2& size, Texture::PixelFormat format, s
     bool ret = (GL_NO_ERROR == err);
     if(!ret)
     {
-        Log_Error(Module::Render, "Failed to create renderbuffer: %s", gluErrorString (err));
+        Log_Error(Dumb::Module::Render, "Failed to create renderbuffer: %s", gluErrorString (err));
     }
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     return ret;
@@ -77,7 +92,7 @@ void Renderbuffer::bind() const
     // Warning! This may spam your logs!
     if(!isValid())
     {
-        Log_Warning(Module::Render, "You are trying to bind an invalid texture for target %s", GetTextureTargetName(_target));
+        Log_Warning(Dumb::Module::Render, "You are trying to bind an invalid texture for target %s", GetTextureTargetName(_target));
     }
     else
     {
@@ -85,7 +100,7 @@ void Renderbuffer::bind() const
         glGetIntegerv(GL_RENDERBUFFER_BINDING, (GLint*)&bound);
         if(bound && (bound != _id))
         {
-            Log_Warning(Module::Render, "Renderbuffer %d is currently bound.", bound);
+            Log_Warning(Dumb::Module::Render, "Renderbuffer %d is currently bound.", bound);
         }
     }
 #endif // SANITY_CHECK
@@ -104,12 +119,12 @@ void Renderbuffer::unbind() const
     {
         if(bound)
         {
-            Log_Warning(Module::Render, "You are trying to unbind renderbuffer %d whereas the current bound renderbuffer is %d", _id, bound);
-            Log_Warning(Module::Render, "If you really want to unbind the currently bound renderbuffer use Renderbuffer::unbindAll() (static) instead.");
+            Log_Warning(Dumb::Module::Render, "You are trying to unbind renderbuffer %d whereas the current bound renderbuffer is %d", _id, bound);
+            Log_Warning(Dumb::Module::Render, "If you really want to unbind the currently bound renderbuffer use Renderbuffer::unbindAll() (static) instead.");
         }
         else
         {
-            Log_Warning(Module::Render, "No renderbuffer bound.");
+            Log_Warning(Dumb::Module::Render, "No renderbuffer bound.");
         }
     }
 #endif // SANITY_CHECK
@@ -166,4 +181,4 @@ GLuint Renderbuffer::id() const
 }
 
 } // Render
-} // Framework
+} // Dumb

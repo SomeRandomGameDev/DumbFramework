@@ -1,3 +1,18 @@
+/*
+ * Copyright 2015 MooZ
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 /** 
  * Constructor.
  * @param [in] width    Window witdh
@@ -35,7 +50,7 @@ ImGuiDelegate<T>::~ImGuiDelegate()
  * Create window.
  */
 template<class T>
-void ImGuiDelegate<T>::init(Dumb::Core::Application::Adviser *adviser) {
+void ImGuiDelegate<T>::init(Dumb::Core::Application::Adviser *adviser)
 {
     Dumb::Core::Application::Video::Mode mode(glm::vec2(_width, _height), glm::vec3(8, 8, 8), 60);
     Dumb::Core::Application::Video::Monitor monitor(0);
@@ -179,7 +194,7 @@ void ImGuiDelegate<T>::postInit()
  * Render everything.
  */
 template<class T>
-void ImGuiDelegate<T>::render()
+bool ImGuiDelegate<T>::render()
 {
     ImGuiIO& io = ImGui::GetIO();
 
@@ -208,20 +223,18 @@ void ImGuiDelegate<T>::render()
 
     _mousePressed[0] = _mousePressed[1] = false;
     io.MouseWheel = 0;
+    
+    return true;
 }
 
 template<class T>
-void ImGuiDelegate<T>::hhandleUnicodeModifierCharacter(unsigned int,int) {}
+void ImGuiDelegate<T>::handleUnicodeModifierCharacter(unsigned int,int) {}
 
 template<class T>
-void ImGuiDelegate<T>::hhandleWindowClose() {}
+void ImGuiDelegate<T>::handleWindowClose() {}
 
 template<class T>
-void ImGuiDelegate<T>::hhandleWindowSize(int, int) {}
-
-template<class T>
-void ImGuiDelegate<T>::hhandleWindowIconify(int) {}
-
+void ImGuiDelegate<T>::handleWindowIconify(int) {}
 
 template<class T>
 void ImGuiDelegate<T>::handleKey(int key, int scancode, int action, int mods)
@@ -280,13 +293,6 @@ void ImGuiDelegate<T>::handleUnicodeCharacter(unsigned int unicodeChar)
     {
         ImGui::GetIO().AddInputCharacter((unsigned short)unicodeChar);
     }
-}
-
-template<class T>
-void ImGuiDelegate<T>::handleCursorEnter(int flag)
-{
-    (void)flag;
-    // [todo] Nothing atm.
 }
 
 template<class T>

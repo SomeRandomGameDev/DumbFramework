@@ -1,3 +1,18 @@
+/*
+ * Copyright 2015 MooZ
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <errno.h>
 #include <string>
 #include <iostream>
@@ -5,8 +20,8 @@
 #include <ctime>
 #include <DumbFramework/log.hpp>
 
-namespace Framework {
-namespace Log {
+namespace Dumb {
+namespace Log  {
     
     /** Constructor. */
     BaseLogBuilder::BaseLogBuilder()
@@ -173,7 +188,7 @@ namespace Log {
      * @param [in]  format   Format string.
      * @param [in]  ...      Format string arguments.
      */
-    void LogProcessor::write(Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, ...)
+    void LogProcessor::write(Dumb::Module::Identifier const & module, Dumb::Severity const & severity, SourceInfos const & infos, char const * format, ...)
     {
         if(NULL == _builder)
         {
@@ -221,7 +236,7 @@ namespace Log {
      * @param [in] module Module id.
      * @param [in] severity Severity.
      */
-    bool AllPassFilter::eval(Framework::Module const & /*module*/, Framework::Severity const & /*severity*/)
+    bool AllPassFilter::eval(Dumb::Module::Identifier const & /*module*/, Dumb::Severity const & /*severity*/)
     {
         return true;
     }
@@ -238,7 +253,7 @@ namespace Log {
      * @param [in]  format String format.
      * @param [in]  args Format argument list.
      */
-    void SimpleMessageFormat::build(std::string & buffer, Framework::Module const & module, Framework::Severity const & severity, SourceInfos const & infos, char const * format, va_list args)
+    void SimpleMessageFormat::build(std::string & buffer, Dumb::Module::Identifier const & module, Dumb::Severity const & severity, SourceInfos const & infos, char const * format, va_list args)
     {
         char data[SimpleMessageFormat::MaxBufferLen];
         vsnprintf(data, SimpleMessageFormat::MaxBufferLen, format, args);
@@ -309,4 +324,4 @@ namespace Log {
     }
 
 } // Log
-} // Framework
+} // Dumb
