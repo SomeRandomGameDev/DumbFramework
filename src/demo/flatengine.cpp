@@ -85,7 +85,8 @@ bool TestEngine::render() {
     float angle  = angularSpeed * _elapsed;
     float radius = 80.0f;
     
-   _cache->move(_identifier, glm::vec2(_width*0.5  + radius*cos(angle), _height*0.5 + radius*sin(angle)));
+   //_cache->move(_identifier, glm::vec2(_width*0.5  + radius*cos(angle), _height*0.5 + radius*sin(angle)));
+    _cache->rotate(_identifier, angle);
    _engine->render(_cache);
   return !_quit;
 }
