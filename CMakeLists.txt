@@ -46,12 +46,15 @@ find_package(tinyxml2)
 find_package(SOIL)
 find_package(Threads)
 find_package(OpenGL)
+find_package(OpenAL)
 find_package(GLEW)
 find_package(GLFW)
 find_package(GLM ${GLM_MINIMUM_VERSION} REQUIRED)
 find_package(ICU 4.4 REQUIRED)
 find_package(Doxygen)
-find_package(Cairo 1.14.2 REQUIRED)
+find_package(Cairo 1.14.2)
+find_package(Vorbis)
+
 # find_package(BOX2D)
 # find_package(Freetype-gl)
 
@@ -66,9 +69,9 @@ include_directories( ${EXPAT_INCLUDE_DIR}
                      ${GLEW_INCLUDE_DIRS}
                      ${GLM_INCLUDE_DIRS}
                      ${SOIL_INCLUDE_DIRS}
-                     #                     ${FREETYPE_GL_INCLUDE_DIRS}
                      ${CAIRO_INCLUDE_DIRS}
                      ${CMAKE_CURRENT_SOURCE_DIR}
+                     ${OPENAL_INCLUDE_DIRS}
                      include/
                      external/)
 
@@ -147,6 +150,7 @@ target_link_libraries(DumbFramework ${THREAD_LIBRARY} )
 target_link_libraries(DumbFramework ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(DumbFramework ${ICU_LIBRARIES})
 target_link_libraries(DumbFramework ${CAIRO_LIBRARIES})
+target_link_libraries(DumbFramework ${OPENAL_LIBRARIES})
 
 if(BUILD_TESTS)
     find_package(UnitTest++)
